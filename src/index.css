@@ -1,0 +1,420 @@
+
+
+
+@font-face {
+  font-family: 'Qadasi Regular';
+  src: url('/QadasiRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'KFGQPC Kufi Stylistic Regular';
+  src: url('https://fonts.arabicfonts.net/ttf/kfgqpc-kufi-stylistic.ttf') format('truetype'),
+       url('https://cdn.jsdelivr.net/gh/shorbagy/Arabic-Fonts/KFGQPC%20Kufi%20Stylistic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *):not(:where(.force-light, .force-light *)), &:where(.force-dark, .force-dark *));
+
+@theme {
+  --font-sans: var(--app-font, "Tajawal"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-adhkar: var(--adhkar-font, "Amiri"), serif;
+  --font-quran: var(--quran-font, "Uthmanic Hafs"), serif;
+  --font-messiri: "El Messiri", sans-serif;
+  --font-kufic: "Qadasi Regular", "KFGQPC Kufi Stylistic Regular", "Reem Kufi", "Noto Kufi Arabic", "Cairo", sans-serif;
+  --font-rubik: "Rubik", sans-serif;
+  --font-digital: "Digital-7", "Share Tech Mono", "Orbitron", monospace;
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-teko: "Teko", sans-serif;
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-chakra: "Chakra Petch", sans-serif;
+  --font-russo: "Russo One", sans-serif;
+  --font-racing: "Racing Sans One", sans-serif;
+  --animate-spin-slow: spin 8s linear infinite;
+  --animate-bounce-custom1: bounceCustom 1s infinite alternate;
+  --animate-bounce-custom2: bounceCustom 1.2s infinite alternate;
+  --animate-bounce-custom3: bounceCustom 0.8s infinite alternate;
+  --animate-shimmer: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+@keyframes bounceCustom {
+  from {
+    height: 4px;
+    transform: translateY(0);
+  }
+  to {
+    height: 16px;
+    transform: translateY(-2px);
+  }
+}
+
+:root {
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Prevent layout thrashing */
+  contain: paint layout;
+}
+
+body {
+  @apply bg-white text-slate-900 font-sans;
+  direction: rtl;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Protection: Disable text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Fast tap response for touch devices */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 🚀 Visual Feedback (Active State) - استجابة فورية للأزرار واللمس */
+.active-feedback:active,
+button:not(:disabled):active,
+a:not([disabled]):active,
+[role="button"]:not([disabled]):active {
+  transform: scale(0.96) !important;
+  opacity: 0.80 !important;
+  transition: transform 50ms cubic-bezier(0.4, 0, 0.2, 1), opacity 50ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Smooth return animation for clickables */
+button, a, [role="button"] {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* GPU Acceleration utility for 60/120fps fluid motion */
+.gpu-layer {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* High performance smooth momentum scroll container */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+.custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 184, 166, 0.25) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.25);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.45);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.35);
+}
+
+/* Protection: Prevent image dragging */
+img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-50;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-800;
+}
+
+.custom-scrollbar-modern {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 184, 166, 0.2) transparent;
+}
+
+.custom-scrollbar-modern::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar-modern::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar-modern::-webkit-scrollbar-thumb {
+  background-color: rgba(20, 184, 166, 0.2);
+  border-radius: 20px;
+  border: transparent;
+}
+
+.dark .custom-scrollbar-modern::-webkit-scrollbar-thumb {
+  background-color: rgba(20, 184, 166, 0.3);
+}
+
+.custom-scrollbar-modern:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(20, 184, 166, 0.5);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.islamic-pattern {
+  background-image: url("https://www.transparenttextures.com/patterns/islamic-art.png");
+  opacity: 0.05;
+}
+
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+
+@utility preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@utility translate-z-10 {
+  transform: translateZ(10px);
+}
+
+@utility translate-z-20 {
+  transform: translateZ(20px);
+}
+
+#root .quran-viewer-container {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: 100% !important;
+}
+
+#root .quran-viewer-container img {
+  max-width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* Ensure bottom navigation remains fixed and never hides */
+body.reading-focus-mode #bottom-nav {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+
+.main-menu-container {
+  will-change: transform;
+}
+
+/* ==========================================================================
+   Responsive Tablet & Multi-Device Adaptive Styles
+   ========================================================================== */
+
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Fluid typography scaling */
+  --font-fluid-h1: clamp(1.25rem, 1.05rem + 0.8vw, 1.85rem);
+  --font-fluid-h2: clamp(1.1rem, 0.95rem + 0.6vw, 1.5rem);
+  --font-fluid-h3: clamp(0.95rem, 0.85rem + 0.4vw, 1.25rem);
+  --font-fluid-body: clamp(0.875rem, 0.82rem + 0.25vw, 1.0625rem);
+  --font-fluid-quran: clamp(1.4rem, 1.15rem + 1vw, 2.35rem);
+  --font-fluid-dhikr: clamp(1.1rem, 0.95rem + 0.6vw, 1.55rem);
+}
+
+/* Utility classes for responsive components */
+.fluid-h1 { font-size: var(--font-fluid-h1); }
+.fluid-h2 { font-size: var(--font-fluid-h2); }
+.fluid-h3 { font-size: var(--font-fluid-h3); }
+.fluid-body { font-size: var(--font-fluid-body); }
+.fluid-quran { font-size: var(--font-fluid-quran); }
+.fluid-dhikr { font-size: var(--font-fluid-dhikr); }
+
+/* Minimum comfortable touch target size (WCAG / Mobile / Tablet accessibility) */
+.touch-target-min {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Adaptive Tablet Grids */
+.tablet-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+.tablet-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .tablet-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+@media (min-width: 1024px) {
+  .tablet-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.tablet-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+@media (min-width: 768px) {
+  .tablet-grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+@media (min-width: 1024px) {
+  .tablet-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Responsive Tasbih Ring Scaling */
+.tasbih-dial-responsive {
+  width: clamp(230px, 42vw, 360px);
+  height: clamp(230px, 42vw, 360px);
+}
+
+/* Tablet (iPad & Android Tablets: 768px - 1024px) Optimizations */
+@media (min-width: 768px) {
+  /* Expand drawer comfortably on tablets */
+  .main-menu-container {
+    width: 380px !important;
+    max-width: 80vw !important;
+  }
+
+  /* Refined Floating Bottom Navigation Capsule on Tablets */
+  #bottom-nav {
+    max-width: 680px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    border-radius: 1.5rem !important;
+    margin-bottom: 0.75rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .dark #bottom-nav {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  /* Responsive centered modals on tablets */
+  .responsive-dialog-panel {
+    max-width: 520px !important;
+    margin: auto !important;
+    border-radius: 1.5rem !important;
+  }
+}
+
+/* Large Screens (Laptops / Desktops: 1024px+) */
+@media (min-width: 1024px) {
+  #bottom-nav {
+    max-width: 760px !important;
+  }
+
+  .main-menu-container {
+    width: 420px !important;
+  }
+}
+
+/* Orientation / Landscape handling for tablets */
+@media (orientation: landscape) and (max-height: 600px) {
+  #bottom-nav {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+  
+  .tasbih-dial-responsive {
+    width: clamp(180px, 45vh, 260px);
+    height: clamp(180px, 45vh, 260px);
+  }
+}
+

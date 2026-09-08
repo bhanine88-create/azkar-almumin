@@ -1,0 +1,164 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // --- Global Denial ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+    function isValidBackup(data) {
+      return data.keys().hasAll(['data', 'createdAt', 'type']) &&
+             data.keys().size() == 3 &&
+             data.data is map &&
+             data.createdAt == request.time &&
+             data.type in ['manual', 'auto'];
+    }
+
+    function isValidQuranProgress(data) {
+      return data.keys().hasAll(['surahNumber', 'readAyahs', 'lastUpdated']) &&
+             data.surahNumber is number &&
+             data.readAyahs is list &&
+             data.lastUpdated == request.time &&
+             (!data.keys().hasAny(['isCompleted']) || data.isCompleted is bool);
+    }
+
+    function isValidTasbeehGoal(data) {
+      return data.keys().hasAll(['dhikrId', 'targetCount', 'currentCount', 'createdAt', 'lastUpdated']) &&
+             data.dhikrId is string &&
+             data.targetCount is number &&
+             data.currentCount is number &&
+             (data.createdAt is timestamp || data.createdAt is string) &&
+             data.lastUpdated == request.time &&
+             (!data.keys().hasAny(['titleAr']) || data.titleAr is string) &&
+             (!data.keys().hasAny(['titleEn']) || data.titleEn is string) &&
+             (!data.keys().hasAny(['isCompleted']) || data.isCompleted is bool);
+    }
+
+    function isValidPost(data) {
+      return data.keys().hasAll(['userId', 'userName', 'content', 'createdAt', 'type', 'likesCount']) &&
+             data.keys().size() <= 9 &&
+             data.userId == request.auth.uid &&
+             data.userName is string && data.userName.size() <= 100 &&
+             data.content is string && data.content.size() <= 2000 &&
+             data.createdAt == request.time &&
+             data.type in ['reflection', 'dhikr', 'dua_request', 'hadith', 'deed'] &&
+             data.likesCount == 0 &&
+             (!data.keys().hasAny(['sticker']) || data.sticker == null || data.sticker is string) &&
+             (!data.keys().hasAny(['userColor']) || data.userColor == null || data.userColor is string) &&
+             (!data.keys().hasAny(['imageData']) || data.imageData == null || data.imageData is string);
+    }
+
+    // --- Collection Routes ---
+    
+    // User Profile Document
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Quran Progress
+    match /users/{userId}/quranProgress/{surahNumber} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidQuranProgress(incoming());
+      allow delete: if isOwner(userId);
+    }
+
+    // Tasbeeh Goals
+    match /users/{userId}/tasbeehGoals/{goalId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidTasbeehGoal(incoming());
+      allow update: if isOwner(userId) && isValidTasbeehGoal(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['currentCount', 'lastUpdated', 'isCompleted']) ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['targetCount', 'lastUpdated', 'isCompleted'])
+      );
+      allow delete: if isOwner(userId);
+    }
+
+    // Backups
+    match /users/{userId}/backups/{backupId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidBackup(incoming());
+      allow delete: if isOwner(userId);
+    }
+
+    // Community Posts
+    match /community_posts/{postId} {
+      allow read: if true; // Publicly readable
+      allow create: if isSignedIn() && isValidPost(incoming()) && !exists(/databases/$(database)/documents/banned_users/$(request.auth.uid));
+      
+      // Update for likes - allowing incrementing likesCount if authenticated
+      allow update: if isSignedIn() && (
+        (incoming().diff(existing()).affectedKeys().hasOnly(['content']) && isOwner(existing().userId)) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['likesCount']))
+      );
+      
+      allow delete: if isSignedIn() && isOwner(existing().userId);
+    }
+
+    // Likes subcollection
+    match /community_posts/{postId}/likes/{userId} {
+      allow read, write: if isOwner(userId) && isValidId(postId);
+    }
+
+    // Global Stats - Read only for users, updated by system/server (or carefully by client)
+    match /stats/{docId} {
+      allow read: if true;
+      // In a real app, updates would be cloud functions. 
+      // For this prototype, we'll allow incrementing by users.
+      allow create, update: if isSignedIn();
+    }
+
+    // Reports
+    match /reports/{reportId} {
+      allow create: if isSignedIn() && 
+                    incoming().keys().hasAll(['postId', 'reportedBy', 'createdAt', 'status']) &&
+                    incoming().reportedBy == request.auth.uid &&
+                    incoming().status == 'pending' &&
+                    incoming().createdAt == request.time;
+    }
+
+    // Banned Users
+    match /banned_users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only admins/backend can ban users
+    }
+
+    // Daily Polls
+    match /daily_polls/{pollId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+    }
+    
+    // Community Suggestions
+    match /community_suggestions/{suggestionId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "Backup": {
+      "title": "Application Backup",
+      "description": "Stores user progress and settings",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "The actual application data payload"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the backup was created"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["manual", "auto"],
+          "description": "The trigger type for the backup"
+        }
+      },
+      "required": ["data", "createdAt", "type"]
+    },
+    "CommunityPost": {
+      "title": "Community Post",
+      "description": "User shared reflection or dhikr",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["reflection", "dhikr", "dua_request", "hadith"] },
+        "likesCount": { "type": "number" },
+        "sticker": { "type": "string", "description": "Optional emoji or sticker ID" }
+      },
+      "required": ["userId", "userName", "content", "createdAt", "type", "likesCount"]
+    },
+    "GlobalStats": {
+      "title": "Global Statistics",
+      "description": "Anonymized collective worship statistics",
+      "type": "object",
+      "properties": {
+        "totalAdhkarRecited": { "type": "number" },
+        "totalKhatmas": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["totalAdhkarRecited", "totalKhatmas", "lastUpdated"]
+    },
+    "QuranSurahProgress": {
+      "title": "Quran Surah Progress",
+      "description": "Progress tracking for a specific surah",
+      "type": "object",
+      "properties": {
+        "surahNumber": { "type": "number" },
+        "readAyahs": { "type": "array", "items": { "type": "number" } },
+        "isCompleted": { "type": "boolean" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["surahNumber", "readAyahs", "lastUpdated"]
+    },
+    "TasbeehGoal": {
+      "title": "Tasbeeh Goal",
+      "description": "Goal tracking for a specific dhikr",
+      "type": "object",
+      "properties": {
+        "dhikrId": { "type": "string" },
+        "titleAr": { "type": "string" },
+        "titleEn": { "type": "string" },
+        "targetCount": { "type": "number" },
+        "currentCount": { "type": "number" },
+        "isCompleted": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["dhikrId", "targetCount", "currentCount", "createdAt", "lastUpdated"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores secure user account information, personalized settings, progress, and favorite Azkar",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "settings": { "type": "object" },
+        "progress": { "type": "object" },
+        "favoriteAdhkar": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles containing progress, settings, and favorites"
+    },
+    "/users/{userId}/quranProgress/{surahNumber}": {
+      "schema": "QuranSurahProgress",
+      "description": "User progress in a surah"
+    },
+    "/users/{userId}/tasbeehGoals/{goalId}": {
+      "schema": "TasbeehGoal",
+      "description": "User custom goals for dhikr"
+    },
+    "/users/{userId}/backups/{backupId}": {
+      "schema": "Backup",
+      "description": "User specific backups"
+    },
+    "/community_posts/{postId}": {
+      "schema": "CommunityPost",
+      "description": "Public community shared content"
+    },
+    "/community_posts/{postId}/likes/{userId}": {
+      "schema": { "type": "object", "properties": { "at": { "type": "string", "format": "date-time" } } },
+      "description": "Unique likes per post"
+    },
+    "/stats/global": {
+      "schema": "GlobalStats",
+      "description": "Aggregate global stats"
+    }
+  }
+}

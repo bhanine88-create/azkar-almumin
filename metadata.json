@@ -1,0 +1,11 @@
+{
+  "name": "أذكار المؤمن azkar almumin",
+  "description": "The official and comprehensive version of the Azkar Al-Mu'min azkar almumin application. Holy Quran, Adhkar, and worship tracking. Supports full offline operation and native app experience.",
+  "requestFramePermissions": [
+    "geolocation",
+    "accelerometer",
+    "gyroscope",
+    "magnetometer"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

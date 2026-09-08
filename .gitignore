@@ -1,0 +1,11 @@
+dist/
+node_modules/
+*.local
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.ai_temp_scripts/
+android/
+ios/
