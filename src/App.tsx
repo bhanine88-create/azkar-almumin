@@ -15,7 +15,6 @@ import { SafeUnmount } from './components/SafeUnmount';
 import { cn } from './lib/utils';
 import { auth } from './firebase';
 const IndependentHadith = lazyRetry(() => import('./components/IndependentHadith'), 'IndependentHadith');
-const HadithAndSupplications = lazyRetry(() => import('./components/HadithAndSupplications'), 'HadithAndSupplications');
 const Settings = lazyRetry(() => import('./components/Settings'), 'Settings');
 const TermsOfUse = lazyRetry(() => import('./components/TermsOfUse'), 'TermsOfUse');
 const AdhkarHub = lazyRetry(() => import('./components/AdhkarHub'), 'AdhkarHub');
@@ -50,9 +49,7 @@ const HijriCalendar = lazyRetry(() => import('./components/HijriCalendar'), 'Hij
 const BelieverInsights = lazyRetry(() => import('./components/BelieverInsights'), 'BelieverInsights');
 const QuranTrackerScreen = lazyRetry(() => import('./components/QuranTrackerScreen'), 'QuranTrackerScreen');
 const ScholarSayings = lazyRetry(() => import('./components/ScholarSayings'), 'ScholarSayings');
-const ZakatCalculator = lazyRetry(() => import('./components/ZakatCalculator'), 'ZakatCalculator');
 const HadithQudsi = lazyRetry(() => import('./components/HadithQudsi'), 'HadithQudsi');
-const UserCard = lazyRetry(() => import('./components/UserCard'), 'UserCard');
 const Inspirations = lazyRetry(() => import('./components/Inspirations'), 'Inspirations');
 const IslamicStoriesList = lazyRetry(() => import('./components/IslamicStoriesList'), 'IslamicStoriesList');
 const IslamicStoryDetail = lazyRetry(() => import('./components/IslamicStoryDetail'), 'IslamicStoryDetail');
@@ -241,7 +238,6 @@ export default function App() {
         SurahDetail,
         Library,
         AudioLibraryHub,
-        HadithAndSupplications,
         Settings,
         NamesOfAllah,
         Prophet,
@@ -342,9 +338,7 @@ export default function App() {
                           <Route path="tafsir-audio" element={<SafeUnmount componentName="TafsirAudioHub"><TafsirAudioHub /></SafeUnmount>} />
                           <Route path="ruqyah-audio" element={<SafeUnmount componentName="RuqyahAudioHub"><RuqyahAudioHub /></SafeUnmount>} />
                           <Route path="library" element={<Library />} />
-                          <Route path="hadith-supplications" element={<Navigate to="/library" replace />} />
                           <Route path="hadith-qudsi" element={<HadithQudsi />} />
-                          <Route path="user-card" element={<Navigate to="/library" replace />} />
                           <Route path="auth" element={<AuthScreen />} />
                           <Route path="challenges" element={<ChallengesHub />} />
                           <Route path="dashboard" element={<SafeUnmount componentName="UserDashboard"><UserDashboard /></SafeUnmount>} />
@@ -361,7 +355,6 @@ export default function App() {
                           <Route path="contact" element={<ContactUs />} />
                           <Route path="legal" element={<TermsOfUse />} />
                           <Route path="scholar-sayings" element={<ScholarSayings />} />
-                          <Route path="zakat-calculator" element={<Navigate to="/library" replace />} />
                           <Route path="fasting-tracker" element={<FastingTracker />} />
                           <Route path="sunnah-hadith/:categoryId" element={<IndependentHadith />} />
                           <Route path="sunnah-hadith" element={<IndependentHadith />} />

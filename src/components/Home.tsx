@@ -35,7 +35,7 @@ export const Home: React.FC = () => {
     'heart_feelings': Heart,
     'khatma': Scroll,
     'hijri_calendar': Calendar,
-    'zakat_calculator': Scale,
+
     'adhkar_stats': BarChart3,
     'challenges': Award,
     'sadaqah': HandHeart
@@ -571,45 +571,7 @@ export const Home: React.FC = () => {
         </motion.div>
                   </motion.div>
                 );
-              case 'zakat_calculator':
-                return (
-                  <motion.div key={widget.id} className="col-span-1">
-                    {/* Modern Section: Zakat Calculator */}
-        <motion.div 
-          variants={{
-            hidden: { opacity: 0, y: 20 },
-            show: { opacity: 1, y: 0 }
-          }}
-          className="px-1"
-        >
-          <motion.button
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              triggerHaptic('light');
-              navigate('/zakat-calculator');
-            }}
-            className={cn("w-full relative block h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 shadow-xl shadow-amber-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
-          >
-            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
-            <motion.div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/20 rounded-full blur-2xl" />
-            
-            <motion.div className={cn("absolute inset-0 flex items-center justify-between px-6 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
-              <motion.div className={cn("flex flex-col", isRtl ? "text-right" : "text-left")}>
-                <motion.div className="flex items-center gap-2 mb-0.5">
-                  <Scale size={18} className="text-amber-100" />
-                  <h3 className="font-black text-xl drop-shadow-md">{t('zakat_calculator_title')}</h3>
-                </motion.div>
-                <p className="text-[10px] text-amber-100/80 font-bold uppercase tracking-widest">{t('zakat_calculator_subtitle')}</p>
-              </motion.div>
-              <motion.div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner group-hover:scale-110 group-hover:rotate-3 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
-                <Gem size={24} className="text-white drop-shadow-lg" />
-              </motion.div>
-            </motion.div>
-          </motion.button>
-        </motion.div>
-                  </motion.div>
-                );
+
               case 'adhkar_stats':
                 return (
                   <motion.div key={widget.id} className="col-span-1 md:col-span-2">
