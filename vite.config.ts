@@ -37,7 +37,6 @@ export default defineConfig(({ mode }) => {
           'logo-official-maskable-512.png',
           'QadasiRegular.ttf',
           'images/arabesque.png',
-          'images/islamic-art.png',
           'images/watermark_clean.jpg'
         ],
         devOptions: {
@@ -206,22 +205,6 @@ export default defineConfig(({ mode }) => {
               icons: [{ src: "/logo-192.png", sizes: "192x192", type: "image/png" }]
             }
           ],
-          screenshots: [
-            {
-              src: "/screenshot-mobile.png",
-              sizes: "720x1280",
-              type: "image/png",
-              form_factor: "narrow",
-              label: "شاشة الهاتف لتطبيق أذكار المؤمن"
-            },
-            {
-              src: "/screenshot-desktop.png",
-              sizes: "1280x720",
-              type: "image/png",
-              form_factor: "wide",
-              label: "واجهة الحاسوب واللوحي لتطبيق أذكار المؤمن"
-            }
-          ]
         },
         workbox: {
           cacheId: 'athkar-mumin-v5',

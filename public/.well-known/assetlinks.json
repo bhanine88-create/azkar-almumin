@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.azkaralmumin.app",
+      "sha256_cert_fingerprints": [
+        "8B:51:8A:20:57:48:9F:69:57:1E:98:EB:DE:F9:6E:AE:54:A6:19:60:F5:F7:0B:1D:70:6F:99:25:CE:44:85:3F"
+      ]
+    }
+  }
+]
