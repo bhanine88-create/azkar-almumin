@@ -405,6 +405,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const merged = { ...defaultSettings, ...parsed };
         
         // Force modern essential defaults (perfect integration setup) if upgrading to v23
+        const isUpgradingToV24 = !safeLocalStorageGetItem('believer_settings_v24_upgraded');
+        if (isUpgradingToV24) {
+          merged.notificationsEnabled = true;
+          merged.morningNotificationsEnabled = true;
+          merged.eveningNotificationsEnabled = true;
+          merged.prayerNotificationsEnabled = true;
+          merged.sunnahReminderEnabled = true;
+          merged.randomAdhkarEnabled = true;
+          merged.prayerNotificationSettings = { Fajr: true, Sunrise: false, Dhuhr: true, Asr: true, Maghrib: true, Isha: true };
+          safeLocalStorageSetItem('believer_settings_v24_upgraded', 'true');
+        }
+
         const isUpgradingToV23 = !safeLocalStorageGetItem('believer_settings_v23_upgraded');
         if (isUpgradingToV23) {
           merged.notificationsEnabled = true;

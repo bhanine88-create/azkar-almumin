@@ -1,4 +1,7 @@
+import { Capacitor } from '@capacitor/core';
 import { registerSW } from 'virtual:pwa-register';
+
+const LIVE_APP_URL = 'https://ais-pre-6lmcwdbxwli4qmb6fr6hbn-194075133835.europe-west3.run.app';
 
 // Store client session initial build time
 let currentBuildTime: number | null = null;
@@ -12,7 +15,12 @@ const isDevMode = import.meta.env.DEV;
 
 export async function checkServerVersion(): Promise<{ hasUpdate: boolean; version?: string; serverBuildTime?: number }> {
   try {
-    const res = await fetch(`/api/app-version?t=${Date.now()}`, {
+    const isLocalAPK = typeof window !== 'undefined' && Capacitor.isNativePlatform() && (window.location.hostname === 'localhost' || window.location.protocol === 'file:');
+    let fetchUrl = `/api/app-version?t=${Date.now()}`;
+    if (isLocalAPK) {
+       fetchUrl = `${LIVE_APP_URL}/api/app-version?t=${Date.now()}`;
+    }
+    const res = await fetch(fetchUrl, {
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
@@ -21,6 +29,10 @@ export async function checkServerVersion(): Promise<{ hasUpdate: boolean; versio
     if (!res.ok) return { hasUpdate: false };
     const data = await res.json();
     const serverBuild = Number(data.buildTime) || 0;
+
+    if (isLocalAPK) {
+        return { hasUpdate: true, version: data.version, serverBuildTime: serverBuild };
+    }
 
     if (currentBuildTime === null) {
       currentBuildTime = serverBuild;
@@ -43,6 +55,15 @@ export async function triggerImmediateUpdate(): Promise<void> {
   isRefreshing = true;
 
   console.log('[AutoUpdater] Applying instant update...');
+
+  if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+    const isLocalAPK = window.location.hostname === 'localhost' || window.location.protocol === 'file:';
+    if (isLocalAPK) {
+        localStorage.setItem('use_live_update', 'true');
+        window.location.href = LIVE_APP_URL;
+        return;
+    }
+  }
 
   // Unregister existing workers to force fresh installation if needed
   if ('serviceWorker' in navigator) {
@@ -110,11 +131,16 @@ export function initAutoUpdater() {
 
   // Handle service worker controller change (instant activation when new worker claims clients in production)
   if ('serviceWorker' in navigator) {
+    let initialController = navigator.serviceWorker.controller;
+    
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!isRefreshing) {
+      if (initialController && !isRefreshing) {
         isRefreshing = true;
         console.log('[AutoUpdater] Controller changed. Reloading immediately for instant update.');
         window.location.reload();
+      } else if (!initialController) {
+        initialController = navigator.serviceWorker.controller;
+        console.log('[AutoUpdater] Initial SW claimed client. No reload needed.');
       }
     });
 

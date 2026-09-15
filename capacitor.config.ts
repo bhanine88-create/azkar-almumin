@@ -4,6 +4,11 @@ const config: CapacitorConfig = {
   appId: 'com.athkar.believer',
   appName: 'أذكار المؤمن',
   webDir: 'dist',
+  server: {
+    allowNavigation: [
+      'ais-pre-6lmcwdbxwli4qmb6fr6hbn-194075133835.europe-west3.run.app'
+    ]
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,

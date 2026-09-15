@@ -257,12 +257,12 @@ export default function App() {
     if (typeof window !== 'undefined') {
       if ('requestIdleCallback' in window) {
         (window as any).requestIdleCallback(() => {
-          phase1Timer = setTimeout(runPreloadPhase1, 1500);
-          phase2Timer = setTimeout(runPreloadPhase2, 4500);
-        }, { timeout: 3000 });
+          phase1Timer = setTimeout(runPreloadPhase1, 500);
+          phase2Timer = setTimeout(runPreloadPhase2, 2500);
+        }, { timeout: 2000 });
       } else {
-        phase1Timer = setTimeout(runPreloadPhase1, 1200);
-        phase2Timer = setTimeout(runPreloadPhase2, 4000);
+        phase1Timer = setTimeout(runPreloadPhase1, 500);
+        phase2Timer = setTimeout(runPreloadPhase2, 2000);
       }
     }
 

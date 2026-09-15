@@ -395,6 +395,53 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
     ];
   }, [chartData, progress.quranProgress, aggregatedStats, isRtl, isViewingSample]);
 
+  // Weekly Comparison Data (Current Week vs Previous Week)
+  const weeklyComparisonData = useMemo(() => {
+    const daysMapAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const daysMapEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const comparison = [];
+    const getCompletedCount = (adhkarList: string[]) => {
+      const m = adhkarList.some(k => k.includes('morning') || k.includes('الصباح'));
+      const e = adhkarList.some(k => k.includes('evening') || k.includes('المساء'));
+      const s = adhkarList.some(k => k.includes('sleep') || k.includes('النوم'));
+      const w = adhkarList.some(k => k.includes('waking') || k.includes('الاستيقاظ'));
+      return (m ? 1 : 0) + (e ? 1 : 0) + (s ? 1 : 0) + (w ? 1 : 0);
+    };
+
+    // 7 days (0 to 6), 6 is 6 days ago, 0 is today
+    for (let i = 6; i >= 0; i--) {
+      const currentDay = new Date();
+      currentDay.setDate(currentDay.getDate() - i);
+      
+      const previousDay = new Date();
+      previousDay.setDate(previousDay.getDate() - (i + 7));
+      
+      const currentDayStr = currentDay.toISOString().split('T')[0];
+      const previousDayStr = previousDay.toISOString().split('T')[0];
+      
+      const currentStats = progress.dailyStats?.[currentDayStr] || { adhkar: [] };
+      const previousStats = progress.dailyStats?.[previousDayStr] || { adhkar: [] };
+      
+      const currCount = useSampleData 
+        ? Math.floor(Math.random() * 4) + 1 
+        : getCompletedCount(currentStats.adhkar || []);
+      const prevCount = useSampleData 
+        ? Math.floor(Math.random() * 4) + 1 
+        : getCompletedCount(previousStats.adhkar || []);
+      
+      const dayOfWeek = currentDay.getDay();
+      
+      comparison.push({
+        dayIndex: i,
+        dayName: isRtl ? daysMapAR[dayOfWeek] : daysMapEN[dayOfWeek],
+        currentWeek: currCount,
+        previousWeek: prevCount,
+      });
+    }
+    return comparison;
+  }, [progress.dailyStats, isRtl, useSampleData]);
+
   // Handler for Quick Logging Actions
   const handleQuickAddQuran = (pages: number) => {
     addQuranLog({ amount: pages, unit: 'page' });
@@ -732,6 +779,87 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                     />
                   )}
                 </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* WEEKLY COMPARISON CHART: Current Week vs Previous Week */}
+        {(focusMode === 'all' || focusMode === 'adhkar') && (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 md:p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <Activity size={18} className="text-blue-500" />
+                  <span>{isRtl ? 'تطور الأذكار المقروءة (مقارنة أسبوعية)' : 'Read Adhkar Evolution (Weekly Comparison)'}</span>
+                </h3>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {isRtl ? 'مقارنة إتمام جلسات الأذكار خلال هذا الأسبوع بالأسبوع الماضي' : 'Comparing Adhkar sessions completed this week vs last week'}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs font-bold">
+                <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                  <div className="w-3 h-3 rounded-md bg-blue-500" />
+                  <span>{isRtl ? 'هذا الأسبوع' : 'This Week'}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400">
+                  <div className="w-3 h-3 rounded-md bg-slate-300 dark:bg-slate-700" />
+                  <span>{isRtl ? 'الأسبوع الماضي' : 'Last Week'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-64 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyComparisonData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:stroke-slate-800" vertical={false} />
+                  <XAxis 
+                    dataKey="dayName" 
+                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 700 }} 
+                    axisLine={{ stroke: '#cbd5e1' }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    axisLine={false}
+                    tickLine={false}
+                    domain={[0, 4]}
+                    tickCount={5}
+                  />
+                  <Tooltip 
+                    formatter={(val: any, name: any) => [
+                      `${val} ${isRtl ? 'أوراد' : 'sessions'}`,
+                      name === 'currentWeek' ? (isRtl ? 'هذا الأسبوع' : 'This Week') : (isRtl ? 'الأسبوع الماضي' : 'Last Week')
+                    ]}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      borderColor: '#334155', 
+                      borderRadius: '1rem', 
+                      color: '#fff',
+                      fontSize: '12px',
+                      fontWeight: 'bold' 
+                    }} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="previousWeek" 
+                    name="previousWeek" 
+                    stroke="#94a3b8" 
+                    strokeWidth={2} 
+                    strokeDasharray="5 5" 
+                    dot={{ r: 3, fill: '#94a3b8' }} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="currentWeek" 
+                    name="currentWeek" 
+                    stroke="#3b82f6" 
+                    strokeWidth={4} 
+                    dot={{ r: 5, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} 
+                    activeDot={{ r: 7 }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>

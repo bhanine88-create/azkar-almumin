@@ -2855,7 +2855,7 @@ export const Settings: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-black/25 p-4 rounded-2xl border border-white/10">
                 <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">{t('developer')}</p>
-                <p className="text-xs font-black text-teal-300 tracking-[0.2em]" style={{ fontFamily: "'Orbitron', sans-serif" }}>Hanine Bouchta</p>
+                <p className="text-sm sm:text-base font-black text-teal-300 tracking-wider drop-shadow-sm" style={{ fontFamily: "'Righteous', 'Outfit', sans-serif" }}>Hanine Bouchta</p>
               </div>
               <div className="bg-black/25 p-4 rounded-2xl border border-white/10">
                 <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">{t('tech_label', 'التقنية')}</p>
@@ -2979,6 +2979,7 @@ export const Settings: React.FC = () => {
                  <button 
                    type="button"
                    aria-label={t('check_for_updates', 'التحقق من التحديثات')}
+                   onClick={handleCheckForUpdates}
                    disabled={isCheckingUpdate}
                    className="w-10 h-10 rounded-full bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 flex items-center justify-center backdrop-blur-sm border border-teal-500/30 transition-colors"
                  >
@@ -3176,7 +3177,7 @@ const DeveloperCard: React.FC = () => {
             <div className="pt-3 mt-3 border-t border-white/10 space-y-3">
               <div className="flex flex-col items-center gap-1">
                 <p className="text-xs text-white/50 uppercase tracking-[0.4em] font-black">{t('developer')}</p>
-                <p className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-400 to-teal-300 drop-shadow-sm tracking-[0.22em]" style={{ fontFamily: "'Orbitron', sans-serif" }}>Hanine Bouchta</p>
+                <p className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-400 to-teal-300 drop-shadow-md tracking-widest" style={{ fontFamily: "'Righteous', 'Outfit', sans-serif", letterSpacing: "2px" }}>Hanine Bouchta</p>
               </div>
               <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-bold text-center">
                 {t('developer_message', 'تم تطوير هذا التطبيق بحب وعناية ليكون رفيقك اليومي في ذكر الله. نسأل الله أن يتقبل منا ومنكم صالح الأعمال.')}

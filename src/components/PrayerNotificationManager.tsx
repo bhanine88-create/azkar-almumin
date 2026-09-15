@@ -36,7 +36,7 @@ export const PrayerNotificationManager: React.FC = () => {
     details?: string;
   } | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
-  const lastNotifiedRef = useRef<string | null>(null);
+  const lastNotifiedRef = useRef<Record<string, string>>({});
   const lastRandomTimestampRef = useRef<number>(Date.now());
 
   // 1. Initialize Capacitor notification channels and deep link navigation on mount
@@ -235,14 +235,15 @@ export const PrayerNotificationManager: React.FC = () => {
       
       const now = new Date(pY, pM - 1, pD, currentH, currentM, pS);
       const currentTimeStr = `${currentH.toString().padStart(2, '0')}:${currentM.toString().padStart(2, '0')}`;
+      const nowDateStr = `${pY}-${pM}-${pD} ${currentTimeStr}`;
 
       // 1. Prayer Notifications
       if (prayerTimes && settings.prayerNotificationsEnabled) {
         Object.entries(prayerTimes).forEach(([key, time]) => {
           if (PRAYER_NAMES[key] && settings.prayerNotificationSettings?.[key]) {
-            if (time === currentTimeStr && lastNotifiedRef.current !== key) {
+            if (time === currentTimeStr && lastNotifiedRef.current[key] !== nowDateStr) {
               triggerNotification(key, time as string);
-              lastNotifiedRef.current = key;
+              lastNotifiedRef.current[key] = nowDateStr;
             }
           }
         });
@@ -255,52 +256,35 @@ export const PrayerNotificationManager: React.FC = () => {
       const isEveningFinished = isCategoryFinished('evening', eveningItems);
 
       // 2. Morning Adhkar Primary Notification
-      if (settings.morningNotificationsEnabled && !isCategoryCompleted('morning') && !isMorningFinished && settings.morningAdhkarTime === currentTimeStr && lastNotifiedRef.current !== 'morning-adhkar') {
+      if (settings.morningNotificationsEnabled && !isCategoryCompleted('morning') && !isMorningFinished && settings.morningAdhkarTime === currentTimeStr && lastNotifiedRef.current['morning-adhkar'] !== nowDateStr) {
         triggerMorningNotification();
-        lastNotifiedRef.current = 'morning-adhkar';
+        lastNotifiedRef.current['morning-adhkar'] = nowDateStr;
       }
 
       // 3. Morning Adhkar Follow-up Notification (if unread)
       const morningEndTime = settings.morningAdhkarEndTime || '10:00';
-      if (settings.morningNotificationsEnabled && settings.morningAdhkarFollowupEnabled && !isCategoryCompleted('morning') && !isMorningFinished && morningEndTime === currentTimeStr && lastNotifiedRef.current !== 'morning-adhkar-followup') {
+      if (settings.morningNotificationsEnabled && settings.morningAdhkarFollowupEnabled && !isCategoryCompleted('morning') && !isMorningFinished && morningEndTime === currentTimeStr && lastNotifiedRef.current['morning-adhkar-followup'] !== nowDateStr) {
         triggerMorningFollowupNotification();
-        lastNotifiedRef.current = 'morning-adhkar-followup';
+        lastNotifiedRef.current['morning-adhkar-followup'] = nowDateStr;
       }
 
       // 4. Evening Adhkar Primary Notification
-      if (settings.eveningNotificationsEnabled && !isCategoryCompleted('evening') && !isEveningFinished && settings.eveningAdhkarTime === currentTimeStr && lastNotifiedRef.current !== 'evening-adhkar') {
+      if (settings.eveningNotificationsEnabled && !isCategoryCompleted('evening') && !isEveningFinished && settings.eveningAdhkarTime === currentTimeStr && lastNotifiedRef.current['evening-adhkar'] !== nowDateStr) {
         triggerEveningNotification();
-        lastNotifiedRef.current = 'evening-adhkar';
+        lastNotifiedRef.current['evening-adhkar'] = nowDateStr;
       }
 
       // 5. Evening Adhkar Follow-up Notification (if unread)
       const eveningEndTime = settings.eveningAdhkarEndTime || '22:00';
-      if (settings.eveningNotificationsEnabled && settings.eveningAdhkarFollowupEnabled && !isCategoryCompleted('evening') && !isEveningFinished && eveningEndTime === currentTimeStr && lastNotifiedRef.current !== 'evening-adhkar-followup') {
+      if (settings.eveningNotificationsEnabled && settings.eveningAdhkarFollowupEnabled && !isCategoryCompleted('evening') && !isEveningFinished && eveningEndTime === currentTimeStr && lastNotifiedRef.current['evening-adhkar-followup'] !== nowDateStr) {
         triggerEveningFollowupNotification();
-        lastNotifiedRef.current = 'evening-adhkar-followup';
+        lastNotifiedRef.current['evening-adhkar-followup'] = nowDateStr;
       }
 
       // 6. Sunnah Reminder Notification
-      if (settings.sunnahReminderEnabled && settings.sunnahReminderTime === currentTimeStr && lastNotifiedRef.current !== 'sunnah-reminder') {
+      if (settings.sunnahReminderEnabled && settings.sunnahReminderTime === currentTimeStr && lastNotifiedRef.current['sunnah-reminder'] !== nowDateStr) {
         triggerSunnahReminderNotification();
-        lastNotifiedRef.current = 'sunnah-reminder';
-      }
-
-      // Reset lastNotifiedRef when current time moves past the notification minute
-      if (lastNotifiedRef.current) {
-        if (lastNotifiedRef.current === 'morning-adhkar' && settings.morningAdhkarTime !== currentTimeStr) {
-          lastNotifiedRef.current = null;
-        } else if (lastNotifiedRef.current === 'morning-adhkar-followup' && morningEndTime !== currentTimeStr) {
-          lastNotifiedRef.current = null;
-        } else if (lastNotifiedRef.current === 'evening-adhkar' && settings.eveningAdhkarTime !== currentTimeStr) {
-          lastNotifiedRef.current = null;
-        } else if (lastNotifiedRef.current === 'evening-adhkar-followup' && eveningEndTime !== currentTimeStr) {
-          lastNotifiedRef.current = null;
-        } else if (lastNotifiedRef.current === 'sunnah-reminder' && settings.sunnahReminderTime !== currentTimeStr) {
-          lastNotifiedRef.current = null;
-        } else if (prayerTimes && prayerTimes[lastNotifiedRef.current] && prayerTimes[lastNotifiedRef.current] !== currentTimeStr) {
-          lastNotifiedRef.current = null;
-        }
+        lastNotifiedRef.current['sunnah-reminder'] = nowDateStr;
       }
 
       // 7. Custom Reminders Check
@@ -316,16 +300,16 @@ export const PrayerNotificationManager: React.FC = () => {
           if (reminder.interval && reminder.interval > 0) {
             const diff = nowTimeMinutes - startTimeMinutes;
             if (diff >= 0 && diff % reminder.interval === 0) {
-              const notificationKey = `${reminder.id}-${nowTimeMinutes}`;
-              if (lastNotifiedRef.current !== notificationKey) {
+              const notificationKey = `custom-${reminder.id}`;
+              if (lastNotifiedRef.current[notificationKey] !== nowDateStr) {
                 triggerCustomNotification(reminder);
-                lastNotifiedRef.current = notificationKey;
+                lastNotifiedRef.current[notificationKey] = nowDateStr;
               }
             }
           } else {
-            if (reminder.time === currentTimeStr && lastNotifiedRef.current !== reminder.id) {
+            if (reminder.time === currentTimeStr && lastNotifiedRef.current[`custom-${reminder.id}`] !== nowDateStr) {
               triggerCustomNotification(reminder);
-              lastNotifiedRef.current = reminder.id;
+              lastNotifiedRef.current[`custom-${reminder.id}`] = nowDateStr;
             }
           }
         }

@@ -453,6 +453,9 @@ export default defineConfig(({ mode }) => {
               if (id.includes('react-router-dom') || id.includes('@remix-run')) {
                 return 'vendor-router';
               }
+              if (id.includes('src/data/')) {
+                return 'data-chunk';
+              }
             }
           }
         }
