@@ -87,30 +87,12 @@ export const Home: React.FC = () => {
           <motion.div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-50 pointer-events-none" />
 
           {/* Immersive Background Elements */}
-          <motion.div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] rounded-2xl overflow-hidden" />
+          <motion.div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')] rounded-2xl overflow-hidden" />
           
-          <motion.div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-            <motion.div 
-              animate={{ 
-                scale: [1, 1.2, 1],
-                opacity: [0.15, 0.25, 0.15],
-                x: [0, 20, 0],
-                y: [0, -20, 0],
-              }}
-              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-10 -right-10 w-48 h-48 bg-white/30 rounded-full blur-[50px]" 
-            />
-            <motion.div 
-              animate={{ 
-                scale: [1, 1.3, 1],
-                opacity: [0.1, 0.2, 0.1],
-                x: [0, -30, 0],
-                y: [0, 30, 0],
-              }}
-              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-              className="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-400/30 rounded-full blur-[40px]" 
-            />
-          </motion.div>
+          <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/20 rounded-full blur-[50px] animate-pulse" />
+            <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-400/20 rounded-full blur-[40px] animate-pulse" />
+          </div>
           
           {/* Header Area: Status - Centered Day Name (No Capsule) */}
           <motion.div className="relative z-10 flex flex-col gap-1 translate-z-[30px] perspective-1000">
@@ -234,7 +216,7 @@ export const Home: React.FC = () => {
             }}
             className="w-full relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-800 p-3 flex items-center justify-between shadow-lg shadow-emerald-900/20 border border-emerald-400/30 cursor-pointer outline-none"
           >
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10 mix-blend-overlay"></div>
+            <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-10 mix-blend-overlay"></div>
             <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
             
             <div className="flex items-center gap-3 relative z-10">
@@ -288,7 +270,7 @@ export const Home: React.FC = () => {
             className="w-full relative block h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-amber-600 via-amber-700 to-yellow-900 shadow-xl shadow-amber-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
           >
             {/* Decorative Elements */}
-            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute -top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
             
             <motion.div className="absolute inset-0 flex items-center justify-between px-7 text-white">
@@ -328,7 +310,7 @@ export const Home: React.FC = () => {
             className={cn("w-full relative block h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-fuchsia-500 via-pink-600 to-rose-700 shadow-xl shadow-fuchsia-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
           >
             {/* Decorative Elements */}
-            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute -top-10 -left-10 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
             <motion.div className="absolute -bottom-10 -right-10 w-32 h-32 bg-fuchsia-400/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
             
@@ -418,7 +400,7 @@ export const Home: React.FC = () => {
             className="w-full relative block h-[84px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-900 shadow-xl shadow-teal-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
           >
             {/* Decorative Elements */}
-            <motion.div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
             <motion.div className="absolute top-0 left-0 w-24 h-24 bg-black/20 rounded-full blur-xl" />
 
@@ -449,7 +431,7 @@ export const Home: React.FC = () => {
             onClick={() => navigate('/names')}
             className="relative block h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-orange-400/20 shadow-xl shadow-orange-900/10 group bg-gradient-to-br from-orange-400 via-orange-600 to-red-800 dark:from-orange-800 dark:via-red-900 dark:to-red-950 cursor-pointer outline-none text-right"
           >
-            <motion.div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
             <motion.div className="absolute -top-10 -right-10 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
             
@@ -468,7 +450,7 @@ export const Home: React.FC = () => {
             onClick={() => navigate('/compass')}
             className="relative block h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-indigo-400/20 shadow-xl shadow-indigo-900/10 group bg-gradient-to-br from-indigo-600 via-blue-700 to-slate-900 dark:from-indigo-900 dark:via-indigo-950 dark:to-slate-950 cursor-pointer outline-none text-right"
           >
-            <motion.div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
             <motion.div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
             
@@ -516,7 +498,7 @@ export const Home: React.FC = () => {
             onClick={() => navigate('/khatma')}
             className="w-full relative block h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 shadow-xl shadow-indigo-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
           >
-            <motion.div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
             
             <motion.div className="absolute inset-0 flex items-center justify-between px-6 text-white">
@@ -552,7 +534,7 @@ export const Home: React.FC = () => {
             onClick={() => navigate('/hijri-calendar')}
             className={cn("w-full relative block h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-700 via-teal-800 to-emerald-950 shadow-xl shadow-emerald-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
           >
-            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <motion.div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
             
             <motion.div className={cn("absolute inset-0 flex items-center justify-between px-6 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
@@ -595,7 +577,7 @@ export const Home: React.FC = () => {
             isRtl ? "text-right" : "text-left"
           )}
         >
-          <motion.div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
+          <motion.div className="absolute inset-0 opacity-10 bg-[url('/images/arabesque.png')]" />
           <motion.div className={cn("flex items-center gap-3 relative z-10", isRtl ? "flex-row" : "flex-row-reverse")}>
             <motion.div className="w-12 h-12 bg-purple-500/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-md border border-purple-400/30 group-hover:scale-105 transition-transform duration-300">
               <BarChart3 size={24} className="text-purple-200 drop-shadow-md" />
@@ -635,7 +617,7 @@ export const Home: React.FC = () => {
           onClick={() => navigate('/challenges')}
           className={cn("w-full relative overflow-hidden h-[90px] rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-4 flex items-center justify-between border border-white/10 shadow-lg shadow-indigo-50/20 group transition-all outline-none", isRtl ? "text-right" : "text-left")}
         >
-          <motion.div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10 mix-blend-overlay" />
+          <motion.div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-10 mix-blend-overlay" />
           <motion.div className={cn("flex items-center gap-3 relative z-10", isRtl ? "flex-row" : "flex-row-reverse")}>
             <motion.div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg border border-white/30 group-hover:rotate-12 transition-transform duration-500">
               <Zap size={28} className="text-amber-300 fill-amber-300/30" />
@@ -672,7 +654,7 @@ export const Home: React.FC = () => {
         className="px-1"
       >
         <motion.div className="relative overflow-hidden rounded-3xl p-4 bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 border border-emerald-500/30 text-white shadow-xl group">
-          <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+          <motion.div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
           <motion.div className="absolute -top-12 -left-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
           
           <motion.div className="relative z-10 flex items-center justify-between gap-3">
@@ -722,4 +704,4 @@ export const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default React.memo(Home);

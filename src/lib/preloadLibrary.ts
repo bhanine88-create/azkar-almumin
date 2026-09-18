@@ -45,6 +45,8 @@ export function preloadLibraryRoutes() {
     import('../components/IslamicStoriesList').catch(() => {});
     import('../components/IslamicStoryDetail').catch(() => {});
     import('../components/Tasbih').catch(() => {});
+    import('../components/NamesOfAllah').catch(() => {});
+    import('../components/SadaqahJariyah').catch(() => {});
     
     // Also preload audio routes
     preloadAudioLibraryRoutes();

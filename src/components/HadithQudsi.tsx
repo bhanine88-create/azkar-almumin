@@ -1090,7 +1090,7 @@ export const HadithQudsi: React.FC = () => {
           >
             {/* Top Decorative Border Accent */}
             <div className="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-600" />
-            <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] pointer-events-none" />
+            <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] bg-[url('/images/arabesque.png')] pointer-events-none" />
 
             {/* Document Header Banner */}
             <div className="text-center pb-6 border-b border-amber-200/60 dark:border-slate-800 space-y-2">
@@ -1376,7 +1376,7 @@ export const HadithQudsi: React.FC = () => {
               >
                 {/* Top Decorative Banner Gradient */}
                 <div className="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-600" />
-                <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] pointer-events-none" />
+                <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] bg-[url('/images/arabesque.png')] pointer-events-none" />
 
                 <div className="p-3.5 sm:p-6 lg:p-7 space-y-5">
                   
@@ -2135,7 +2135,7 @@ export const HadithQudsi: React.FC = () => {
                   cardTheme === 'slate' && "bg-gradient-to-br from-slate-900 via-slate-950 to-black border-slate-700"
                 )}
               >
-                <div className="absolute inset-0 opacity-[0.08] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
+                <div className="absolute inset-0 opacity-[0.08] bg-[url('/images/arabesque.png')]" />
 
                 <div className="relative z-10 space-y-3">
                   <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold text-amber-300 border border-white/20">

@@ -8,12 +8,12 @@ import { useTranslation } from '../i18n';
 import { AppIcon } from './ui/AppIcon';
 import { PageSkeletonFallback } from './ui/PageSkeletonFallback';
 import { preloadLibraryRoutes } from '../lib/preloadLibrary';
-import { AppInfoModal } from './AppInfoModal';
-import { LanguageSelectorModal } from './LanguageSelectorModal';
+import { lazyRetry } from '../lib/lazyRetry';
+const AppInfoModal = lazyRetry(() => import('./AppInfoModal').then(m => ({ default: m.AppInfoModal })), 'AppInfoModal');
+const LanguageSelectorModal = lazyRetry(() => import('./LanguageSelectorModal').then(m => ({ default: m.LanguageSelectorModal })), 'LanguageSelectorModal');
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
 const GlobalAudioBar = lazyRetry(() => import('./GlobalAudioBar').then(m => ({ default: m.GlobalAudioBar })));
 const DownloadProgressWidget = lazyRetry(() => import('./DownloadProgressWidget').then(m => ({ default: m.DownloadProgressWidget })));
-import { lazyRetry } from '../lib/lazyRetry';
 import { auth } from '../firebase';
 import { SectionErrorBoundary } from './SectionErrorBoundary';
 import { playNotificationChimeSound } from '../lib/sounds';
@@ -146,9 +146,11 @@ export const Layout: React.FC = () => {
 
   const isWidePage = location.pathname.toLowerCase().includes('adhkar') || 
                      location.pathname.toLowerCase().includes('duas') ||
+                     location.pathname.toLowerCase().includes('names') ||
                      location.pathname.toLowerCase().includes('hadith') ||
                      location.pathname.toLowerCase().includes('hadith-supplications') ||
                      location.pathname.toLowerCase().includes('hadith-qudsi') ||
+                     location.pathname.toLowerCase().includes('insights') ||
                      location.pathname.toLowerCase().includes('quran') || 
                      location.pathname.toLowerCase().includes('surah') ||
                      location.pathname.toLowerCase().includes('page') ||
@@ -160,6 +162,7 @@ export const Layout: React.FC = () => {
                      window.location.hash.toLowerCase().includes('adhkar') || 
                      window.location.hash.toLowerCase().includes('quran') ||
                      window.location.hash.toLowerCase().includes('hadith') ||
+                     window.location.hash.toLowerCase().includes('insights') ||
                      window.location.hash.toLowerCase().includes('compass') ||
                      window.location.hash.toLowerCase().includes('user-card') ||
                      window.location.hash.toLowerCase().includes('tasbih') ||
@@ -167,6 +170,17 @@ export const Layout: React.FC = () => {
                      window.location.hash.toLowerCase().includes('zad');
 
   const isSurahPage = Boolean(location.pathname.match(/^\/(quran|surah)\/\d+/));
+  const isFullHeightPage = Boolean(
+    location.pathname.startsWith("/quran/") || 
+    location.pathname.startsWith("/surah/") || 
+    location.pathname.startsWith("/duas") ||
+    location.pathname.startsWith("/quran-audio") ||
+    location.pathname.startsWith("/audio-library") ||
+    location.pathname.startsWith("/lectures-audio") ||
+    location.pathname.startsWith("/tafsir-audio") ||
+    location.pathname.startsWith("/ruqyah-audio") ||
+    location.pathname.startsWith("/names")
+  );
 
   const hideBottomNav = false;
 
@@ -1085,7 +1099,7 @@ export const Layout: React.FC = () => {
             >
               {/* Header with Particle Effect */}
               <div className="relative h-32 flex items-center justify-center overflow-hidden shrink-0" style={{ background: settings.primaryColor }}>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10 mix-blend-overlay" />
+                <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-10 mix-blend-overlay" />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40" />
                 
                 {/* Close Button */}
@@ -1390,10 +1404,12 @@ export const Layout: React.FC = () => {
       </AnimatePresence>
 
       {/* Language Selector Modal */}
-      <LanguageSelectorModal 
-        isOpen={isLanguageModalOpen} 
-        onClose={() => setIsLanguageModalOpen(false)} 
-      />
+      <React.Suspense fallback={null}>
+        <LanguageSelectorModal 
+          isOpen={isLanguageModalOpen} 
+          onClose={() => setIsLanguageModalOpen(false)} 
+        />
+      </React.Suspense>
 
       {/* Sidebar Drawer Menu - القائمة الرئيسية */}
       <AnimatePresence>
@@ -1424,7 +1440,7 @@ export const Layout: React.FC = () => {
               {/* Pattern Background */}
               <div className={cn(
                 "absolute inset-0 opacity-[0.04] pointer-events-none z-0",
-                settings.sidebarTheme === 'glassy' ? "opacity-0" : "bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"
+                settings.sidebarTheme === 'glassy' ? "opacity-0" : "bg-[url('/images/arabesque.png')]"
               )} />
 
               {/* Drawer Header */}
@@ -1934,12 +1950,12 @@ export const Layout: React.FC = () => {
           ref={mainRef}
           className={cn(
           "flex-1 overflow-x-hidden relative z-0 hide-scrollbar momentum-scroll overscroll-contain scroll-pt-20 min-h-0",
-          (location.pathname.startsWith("/quran/") || location.pathname.startsWith("/surah/")) ? "overflow-y-hidden flex flex-col h-full" : "overflow-y-auto",
+          isFullHeightPage ? "overflow-y-hidden flex flex-col h-full" : "overflow-y-auto",
           isWidePage ? "p-0 w-full max-w-none" : "px-4 md:px-8 mx-auto w-full max-w-2xl md:max-w-4xl lg:max-w-5xl pt-3 md:pt-8 pb-10"
         )}>
           <div className={cn(
             "grid grid-cols-1 grid-rows-1 w-full relative",
-            (location.pathname.startsWith("/quran/") || location.pathname.startsWith("/surah/")) ? "h-full flex-1 items-stretch" : "min-h-full items-start"
+            isFullHeightPage ? "h-full flex-1 items-stretch" : "min-h-full items-start"
           )}>
             <React.Suspense fallback={<PageSkeletonFallback />}>
               <AnimatePresence mode="popLayout">
@@ -1954,7 +1970,7 @@ export const Layout: React.FC = () => {
                   }}
                   className={cn(
                     "w-full flex flex-col col-start-1 row-start-1 gpu-layer",
-                    (location.pathname.startsWith("/quran/") || location.pathname.startsWith("/surah/")) ? "h-full min-h-0" : "min-h-full"
+                    isFullHeightPage ? "h-full min-h-0" : "min-h-full"
                   )}
                 >
                   <SectionErrorBoundary>

@@ -163,7 +163,7 @@ export const Inspirations: React.FC = () => {
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-hidden">
       {/* Header Area */}
       <div className="relative bg-slate-900 pt-6 pb-20 px-6 shrink-0 rounded-b-3xl shadow-xl">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
         <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 blur-[100px] -mr-32 -mt-32 rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-600/10 blur-[100px] -ml-32 -mb-32 rounded-full pointer-events-none" />
 

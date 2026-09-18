@@ -155,7 +155,7 @@ export const IslamicStoriesList: React.FC = () => {
             className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-800 via-emerald-900 to-slate-950 text-white p-6 sm:p-8 shadow-xl shadow-emerald-950/10 border border-white/5 group"
           >
             {/* Ambient pattern overlay */}
-            <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
             
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">

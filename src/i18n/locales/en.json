@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "Spiritual Advice for your Heart",
   "feeling_suited_dhikr_title": "Recommended Dhikr for this state",
   "feeling_view_all_duas": "View all Duas & Verses",
-  "feeling_target_count": "Target count"
+  "feeling_target_count": "Target count",
+  "support_app_continuation": "Support App Continuation & Development",
+  "support_app_continuation_desc": "Your contribution supports ongoing charity (Sadaqah Jariyah) and feature development",
+  "support_developer_btn": "Support the Developer",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "Restore App Official & Default Settings",
+  "reset_official_settings_desc": "Resets all sections, features, and appearance to the official default state",
+  "confirm_reset_official_title": "Tap again to confirm official restoration",
+  "confirm_reset_official_desc": "All features, sections, and settings will be restored to approved official defaults",
+  "rate_and_share_app": "Rate & Share App",
+  "rate_share_modal_desc": "Your support and sharing of Believer Athkar helps reach Muslims worldwide as ongoing charity (Sadaqah Jariyah).",
+  "rate_share_how_rate": "How would you rate your experience with the app?",
+  "rate_share_submit": "Submit Review",
+  "rate_share_thank_you": "May Allah reward you for your gracious review!",
+  "rate_share_btn": "Share with Family & Friends",
+  "rate_copy_link_btn": "Copy App Link",
+  "rate_link_copied": "App link & message copied!"
 }

@@ -12,7 +12,9 @@ import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemov
 import { 
   syncAllLocalNotifications, 
   registerNotificationActionListener, 
-  initializeNotificationChannels 
+  initializeNotificationChannels,
+  checkLocalNotificationPermissions,
+  requestLocalNotificationPermissions
 } from '../services/localNotificationService';
 
 const PRAYER_NAMES: Record<string, string> = {
@@ -49,7 +51,65 @@ export const PrayerNotificationManager: React.FC = () => {
     });
   }, [navigate]);
 
-  // 2. Automatically sync OS background local notifications for upcoming 7 days
+  // 2. Guarantee Morning & Evening Adhkar notifications default state = true on initialization
+  useEffect(() => {
+    const initKey = 'believer_adhkar_notifs_initialized_v3';
+    const isInitDone = safeLocalStorageGetItem(initKey);
+
+    if (!isInitDone) {
+      updateSettings({
+        notificationsEnabled: true,
+        morningNotificationsEnabled: true,
+        eveningNotificationsEnabled: true,
+        prayerNotificationsEnabled: true,
+        morningAdhkarFollowupEnabled: true,
+        eveningAdhkarFollowupEnabled: true,
+      });
+      safeLocalStorageSetItem(initKey, 'true');
+    }
+  }, [updateSettings]);
+
+  // 3. Verification mechanism for required notification permissions on every app entry & focus
+  useEffect(() => {
+    const verifyAndCheckPermissions = async () => {
+      try {
+        await initializeNotificationChannels();
+        let perm = await checkLocalNotificationPermissions();
+
+        // If permission status is prompt or default, automatically request permission to keep notifications active
+        if (perm.display === 'prompt' || (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default')) {
+          perm = await requestLocalNotificationPermissions();
+        }
+
+        // If granted, immediately re-sync local OS notifications to guarantee background scheduling
+        if (perm.display === 'granted' || (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted')) {
+          await syncAllLocalNotifications(settings);
+        }
+      } catch (err) {
+        console.warn('[PrayerNotificationManager] Permission verification failed on app entry:', err);
+      }
+    };
+
+    // Run permission check on app entry / component mount
+    verifyAndCheckPermissions();
+
+    // Re-verify permissions and re-sync whenever user enters/returns to the app
+    const handleAppEntryFocus = () => {
+      if (document.visibilityState === 'visible') {
+        verifyAndCheckPermissions();
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleAppEntryFocus);
+    window.addEventListener('focus', handleAppEntryFocus);
+
+    return () => {
+      window.removeEventListener('visibilitychange', handleAppEntryFocus);
+      window.removeEventListener('focus', handleAppEntryFocus);
+    };
+  }, [settings]);
+
+  // 4. Automatically sync OS background local notifications for upcoming 7 days
   useEffect(() => {
     const timer = setTimeout(() => {
       syncAllLocalNotifications(settings).catch(err => {

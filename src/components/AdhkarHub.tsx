@@ -137,7 +137,7 @@ const AdhkarHub: React.FC = () => {
                         <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
                         
                         {/* Arabesque Pattern Overlay */}
-                        <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                        <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                         
                         {/* Glowing Border Line */}
                         <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
@@ -213,7 +213,7 @@ const AdhkarHub: React.FC = () => {
                         <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-teal-500/15 rounded-full blur-2xl pointer-events-none" />
                         
                         {/* Arabesque Pattern Overlay */}
-                        <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                        <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                         
                         {/* Glowing Border Line */}
                         <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
@@ -284,7 +284,7 @@ const AdhkarHub: React.FC = () => {
                       )}
                     >
                       <div className={cn("absolute inset-0 bg-gradient-to-br", item.color)} />
-                      <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                      <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                       
                       {/* Favorite Heart Button */}
                       <button

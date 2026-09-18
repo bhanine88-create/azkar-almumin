@@ -354,12 +354,12 @@ export const NamesOfAllah: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3 pb-8 select-none" dir="rtl">
+    <div className="flex flex-col h-full flex-1 overflow-hidden select-none w-full max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto pt-2 pb-0 px-2 sm:px-4" dir="rtl">
       
-      {/* 🌟 TOP HEADER CAPSULE (Modern & Smart Interactive Capsule) */}
+      {/* 🌟 TOP HEADER CAPSULE (Modern & Smart Interactive Capsule - Fixed at Top) */}
       <div 
         className={cn(
-          "bg-gradient-to-r p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl shadow-xl border sticky top-0 z-30 mx-1 transition-all duration-300 backdrop-blur-xl relative overflow-hidden",
+          "bg-gradient-to-r p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl shadow-xl border shrink-0 z-30 mx-1 mb-2.5 transition-all duration-300 backdrop-blur-xl relative overflow-hidden",
           activeTheme.gradient,
           activeTheme.borderColor,
           activeTheme.shadowColor
@@ -368,7 +368,7 @@ export const NamesOfAllah: React.FC = () => {
         {/* Subtle Arabesque Pattern Overlay */}
         <div 
           className="absolute inset-0 opacity-15 pointer-events-none" 
-          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }}
+          style={{ backgroundImage: "url('/images/arabesque.png')" }}
         />
 
         <div className="flex items-center justify-between relative z-10 gap-2">
@@ -488,8 +488,11 @@ export const NamesOfAllah: React.FC = () => {
         </div>
       </div>
 
-      {/* 🔍 Search Bar & Quick Stats */}
-      <div className="mx-1 flex items-center gap-2">
+      {/* 📜 SCROLLABLE CONTENT AREA */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-1 pb-16 space-y-3 min-h-0">
+
+        {/* 🔍 Search Bar & Quick Stats */}
+        <div className="mx-1 flex items-center gap-2">
         <div className="relative flex-1 group">
           <div className="absolute inset-y-0 right-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-amber-500 transition-colors">
             <Search size={18} />
@@ -544,7 +547,7 @@ export const NamesOfAllah: React.FC = () => {
           activeTheme.shadowColor
         )}
       >
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
         <h3 
           className={cn("text-2xl sm:text-3xl md:text-4xl font-black drop-shadow-md group-hover:scale-105 transition-transform duration-300", activeTheme.textColor)}
           style={{ 
@@ -595,7 +598,7 @@ export const NamesOfAllah: React.FC = () => {
                     )}
                   >
                     {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                    <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                     
                     {/* Top Card Bar: Number Badge + Action Icons */}
                     <div className="flex items-center justify-between relative z-10 mb-4">
@@ -875,7 +878,7 @@ export const NamesOfAllah: React.FC = () => {
                   )}
                 >
                   {/* Subtle Pattern */}
-                  <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                  <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                   
                   {/* Top: Star Favorite Icon if marked */}
                   {isFav && (
@@ -940,7 +943,7 @@ export const NamesOfAllah: React.FC = () => {
                   activeTheme.shadowColor
                 )}
               >
-                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                 
                 <div className="flex items-center justify-between relative z-10 mb-2">
                   <span className={cn("text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/10", activeTheme.badgeBg, activeTheme.textColor)}>
@@ -1055,7 +1058,7 @@ export const NamesOfAllah: React.FC = () => {
                   activeTheme.cardGradient,
                   activeTheme.borderColor
                 )}>
-                  <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                  <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                   
                   <div className="flex items-center justify-between relative z-10 mb-6">
                     <span className={cn("px-3 py-1 rounded-full text-xs font-mono font-black border", activeTheme.badgeBg, activeTheme.borderColor, activeTheme.textColor)}>
@@ -1148,7 +1151,7 @@ export const NamesOfAllah: React.FC = () => {
           activeTheme.shadowColor
         )}
       >
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
         
         <p 
           className={cn("text-base sm:text-lg md:text-xl leading-[1.8] text-center font-bold drop-shadow-sm group-hover:scale-[1.01] transition-transform duration-300", activeTheme.textColor)}
@@ -1175,6 +1178,7 @@ export const NamesOfAllah: React.FC = () => {
           <span>دعاء تفريج الهم بالأسماء الحسنى • اضغط لمعرفة فضله وأثره</span>
         </div>
       </motion.div>
+      </div>
 
       {/* ========================================================================= */}
       {/* ⚙️ MODERN SMART SETTINGS MODAL / SHEET (نافذة الإعدادات الشاملة) */}
@@ -1756,7 +1760,7 @@ export const NamesOfAllah: React.FC = () => {
                 dir="rtl"
               >
                 <div className={cn("h-32 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
-                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                   <button 
                     onClick={() => setShowVirtueModal(false)}
                     className="absolute top-3 left-3 w-8 h-8 bg-rose-500/90 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transition-all cursor-pointer shadow-md"
@@ -1819,7 +1823,7 @@ export const NamesOfAllah: React.FC = () => {
                 dir="rtl"
               >
                 <div className={cn("h-40 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
-                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                   
                   {/* Close button */}
                   <button 
@@ -1908,7 +1912,7 @@ export const NamesOfAllah: React.FC = () => {
                 dir="rtl"
               >
                 <div className={cn("h-36 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
-                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                   <button 
                     onClick={() => setShowDhikrModal(false)}
                     className="absolute top-3 left-3 w-8 h-8 bg-rose-500/90 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transition-all cursor-pointer shadow-md"
@@ -1959,7 +1963,7 @@ export const NamesOfAllah: React.FC = () => {
                 dir="rtl"
               >
                 <div className={cn("h-32 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
-                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                   <button 
                     onClick={() => setShowDuaModal(false)}
                     className="absolute top-3 left-3 w-8 h-8 bg-rose-500/90 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transition-all cursor-pointer shadow-md"

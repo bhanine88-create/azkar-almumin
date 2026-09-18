@@ -584,7 +584,7 @@ export function AudioLibraryHub() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 px-4 w-full max-w-lg mx-auto">
+    <div className="flex flex-col h-full flex-1 overflow-y-auto pb-24 px-4 w-full max-w-lg mx-auto">
       {/* Settings Panel */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
@@ -955,7 +955,7 @@ export function AudioLibraryHub() {
                      )}
                    >
                      {/* Background Arabesque Pattern */}
-                     <div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+                     <div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
                      <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 blur-3xl rounded-full pointer-events-none" />
 
                      {/* Main Section Icon Container */}

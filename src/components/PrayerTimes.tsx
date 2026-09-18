@@ -1072,7 +1072,7 @@ export const PrayerTimes: React.FC = () => {
             <div className="bg-gradient-to-l from-teal-900 via-teal-950 to-slate-900 text-white rounded-3xl p-5 shadow-lg border border-teal-800/20 relative overflow-hidden">
               <div 
                 className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none" 
-                style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} 
+                style={{ backgroundImage: "url('/images/arabesque.png')" }} 
               />
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="text-right space-y-1">

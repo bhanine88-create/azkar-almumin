@@ -2,7 +2,7 @@ import { BackButton } from './ui/BackButton';
 import React, { useState } from 'react';
 import {} from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sliders, Timer, Moon, Sun, FileText, Type, Palette, Bell, Shield, Info, ChevronRight, RefreshCw, Globe, Monitor, Languages, Share2, Code, User, ChevronDown, Mail, Heart, Sparkles, Plus, X, Calendar, Clock, Lightbulb, Send, CheckCircle2, SmilePlus, ArrowUpLeft, ArrowUp, ArrowUpRight, Maximize, ArrowDownLeft, ArrowDown, ArrowDownRight, MoveHorizontal, Layers, Maximize2, Zap, RotateCw, BookOpen, Volume2, ShieldCheck, Database, Activity, AlignRight, Download, Book, UserCircle, Gem, Fingerprint, Facebook, Twitter, Instagram, Star, Upload, LifeBuoy, Smartphone, UserX, KeyRound, Trash2 } from 'lucide-react';
+import { Sliders, Timer, Moon, Sun, FileText, Type, Palette, Bell, Shield, Info, ChevronRight, RefreshCw, Globe, Monitor, Languages, Share2, Code, User, ChevronDown, Mail, Heart, Sparkles, Plus, X, Calendar, Clock, Lightbulb, Send, CheckCircle2, SmilePlus, ArrowUpLeft, ArrowUp, ArrowUpRight, Maximize, ArrowDownLeft, ArrowDown, ArrowDownRight, MoveHorizontal, Layers, Maximize2, Zap, RotateCw, BookOpen, Volume2, ShieldCheck, Database, Activity, AlignRight, Download, Book, UserCircle, Gem, Fingerprint, Facebook, Twitter, Instagram, Star, Upload, LifeBuoy, Smartphone, UserX, KeyRound, Trash2, ExternalLink, Coffee } from 'lucide-react';
 import { BackupManager } from './BackupManager';
 import { AppIcon } from './ui/AppIcon';
 import { AccountDeletionModal } from './AccountDeletionModal';
@@ -34,7 +34,7 @@ import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear } from "../utils/storage";
 
 export const Settings: React.FC = () => {
-  const { progress, settings, updateSettings, resetAdhkar, cleanAdhkarData } = useAppContext();
+  const { progress, settings, updateSettings, resetAdhkar, cleanAdhkarData, resetSettings } = useAppContext();
   const { updateSpecificChallenge } = useChallengeTracker();
   const { t } = useTranslation(settings.appLanguage);
   const { 
@@ -325,6 +325,23 @@ export const Settings: React.FC = () => {
       if (timeout2Ref.current) clearTimeout(timeout2Ref.current);
     };
   }, []);
+
+  const [confirmResetOfficial, setConfirmResetOfficial] = useState(false);
+
+  const handleResetOfficial = () => {
+    if (!confirmResetOfficial) {
+      setConfirmResetOfficial(true);
+      setTimeout(() => setConfirmResetOfficial(false), 3500);
+      return;
+    }
+    resetSettings();
+    setReciter(7);
+    setTheme('light');
+    setConfirmResetOfficial(false);
+    setCleanupMessage('تمت استعادة كافة الإعدادات والميزات الرسمية الافتراضية للتطبيق بنجاح');
+    setCleanupIsError(false);
+    setTimeout(() => setCleanupMessage(null), 4000);
+  };
 
   const handleReset = () => {
     if (!confirmReset) {
@@ -1072,11 +1089,15 @@ export const Settings: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    await handleRequestLocalPerm();
                     if (hasNotif) {
-                      Notification.requestPermission().then(() => {
+                      try {
+                        await Notification.requestPermission();
                         updateSettings({ _triggerMorning: Date.now() });
-                      });
+                      } catch (e) {
+                        console.warn(e);
+                      }
                     }
                   }}
                   className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-xl shrink-0 transition-all active:scale-95 shadow-md shadow-amber-500/20"
@@ -1141,7 +1162,12 @@ export const Settings: React.FC = () => {
                 </button>
               </div>
               <button
-                onClick={() => updateSettings({ prayerNotificationsEnabled: !settings.prayerNotificationsEnabled })}
+                onClick={async () => {
+                  const newVal = !settings.prayerNotificationsEnabled;
+                  updateSettings({ prayerNotificationsEnabled: newVal });
+                  await syncAllLocalNotifications({ ...settings, prayerNotificationsEnabled: newVal });
+                  refreshLocalNotifStatus();
+                }}
                 className={cn(
                   "w-10 h-5 rounded-full transition-all relative p-0.5",
                   settings.prayerNotificationsEnabled ? "bg-emerald-500" : "bg-white/10"
@@ -1812,6 +1838,7 @@ export const Settings: React.FC = () => {
                {/* Add Custom Dhikr Input */}
                <div className="flex gap-2 mt-3.5">
                  <input 
+                   id="custom-random-dhikr-input"
                    type="text"
                    placeholder={t('add_custom_dhikr_input_placeholder', 'أضف ذكراً أو دعاءً خاصاً...')}
                    className="flex-1 bg-white/10 text-white text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl border border-white/15 focus:outline-none placeholder:text-white/40"
@@ -1839,7 +1866,8 @@ export const Settings: React.FC = () => {
                  />
                  <button 
                    onClick={(e) => {
-                     const input = (e.currentTarget.previousSibling as HTMLInputElement);
+                     const input = document.getElementById('custom-random-dhikr-input') as HTMLInputElement;
+                      if (!input) return;
                      const val = input.value.trim();
                      if (val) {
                        const safety = checkInputSafety(val);
@@ -2124,6 +2152,33 @@ export const Settings: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <ThreeDCard color="bg-slate-800" shadow="shadow-slate-900/30" icon={<Activity size={18} className="text-emerald-400" />} label={t('setting_tasbih', 'إعدادات التسبيح والأذكار')}>
                   <div className="space-y-4 pt-2">
+                    <div className="flex flex-col gap-2.5 bg-black/25 p-3.5 rounded-xl border border-white/10 mb-3">
+                      <div>
+                        <span className="text-xs sm:text-sm font-black text-white block">{t('adhkar_view_mode_title', 'طريقة عرض بطاقات الأذكار')}</span>
+                        <span className="text-[11px] text-white/70 font-bold block mt-0.5">{t('adhkar_view_mode_desc', 'عرض الأذكار متتالية تحت بعضها (افتراضي) أو بطاقة منفردة (وضع التركيز)')}</span>
+                      </div>
+                      <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 gap-1.5 mt-1">
+                        <button
+                          onClick={() => updateSettings({ adhkarViewMode: 'list' })}
+                          className={cn(
+                            "flex-1 py-2 rounded-lg text-xs sm:text-sm font-black transition-all",
+                            (settings.adhkarViewMode !== 'single') ? "bg-teal-500 text-white shadow-md font-black" : "text-white/70 hover:bg-white/10 hover:text-white"
+                          )}
+                        >
+                          {t('adhkar_view_mode_list', 'قائمة متتالية (افتراضي)')}
+                        </button>
+                        <button
+                          onClick={() => updateSettings({ adhkarViewMode: 'single' })}
+                          className={cn(
+                            "flex-1 py-2 rounded-lg text-xs sm:text-sm font-black transition-all",
+                            settings.adhkarViewMode === 'single' ? "bg-teal-500 text-white shadow-md font-black" : "text-white/70 hover:bg-white/10 hover:text-white"
+                          )}
+                        >
+                          {t('adhkar_view_mode_single', 'بطاقة منفردة')}
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-2.5 bg-black/25 p-3.5 rounded-xl border border-white/10 mb-3">
                       <div>
                         <span className="text-xs sm:text-sm font-black text-white block">{t('adhkar_category_display', 'طريقة عرض فئات الأذكار')}</span>
@@ -2828,6 +2883,34 @@ export const Settings: React.FC = () => {
           onClick={() => navigate('/contact')} 
         />
 
+        {/* Buy Me a Coffee Support Button */}
+        <a
+          href="https://www.buymeacoffee.com/bhanine88f"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex items-center justify-between p-4 bg-gradient-to-r from-[#052418] via-[#083828] to-[#0b4834] hover:from-[#072f20] hover:via-[#0a4431] hover:to-[#0e563e] text-white font-bold rounded-2xl shadow-md border-b-4 border-black/30 active:border-b-0 active:translate-y-1 transition-all overflow-hidden cursor-pointer border-t border-l border-r border-emerald-500/30"
+        >
+          <div className="flex items-center gap-2.5 z-10">
+            <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center shadow-inner border border-white/20 shrink-0">
+              <Coffee size={18} className="text-[#FFDD00]" />
+            </div>
+            <div className="text-right">
+              <span className="block font-black text-base tracking-tight drop-shadow-md text-white">
+                {t('support_app_continuation', 'ادعم استمرار وتطوير التطبيق')}
+              </span>
+              <span className="block text-xs text-[#FFDD00] font-bold tracking-tight mt-0.5 leading-snug drop-shadow-sm">
+                {t('support_app_continuation_desc', 'مساهمتك تساعد في استمرارية الصدقة الجارية وتطوير الميزات')}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-emerald-400/25 font-black text-emerald-100 shadow-sm z-10 shrink-0 group-hover:bg-black/50 transition-colors">
+            <span className="text-amber-300">{t('buy_me_a_coffee_btn', 'Buy Me a Coffee')}</span>
+            <ExternalLink size={13} className="text-emerald-300" />
+          </div>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-2xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/5 rounded-full -ml-8 -mb-8 blur-xl pointer-events-none" />
+        </a>
+
         {/* About App Card - Unified 3D */}
         <ThreeDCard color="bg-slate-800" shadow="shadow-slate-900/30" icon={<Info size={18} />} label={t('setting_about')}>
           <div className="space-y-5 text-right">
@@ -2853,9 +2936,12 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-black/25 p-4 rounded-2xl border border-white/10">
-                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">{t('developer')}</p>
-                <p className="text-sm sm:text-base font-black text-teal-300 tracking-wider drop-shadow-sm" style={{ fontFamily: "'Righteous', 'Outfit', sans-serif" }}>Hanine Bouchta</p>
+              <div className="bg-black/25 p-4 rounded-2xl border border-white/10 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <p className="text-[10px] font-black text-emerald-400/60 uppercase tracking-widest mb-1 relative z-10">{t('developer')}</p>
+                <div className="relative z-10">
+                  <p className="text-sm sm:text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-teal-300 to-emerald-200 drop-shadow-sm tracking-widest" style={{ fontFamily: "'Outfit', 'Montserrat', system-ui, sans-serif" }}>Bouchta Hanine</p>
+                </div>
               </div>
               <div className="bg-black/25 p-4 rounded-2xl border border-white/10">
                 <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">{t('tech_label', 'التقنية')}</p>
@@ -2893,6 +2979,32 @@ export const Settings: React.FC = () => {
               {cleanupMessage}
             </div>
           )}
+
+          <button
+            onClick={handleResetOfficial}
+            className={`relative w-full flex items-center justify-between p-4 rounded-2xl text-white overflow-hidden shadow-[0_4px_0_0_rgba(15,23,42,1)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-[0_0px_0_0_rgba(15,23,42,1)] transition-all border ${
+              confirmResetOfficial ? 'bg-amber-600 border-amber-400' : 'bg-gradient-to-r from-emerald-800 to-teal-900 border-emerald-500/30'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/15">
+                <CheckCircle2 size={20} className={confirmResetOfficial ? 'text-white' : 'text-emerald-300'} />
+              </div>
+              <div className="text-right">
+                <div className="font-black text-xs sm:text-sm text-white">
+                  {confirmResetOfficial 
+                    ? t('confirm_reset_official_title', 'اضغط مرة أخرى لتأكيد الاستعادة الرسمية') 
+                    : t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}
+                </div>
+                <div className="text-[11px] text-emerald-200/80 font-medium">
+                  {confirmResetOfficial 
+                    ? t('confirm_reset_official_desc', 'سيتم ضبط الميزات والأقسام والإعدادات وفق الضبط الرسمي المعتمد') 
+                    : t('reset_official_settings_desc', 'يعيد ضبط كافة الأقسام والميزات والمظهر للوضع الرسمي الافتراضي')}
+                </div>
+              </div>
+            </div>
+            <RotateCw size={18} className={`text-white/80 shrink-0 ${confirmResetOfficial ? 'animate-spin' : ''}`} />
+          </button>
 
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -3175,19 +3287,34 @@ const DeveloperCard: React.FC = () => {
             className="relative z-10 overflow-hidden"
           >
             <div className="pt-3 mt-3 border-t border-white/10 space-y-3">
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xs text-white/50 uppercase tracking-[0.4em] font-black">{t('developer')}</p>
-                <p className="text-base sm:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-400 to-teal-300 drop-shadow-md tracking-widest" style={{ fontFamily: "'Righteous', 'Outfit', sans-serif", letterSpacing: "2px" }}>Hanine Bouchta</p>
+              <div className="flex flex-col items-center gap-2 py-2">
+                <div className="px-3 py-1 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/20 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.05)]">
+                  <p className="text-[9px] sm:text-[10px] text-emerald-300/80 uppercase tracking-[0.3em] font-black">{t('developer')}</p>
+                </div>
+                <div className="relative group cursor-default">
+                  <div className="absolute -inset-3 bg-gradient-to-r from-emerald-400/20 via-teal-300/20 to-emerald-400/20 blur-xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  <p className="relative text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-100 via-teal-200 to-emerald-100 drop-shadow-[0_2px_10px_rgba(20,184,166,0.3)]" style={{ fontFamily: "'Outfit', 'Montserrat', system-ui, sans-serif", letterSpacing: "2px" }}>Bouchta Hanine</p>
+                </div>
               </div>
               <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-bold text-center">
                 {t('developer_message', 'تم تطوير هذا التطبيق بحب وعناية ليكون رفيقك اليومي في ذكر الله. نسأل الله أن يتقبل منا ومنكم صالح الأعمال.')}
               </p>
               
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
                 <button onClick={(e) => { e.stopPropagation(); navigate('/contact'); }} className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 transition-colors rounded-xl text-xs sm:text-sm font-black text-emerald-300 active:scale-95 shadow-sm cursor-pointer">
                   <Mail size={16} />
                   {t('contact_support_page_btn', 'صفحة اتصل بنا والدعم الفني')}
                 </button>
+                <a 
+                  href="https://www.buymeacoffee.com/bhanine88f" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95 cursor-pointer border border-amber-400/30"
+                >
+                  <Coffee size={16} className="text-amber-100" strokeWidth={2.4} />
+                  <span>{t('support_developer_btn', 'ادعم المطور')}</span>
+                </a>
               </div>
             </div>
           </motion.div>

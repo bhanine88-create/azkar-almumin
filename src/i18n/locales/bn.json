@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "আপনার অন্তরের জন্য আত্মিক উপদেশ",
   "feeling_suited_dhikr_title": "এই অবস্থার জন্য উপযুক্ত জিকির",
   "feeling_view_all_duas": "সমস্ত দোয়া ও আয়াত দেখুন",
-  "feeling_target_count": "নির্দিষ্ট সংখ্যা"
+  "feeling_target_count": "নির্দিষ্ট সংখ্যা",
+  "support_app_continuation": "অ্যাপের ধারাবাহিকতা ও উন্নয়নে সহায়তা করুন",
+  "support_app_continuation_desc": "আপনার অবদান সদকায়ে জারিয়ার ধারাবাহিকতা ও নতুন ফিচার তৈরিতে সহায়তা করে",
+  "support_developer_btn": "ডেভেলপারকে সমর্থন করুন",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "অ্যাপের অফিসিয়াল ও ডিফল্ট সেটিংস পুনরুদ্ধার করুন",
+  "reset_official_settings_desc": "সমস্ত বিভাগ, বৈশিষ্ট্য ও রূপরেখা অনুমোদিত অফিসিয়াল ডিফল্ট অবস্থায় ফিরিয়ে আনে",
+  "confirm_reset_official_title": "অফিসিয়াল পুনরুদ্ধার নিশ্চিত করতে আবার চাপুন",
+  "confirm_reset_official_desc": "সমস্ত ফিচার ও সেটিংস অফিসিয়াল অনুমোদিত ডিফল্ট হিসেবে সেট করা হবে",
+  "rate_and_share_app": "অ্যাপ মূল্যায়ন ও শেয়ার করুন",
+  "rate_share_modal_desc": "অ্যাপটি সমর্থন ও শেয়ার করা বিশ্বব্যাপী মুসলমানদের জন্য একটি সদকায়ে জারিয়া।",
+  "rate_share_how_rate": "অ্যাপটি ব্যবহারের অভিজ্ঞতা কেমন ছিল?",
+  "rate_share_submit": "মূল্যায়ন জমা দিন",
+  "rate_share_thank_you": "আপনার সুন্দর পর্যালোচনার জন্য আল্লাহ আপনাকে উত্তম প্রতিদান দিন!",
+  "rate_share_btn": "পরিবার ও বন্ধুদের সাথে শেয়ার করুন",
+  "rate_copy_link_btn": "অ্যাপ লিংক কপি করুন",
+  "rate_link_copied": "অ্যাপের লিংক ও বার্তা কপি করা হয়েছে!"
 }

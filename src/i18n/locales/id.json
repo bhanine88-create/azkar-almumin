@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "Nasihat spiritual untuk hatimu",
   "feeling_suited_dhikr_title": "Zikir yang cocok untuk keadaan ini",
   "feeling_view_all_duas": "Lihat semua doa dan ayat",
-  "feeling_target_count": "Jumlah target"
+  "feeling_target_count": "Jumlah target",
+  "support_app_continuation": "Dukung Kelangsungan & Pengembangan Aplikasi",
+  "support_app_continuation_desc": "Kontribusi Anda membantu kelangsungan sedekah jariyah dan pengembangan fitur",
+  "support_developer_btn": "Dukung Pengembang",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "Pulihkan Pengaturan Resmi & Default Aplikasi",
+  "reset_official_settings_desc": "Mengembalikan semua bagian, fitur, dan tampilan ke kondisi resmi default",
+  "confirm_reset_official_title": "Ketuk lagi untuk mengonfirmasi pemulihan resmi",
+  "confirm_reset_official_desc": "Semua fitur dan pengaturan akan diatur ulang sesuai standar resmi yang disetujui",
+  "rate_and_share_app": "Beri Nilai & Bagikan Aplikasi",
+  "rate_share_modal_desc": "Dukungan dan penyebaran aplikasi Anda adalah sedekah jariyah bagi umat Islam di seluruh dunia.",
+  "rate_share_how_rate": "Bagaimana Anda menilai pengalaman menggunakan aplikasi ini?",
+  "rate_share_submit": "Kirim Penilaian",
+  "rate_share_thank_you": "Semoga Allah membalas kebaikan atas ulasan baik Anda!",
+  "rate_share_btn": "Bagikan ke Keluarga & Teman",
+  "rate_copy_link_btn": "Salin Tautan Aplikasi",
+  "rate_link_copied": "Tautan dan pesan aplikasi berhasil disalin!"
 }

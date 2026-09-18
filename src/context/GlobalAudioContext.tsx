@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { RECITERS } from '../reciters';
 import { SURAH_NAMES } from '../utils/quranUtils';
-import { SCHOLARS } from '../data/lectures';
-import { TAFSIR_SCHOLARS } from '../data/tafsir';
 import { audioCacheService } from '../services/audioCacheService';
 import { lectureCacheService } from '../services/lectureCacheService';
 import { getSurahAudioUrl } from '../services/quranAudioUrlService';
@@ -525,31 +523,35 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const nextIndex = (currentIndex + 1) % available.length;
       playSurahByNumber(available[nextIndex], track);
     } else if (track.type === 'lecture') {
-      const scholarId = track.scholarId || SCHOLARS.find(s => s.series.some(ser => ser.lectures.some(l => l.id === track.id)))?.id;
-      if (!scholarId) return;
-      const scholar = SCHOLARS.find(s => s.id === scholarId);
-      if (!scholar) return;
-      const allLectures = scholar.series.flatMap(s => s.lectures);
-      const currentIndex = allLectures.findIndex(l => l.id === track.id);
-      if (currentIndex === -1) return;
-      const nextIndex = (currentIndex + 1) % allLectures.length;
-      const nextLecture = allLectures[nextIndex];
-      if (nextLecture) {
-        playLectureTrackContext(nextLecture, scholar);
-      }
+      import('../data/lectures').then(({ SCHOLARS }) => {
+        const scholarId = track.scholarId || SCHOLARS.find(s => s.series.some(ser => ser.lectures.some(l => l.id === track.id)))?.id;
+        if (!scholarId) return;
+        const scholar = SCHOLARS.find(s => s.id === scholarId);
+        if (!scholar) return;
+        const allLectures = scholar.series.flatMap(s => s.lectures);
+        const currentIndex = allLectures.findIndex(l => l.id === track.id);
+        if (currentIndex === -1) return;
+        const nextIndex = (currentIndex + 1) % allLectures.length;
+        const nextLecture = allLectures[nextIndex];
+        if (nextLecture) {
+          playLectureTrackContext(nextLecture, scholar);
+        }
+      }).catch(err => console.error('Error loading lectures data for next track', err));
     } else if (track.type === 'tafsir') {
-      const scholarId = track.scholarId || TAFSIR_SCHOLARS.find(s => s.surahs.some(sur => sur.tracks.some(t => t.id === track.id)))?.id;
-      if (!scholarId) return;
-      const scholar = TAFSIR_SCHOLARS.find(s => s.id === scholarId);
-      if (!scholar) return;
-      const allTracks = scholar.surahs.flatMap(s => s.tracks);
-      const currentIndex = allTracks.findIndex(t => t.id === track.id);
-      if (currentIndex === -1) return;
-      const nextIndex = (currentIndex + 1) % allTracks.length;
-      const nextTrack = allTracks[nextIndex];
-      if (nextTrack) {
-        playTafsirTrackContext(nextTrack, scholar);
-      }
+      import('../data/tafsir').then(({ TAFSIR_SCHOLARS }) => {
+        const scholarId = track.scholarId || TAFSIR_SCHOLARS.find(s => s.surahs.some(sur => sur.tracks.some(t => t.id === track.id)))?.id;
+        if (!scholarId) return;
+        const scholar = TAFSIR_SCHOLARS.find(s => s.id === scholarId);
+        if (!scholar) return;
+        const allTracks = scholar.surahs.flatMap(s => s.tracks);
+        const currentIndex = allTracks.findIndex(t => t.id === track.id);
+        if (currentIndex === -1) return;
+        const nextIndex = (currentIndex + 1) % allTracks.length;
+        const nextTrack = allTracks[nextIndex];
+        if (nextTrack) {
+          playTafsirTrackContext(nextTrack, scholar);
+        }
+      }).catch(err => console.error('Error loading tafsir data for next track', err));
     }
   };
 
@@ -574,31 +576,35 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const prevIndex = (currentIndex - 1 + available.length) % available.length;
       playSurahByNumber(available[prevIndex], track);
     } else if (track.type === 'lecture') {
-      const scholarId = track.scholarId || SCHOLARS.find(s => s.series.some(ser => ser.lectures.some(l => l.id === track.id)))?.id;
-      if (!scholarId) return;
-      const scholar = SCHOLARS.find(s => s.id === scholarId);
-      if (!scholar) return;
-      const allLectures = scholar.series.flatMap(s => s.lectures);
-      const currentIndex = allLectures.findIndex(l => l.id === track.id);
-      if (currentIndex === -1) return;
-      const prevIndex = (currentIndex - 1 + allLectures.length) % allLectures.length;
-      const prevLecture = allLectures[prevIndex];
-      if (prevLecture) {
-        playLectureTrackContext(prevLecture, scholar);
-      }
+      import('../data/lectures').then(({ SCHOLARS }) => {
+        const scholarId = track.scholarId || SCHOLARS.find(s => s.series.some(ser => ser.lectures.some(l => l.id === track.id)))?.id;
+        if (!scholarId) return;
+        const scholar = SCHOLARS.find(s => s.id === scholarId);
+        if (!scholar) return;
+        const allLectures = scholar.series.flatMap(s => s.lectures);
+        const currentIndex = allLectures.findIndex(l => l.id === track.id);
+        if (currentIndex === -1) return;
+        const prevIndex = (currentIndex - 1 + allLectures.length) % allLectures.length;
+        const prevLecture = allLectures[prevIndex];
+        if (prevLecture) {
+          playLectureTrackContext(prevLecture, scholar);
+        }
+      }).catch(err => console.error('Error loading lectures data for prev track', err));
     } else if (track.type === 'tafsir') {
-      const scholarId = track.scholarId || TAFSIR_SCHOLARS.find(s => s.surahs.some(sur => sur.tracks.some(t => t.id === track.id)))?.id;
-      if (!scholarId) return;
-      const scholar = TAFSIR_SCHOLARS.find(s => s.id === scholarId);
-      if (!scholar) return;
-      const allTracks = scholar.surahs.flatMap(s => s.tracks);
-      const currentIndex = allTracks.findIndex(t => t.id === track.id);
-      if (currentIndex === -1) return;
-      const prevIndex = (currentIndex - 1 + allTracks.length) % allTracks.length;
-      const prevTrack = allTracks[prevIndex];
-      if (prevTrack) {
-        playTafsirTrackContext(prevTrack, scholar);
-      }
+      import('../data/tafsir').then(({ TAFSIR_SCHOLARS }) => {
+        const scholarId = track.scholarId || TAFSIR_SCHOLARS.find(s => s.surahs.some(sur => sur.tracks.some(t => t.id === track.id)))?.id;
+        if (!scholarId) return;
+        const scholar = TAFSIR_SCHOLARS.find(s => s.id === scholarId);
+        if (!scholar) return;
+        const allTracks = scholar.surahs.flatMap(s => s.tracks);
+        const currentIndex = allTracks.findIndex(t => t.id === track.id);
+        if (currentIndex === -1) return;
+        const prevIndex = (currentIndex - 1 + allTracks.length) % allTracks.length;
+        const prevTrack = allTracks[prevIndex];
+        if (prevTrack) {
+          playTafsirTrackContext(prevTrack, scholar);
+        }
+      }).catch(err => console.error('Error loading tafsir data for prev track', err));
     }
   };
 

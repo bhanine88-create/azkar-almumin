@@ -29,6 +29,8 @@ import {
   SlidersHorizontal,
   Layers,
   Square,
+  LayoutGrid,
+  Magnet,
   X
 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
@@ -149,7 +151,8 @@ export const IndependentHadith: React.FC = () => {
   const { settings, updateSettings } = useAppContext();
   const { t } = useTranslation(settings?.appLanguage);
   const { navigate, goBack } = useSmartNavigation();
-  const { categoryId } = useParams();
+  const { categoryId: rawCategoryId } = useParams();
+  const categoryId = rawCategoryId || 'daily';
   const { updateSpecificChallenge } = useChallengeTracker();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [showEmpty, setShowEmpty] = useState(false);
@@ -208,10 +211,17 @@ export const IndependentHadith: React.FC = () => {
     return saved !== 'false';
   });
 
-  const [readingMode, setReadingMode] = useState<'scroll' | 'focus'>(() => {
+  const [readingMode, setReadingMode] = useState<'grid' | 'scroll' | 'focus'>(() => {
     if (settings.hadithViewMode === 'single') return 'focus';
-    if (settings.hadithViewMode === 'list') return 'scroll';
-    return (safeLocalStorageGetItem('hadith-reading-mode') as 'scroll' | 'focus') || 'focus';
+    if (settings.hadithViewMode === 'list') return 'grid';
+    const saved = safeLocalStorageGetItem('hadith-reading-mode');
+    if (saved === 'grid' || saved === 'scroll' || saved === 'focus') return saved as any;
+    return 'grid';
+  });
+
+  const [snapScrolling, setSnapScrolling] = useState<boolean>(() => {
+    const saved = safeLocalStorageGetItem('hadith-snap-scroll');
+    return saved !== 'false';
   });
 
   const [focusIndex, setFocusIndex] = useState<number>(0);
@@ -233,7 +243,7 @@ export const IndependentHadith: React.FC = () => {
     });
   };
 
-  const handleUpdateReadingMode = (mode: 'scroll' | 'focus') => {
+  const handleUpdateReadingMode = (mode: 'grid' | 'scroll' | 'focus') => {
     setReadingMode(mode);
     safeLocalStorageSetItem('hadith-reading-mode', mode);
     updateSettings({ hadithViewMode: mode === 'focus' ? 'single' : 'list' });
@@ -514,7 +524,7 @@ export const IndependentHadith: React.FC = () => {
   const currentTheme = themeStyles[activeThemeKey] || themeStyles['blue'];
 
   return (
-    <div className="relative min-h-screen pb-4">
+    <div className="relative min-h-screen pb-32 sm:pb-36">
       {/* Background Tint - Fixed across entire page */}
       <div className={cn(
         "fixed inset-0 -z-30 transition-colors duration-1000 opacity-[0.03] dark:opacity-[0.07]",
@@ -533,45 +543,46 @@ export const IndependentHadith: React.FC = () => {
         )} />
       </div>
 
-      <div className="relative z-10 space-y-4">
-        {/* Header Container - Fixed Color identity */}
-        <div 
-          className={cn(
-            "relative overflow-hidden rounded-2xl p-5 mb-4 shadow-2xl transition-all duration-300",
-            "bg-gradient-to-br", currentTheme.gradient
-          )}
-        >
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
-          
-          <div className="relative z-10 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <BackButton fallbackPath="/library" />
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 hidden sm:flex">
-                  <BookOpen className="text-white drop-shadow-md" size={20} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-tight drop-shadow-md">{data.title}</h2>
-                  <p className="text-xs font-bold text-white/80 uppercase tracking-widest mt-1">{data.subtitle}</p>
+      <div className="relative z-10 space-y-4 px-3 sm:px-5 md:px-6 max-w-5xl mx-auto">
+        {/* Sticky Header Container - Title remains fixed when scrolling or dragging cards */}
+        <div className="sticky top-0 z-40 pt-1 sm:pt-2 pb-1 bg-white/80 dark:bg-slate-900/85 backdrop-blur-xl transition-all duration-300">
+          <div 
+            className={cn(
+              "relative overflow-hidden rounded-2xl p-3.5 sm:p-5 shadow-xl transition-all duration-300 border border-white/20",
+              "bg-gradient-to-br", currentTheme.gradient
+            )}
+          >
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
+            
+            <div className="relative z-10 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <BackButton fallbackPath="/library" />
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 hidden sm:flex">
+                    <BookOpen className="text-white drop-shadow-md" size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">{data.title}</h2>
+                    <p className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-widest mt-0.5">{data.subtitle}</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className={cn(
-                "p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center",
-                showSettings 
-                  ? "bg-white/20 border-white/30 text-white" 
-                  : "bg-white/10 border-white/10 text-white/90 hover:bg-white/20"
-              )}
-              title={t('customize_hadith_font', 'تخصيص شكل وحجم الخط الشريف')}
-            >
-              <Settings2 size={18} className={cn("transition-transform duration-300", showSettings && "rotate-45")} />
-            </button>
-          </div>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className={cn(
+                  "p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center",
+                  showSettings 
+                    ? "bg-white/20 border-white/30 text-white" 
+                    : "bg-white/10 border-white/10 text-white/90 hover:bg-white/20"
+                )}
+                title={t('customize_hadith_font', 'تخصيص شكل وحجم الخط الشريف')}
+              >
+                <Settings2 size={18} className={cn("transition-transform duration-300", showSettings && "rotate-45")} />
+              </button>
+            </div>
 
           {/* Collapsible settings workspace */}
           <AnimatePresence>
@@ -717,7 +728,34 @@ export const IndependentHadith: React.FC = () => {
                         <FileText size={14} className="text-amber-300" />
                         {t('hadith_display_focus_mode', 'طريقة عرض الأحاديث والتركيز')}
                       </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic('light');
+                            handleUpdateReadingMode('grid');
+                          }}
+                          className={cn(
+                            "p-3 rounded-2xl border text-right transition-all cursor-pointer flex flex-col gap-1 select-none relative overflow-hidden",
+                            readingMode === 'grid' 
+                              ? "bg-white text-slate-900 border-amber-400 shadow-lg scale-[1.01]" 
+                              : "bg-black/25 text-white/90 hover:bg-black/40 border-white/10"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-xs font-black flex items-center gap-1.5", readingMode === 'grid' ? "text-slate-900" : "text-white")}>
+                              <LayoutGrid size={15} className={readingMode === 'grid' ? "text-amber-600" : "text-amber-300"} />
+                              {t('grid_cards_mode', 'شبكة بطاقات')}
+                            </span>
+                            {readingMode === 'grid' && (
+                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                            )}
+                          </div>
+                          <span className={cn("text-[10px] font-bold leading-tight", readingMode === 'grid' ? "text-slate-600" : "text-white/60")}>
+                            {t('grid_cards_desc', 'عرض بطاقات متناسقة')}
+                          </span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => {
@@ -725,7 +763,7 @@ export const IndependentHadith: React.FC = () => {
                             handleUpdateReadingMode('scroll');
                           }}
                           className={cn(
-                            "p-3.5 rounded-2xl border text-right transition-all cursor-pointer flex flex-col gap-1 select-none relative overflow-hidden",
+                            "p-3 rounded-2xl border text-right transition-all cursor-pointer flex flex-col gap-1 select-none relative overflow-hidden",
                             readingMode === 'scroll' 
                               ? "bg-white text-slate-900 border-amber-400 shadow-lg scale-[1.01]" 
                               : "bg-black/25 text-white/90 hover:bg-black/40 border-white/10"
@@ -740,8 +778,8 @@ export const IndependentHadith: React.FC = () => {
                               <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                             )}
                           </div>
-                          <span className={cn("text-[11px] font-bold", readingMode === 'scroll' ? "text-slate-600" : "text-white/60")}>
-                            {t('continuous_list_desc', 'عرض الأحاديث تحت بعضها')}
+                          <span className={cn("text-[10px] font-bold leading-tight", readingMode === 'scroll' ? "text-slate-600" : "text-white/60")}>
+                            {t('continuous_list_desc', 'عرض الأحاديث متتابعة')}
                           </span>
                         </button>
 
@@ -752,7 +790,7 @@ export const IndependentHadith: React.FC = () => {
                             handleUpdateReadingMode('focus');
                           }}
                           className={cn(
-                            "p-3.5 rounded-2xl border text-right transition-all cursor-pointer flex flex-col gap-1 select-none relative overflow-hidden",
+                            "p-3 rounded-2xl border text-right transition-all cursor-pointer flex flex-col gap-1 select-none relative overflow-hidden",
                             readingMode === 'focus' 
                               ? "bg-white text-slate-900 border-amber-400 shadow-lg scale-[1.01]" 
                               : "bg-black/25 text-white/90 hover:bg-black/40 border-white/10"
@@ -761,13 +799,13 @@ export const IndependentHadith: React.FC = () => {
                           <div className="flex items-center justify-between">
                             <span className={cn("text-xs font-black flex items-center gap-1.5", readingMode === 'focus' ? "text-slate-900" : "text-white")}>
                               <Square size={15} className={readingMode === 'focus' ? "text-amber-600" : "text-amber-300"} />
-                              {t('single_card_mode', 'بطاقة منفردة')}
+                              {t('single_card_mode', 'بطاقة فردية')}
                             </span>
                             {readingMode === 'focus' && (
                               <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                             )}
                           </div>
-                          <span className={cn("text-[11px] font-bold", readingMode === 'focus' ? "text-slate-600" : "text-white/60")}>
+                          <span className={cn("text-[10px] font-bold leading-tight", readingMode === 'focus' ? "text-slate-600" : "text-white/60")}>
                             {t('single_card_desc', 'وضع التركيز (بطاقة تلو الأخرى)')}
                           </span>
                         </button>
@@ -915,6 +953,7 @@ export const IndependentHadith: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+      </div>
 
         {(() => {
           if (categoryId !== 'fadael') return null;
@@ -987,18 +1026,18 @@ export const IndependentHadith: React.FC = () => {
                 </div>
               ) : (
                 <div className="relative z-10">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="wait" initial={false}>
                     {currentSlide && (
                       <motion.div
                         key={`${filterCategory}_${currentSlide.id}`}
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0.35, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
+                        exit={{ opacity: 0.35, x: -20 }}
                         whileTap={{ scale: 0.98 }}
                         whileHover={{ scale: 1.005 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        transition={{ type: "spring", stiffness: 220, damping: 28, mass: 0.8 }}
                         onClick={() => triggerHaptic('light')}
-                        className="w-full cursor-pointer"
+                        className="w-full cursor-pointer transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform"
                       >
                         {/* Active Slide Card */}
                         <div className="relative p-5 sm:p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/90 shadow-inner overflow-hidden">
@@ -1210,560 +1249,184 @@ export const IndependentHadith: React.FC = () => {
           );
         })()}
 
-        {isGrouped && (
-          <div className={cn(
-            "p-2.5 rounded-[2rem] mb-4 border-2 shadow-[inset_0_2px_4px_rgba(255,255,255,0.4),0_10px_30px_-10px_rgba(0,0,0,0.1)] backdrop-blur-xl transition-all duration-700",
-            "bg-white/60 dark:bg-slate-900/60 border-white/80 dark:border-slate-800"
-          )}>
-            <div className="flex overflow-x-auto hide-scrollbar gap-2 p-1 relative">
-              {Object.keys(data.subCategories).map(key => {
-                const isActive = currentTab === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setActiveTab(key);
-                      setExpandedId(null);
-                      setSearchTerm('');
-                    }}
-                    className={cn(
-                      "flex-1 min-w-fit px-6 py-3.5 text-sm font-black rounded-2xl transition-all duration-300 relative whitespace-nowrap overflow-hidden group border",
-                      isActive
-                        ? cn(
-                            "text-white shadow-[0_12px_24px_-8px_rgba(0,0,0,0.25)] translate-y-[-2px] border-transparent bg-gradient-to-br",
-                            currentTheme.gradient
-                          )
-                        : "text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 border-transparent bg-transparent"
-                    )}
-                  >
-                    <span className={cn(
-                      "relative z-10 flex items-center justify-center gap-2 transition-transform duration-300",
-                      isActive ? "scale-105 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" : "scale-100 group-hover:scale-105"
-                    )}>
-                      {isActive && <Sparkles size={16} className="text-amber-300 animate-pulse" />}
-                      {data.subCategories[key].title}
-                    </span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTabBg"
-                        className="absolute inset-0 bg-white/10 pointer-events-none"
-                      />
-                    )}
-                    {isActive && (
-                      <motion.div
-                        initial={{ opacity: 0, scaleX: 0 }}
-                        animate={{ opacity: 1, scaleX: 1 }}
-                        className="absolute -bottom-0 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-t-full bg-white/40"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* Render Hadith Card Helper */}
+        {(() => {
+          const renderHadithCard = (hadith: any, index: number, isFocus: boolean = false) => {
+            const uniqueId = `${categoryId}_${isGrouped ? currentTab : 'main'}_${hadith.id || index + 1}`;
+            const isFavorite = favorites.includes(uniqueId);
+            const cardId = `hadith-card-export-${hadith.id || index + 1}`;
+            const isPlaying = hadithPlayingId === (hadith.id || index + 1);
+            const isCopied = hadithCopiedId === (hadith.id || index + 1);
+            const isDownloading = downloadingId === cardId;
 
-        {/* Quick View Mode Switcher Pill (Continuous List vs Single Card) */}
-        {items.length > 0 && (
-          <div className="flex items-center justify-between gap-3 px-1.5 py-1 mb-3" dir="rtl">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-xs font-black text-slate-700 dark:text-slate-200">
-                {items.length} {t('hadith_count_suffix', 'حديث شريف')}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1 bg-slate-200/75 dark:bg-slate-800/90 p-1 rounded-2xl border border-slate-300/50 dark:border-slate-700/60 shadow-inner">
-              <button
-                type="button"
-                onClick={() => {
-                  triggerHaptic('light');
-                  handleUpdateReadingMode('scroll');
-                }}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer select-none",
-                  readingMode !== 'focus'
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm scale-102"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                )}
-                title={t('continuous_list_tooltip', 'عرض الأحاديث في قائمة متتالية')}
-              >
-                <Layers size={13} className={readingMode !== 'focus' ? "text-amber-500" : ""} />
-                <span>{t('continuous_list', 'قائمة متتالية')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerHaptic('light');
-                  handleUpdateReadingMode('focus');
-                }}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer select-none",
-                  readingMode === 'focus'
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm scale-102"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                )}
-                title={t('single_card_tooltip', 'عرض الأحاديث في بطاقات منفردة')}
-              >
-                <Square size={13} className={readingMode === 'focus' ? "text-amber-500" : ""} />
-                <span>{t('single_card', 'بطاقة منفردة')}</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Hadith List / Single Card Container */}
-        <div className="space-y-4">
-          {items.length === 0 ? (
-            showEmpty ? (
+            return (
               <div
-                className="flex flex-col items-center justify-center p-12 text-center bg-white/40 dark:bg-slate-800/25 rounded-2xl border-2 border-dashed border-slate-200/65 dark:border-slate-700/50"
+                key={hadith.id || index}
+                id={cardId}
+                className={cn(
+                  "w-full transition-all duration-300 transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform",
+                  snapScrolling && "hadith-snap-card snap-start snap-always scroll-mt-3 sm:scroll-mt-4",
+                  isFocus ? "max-w-lg mx-auto w-[92%] sm:w-[88%]" : "h-full flex flex-col w-[96%] sm:w-[94%] md:w-full mx-auto"
+                )}
+                style={snapScrolling ? { scrollSnapAlign: 'start', scrollSnapStop: 'always' } : undefined}
               >
-                <Search size={40} className="mb-4 text-slate-400 dark:text-slate-500 animate-pulse" />
-                <p className="font-black text-lg text-slate-700 dark:text-slate-300">{t('no_search_results', 'لم نجد نتائج للبحث')}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 font-bold max-w-sm leading-relaxed">
-                  {t('search_hint', 'حاول البحث بكلمات أخرى، أو تصفح الأقسام والتبويبات المتاحة بالأعلى.')}
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-12 h-40" />
-            )
-          ) : readingMode === 'focus' ? (
-            /* Single Card Focus Mode */
-            <div className="w-full flex flex-col items-center">
-              <AnimatePresence mode="wait" initial={false}>
-                {items[focusIndex] && (() => {
-                  const hadith = items[focusIndex];
-                  const uniqueId = `${categoryId}_${isGrouped ? currentTab : 'main'}_${hadith.id}`;
-                  const isFavorite = favorites.includes(uniqueId);
+                <div className={cn(
+                  "relative rounded-[1.65rem] sm:rounded-[1.9rem] border-2 shadow-[0_10px_28px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_38px_rgba(0,0,0,0.13)] transition-all duration-300 w-full overflow-hidden text-white flex-1 flex flex-col justify-between p-3.5 sm:p-5 transform-gpu [backface-visibility:hidden]",
+                  "bg-gradient-to-br", currentTheme.gradient, currentTheme.border
+                )}>
+                  {/* Artistic Islamic background pattern watermark */}
+                  {bgLoaded && (
+                    <div 
+                      className="absolute inset-0 opacity-[0.04] dark:opacity-[0.07] pointer-events-none" 
+                      style={{ backgroundImage: "url('/images/arabesque.png')" }} 
+                    />
+                  )}
+                  <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-black/15 rounded-full blur-2xl pointer-events-none" />
 
-                  return (
-                    <motion.div
-                      key={hadith.id}
-                      initial={{ opacity: 0, x: slideDirection === 'forward' ? (isRtl ? -30 : 30) : (isRtl ? 30 : -30) }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: slideDirection === 'forward' ? (isRtl ? 30 : -30) : (isRtl ? -30 : 30) }}
-                      whileTap={{ scale: 0.98 }}
-                      whileHover={{ scale: 1.005 }}
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                      onClick={() => triggerHaptic('light')}
-                      drag="x"
-                      dragDirectionLock={true}
-                      dragConstraints={{ left: 0, right: 0 }}
-                      dragElastic={{
-                        left: (isRtl ? focusIndex > 0 : focusIndex < items.length - 1) ? 0.7 : 0.1,
-                        right: (isRtl ? focusIndex < items.length - 1 : focusIndex > 0) ? 0.7 : 0.1
-                      }}
-                      onDragEnd={(_, { offset, velocity }) => {
-                        const swipe = offset.x;
-                        const swipeThreshold = 40;
-                        const velocityThreshold = 300;
-
-                        if (swipe > swipeThreshold || velocity.x > velocityThreshold) {
-                          if (isRtl) {
-                            if (focusIndex < items.length - 1) {
-                              setSlideDirection('forward');
-                              setFocusIndex(prev => prev + 1);
-                              triggerHaptic('light');
-                            }
-                          } else {
-                            if (focusIndex > 0) {
-                              setSlideDirection('backward');
-                              setFocusIndex(prev => prev - 1);
-                              triggerHaptic('light');
-                            }
-                          }
-                        } else if (swipe < -swipeThreshold || velocity.x < -velocityThreshold) {
-                          if (isRtl) {
-                            if (focusIndex > 0) {
-                              setSlideDirection('backward');
-                              setFocusIndex(prev => prev - 1);
-                              triggerHaptic('light');
-                            }
-                          } else {
-                            if (focusIndex < items.length - 1) {
-                              setSlideDirection('forward');
-                              setFocusIndex(prev => prev + 1);
-                              triggerHaptic('light');
-                            }
-                          }
-                        }
-                      }}
-                      id={`hadith-card-export-${hadith.id}`}
-                      className="w-full px-0.5 py-0.5 sm:px-1 sm:py-1 bg-slate-50/50 dark:bg-slate-950/40 rounded-[1.8rem] transition-all duration-300 select-none touch-pan-y"
-                    >
-                      <div className={cn(
-                        "pt-4 px-4 pb-3.5 sm:pt-5 sm:px-6 sm:pb-4.5 rounded-[1.6rem] sm:rounded-[2rem] border-2 shadow-[0_12px_36px_rgba(0,0,0,0.08)] hover:shadow-[0_18px_45px_rgba(0,0,0,0.18)] transition-all duration-400 w-full relative overflow-hidden text-white",
-                        "bg-gradient-to-br", currentTheme.gradient, currentTheme.border
-                      )}>
-                        {/* Artistic Islamic background pattern watermark */}
-                        {bgLoaded && <div className="absolute inset-0 opacity-[0.06] dark:opacity-[0.09] pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />}
-                        <div className="absolute -top-12 -left-12 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                        <div className="absolute -bottom-10 -right-10 w-44 h-44 bg-black/15 rounded-full blur-2xl pointer-events-none" />
-
-                        <div className="relative z-10 w-full">
-                          <div className="flex flex-col gap-1.5 mb-2.5">
-                            <div className="flex justify-between items-start gap-4">
-                              <h2 className="text-lg sm:text-2xl font-black leading-tight text-white flex items-center gap-2 drop-shadow-sm">
-                                <span className="w-2.5 h-6 rounded-full inline-block shrink-0 bg-white/50" />
-                                {hadith.title}
-                              </h2>
-                              <div className="flex items-center gap-1.5 shrink-0 z-20" data-html2canvas-ignore>
-                                {/* Favorite */}
-                                <button 
-                                  onClick={() => toggleFavorite(uniqueId)}
-                                  className={cn(
-                                    "p-2 rounded-full transition-all duration-300 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
-                                    isFavorite 
-                                      ? "bg-amber-400 border-amber-400 text-amber-950 hover:bg-amber-300 hover:shadow-md hover:shadow-amber-400/30" 
-                                      : "bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/35 text-white"
-                                  )}
-                                  title={isFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
-                                >
-                                  <Star size={15} strokeWidth={isFavorite ? 0 : 3} className={isFavorite ? "fill-amber-950" : ""} />
-                                </button>
-
-                                {/* Speak */}
-                                <button 
-                                  onClick={() => handleSpeakHadith(hadith.text, hadith.id)}
-                                  className={cn(
-                                    "p-2 rounded-full transition-all duration-300 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
-                                    hadithPlayingId === hadith.id 
-                                      ? "bg-white text-slate-900 border-white shadow-md shadow-white/10"
-                                      : "bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/35 text-white"
-                                  )}
-                                  title={hadithPlayingId === hadith.id ? t('audio_stop', 'إيقاف الصوت') : t('listen_to_hadith', 'استمع للحديث')}
-                                >
-                                  {hadithPlayingId === hadith.id ? (
-                                    <span className="flex items-center justify-center relative w-4 h-4">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                      <Pause size={15} strokeWidth={3} className="relative z-10" />
-                                    </span>
-                                  ) : (
-                                    <Volume2 size={15} strokeWidth={3} />
-                                  )}
-                                </button>
-
-                                {/* Share */}
-                                <button 
-                                  onClick={async () => {
-                                    const textToShare = `✨ *${hadith.title}* ✨\n\n"${hadith.text}"\n\n📖 المصدر: ${hadith.subtitle || 'السنة المطهرة'}\n—\nتمت المشاركة من تطبيق *أذكار المؤمن azkar almumin*\nزيارة التطبيق: ${window.location.origin}`;
-                                    await shareContent(hadith.title, textToShare, window.location.href);
-                                    setHadithCopiedId(hadith.id);
-                                    setTimeout(() => setHadithCopiedId(null), 2000);
-                                  }}
-                                  className={cn(
-                                    "p-2 rounded-full transition-all duration-300 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
-                                    hadithCopiedId === hadith.id 
-                                      ? "bg-emerald-400 border-emerald-400 text-emerald-950 hover:bg-emerald-350" 
-                                      : "bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/35 text-white"
-                                  )}
-                                  title={t('share', 'مشاركة')}
-                                >
-                                  {hadithCopiedId === hadith.id ? <Check size={15} strokeWidth={3} /> : <Share2 size={15} strokeWidth={3} />}
-                                </button>
-
-                                {/* Download Card Sticker */}
-                                <button 
-                                  onClick={() => handleDownload(`hadith-card-export-${hadith.id}`, `hadith-${hadith.id}`)}
-                                  className={cn(
-                                    "p-2 rounded-full transition-all duration-300 active:scale-90 border shadow-sm flex items-center justify-center bg-black/20 border-white/20 text-white hover:bg-black/30 cursor-pointer",
-                                    downloadingId === `hadith-card-export-${hadith.id}` ? "opacity-50 cursor-not-allowed" : ""
-                                  )}
-                                  title={t('download_card_or_sticker', 'تحميل كبطاقة أو ستيكر')}
-                                  disabled={downloadingId === `hadith-card-export-${hadith.id}`}
-                                >
-                                  {downloadingId === `hadith-card-export-${hadith.id}` ? (
-                                    <Loader2 size={15} className="animate-spin text-white" />
-                                  ) : (
-                                    <Download size={15} strokeWidth={3} />
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-
+                  <div className="relative z-10 w-full flex-1 flex flex-col justify-between">
+                    {/* Header of the Card */}
+                    <div>
+                      <div className="flex justify-between items-start gap-3 mb-2.5">
+                        <div className="flex flex-col gap-1 text-right flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-400 text-slate-950 shadow-sm border border-amber-300/40 flex items-center gap-1 shrink-0">
+                              <BookOpen size={12} className="shrink-0" />
+                              <span>الحديث #{hadith.id || index + 1}</span>
+                            </span>
                             {hadith.subtitle && (
-                              <span className="text-[10px] sm:text-xs font-black px-3 py-1 rounded-full border w-fit shadow-sm transition-colors tracking-wide bg-white/15 text-white border-white/10">
+                              <span className="text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-sm transition-colors bg-white/15 text-white/95 border-white/20 shrink-0">
                                 {hadith.subtitle}
                               </span>
                             )}
                           </div>
-
-                          {/* Hadith content with quote decoration */}
-                          <div className="w-full my-2.5 sm:my-3 relative">
-                            <span className="absolute -top-5 -right-3 text-7xl font-serif select-none pointer-events-none opacity-[0.14] leading-none text-white">«</span>
-                            
-                            <span 
-                              className={cn(
-                                "block whitespace-pre-line text-right w-full transition-all duration-500 text-white leading-[1.7] sm:leading-[1.85] px-1 relative z-10",
-                                fontWeight === 'normal' ? 'font-normal' :
-                                fontWeight === 'semibold' ? 'font-semibold' :
-                                fontWeight === 'bold' ? 'font-bold' : 'font-extrabold'
-                              )}
-                              style={{ fontFamily: getHadithFontFamily(hadithFont), fontSize: `${hadithFontSize}px` }}
-                            >
-                              {hadith.text}
-                            </span>
-                          </div>
-
-                          {/* Explanatory section */}
-                          {hadith.explanation && showExplanation && (
-                            <div className="mt-3.5 p-3 sm:p-3.5 rounded-2xl border border-white/15 transition-colors bg-white/10 dark:bg-black/20 backdrop-blur-sm shadow-inner relative overflow-hidden group/benefit">
-                              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-white/5 to-transparent rounded-bl-3xl pointer-events-none" />
-                              <div className="flex items-start gap-3">
-                                <div className="mt-0.5 shrink-0 p-1.5 rounded-xl bg-white/10 shadow-sm border border-white/10 text-yellow-300">
-                                  <Sparkles size={14} className="animate-pulse" />
-                                </div>
-                                <div className="text-right flex-1">
-                                  <h4 className="text-[10px] font-black text-white/80 mb-0.5 select-none">{t('hadith_practical_benefit', 'الفائدة والتوجيه العملي:')}</h4>
-                                  <p className="text-[13px] sm:text-[14px] leading-relaxed font-bold text-white/95">
-                                    {hadith.explanation}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/60" dir="rtl">
-                            <span className="font-rubik font-black italic text-[14px] sm:text-[16px] tracking-wider bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 bg-clip-text text-transparent select-none" style={{ filter: "drop-shadow(1px 1px 0px #047857) drop-shadow(2px 2px 0px #064e3b) drop-shadow(0px 4px 6px rgba(0,0,0,0.6))" }}>أذكار المؤمن</span>
-                            <span className="text-[12px] font-bold text-white/85 select-none">{t('hadith_tab', 'حديث نبوي شريف')}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })()}
-              </AnimatePresence>
-
-              {/* Modern Single Card Navigation Controller */}
-              <div className="w-full flex flex-col items-center gap-3 mt-4" dir="rtl" data-html2canvas-ignore>
-                <div className="flex items-center justify-between w-full max-w-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
-                  {/* Previous button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (focusIndex > 0) {
-                        setSlideDirection('backward');
-                        setFocusIndex(prev => prev - 1);
-                        triggerHaptic('light');
-                      }
-                    }}
-                    disabled={focusIndex === 0}
-                    className={cn(
-                      "px-4 py-2.5 rounded-xl border flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-sm text-xs font-black select-none",
-                      focusIndex === 0
-                        ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed shadow-none"
-                        : "bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 border-teal-500/30 hover:border-teal-500 hover:scale-[1.03] active:scale-95"
-                    )}
-                  >
-                    <ChevronRight size={16} strokeWidth={3} />
-                    <span>{t('previous', 'السابق')}</span>
-                  </button>
-
-                  {/* Center Counter Badge */}
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                      {t('hadith_num_of_total', 'الحديث {{current}} من {{total}}', { current: focusIndex + 1, total: items.length })}
-                    </span>
-                    {/* Mini Progress Bar */}
-                    <div className="w-24 sm:w-32 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-amber-400 to-teal-500 transition-all duration-300 rounded-full"
-                        style={{ width: `${((focusIndex + 1) / items.length) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Next button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (focusIndex < items.length - 1) {
-                        setSlideDirection('forward');
-                        setFocusIndex(prev => prev + 1);
-                        triggerHaptic('light');
-                      }
-                    }}
-                    disabled={focusIndex === items.length - 1}
-                    className={cn(
-                      "px-4 py-2.5 rounded-xl border flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-sm text-xs font-black select-none",
-                      focusIndex === items.length - 1
-                        ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed shadow-none"
-                        : "bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 border-teal-500/30 hover:border-teal-500 hover:scale-[1.03] active:scale-95"
-                    )}
-                  >
-                    <span>{t('next', 'التالي')}</span>
-                    <ChevronLeft size={16} strokeWidth={3} />
-                  </button>
-                </div>
-
-                {/* Small dot indicators */}
-                {items.length <= 40 && (
-                  <div className="flex items-center gap-1.5 overflow-x-auto max-w-full px-4 py-1.5 hide-scrollbar">
-                    {items.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setSlideDirection(i > focusIndex ? 'forward' : 'backward');
-                          setFocusIndex(i);
-                          triggerHaptic('light');
-                        }}
-                        className={cn(
-                          "h-2 rounded-full transition-all duration-300 shrink-0 cursor-pointer",
-                          focusIndex === i 
-                            ? "w-6 bg-amber-400 shadow-sm" 
-                            : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
-                        )}
-                        title={`الذهاب للحديث ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            /* Continuous List Mode */
-            items.map((hadith: any) => {
-              const uniqueId = `${categoryId}_${isGrouped ? currentTab : 'main'}_${hadith.id}`;
-              const isFavorite = favorites.includes(uniqueId);
-              
-              return (
-                <motion.div 
-                  id={`hadith-card-export-${hadith.id}`} 
-                  key={hadith.id} 
-                  whileTap={{ scale: 0.98 }}
-                  whileHover={{ scale: 1.006 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 22 }}
-                  onClick={() => triggerHaptic('light')}
-                  className="w-full px-0.5 py-0.5 sm:px-1 sm:py-1 bg-slate-50/50 dark:bg-slate-950/40 rounded-[1.8rem] transition-all duration-300 cursor-pointer"
-                >
-                  <div className={cn(
-                    "pt-3 px-3.5 pb-2.5 sm:pt-4 sm:px-5 sm:pb-3.5 rounded-[1.6rem] sm:rounded-[2rem] border-2 shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.15)] transition-all duration-400 w-full relative overflow-hidden group hover:-translate-y-0.5 text-white",
-                    "bg-gradient-to-br", currentTheme.gradient, currentTheme.border
-                  )}>
-                    
-                    {/* Artistic Islamic background pattern watermark */}
-                    {bgLoaded && <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08] pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />}
-                    <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                    <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-black/10 rounded-full blur-2xl pointer-events-none" />
-                    
-                    <div className="relative z-10 w-full">
-                      <div className="flex flex-col gap-1 sm:gap-1.5 mb-2">
-                        <div className="flex justify-between items-start gap-4">
-                          <h2 className="text-lg sm:text-xl font-black leading-tight text-white flex items-center gap-2 drop-shadow-sm">
-                            <span className="w-2 h-5 rounded-full inline-block shrink-0 bg-white/40" />
+                          <h3 className="text-base sm:text-lg font-black leading-snug text-white mt-1 drop-shadow-sm line-clamp-2">
                             {hadith.title}
-                          </h2>
-                          <div className="flex items-center gap-1.5 shrink-0 z-20" data-html2canvas-ignore>
-                            {/* Favorite */}
-                            <button 
-                              onClick={() => toggleFavorite(uniqueId)}
-                              className={cn(
-                                "p-1.5 rounded-full transition-all duration-300 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
-                                isFavorite 
-                                  ? "bg-amber-400 border-amber-400 text-amber-950 hover:bg-amber-300 hover:shadow-md hover:shadow-amber-400/30" 
-                                  : "bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/35 text-white"
-                              )}
-                              title={isFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
-                            >
-                              <Star size={14} strokeWidth={isFavorite ? 0 : 3} className={isFavorite ? "fill-amber-950" : ""} />
-                            </button>
-
-                            {/* Speak */}
-                            <button 
-                              onClick={() => handleSpeakHadith(hadith.text, hadith.id)}
-                              className={cn(
-                                "p-1.5 rounded-full transition-all duration-300 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer hidden sm:flex",
-                                hadithPlayingId === hadith.id 
-                                  ? "bg-white text-slate-900 border-white shadow-md shadow-white/10"
-                                  : "bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/35 text-white"
-                              )}
-                              title={hadithPlayingId === hadith.id ? t('audio_stop', 'إيقاف الصوت') : t('listen_to_hadith', 'استمع للحديث')}
-                            >
-                              {hadithPlayingId === hadith.id ? (
-                                <span className="flex items-center justify-center relative w-3.5 h-3.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                  <Pause size={14} strokeWidth={3} className="relative z-10" />
-                                </span>
-                              ) : (
-                                <Volume2 size={14} strokeWidth={3} />
-                              )}
-                            </button>
-
-                            {/* Share */}
-                            <button 
-                              onClick={async () => {
-                                const textToShare = `✨ *${hadith.title}* ✨\n\n"${hadith.text}"\n\n📖 المصدر: ${hadith.subtitle || 'السنة المطهرة'}\n—\nتمت المشاركة من تطبيق *أذكار المؤمن azkar almumin*\nزيارة التطبيق: ${window.location.origin}`;
-                                await shareContent(hadith.title, textToShare, window.location.href);
-                                setHadithCopiedId(hadith.id);
-                                setTimeout(() => setHadithCopiedId(null), 2000);
-                              }}
-                              className={cn(
-                                "p-1.5 rounded-full transition-all duration-300 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
-                                hadithCopiedId === hadith.id 
-                                  ? "bg-emerald-400 border-emerald-400 text-emerald-950 hover:bg-emerald-350" 
-                                  : "bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/35 text-white"
-                              )}
-                              title={t('share', 'مشاركة')}
-                            >
-                              {hadithCopiedId === hadith.id ? <Check size={14} strokeWidth={3} /> : <Share2 size={14} strokeWidth={3} />}
-                            </button>
-
-                            {/* Download Card Sticker */}
-                            <button 
-                              onClick={() => handleDownload(`hadith-card-export-${hadith.id}`, `hadith-${hadith.id}`)}
-                              className={cn(
-                                "p-1.5 rounded-full transition-all duration-300 active:scale-90 border shadow-sm flex items-center justify-center bg-black/20 border-white/20 text-white hover:bg-black/30 cursor-pointer",
-                                downloadingId === `hadith-card-export-${hadith.id}` ? "opacity-50 cursor-not-allowed" : ""
-                              )}
-                              title={t('download_card_or_sticker', 'تحميل كبطاقة أو ستيكر')}
-                              disabled={downloadingId === `hadith-card-export-${hadith.id}`}
-                            >
-                              {downloadingId === `hadith-card-export-${hadith.id}` ? (
-                                <Loader2 size={14} className="animate-spin text-white" />
-                              ) : (
-                                <Download size={14} strokeWidth={3} />
-                              )}
-                            </button>
-                          </div>
+                          </h3>
                         </div>
 
-                        {hadith.subtitle && (
-                          <span className="text-[10px] sm:text-xs font-black px-2.5 py-1 rounded-full border w-fit shadow-sm transition-colors tracking-wide bg-white/15 text-white border-white/10">
-                            {hadith.subtitle}
-                          </span>
-                        )}
+                        {/* Action Buttons Toolbar */}
+                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 z-20" data-html2canvas-ignore>
+                          {/* Favorite */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(uniqueId);
+                            }}
+                            className={cn(
+                              "w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl transition-all duration-200 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
+                              isFavorite
+                                ? "bg-amber-400 border-amber-300 text-amber-950 hover:bg-amber-300 hover:shadow-md"
+                                : "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                            )}
+                            title={isFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
+                          >
+                            <Star size={14} strokeWidth={isFavorite ? 0 : 2.5} className={isFavorite ? "fill-amber-950" : ""} />
+                          </button>
+
+                          {/* Recitation (Audio) - Visible on both mobile and desktop! */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSpeakHadith(hadith.text, hadith.id || index + 1);
+                            }}
+                            className={cn(
+                              "w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl transition-all duration-200 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
+                              isPlaying
+                                ? "bg-white text-slate-950 border-white shadow-md shadow-white/20"
+                                : "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                            )}
+                            title={isPlaying ? t('audio_stop', 'إيقاف الصوت') : t('listen_to_hadith', 'استمع للحديث')}
+                          >
+                            {isPlaying ? (
+                              <span className="flex items-center justify-center relative w-3.5 h-3.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-900 opacity-75"></span>
+                                <Pause size={13} strokeWidth={3} className="relative z-10" />
+                              </span>
+                            ) : (
+                              <Volume2 size={14} strokeWidth={2.5} />
+                            )}
+                          </button>
+
+                          {/* Share */}
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const textToShare = `✨ *${hadith.title}* ✨\n\n"${hadith.text}"\n\n📖 المصدر: ${hadith.subtitle || 'السنة المطهرة'}\n—\nتمت المشاركة من تطبيق *أذكار المؤمن azkar almumin*\nزيارة التطبيق: ${window.location.origin}`;
+                              await shareContent(hadith.title, textToShare, window.location.href);
+                              setHadithCopiedId(hadith.id || index + 1);
+                              setTimeout(() => setHadithCopiedId(null), 2000);
+                            }}
+                            className={cn(
+                              "w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl transition-all duration-200 active:scale-90 shadow-sm border flex items-center justify-center cursor-pointer",
+                              isCopied
+                                ? "bg-emerald-400 border-emerald-300 text-emerald-950"
+                                : "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                            )}
+                            title={t('share', 'مشاركة')}
+                          >
+                            {isCopied ? <Check size={14} strokeWidth={3} /> : <Share2 size={14} strokeWidth={2.5} />}
+                          </button>
+
+                          {/* Download as Card/Sticker */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(cardId, `hadith-${hadith.id || index + 1}`);
+                            }}
+                            className={cn(
+                              "w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl transition-all duration-200 active:scale-90 border shadow-sm flex items-center justify-center bg-black/25 border-white/20 text-white hover:bg-black/35 cursor-pointer",
+                              isDownloading ? "opacity-50 cursor-not-allowed" : ""
+                            )}
+                            title={t('download_card_or_sticker', 'تحميل كبطاقة أو ستيكر')}
+                            disabled={isDownloading}
+                          >
+                            {isDownloading ? (
+                              <Loader2 size={13} className="animate-spin text-white" />
+                            ) : (
+                              <Download size={14} strokeWidth={2.5} />
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      
-                      {/* Hadith content with quote decoration */}
-                      <div className="w-full my-1.5 sm:my-2 relative">
-                        <span className="absolute -top-5 -right-3 text-7xl font-serif select-none pointer-events-none opacity-[0.12] leading-none text-white">«</span>
-                        
-                        <span 
+
+                      {/* Hadith Matn (Text) with decorative quotation mark */}
+                      <div className="w-full my-2.5 sm:my-3 relative">
+                        <span className="absolute -top-5 -right-2 text-6xl sm:text-7xl font-serif select-none pointer-events-none opacity-[0.14] leading-none text-white">«</span>
+                        <p
                           className={cn(
-                            "block whitespace-pre-line text-right w-full transition-all duration-500 text-white leading-[1.65] sm:leading-[1.75] px-1 relative z-10",
+                            "whitespace-pre-line text-right w-full transition-all duration-300 text-white leading-[1.85] sm:leading-[2.05] px-1 relative z-10",
                             fontWeight === 'normal' ? 'font-normal' :
                             fontWeight === 'semibold' ? 'font-semibold' :
                             fontWeight === 'bold' ? 'font-bold' : 'font-extrabold'
                           )}
-                          style={{ fontFamily: getHadithFontFamily(hadithFont), fontSize: `${hadithFontSize - 1}px` }}
+                          style={{ 
+                            fontFamily: getHadithFontFamily(hadithFont), 
+                            fontSize: `${isFocus ? hadithFontSize : Math.max(16, hadithFontSize - 2)}px` 
+                          }}
                         >
                           {hadith.text}
-                        </span>
+                        </p>
                       </div>
-                      
-                      {/* Explanatory section (smart and elegant callout) */}
+                    </div>
+
+                    {/* Bottom Area: Explanation Callout & Signature */}
+                    <div className="mt-3">
                       {hadith.explanation && showExplanation && (
-                        <div className="mt-2.5 p-2.5 sm:p-3 rounded-xl border border-white/10 transition-colors bg-white/10 dark:bg-black/15 backdrop-blur-sm shadow-inner relative overflow-hidden group/benefit">
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/5 to-transparent rounded-bl-3xl pointer-events-none" />
+                        <div className="mb-3 p-3 sm:p-3.5 rounded-2xl border border-white/15 bg-white/10 dark:bg-black/25 backdrop-blur-sm shadow-inner relative overflow-hidden">
                           <div className="flex items-start gap-2.5">
-                            <div className="mt-0.5 shrink-0 p-1 rounded-lg bg-white/10 shadow-sm border border-white/10 text-yellow-300">
-                              <Sparkles size={12} className="animate-pulse" />
+                            <div className="mt-0.5 shrink-0 p-1.5 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-300/30">
+                              <Sparkles size={13} className="animate-pulse" />
                             </div>
-                            <div className="text-right flex-1">
-                              <h4 className="text-[9px] font-black text-white/70 mb-0.5 select-none">{t('hadith_practical_benefit', 'الفائدة والتوجيه العملي:')}</h4>
-                              <p className="text-[12px] sm:text-[13px] leading-relaxed font-bold text-white/95">
+                            <div className="text-right flex-1 min-w-0">
+                              <h4 className="text-[10px] font-black text-amber-200 mb-0.5 select-none flex items-center gap-1">
+                                <span>{t('hadith_practical_benefit', 'الفائدة والتوجيه العملي:')}</span>
+                              </h4>
+                              <p className="text-xs sm:text-[13px] leading-relaxed font-bold text-white/95">
                                 {hadith.explanation}
                               </p>
                             </div>
@@ -1771,17 +1434,419 @@ export const IndependentHadith: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="mt-2.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-xs text-white/60" dir="rtl">
-                        <span className="font-rubik font-black italic text-[13px] sm:text-[15px] tracking-wider bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 bg-clip-text text-transparent select-none" style={{ filter: "drop-shadow(1px 1px 0px #047857) drop-shadow(2px 2px 0px #064e3b) drop-shadow(0px 4px 6px rgba(0,0,0,0.6))" }}>أذكار المؤمن</span>
-                        <span className="text-[11px] font-semibold text-white/80 select-none">{t('hadith_tab', 'حديث نبوي شريف')}</span>
+                      {/* Card Signature Footer */}
+                      <div className="pt-2.5 border-t border-white/15 flex items-center justify-between text-xs text-white/70" dir="rtl">
+                        <span 
+                          className="font-rubik font-black italic text-[13px] sm:text-[15px] tracking-wider bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 bg-clip-text text-transparent select-none" 
+                          style={{ filter: "drop-shadow(1px 1px 0px #047857) drop-shadow(2px 2px 0px #064e3b)" }}
+                        >
+                          أذكار المؤمن
+                        </span>
+                        <span className="text-[11px] font-black text-white/85 select-none flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                          {t('hadith_tab', 'حديث نبوي شريف')}
+                        </span>
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              );
-            })
-          )}
-        </div>
+                </div>
+              </div>
+            );
+          };
+
+          return (
+            <>
+              {/* Subcategories Tabs with item counts */}
+              {isGrouped && (
+                <div className={cn(
+                  "p-2 rounded-2xl sm:rounded-[2rem] mb-3.5 border-2 shadow-[inset_0_2px_4px_rgba(255,255,255,0.4),0_10px_30px_-10px_rgba(0,0,0,0.1)] backdrop-blur-xl transition-all duration-700",
+                  "bg-white/60 dark:bg-slate-900/60 border-white/80 dark:border-slate-800"
+                )}>
+                  <div className="flex overflow-x-auto hide-scrollbar gap-2 p-1 relative">
+                    {Object.keys(data.subCategories).map(key => {
+                      const isActive = currentTab === key;
+                      const subItemCount = data.subCategories[key]?.items?.length || 0;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => {
+                            setActiveTab(key);
+                            setExpandedId(null);
+                            setSearchTerm('');
+                            setFocusIndex(0);
+                          }}
+                          className={cn(
+                            "flex-1 min-w-fit px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black rounded-xl sm:rounded-2xl transition-all duration-300 relative whitespace-nowrap overflow-hidden group border",
+                            isActive
+                              ? cn(
+                                  "text-white shadow-[0_12px_24px_-8px_rgba(0,0,0,0.25)] translate-y-[-2px] border-transparent bg-gradient-to-br",
+                                  currentTheme.gradient
+                                )
+                              : "text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 border-transparent bg-transparent"
+                          )}
+                        >
+                          <span className={cn(
+                            "relative z-10 flex items-center justify-center gap-2 transition-transform duration-300",
+                            isActive ? "scale-105 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" : "scale-100 group-hover:scale-105"
+                          )}>
+                            {isActive && <Sparkles size={14} className="text-amber-300 animate-pulse" />}
+                            <span>{data.subCategories[key].title}</span>
+                            <span className={cn(
+                              "px-2 py-0.5 rounded-full text-[10px] font-black border transition-colors",
+                              isActive 
+                                ? "bg-white/20 text-white border-white/30" 
+                                : "bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300/40 dark:border-slate-700"
+                            )}>
+                              {subItemCount}
+                            </span>
+                          </span>
+                          {isActive && (
+                            <motion.div
+                              layoutId="activeTabBg"
+                              className="absolute inset-0 bg-white/10 pointer-events-none"
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Search and Quick Filters Bar */}
+              <div className="relative mb-3" dir="rtl">
+                <div className="relative flex items-center">
+                  <Search size={16} className="absolute right-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setFocusIndex(0);
+                    }}
+                    placeholder={t('search_hadith_placeholder', 'ابحث في الأحاديث الشريفة أو الفوائد والأحكام...')}
+                    className="w-full pl-9 pr-10 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all shadow-sm"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute left-3 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* View Mode Switcher Toolbar */}
+              {rawItems.length > 0 && (
+                <div className="flex items-center justify-between gap-3 px-1 py-1 mb-3" dir="rtl">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                      {items.length} {t('hadith_count_suffix', 'حديث شريف')}
+                      {searchTerm && <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold mr-1">(من {rawItems.length})</span>}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* CSS Snap-Points Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setSnapScrolling(prev => {
+                          const next = !prev;
+                          safeLocalStorageSetItem('hadith-snap-scroll', String(next));
+                          return next;
+                        });
+                      }}
+                      className={cn(
+                        "px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer select-none border",
+                        snapScrolling
+                          ? "bg-amber-400/15 border-amber-400/40 text-amber-700 dark:text-amber-300 shadow-sm"
+                          : "bg-slate-200/60 dark:bg-slate-800/60 border-slate-300/40 dark:border-slate-700/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                      )}
+                      title={snapScrolling ? t('snap_scroll_enabled', 'تثبيت البطاقات في مكانها مفعل (CSS Snap Points)') : t('snap_scroll_disabled', 'تفعيل تثبيت البطاقات أثناء التمرير')}
+                    >
+                      <Magnet size={13} className={snapScrolling ? "text-amber-500 animate-pulse" : "text-slate-400"} />
+                      <span className="text-[11px] sm:text-xs">{t('snap_cards', 'تثبيت البطاقات')}</span>
+                      {snapScrolling && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
+                    </button>
+
+                    {/* View Modes Switcher */}
+                    <div className="flex items-center gap-1 bg-slate-200/75 dark:bg-slate-800/90 p-1 rounded-2xl border border-slate-300/50 dark:border-slate-700/60 shadow-inner">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic('light');
+                          handleUpdateReadingMode('grid');
+                        }}
+                        className={cn(
+                          "px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer select-none",
+                          readingMode === 'grid'
+                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm scale-102"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        )}
+                        title={t('grid_cards_tooltip', 'عرض الأحاديث في شبكة بطاقات متناسقة')}
+                      >
+                        <LayoutGrid size={13} className={readingMode === 'grid' ? "text-amber-500" : ""} />
+                        <span className="hidden xs:inline">{t('grid_cards', 'شبكة بطاقات')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic('light');
+                          handleUpdateReadingMode('scroll');
+                        }}
+                        className={cn(
+                          "px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer select-none",
+                          readingMode === 'scroll'
+                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm scale-102"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        )}
+                        title={t('continuous_list_tooltip', 'عرض الأحاديث في قائمة متتالية')}
+                      >
+                        <Layers size={13} className={readingMode === 'scroll' ? "text-amber-500" : ""} />
+                        <span className="hidden xs:inline">{t('continuous_list', 'قائمة متتالية')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic('light');
+                          handleUpdateReadingMode('focus');
+                        }}
+                        className={cn(
+                          "px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer select-none",
+                          readingMode === 'focus'
+                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm scale-102"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        )}
+                        title={t('single_card_tooltip', 'عرض الأحاديث في بطاقة فردية')}
+                      >
+                        <Square size={13} className={readingMode === 'focus' ? "text-amber-500" : ""} />
+                        <span className="hidden xs:inline">{t('single_card', 'بطاقة فردية')}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Hadith Cards Container */}
+              <div>
+                {items.length === 0 ? (
+                  showEmpty ? (
+                    <div className="flex flex-col items-center justify-center p-12 text-center bg-white/40 dark:bg-slate-800/25 rounded-2xl border-2 border-dashed border-slate-200/65 dark:border-slate-700/50" dir="rtl">
+                      <Search size={40} className="mb-4 text-slate-400 dark:text-slate-500 animate-pulse" />
+                      <p className="font-black text-lg text-slate-700 dark:text-slate-300">{t('no_search_results', 'لم نجد نتائج للبحث')}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 font-bold max-w-sm leading-relaxed">
+                        {t('search_hint', 'حاول البحث بكلمات أخرى، أو اختر تبويباً آخر بالأعلى.')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-12 h-40" />
+                  )
+                ) : readingMode === 'focus' ? (
+                  /* Focus Mode (Single Card) */
+                  <div className="w-full flex flex-col items-center">
+                    <AnimatePresence mode="wait" initial={false}>
+                      {items[focusIndex] && (
+                        <motion.div
+                          key={items[focusIndex].id || focusIndex}
+                          initial={{ 
+                            opacity: 0.35, 
+                            x: slideDirection === 'forward' ? (isRtl ? -24 : 24) : (isRtl ? 24 : -24),
+                            scale: 0.985
+                          }}
+                          animate={{ 
+                            opacity: 1, 
+                            x: 0,
+                            scale: 1
+                          }}
+                          exit={{ 
+                            opacity: 0.35, 
+                            x: slideDirection === 'forward' ? (isRtl ? 24 : -24) : (isRtl ? -24 : 24),
+                            scale: 0.985
+                          }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 220, 
+                            damping: 28, 
+                            mass: 0.8 
+                          }}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.2}
+                          onDragEnd={(_, info) => {
+                            const threshold = 40;
+                            if (info.offset.x < -threshold) {
+                              // Swiped left
+                              if (isRtl) {
+                                if (focusIndex > 0) {
+                                  setSlideDirection('backward');
+                                  setFocusIndex(prev => prev - 1);
+                                  triggerHaptic('light');
+                                }
+                              } else {
+                                if (focusIndex < items.length - 1) {
+                                  setSlideDirection('forward');
+                                  setFocusIndex(prev => prev + 1);
+                                  triggerHaptic('light');
+                                }
+                              }
+                            } else if (info.offset.x > threshold) {
+                              // Swiped right
+                              if (isRtl) {
+                                if (focusIndex < items.length - 1) {
+                                  setSlideDirection('forward');
+                                  setFocusIndex(prev => prev + 1);
+                                  triggerHaptic('light');
+                                }
+                              } else {
+                                if (focusIndex > 0) {
+                                  setSlideDirection('backward');
+                                  setFocusIndex(prev => prev - 1);
+                                  triggerHaptic('light');
+                                }
+                              }
+                            }
+                          }}
+                          className="w-full max-w-lg mx-auto transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
+                        >
+                          {renderHadithCard(items[focusIndex], focusIndex, true)}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Focus Mode Navigation & Quick Jump */}
+                    <div className="w-full flex flex-col items-center gap-3 mt-4" dir="rtl" data-html2canvas-ignore>
+                      <div className="flex items-center justify-between w-full max-w-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
+                        {/* Previous button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (focusIndex > 0) {
+                              setSlideDirection('backward');
+                              setFocusIndex(prev => prev - 1);
+                              triggerHaptic('light');
+                            }
+                          }}
+                          disabled={focusIndex === 0}
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl border flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-sm text-xs font-black select-none",
+                            focusIndex === 0
+                              ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed shadow-none"
+                              : "bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 border-teal-500/30 hover:border-teal-500 hover:scale-[1.03] active:scale-95"
+                          )}
+                        >
+                          <ChevronRight size={16} strokeWidth={3} />
+                          <span>{t('previous', 'السابق')}</span>
+                        </button>
+
+                        {/* Center Counter Badge */}
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                            {t('hadith_num_of_total', 'الحديث {{current}} من {{total}}', { current: focusIndex + 1, total: items.length })}
+                          </span>
+                          {/* Mini Progress Bar */}
+                          <div className="w-24 sm:w-32 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-amber-400 to-teal-500 transition-all duration-300 rounded-full"
+                              style={{ width: `${((focusIndex + 1) / items.length) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Next button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (focusIndex < items.length - 1) {
+                              setSlideDirection('forward');
+                              setFocusIndex(prev => prev + 1);
+                              triggerHaptic('light');
+                            }
+                          }}
+                          disabled={focusIndex === items.length - 1}
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl border flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-sm text-xs font-black select-none",
+                            focusIndex === items.length - 1
+                              ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed shadow-none"
+                              : "bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 border-teal-500/30 hover:border-teal-500 hover:scale-[1.03] active:scale-95"
+                          )}
+                        >
+                          <span>{t('next', 'التالي')}</span>
+                          <ChevronLeft size={16} strokeWidth={3} />
+                        </button>
+                      </div>
+
+                      {/* View all in grid button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic('light');
+                          handleUpdateReadingMode('grid');
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/20 text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95"
+                      >
+                        <LayoutGrid size={14} />
+                        <span>{t('view_all_cards', 'عرض جميع البطاقات في شبكة')}</span>
+                      </button>
+
+                      {/* Dot indicators (up to 60 items) */}
+                      {items.length <= 60 && (
+                        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full px-4 py-1.5 hide-scrollbar">
+                          {items.map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => {
+                                setSlideDirection(i > focusIndex ? 'forward' : 'backward');
+                                setFocusIndex(i);
+                                triggerHaptic('light');
+                              }}
+                              className={cn(
+                                "h-2 rounded-full transition-all duration-300 shrink-0 cursor-pointer",
+                                focusIndex === i 
+                                  ? "w-6 bg-amber-400 shadow-sm" 
+                                  : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+                              )}
+                              title={`الذهاب للحديث ${i + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : readingMode === 'grid' ? (
+                  /* Grid Mode: 2 Columns on md+, 1 Column on mobile with CSS snap-points */
+                  <div 
+                    className={cn(
+                      "grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 items-stretch transition-all duration-300 max-w-5xl mx-auto w-full",
+                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] px-1 sm:px-2 py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
+                    )}
+                    style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
+                  >
+                    {items.map((hadith: any, index: number) => renderHadithCard(hadith, index, false))}
+                  </div>
+                ) : (
+                  /* Continuous List Mode with CSS snap-points */
+                  <div 
+                    className={cn(
+                      "flex flex-col gap-3.5 sm:gap-4.5 max-w-xl sm:max-w-2xl mx-auto w-full transition-all duration-300",
+                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] px-1 sm:px-2 py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
+                    )}
+                    style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
+                  >
+                    {items.map((hadith: any, index: number) => renderHadithCard(hadith, index, false))}
+                  </div>
+                )}
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );

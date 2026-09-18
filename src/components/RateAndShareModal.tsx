@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, Share2, Heart, X, Check, Copy, ExternalLink, ThumbsUp } from 'lucide-react';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { shareContent, copyTextToClipboard, triggerHaptic } from '../lib/utils';
 
 interface RateAndShareModalProps {
@@ -11,7 +12,8 @@ interface RateAndShareModalProps {
 
 export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, onClose }) => {
   const { settings } = useAppContext();
-  const isRTL = settings.appLanguage !== 'en' && settings.appLanguage !== 'fr';
+  const { t } = useTranslation(settings.appLanguage);
+  const isRTL = settings.appLanguage !== 'en' && settings.appLanguage !== 'fr' && settings.appLanguage !== 'es' && settings.appLanguage !== 'de' && settings.appLanguage !== 'tr' && settings.appLanguage !== 'id' && settings.appLanguage !== 'ms';
 
   const [selectedRating, setSelectedRating] = useState<number>(5);
   const [hasRated, setHasRated] = useState<boolean>(false);
@@ -83,12 +85,10 @@ export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, on
                 <Star size={32} className="fill-current" />
               </div>
               <h3 className="text-xl font-black text-white">
-                {isRTL ? 'تقييم ومشاركة التطبيق' : 'Rate & Share App'}
+                {t('rate_and_share_app', 'تقييم ومشاركة التطبيق')}
               </h3>
               <p className="text-xs text-slate-300 font-bold max-w-xs mx-auto leading-relaxed">
-                {isRTL 
-                  ? 'دعمك لتطبيق أذكار المؤمن ونشره صدقة جارية تساهم في وصوله لملايين المسلمين حول العالم.'
-                  : 'Your support and sharing of Believer Athkar helps reach Muslims worldwide as ongoing charity (Sadaqah Jariyah).'}
+                {t('rate_share_modal_desc', 'دعمك لتطبيق أذكار المؤمن ونشره صدقة جارية تساهم في وصوله لملايين المسلمين حول العالم.')}
               </p>
             </div>
 
@@ -103,13 +103,13 @@ export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, on
                   </div>
                   <p className="text-sm font-black text-emerald-400 flex items-center justify-center gap-1.5 pt-1">
                     <ThumbsUp size={16} />
-                    {isRTL ? 'جزاك الله خيراً على تقييمك الطيب!' : 'Thank you for your blessed review!'}
+                    {t('rate_share_thank_you', 'جزاك الله خيراً على تقييمك الطيب!')}
                   </p>
                 </div>
               ) : (
                 <>
                   <span className="text-xs font-bold text-slate-300 block">
-                    {isRTL ? 'ما هو تقييمك لتجربتك مع التطبيق؟' : 'How would you rate your experience?'}
+                    {t('rate_share_how_rate', 'ما هو تقييمك لتجربتك مع التطبيق؟')}
                   </span>
                   <div className="flex justify-center items-center gap-2 py-1">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -138,7 +138,7 @@ export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, on
                     onClick={handleRateSubmit}
                     className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all cursor-pointer"
                   >
-                    {isRTL ? 'إرسال التقييم' : 'Submit Review'}
+                    {t('rate_share_submit', 'إرسال التقييم')}
                   </button>
                 </>
               )}
@@ -152,7 +152,7 @@ export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, on
                 className="w-full py-3.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-black text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-teal-950/50 transition-all cursor-pointer"
               >
                 <Share2 size={18} />
-                <span>{isRTL ? 'مشاركة التطبيق مع الأهل والأصدقاء' : 'Share with Family & Friends'}</span>
+                <span>{t('rate_share_btn', 'مشاركة التطبيق مع الأهل والأصدقاء')}</span>
               </button>
 
               <button
@@ -163,12 +163,12 @@ export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, on
                 {copied ? (
                   <>
                     <Check size={16} className="text-emerald-400" />
-                    <span className="text-emerald-400 font-black">{isRTL ? 'تم نسخ رابط ورسالة التطبيق' : 'App link copied!'}</span>
+                    <span className="text-emerald-400 font-black">{t('rate_link_copied', 'تم نسخ رابط ورسالة التطبيق')}</span>
                   </>
                 ) : (
                   <>
                     <Copy size={16} />
-                    <span>{isRTL ? 'نسخ رابط التطبيق' : 'Copy App Link'}</span>
+                    <span>{t('rate_copy_link_btn', 'نسخ رابط التطبيق')}</span>
                   </>
                 )}
               </button>

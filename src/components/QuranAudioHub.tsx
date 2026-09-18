@@ -44,7 +44,7 @@ export const QuranAudioHub: React.FC = () => {
   const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
   return (
-    <div className="flex flex-col gap-6 py-6 px-4 pb-20 w-full min-h-screen overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col gap-6 py-6 px-4 pb-20 w-full h-full flex-1 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950">
       <div className="flex items-center justify-between mb-4 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md pb-4 z-10 pt-2 -mx-4 px-4 shadow-sm border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-4">
           <BackButton forceFallback={true} fallbackPath="/audio-library" />
@@ -246,43 +246,6 @@ export const QuranAudioHub: React.FC = () => {
           </div>
         </motion.button>
       </div>
-
-
-
-      {/* Featured Selected Reciter */}
-      {reciter && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-amber-500/10 border border-amber-500/20 p-5 rounded-3xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-[1.2rem] bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
-                <Heart size={18} className="fill-current" />
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-black text-xl text-slate-900 dark:text-white">
-                    {RECITERS.find(r => r.id === reciter)?.name}
-                  </h3>
-                  <span className="bg-amber-500 text-white text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter">Selected</span>
-                </div>
-                <p className="text-sm font-bold text-amber-600 dark:text-amber-400 mt-1">
-                  القارئ الافتراضي المختار حالياً
-                </p>
-              </div>
-            </div>
-            <button 
-              onClick={() => navigate(`/quran-audio/${reciter}`)}
-              className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-12 h-12 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform duration-75 active:scale-[0.85] active:opacity-70"
-            >
-              <PlayCircle size={28} className="text-amber-500" />
-            </button>
-          </div>
-        </motion.div>
-      )}
 
       <div>
         {/* Search Bar */}

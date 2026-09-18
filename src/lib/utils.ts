@@ -479,7 +479,11 @@ export async function shareContent(title: string, text: string, url?: string): P
       });
       return;
     } catch (err: any) {
-      if (err.name !== "AbortError") {
+      const isCancellation =
+        err?.name === "AbortError" ||
+        err?.message?.toLowerCase().includes("cancel") ||
+        err?.message?.toLowerCase().includes("abort");
+      if (!isCancellation) {
         console.warn("Web Share API failed, falling back to clipboard:", err);
         await copyTextToClipboard(text);
       }

@@ -116,7 +116,7 @@ export const ChallengesHub: React.FC = () => {
             {/* Premium Animated Background */}
             <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-600/30 rounded-full blur-[90px] -mr-40 -mt-40 group-hover:bg-indigo-500/40 transition-all duration-1000" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/20 rounded-full blur-[70px] -ml-32 -mb-32 group-hover:bg-purple-500/30 transition-all duration-1000" />
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-[0.05] pointer-events-none mix-blend-overlay" />
+            <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-[0.05] pointer-events-none mix-blend-overlay" />
             
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-8">

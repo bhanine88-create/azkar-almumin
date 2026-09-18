@@ -5,7 +5,7 @@ import { AppProvider } from './AppContext';
 import { GlobalAudioProvider } from './context/GlobalAudioContext';
 import { DownloadProvider } from './context/DownloadContext';
 import { Layout } from './components/Layout';
-import Home from './components/Home';
+const Home = lazyRetry(() => import('./components/Home'), 'Home');
 import { QuranSettingsProvider } from './context/QuranSettingsContext';
 const PrayerNotificationManager = lazyRetry(() => import('./components/PrayerNotificationManager'), 'PrayerNotificationManager');
 import { AdhkarCountsProvider } from './context/AdhkarCountsContext';
@@ -288,7 +288,7 @@ export default function App() {
                 )}>
                   <div className="hidden md:block absolute inset-0 pointer-events-none z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950" />
-                    <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
+                    <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] bg-[url('/images/arabesque.png')]" />
                     <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] dark:opacity-[0.04]">
                       <img src="/logo-official-512.png" alt="Background Logo" className="w-[600px] h-[600px] object-contain drop-shadow-2xl grayscale dark:grayscale-0 opacity-50 dark:opacity-100" />
                     </div>

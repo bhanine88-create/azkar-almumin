@@ -325,7 +325,7 @@ export const IslamicStoryDetail: React.FC = () => {
 
       {/* Hero Header with category specific color */}
       <div className={cn("pt-24 pb-16 px-6 bg-gradient-to-br text-white relative overflow-hidden shadow-inner", categoryDetails.color)}>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-10 mix-blend-overlay"></div>
         <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="max-w-4xl mx-auto relative z-10 space-y-4">

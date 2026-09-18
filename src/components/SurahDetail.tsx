@@ -63,6 +63,8 @@ import { quranOfflineService } from "../services/quranOfflineService";
 import { audioCacheService } from "../services/audioCacheService";
 import { SettingsModal, TafsirModal } from './quran/SurahSubComponents';
 import { quranVocabulary, tajweedRules } from "../data/quranInteractions";
+import { STATIC_SURAHS } from "../utils/staticQuranData";
+import { SURAH_START_PAGES } from "../utils/quranUtils";
 import { Highlighter } from "lucide-react";
 import { PageTafsir } from "./PageTafsir";
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
@@ -167,14 +169,16 @@ const MushafPage = React.memo<{
   const [error, setError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [attemptIndex, setAttemptIndex] = useState(0);
+  const [pageAspectRatio, setPageAspectRatio] = useState<number>(843 / 1140);
   const { theme, mushafEdition, mushafZoom, fontFamily, fontSize, setViewMode } = useQuranSettings();
   const { settings } = useAppContext();
   const { t } = useTranslation(settings.appLanguage);
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 640;
 
-  // Reset attempt index when page or edition changes
+  // Reset attempt index and aspect ratio when page or edition changes
   useEffect(() => {
     setAttemptIndex(0);
+    setPageAspectRatio(843 / 1140);
   }, [pageNum, mushafEdition]);
 
   useEffect(() => {
@@ -351,8 +355,8 @@ const MushafPage = React.memo<{
   return (
     <div
       className={cn(
-        "relative w-full flex items-center justify-center overflow-visible transition-colors duration-200 bg-transparent",
-        isVertical ? "h-auto min-h-0 py-0" : "h-full max-h-full"
+        "relative w-full flex items-start justify-center overflow-visible transition-colors duration-200 bg-transparent",
+        isVertical ? "h-auto min-h-0 py-0" : "h-full max-h-full items-start pt-0"
       )}
     >
       {/* Complex Background Texture for Realism and Comfort */}
@@ -396,47 +400,79 @@ const MushafPage = React.memo<{
             </button>
           </div>
         ) : imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={`${t("page")} ${pageNum}`}
-            loading="eager"
-            decoding="async"
+          <div
+            id={`mushaf-page-frame-${pageNum}`}
             className={cn(
-              "origin-center [image-rendering:high-quality] relative z-0 transition-opacity duration-200",
-              loading ? "opacity-0" : "opacity-100",
-              isVertical ? "w-full max-w-full h-auto block mx-auto my-0 p-0 m-0" : "w-full max-w-full h-full max-h-full object-contain mx-auto my-auto p-0 m-0",
-              
-              isCreamyNight
-                ? "invert hue-rotate-[160deg] contrast-125 brightness-[0.85] sepia-[0.3]"
-                : isDarkTheme
-                ? "invert hue-rotate-180 contrast-[1.25] brightness-[0.95]"
-                : "contrast-[1.05] brightness-[1.02] mix-blend-darken",
+              "relative group/mushaf-page select-none cursor-pointer flex items-center justify-center transition-all duration-150 active:scale-[0.995]",
+              isVertical
+                ? "w-full max-w-[650px] mx-auto h-auto my-0"
+                : "h-full max-h-full max-w-full my-0 mt-0.5 mx-auto"
             )}
-            style={{
-              transform: `scale(${mushafZoom / 100})`,
-              userSelect: "none",
-              pointerEvents: "none",
-            }}
-            onLoad={() => setLoading(false)}
-            onError={() => {
-              const edition =
-                MUSHAF_EDITIONS[mushafEdition as keyof typeof MUSHAF_EDITIONS];
-              const maxAttempts = edition ? edition.getUrls(pageNum).length : 8;
-              if (attemptIndex < maxAttempts - 1) {
-                // Seamlessly try next server in background without breaking layout
-                setAttemptIndex((prev) => prev + 1);
-              } else {
-                setError(true);
-                setLoading(false);
+            style={
+              isVertical
+                ? {
+                    aspectRatio: `${pageAspectRatio}`,
+                  }
+                : {
+                    aspectRatio: `${pageAspectRatio}`,
+                    height: "100%",
+                    maxHeight: "100%",
+                    maxWidth: "100%",
+                  }
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!loading && !error && Array.isArray(ayahs) && ayahs.length > 0 && typeof setSelectedAyah === "function") {
+                setSelectedAyah(ayahs[0]);
               }
             }}
-            referrerPolicy="no-referrer"
-          />
-        ) : null}
+            title={t("show_tafsir") || "اضغط لعرض التفسير"}
+          >
+            <img
+              src={imageUrl}
+              alt={`${t("page")} ${pageNum}`}
+              loading="eager"
+              decoding="async"
+              className={cn(
+                "origin-center [image-rendering:high-quality] relative z-0 transition-opacity duration-200 block w-full h-full object-fill pointer-events-none select-none",
+                loading ? "opacity-0" : "opacity-100",
+                isCreamyNight
+                  ? "invert hue-rotate-[160deg] contrast-125 brightness-[0.85] sepia-[0.3]"
+                  : isDarkTheme
+                  ? "invert hue-rotate-180 contrast-[1.25] brightness-[0.95]"
+                  : "contrast-[1.05] brightness-[1.02] mix-blend-darken",
+              )}
+              style={{
+                transform: `scale(${mushafZoom / 100})`,
+                userSelect: "none",
+              }}
+              onLoad={(e) => {
+                setLoading(false);
+                const { naturalWidth, naturalHeight } = e.currentTarget;
+                if (naturalWidth && naturalHeight && naturalHeight > 0) {
+                  setPageAspectRatio(naturalWidth / naturalHeight);
+                }
+              }}
+              onError={() => {
+                const edition =
+                  MUSHAF_EDITIONS[mushafEdition as keyof typeof MUSHAF_EDITIONS];
+                const maxAttempts = edition ? edition.getUrls(pageNum).length : 8;
+                if (attemptIndex < maxAttempts - 1) {
+                  // Seamlessly try next server in background without breaking layout
+                  setAttemptIndex((prev) => prev + 1);
+                } else {
+                  setError(true);
+                  setLoading(false);
+                }
+              }}
+              referrerPolicy="no-referrer"
+            />
 
-      {/* Realistic Page Fold Shadows */}
-        <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/[0.03] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-black/[0.03] to-transparent pointer-events-none z-10" />
+            {/* Realistic Page Fold Shadows */}
+            <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/[0.03] to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-black/[0.03] to-transparent pointer-events-none z-10" />
+          </div>
+        ) : null}
 
     </div>
   );
@@ -1321,7 +1357,7 @@ export const SurahDetail: React.FC = () => {
           console.warn("Offline text load failed, fetching from network:", e);
         }
 
-        const isFromOfflineCache = quranData && quranData.ayahs && quranData.ayahs.length > 0 && quranData.ayahs[0].tafsir !== undefined;
+        const isFromOfflineCache = Boolean(quranData && quranData.ayahs && quranData.ayahs.length > 0);
 
         if (isFromOfflineCache && isMounted) {
           setCurrentPageIndex(getInitialPageIndex(quranData));
@@ -1496,6 +1532,32 @@ export const SurahDetail: React.FC = () => {
             }
           } catch (e) {
             console.error("Final fallback failed:", e);
+          }
+        }
+
+        if (!quranData && !surah) {
+          const staticInfo = STATIC_SURAHS.find((s) => s.number === surahNumber);
+          if (staticInfo) {
+            const startPage = SURAH_START_PAGES[surahNumber - 1] || 1;
+            quranData = {
+              number: staticInfo.number,
+              name: staticInfo.name,
+              englishName: staticInfo.englishName,
+              englishNameTranslation: staticInfo.englishNameTranslation,
+              revelationType: staticInfo.revelationType,
+              numberOfAyahs: staticInfo.numberOfAyahs,
+              ayahs: Array.from({ length: staticInfo.numberOfAyahs }, (_, idx) => ({
+                number: idx + 1,
+                numberInSurah: idx + 1,
+                text: `آية ${idx + 1}`,
+                page: startPage,
+                juz: 1,
+                hizb: 1,
+                manzil: 1,
+                ruku: 1,
+                sajda: false,
+              })),
+            };
           }
         }
 
@@ -2210,13 +2272,13 @@ export const SurahDetail: React.FC = () => {
         )}
         <div
           className={cn(
-            "sticky top-0 transition-all duration-500 transform z-[110] shrink-0 flex flex-col w-full translate-y-0 opacity-100"
+            "quran-viewer-header sticky top-0 transition-all duration-500 transform z-[110] shrink-0 flex flex-col w-full translate-y-0 opacity-100"
           )}
         >
           <header
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
             className={cn(
-              "w-full backdrop-blur-[20px] py-3 sm:py-4.5 px-4 sm:px-6 flex justify-between items-center border-b shadow-sm",
+              "w-full backdrop-blur-[20px] py-2 sm:py-3 px-3 sm:px-6 flex justify-between items-center border-b shadow-sm",
               isPagerMode ? "w-full" : "rounded-b-[1.5rem]",
               theme === "dark" ? "bg-slate-950/80 border-slate-800/40" :
               theme === "creamyNight" ? "bg-[#1c1815]/90 border-[#25211d]/50" :
@@ -3321,7 +3383,7 @@ export const SurahDetail: React.FC = () => {
                   }
 
                   const isTajweed = mushafEdition === "tajweed";
-                  const heightOffset = focusMode || !showControls ? 20 : 90;
+                  const heightOffset = focusMode || !showControls ? 10 : 70;
                   const cardStyle: React.CSSProperties = {
                     maxHeight: `calc(100vh - ${heightOffset}px)`,
                     height: "100%",
@@ -3332,14 +3394,14 @@ export const SurahDetail: React.FC = () => {
 
                   return (
                     <div 
-                      className="w-full h-full flex flex-col items-center justify-between shrink-0 relative z-10 overflow-hidden py-0 px-0 m-0 select-none"
+                      className="w-full h-full flex flex-col items-center justify-start shrink-0 relative z-10 overflow-hidden py-0 px-0 m-0 select-none"
                       style={{ touchAction: 'pan-x' }}
                       onScroll={handleScrollActivity}
                       onTouchMove={handleScrollActivity}
                     >
                       {!focusMode && showControls && (
                         <div className={cn(
-                          "w-full flex items-center justify-between px-2 sm:px-4 py-0.5 text-xs font-black pointer-events-none select-none shrink-0 z-20 transition-colors duration-200",
+                          "w-full flex items-center justify-between px-3 sm:px-5 py-1 text-xs font-black pointer-events-none select-none shrink-0 z-20 transition-colors duration-200 border-b border-black/5 dark:border-white/5",
                           theme === "creamyNight" ? "text-[#e8dac1]" :
                           theme === "dark" ? "text-slate-200" :
                           theme === "slate" ? "text-slate-200" :
@@ -3361,7 +3423,7 @@ export const SurahDetail: React.FC = () => {
                       )}
                       <div
                         className={cn(
-                          "shrink-0 relative overflow-hidden w-full h-full mx-0 p-0 flex flex-col items-center justify-center cursor-pointer group transition-all duration-300 rounded-none border-none shadow-none",
+                          "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-col items-center justify-start pt-0.5 sm:pt-1 transition-all duration-300 rounded-none border-none shadow-none",
                           settings.visualTheme === "glass"
                             ? "bg-white/30 backdrop-blur-md"
                             : theme === "creamyNight"
@@ -3379,18 +3441,8 @@ export const SurahDetail: React.FC = () => {
                             : "bg-white"
                         )}
                         style={cardStyle}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (extendedPages[currentPageIndex] && Array.isArray(extendedPages[currentPageIndex][1])) {
-                            const pageAyahs = extendedPages[currentPageIndex][1] as any[];
-                            if (pageAyahs.length > 0) {
-                              setSelectedAyah(pageAyahs[0]);
-                            }
-                          }
-                          toggleControls();
-                        }}
                       >
-                        <div className="relative w-full h-full flex flex-1 items-center justify-center p-0 m-0 overflow-hidden">
+                        <div className="relative w-full h-full flex flex-1 items-start justify-center p-0 m-0 overflow-hidden">
                           <MushafPage 
                             pageNum={pageNum} 
                             recitation={recitation} 

@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "Kalbiniz için manevi tavsiye",
   "feeling_suited_dhikr_title": "Bu durum için uygun zikir",
   "feeling_view_all_duas": "Tüm dua ve ayetleri gör",
-  "feeling_target_count": "Hedef sayı"
+  "feeling_target_count": "Hedef sayı",
+  "support_app_continuation": "Uygulamanın Devamını ve Gelişimini Destekleyin",
+  "support_app_continuation_desc": "Katkınız sadaka-i cariyenin sürmesine ve yeni özelliklerin geliştirilmesine yardımcı olur",
+  "support_developer_btn": "Geliştiriciyi Destekle",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "Resmi ve Varsayılan Ayarları Geri Yükle",
+  "reset_official_settings_desc": "Tüm bölümleri, özellikleri ve görünümü resmi varsayılan durumuna sıfırlar",
+  "confirm_reset_official_title": "Resmi geri yüklemeyi onaylamak için tekrar dokunun",
+  "confirm_reset_official_desc": "Tüm özellikler ve ayarlar onaylanmış resmi varsayılanlara göre ayarlanacaktır",
+  "rate_and_share_app": "Uygulamayı Değerlendir ve Paylaş",
+  "rate_share_modal_desc": "Uygulamayı desteklemeniz ve paylaşmanız dünya çapındaki Müslümanlar için bir sadaka-i cariyedir.",
+  "rate_share_how_rate": "Uygulama deneyiminizi nasıl değerlendirirsiniz?",
+  "rate_share_submit": "Değerlendirmeyi Gönder",
+  "rate_share_thank_you": "Güzel değerlendirmeniz için Allah sizden razı olsun!",
+  "rate_share_btn": "Aile ve Arkadaşlarla Paylaş",
+  "rate_copy_link_btn": "Uygulama Bağlantısını Kopyala",
+  "rate_link_copied": "Uygulama bağlantısı ve mesaj kopyalandı!"
 }

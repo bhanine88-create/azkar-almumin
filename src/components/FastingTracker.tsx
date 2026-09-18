@@ -367,7 +367,7 @@ export const FastingTracker: React.FC = () => {
           {/* Subtle Arabesque Pattern */}
           <div 
             className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none mix-blend-overlay"
-            style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }}
+            style={{ backgroundImage: "url('/images/arabesque.png')" }}
           />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">

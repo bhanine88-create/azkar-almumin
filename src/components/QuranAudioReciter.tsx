@@ -331,7 +331,7 @@ export const QuranAudioReciter: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 py-6 px-4 pb-24 w-full min-h-screen overflow-y-auto custom-scrollbar relative bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col gap-4 py-6 px-4 pb-24 w-full h-full flex-1 overflow-y-auto custom-scrollbar relative bg-slate-50 dark:bg-slate-950">
       <div className="flex items-center justify-between mb-2 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md pb-4 z-10 pt-2 -mx-4 px-4 shadow-sm border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-4">
           <BackButton forceFallback={true} fallbackPath="/quran-audio" />

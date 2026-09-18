@@ -17,29 +17,11 @@ export function lazyRetry<T extends ComponentType<any>>(
   const loadModule = (): Promise<{ default: ComponentType<any> }> => {
     if (!cachedPromise) {
       cachedPromise = (async () => {
-        let retries = 5;
+        let retries = 3;
         let lastError: any = null;
         while (retries > 0) {
           try {
-            let module: any = null;
-            if (retries === 5 || !lastError) {
-              module = await importFn();
-            } else {
-              // On retry, bypass browser ESM failed promise cache using cache-busting query parameter
-              const errMsg = String(lastError?.message || lastError || '');
-              const urlMatch = errMsg.match(/https?:\/\/[^\s']+/);
-              
-              if (urlMatch) {
-                const cleanUrl = urlMatch[0];
-                const cacheBusted = cleanUrl + (cleanUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-                module = await import(/* @vite-ignore */ cacheBusted);
-              } else if (name) {
-                const cacheBusted = `/src/components/${name}.tsx?t=` + Date.now();
-                module = await import(/* @vite-ignore */ cacheBusted);
-              } else {
-                module = await importFn();
-              }
-            }
+            const module = await importFn();
             
             if (module) {
               // Direct function/component default export
@@ -98,8 +80,8 @@ export function lazyRetry<T extends ComponentType<any>>(
               }
               throw error;
             }
-            // Exponential backoff
-            await new Promise((resolve) => setTimeout(resolve, 300 * (6 - retries)));
+            // Short backoff before retrying importFn
+            await new Promise((resolve) => setTimeout(resolve, 300));
           }
         }
         cachedPromise = null;

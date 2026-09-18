@@ -10,8 +10,7 @@ import {
   HEART_FEELINGS_LIST, FeelingItem, CustomHeartDua, 
   getCustomHeartDuas, saveCustomHeartDua, deleteCustomHeartDua 
 } from '../data/heartFeelingsData';
-import { triggerHaptic, checkInputSafety } from '../lib/utils';
-import { Share } from '@capacitor/share';
+import { triggerHaptic, checkInputSafety, shareContent } from '../lib/utils';
 
 interface HeartFeelingsModalProps {
   isOpen: boolean;
@@ -88,21 +87,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
   const handleShare = async (title: string, text: string, source: string) => {
     triggerHaptic('light');
     const shareText = `﴿ ${title} ﴾\n\n"${text}"\n\nالمصدر: ${source}\n\nتطبيق أذكار المؤمن`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title,
-          text: shareText,
-        });
-      } else {
-        await Share.share({
-          title,
-          text: shareText,
-        });
-      }
-    } catch (e) {
-      handleCopy(shareText, title);
-    }
+    await shareContent(title, shareText);
   };
 
   const handleSaveCustomDua = (e: React.FormEvent) => {
@@ -180,7 +165,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
           <div className="relative p-5 sm:p-6 bg-gradient-to-r from-orange-600 via-amber-600 to-rose-600 overflow-hidden shrink-0">
             <div 
               className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" 
-              style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} 
+              style={{ backgroundImage: "url('/images/arabesque.png')" }} 
             />
             <div className="absolute -top-12 -left-12 w-36 h-36 bg-white/20 rounded-full blur-2xl pointer-events-none" />
 

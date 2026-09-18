@@ -88,7 +88,7 @@ export const SadaqahJariyah: React.FC = () => {
         {/* Arabesque Pattern */}
         <div 
           className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" 
-          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} 
+          style={{ backgroundImage: "url('/images/arabesque.png')" }} 
         />
         
         {/* Soft Glowing Light Orbs */}
@@ -118,13 +118,13 @@ export const SadaqahJariyah: React.FC = () => {
               <ScrollText size={24} className="text-amber-300 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-xs sm:text-sm font-black text-amber-200 leading-relaxed">
-                  قال رسول الله ﷺ:
+                  عَنْ أَبِي هُرَيْرَةَ رضي الله عنه: أَنَّ رَسُولَ اللَّهِ ﷺ قَالَ:
                 </p>
                 <p className="text-xs sm:text-sm font-bold text-white/95 leading-relaxed italic">
-                  «إِذَا مَاتَ الإِنْسَانُ انْقَطَعَ عَنْهُ عَمَلُهُ إِلاَّ مِنْ ثَلاَثٍ: إِلاَّ مِنْ صَدَقَةٍ جَارِيَةٍ، أَوْ عِلْمٍ يُنْتَفَعُ بِهِ، أَوْ وَلَدٍ صَالِحٍ يَدْعُو لَهُ»
+                  «إِذَا مَاتَ ابنُ آدم انْقَطَعَ عَنْهُ عَمَلُهُ إِلَّا مِنْ ثَلَاثٍ: صَدَقَةٍ جَارِيَةٍ، أو عِلْمٍ يُنْتَفَعُ بِهِ، أَوْ وَلَدٍ صَالِحٍ يَدْعُو لَهُ»
                 </p>
                 <span className="block text-[10px] text-emerald-200/80 font-semibold pt-1">
-                  [صحيح مسلم]
+                  رَوَاهُ مُسْلِمٌ
                 </span>
               </div>
             </div>
@@ -257,7 +257,7 @@ export const SadaqahJariyah: React.FC = () => {
             <div className="mt-4 p-5 rounded-3xl bg-gradient-to-br from-amber-950 via-stone-900 to-slate-950 text-amber-100 border border-amber-500/30 shadow-2xl relative overflow-hidden space-y-3 text-center">
               <div 
                 className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" 
-                style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} 
+                style={{ backgroundImage: "url('/images/arabesque.png')" }} 
               />
               <div className="relative z-10 space-y-2">
                 <div className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-[10px] font-black text-amber-300">
@@ -416,7 +416,7 @@ export const SadaqahJariyah: React.FC = () => {
         <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 rounded-3xl p-6 text-white border border-emerald-500/30 shadow-2xl space-y-3 text-center relative overflow-hidden">
           <div 
             className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" 
-            style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} 
+            style={{ backgroundImage: "url('/images/arabesque.png')" }} 
           />
           <div className="relative z-10 space-y-2">
             <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30">

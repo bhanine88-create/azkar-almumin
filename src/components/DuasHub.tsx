@@ -71,7 +71,7 @@ export const DuasHub: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 pt-6 w-full max-w-5xl mx-auto pb-20">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 pt-6 w-full max-w-5xl mx-auto pb-20 flex-1 overflow-y-auto custom-scrollbar">
       <div className="flex items-center gap-4 mb-6">
         <BackButton />
         <div className="flex flex-col">
@@ -95,7 +95,7 @@ export const DuasHub: React.FC = () => {
             )}
           >
             <div className={cn("absolute inset-0 bg-gradient-to-br", section.color)} />
-            <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+            <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             
             <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center text-white z-10 w-full">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-md border border-white/20 mb-2 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">

@@ -505,8 +505,14 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
             return;
           }
         }
-      } catch (err) {
-        console.error('Error sharing:', err);
+      } catch (err: any) {
+        const isCancellation =
+          err?.name === 'AbortError' ||
+          err?.message?.toLowerCase().includes('cancel') ||
+          err?.message?.toLowerCase().includes('abort');
+        if (!isCancellation) {
+          console.warn('Error sharing quote file:', err);
+        }
       }
     } finally {
       setIsSharing(false);

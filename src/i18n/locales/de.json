@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "Spiritueller Rat für dein Herz",
   "feeling_suited_dhikr_title": "Empfohlener Dhikr für diesen Zustand",
   "feeling_view_all_duas": "Alle Duas & Verse anzeigen",
-  "feeling_target_count": "Zielanzahl"
+  "feeling_target_count": "Zielanzahl",
+  "support_app_continuation": "Fortführung und Entwicklung der App unterstützen",
+  "support_app_continuation_desc": "Ihr Beitrag unterstützt die fortlaufende Wohltätigkeit (Sadaqah Jariyah) und neue Funktionen",
+  "support_developer_btn": "Den Entwickler unterstützen",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "Offizielle Standardeinstellungen wiederherstellen",
+  "reset_official_settings_desc": "Setzt alle Bereiche, Funktionen und das Design auf den offiziellen Standard zurück",
+  "confirm_reset_official_title": "Erneut tippen, um das offizielle Zurücksetzen zu bestätigen",
+  "confirm_reset_official_desc": "Alle Funktionen und Einstellungen werden auf den genehmigten Standard zurückgesetzt",
+  "rate_and_share_app": "App bewerten und teilen",
+  "rate_share_modal_desc": "Ihre Unterstützung und das Teilen der App ist eine fortlaufende Wohltätigkeit (Sadaqah Jariyah) für Muslime weltweit.",
+  "rate_share_how_rate": "Wie bewerten Sie Ihre Erfahrung mit der App?",
+  "rate_share_submit": "Bewertung absenden",
+  "rate_share_thank_you": "Möge Allah Sie für Ihre freundliche Bewertung belohnen!",
+  "rate_share_btn": "Mit Familie und Freunden teilen",
+  "rate_copy_link_btn": "App-Link kopieren",
+  "rate_link_copied": "App-Link und Nachricht kopiert!"
 }

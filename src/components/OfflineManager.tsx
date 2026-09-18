@@ -442,7 +442,8 @@ export const OfflineManager: React.FC = () => {
             const state = downloadStates[edition.id] || { isDownloaded: false, count: 0 };
             const isDownloading = downloadProgress[edition.id]?.isDownloading;
             const progress = downloadProgress[edition.id]?.progress || 0;
-            const progressPercent = Math.round((progress / edition.totalPage) * 100);
+            const currentCount = isDownloading ? Math.max(state.count, progress) : state.count;
+            const progressPercent = Math.round((currentCount / edition.totalPage) * 100);
             const editionNameKey = edition.id === 'hafs' ? 'mushaf_hafs' : edition.id === 'warsh' ? 'mushaf_warsh' : 'mushaf_tajweed';
 
             return (
@@ -455,7 +456,7 @@ export const OfflineManager: React.FC = () => {
                     <div>
                       <h5 className="text-sm font-black text-white">{t(editionNameKey, edition.name)}</h5>
                       <p className="text-[10px] text-white/40 font-bold">
-                        {t('offline_pages_downloaded', '{{count}} / {{total}} صفحة محملة', { count: state.count, total: edition.totalPage })}
+                        {t('offline_pages_downloaded', '{{count}} / {{total}} صفحة محملة', { count: currentCount, total: edition.totalPage })}
                       </p>
                     </div>
                   </div>
@@ -470,7 +471,10 @@ export const OfflineManager: React.FC = () => {
                       </button>
                     ) : (
                       <button 
-                        onClick={() => startDownloadEdition(edition.id)}
+                        onClick={async () => {
+                          await startDownloadEdition(edition.id);
+                          await checkStorageStatus();
+                        }}
                         disabled={isDownloading || !isOnline}
                         className={cn(
                           "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all",

@@ -2158,8 +2158,8 @@ export const Adhkar: React.FC = () => {
                           : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-900/50"
                       )}
                     >
-                      <span className="font-black text-xs">قائمة متتالية</span>
-                      <span className="text-[9px] opacity-75 font-normal">عرض الأذكار تحت بعضها</span>
+                      <span className="font-black text-xs">قائمة متتالية (الافتراضي)</span>
+                      <span className="text-[9px] opacity-75 font-normal">عرض الأذكار متتالية تحت بعضها</span>
                     </button>
                     <button
                       onClick={() => updateSettings({ adhkarViewMode: 'single' })}

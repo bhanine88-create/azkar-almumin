@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "Conseil spirituel pour votre cœur",
   "feeling_suited_dhikr_title": "Dhikr recommandé pour cet état",
   "feeling_view_all_duas": "Voir toutes les invocations et versets",
-  "feeling_target_count": "Nombre cible"
+  "feeling_target_count": "Nombre cible",
+  "support_app_continuation": "Soutenir la continuité et le développement de l'application",
+  "support_app_continuation_desc": "Votre contribution aide à pérenniser l'aumône continue (Sadaqah Jariyah) et le développement",
+  "support_developer_btn": "Soutenir le développeur",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "Restaurer les paramètres officiels par défaut",
+  "reset_official_settings_desc": "Rétablit toutes les sections, fonctionnalités et l'apparence à l'état officiel par défaut",
+  "confirm_reset_official_title": "Appuyez à nouveau pour confirmer la réinitialisation officielle",
+  "confirm_reset_official_desc": "Toutes les fonctionnalités et paramètres seront réinitialisés selon la configuration officielle",
+  "rate_and_share_app": "Évaluer et partager l'application",
+  "rate_share_modal_desc": "Votre soutien et partage de l'application est une aumône continue (Sadaqah Jariyah) pour les musulmans du monde entier.",
+  "rate_share_how_rate": "Comment évaluez-vous votre expérience avec l'application ?",
+  "rate_share_submit": "Envoyer l'évaluation",
+  "rate_share_thank_you": "Qu'Allah vous récompense pour votre chaleureux avis !",
+  "rate_share_btn": "Partager avec la famille et les amis",
+  "rate_copy_link_btn": "Copier le lien de l'application",
+  "rate_link_copied": "Lien et message de l'application copiés !"
 }

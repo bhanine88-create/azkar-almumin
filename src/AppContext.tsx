@@ -3,6 +3,7 @@ import { UserProgress, AppSettings, AdhkarData, Dhikr, QuranLog, BaqiyatSalihat,
 import { ADHKAR_DATA as INITIAL_ADHKAR_DATA } from './constants';
 import { backupService } from './services/backupService';
 import { mushafService } from './services/mushafService';
+import { quranOfflineService } from './services/quranOfflineService';
 import { userService } from './services/userService';
 import { syncService } from './services/syncService';
 import { auth, db } from './firebase';
@@ -56,6 +57,7 @@ interface AppContextType {
   downloadProgress: Record<string, { progress: number, isDownloading: boolean }>;
   startDownloadEdition: (editionId: string) => Promise<void>;
   updateProgress: (progress: UserProgress | ((prev: UserProgress) => UserProgress)) => void;
+  resetSettings: () => void;
   homeWidgets: any[];
   updateHomeWidgets: (widgets: any[]) => void;
 }
@@ -129,6 +131,129 @@ const cleanupLegacyStorage = () => {
   } catch (e) {
     // Fail silently in production
   }
+};
+
+export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
+  quizTimerDuration: 20,
+  appLanguage: 'ar',
+  theme: 'system',
+  primaryColor: '#0f766e',
+  fontSize: 'medium',
+  fontFamily: 'Tajawal',
+  adhkarFontSize: '25px',
+  adhkarFontFamily: 'Amiri',
+  hadithFontFamily: 'Amiri',
+  adhkarTheme: 'emerald',
+  adhkarWallpaperPattern: 'islamic',
+  adhkarParticlesEnabled: true,
+  adhkarViewMode: 'list',
+  hadithViewMode: 'single',
+  adhkarAutoAdvance: true,
+  adhkarCategoryThemes: {
+    morning: 'classicGold',
+    evening: 'emerald'
+  },
+  visualTheme: 'glass',
+  adhkarLayout: 'grid',
+  hijriOffset: 0,
+  notificationsEnabled: true,
+  morningAdhkarTime: '06:00',
+  morningAdhkarEndTime: '10:00',
+  eveningAdhkarTime: '18:00',
+  eveningAdhkarEndTime: '22:00',
+  morningNotificationsEnabled: true,
+  eveningNotificationsEnabled: true,
+  morningAdhkarFollowupEnabled: true,
+  eveningAdhkarFollowupEnabled: true,
+  sunnahReminderEnabled: true,
+  sunnahReminderTime: '21:30',
+  randomAdhkarEnabled: true,
+  randomAdhkarInterval: 30,
+  randomAdhkarQuietHoursEnabled: true,
+  randomAdhkarQuietStart: '23:00',
+  randomAdhkarQuietEnd: '06:30',
+  randomAdhkarSound: 'default',
+  randomAdhkarNotificationType: 'both',
+  randomAdhkarTheme: 'emerald',
+  prayerNotificationsEnabled: true,
+  prayerRingtone: 'default',
+  morningAdhkarRingtone: 'default',
+  eveningAdhkarRingtone: 'default',
+  customReminderRingtone: 'default',
+  mushafEdition: 'hafs',
+  customAppIcon: 'preset:original',
+  appIconScale: 100,
+  watermarkLogoScale: 100,
+  autoIconScale: true,
+  reminders: [],
+  userColor: 'bg-teal-500',
+  prayerNotificationSettings: {
+    Fajr: true,
+    Sunrise: false,
+    Dhuhr: true,
+    Asr: true,
+    Maghrib: true,
+    Isha: true
+  },
+  prayerCalcMethod: '4',
+  prayerAsrMethod: '0',
+  prayerOffsets: {
+    Fajr: 0,
+    Sunrise: 0,
+    Dhuhr: 0,
+    Asr: 0,
+    Maghrib: 0,
+    Isha: 0
+  },
+  prayerDaylightSaving: false,
+  prayerManualMode: false,
+  prayerManualTimes: {
+    Fajr: '05:00',
+    Sunrise: '06:30',
+    Dhuhr: '12:00',
+    Asr: '15:30',
+    Maghrib: '18:00',
+    Isha: '19:30'
+  },
+  inspirationType: 'all',
+  inspirationFont: 'Amiri, serif',
+  inspirationTheme: 'dynamic',
+  hapticTasbihEnabled: true,
+  tasbihBeadStyle: 'emerald',
+  tasbihSoundEnabled: true,
+  tasbihDailyGoal: 100,
+  sidebarTheme: 'glassy',
+  sidebarCompactMode: false,
+  sidebarShowIconsOnly: false,
+  sidebarBlurStrength: 'light',
+  audioPlaybackSpeed: 1,
+  audioAutoAdvance: true,
+  audioSleepTimerMinutes: 0,
+  namesOfAllahLayout: 'grid4',
+  namesOfAllahFrame: 'rounded',
+  namesOfAllahFontFamily: 'Amiri',
+  namesOfAllahFontSize: 'medium',
+  namesOfAllahTheme: 'burgundy',
+  namesOfAllahShowMeaning: true,
+  namesOfAllahShowNumber: true,
+  namesOfAllahAutoPlay: false,
+  namesOfAllahAutoPlaySpeed: 4,
+  namesOfAllahFavoriteIds: [],
+  customRandomAdhkar: [
+    "سبحان الله",
+    "الحمد لله",
+    "لا إله إلا الله",
+    "الله أكبر",
+    "لا حول ولا قوة إلا بالله",
+    "اللهم صلِّ وسلم على نبينا محمد",
+    "أستغفر الله العظيم وأتوب إليه",
+    "سبحان الله وبحمده، سبحان الله العظيم",
+    "حسبي الله ونعم الوكيل",
+    "لا إله إلا أنت سبحانك إني كنت من الظالمين",
+    "اللهم إنك عفو تحب العفو فاعف عني",
+    "يا حي يا قيوم برحمتك أستغيث، أصلح لي شأني كله ولا تكلني إلى نفسي طرفة عين",
+    "اللهم آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار"
+  ],
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -236,6 +361,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         defaultWidgets.forEach(dw => {
           if (!merged.find((w: any) => w.id === dw.id)) merged.push(dw);
         });
+        const isUpgradedToV26Widgets = safeLocalStorageGetItem('believer_widgets_v26_upgraded');
+        if (!isUpgradedToV26Widgets) {
+          safeLocalStorageSetItem('believer_widgets_v26_upgraded', 'true');
+          return defaultWidgets.map(dw => {
+            const found = merged.find((m: any) => m.id === dw.id);
+            return found ? { ...dw, isVisible: found.isVisible !== false } : dw;
+          });
+        }
         return merged;
       } catch (e) {}
     }
@@ -249,139 +382,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20');
-    const defaultSettings: AppSettings = {
-      quizTimerDuration: 20,
-      appLanguage: 'ar',
-      theme: 'system',
-      primaryColor: '#0f766e',
-      fontSize: 'medium',
-      fontFamily: 'Tajawal',
-      adhkarFontSize: '25px',
-      adhkarFontFamily: 'Amiri',
-      hadithFontFamily: 'Amiri',
-      adhkarTheme: 'emerald',
-      adhkarWallpaperPattern: 'islamic',
-      adhkarParticlesEnabled: true,
-      adhkarViewMode: 'single',
-      hadithViewMode: 'single',
-      adhkarAutoAdvance: true,
-      adhkarCategoryThemes: {
-        morning: 'classicGold',
-        evening: 'emerald'
-      },
-      visualTheme: 'glass',
-      adhkarLayout: 'grid',
-      hijriOffset: 0,
-      notificationsEnabled: true,
-      morningAdhkarTime: '06:00',
-      morningAdhkarEndTime: '10:00',
-      eveningAdhkarTime: '18:00',
-      eveningAdhkarEndTime: '22:00',
-      morningNotificationsEnabled: true,
-      eveningNotificationsEnabled: true,
-      morningAdhkarFollowupEnabled: true,
-      eveningAdhkarFollowupEnabled: true,
-      sunnahReminderEnabled: true,
-      sunnahReminderTime: '21:30',
-      randomAdhkarEnabled: true,
-      randomAdhkarInterval: 30, // Default to 30 minutes
-      randomAdhkarQuietHoursEnabled: true,
-      randomAdhkarQuietStart: '23:00',
-      randomAdhkarQuietEnd: '06:30',
-      randomAdhkarSound: 'default',
-      randomAdhkarNotificationType: 'both',
-      randomAdhkarTheme: 'emerald',
-      prayerNotificationsEnabled: true,
-      prayerRingtone: 'default',
-      morningAdhkarRingtone: 'default',
-      eveningAdhkarRingtone: 'default',
-      customReminderRingtone: 'default',
-      mushafEdition: 'hafs',
-      customAppIcon: 'preset:original',
-      appIconScale: 100,
-      watermarkLogoScale: 100,
-      autoIconScale: true,
-      reminders: [],
-      userColor: 'bg-teal-500',
-      prayerNotificationSettings: {
-        Fajr: true,
-        Sunrise: false,
-        Dhuhr: true,
-        Asr: true,
-        Maghrib: true,
-        Isha: true
-      },
-      prayerCalcMethod: safeLocalStorageGetItem('prayer_method') || '4',
-      prayerAsrMethod: safeLocalStorageGetItem('prayer_asr_method') || '0',
-      prayerOffsets: {
-        Fajr: 0,
-        Sunrise: 0,
-        Dhuhr: 0,
-        Asr: 0,
-        Maghrib: 0,
-        Isha: 0
-      },
-      prayerDaylightSaving: safeLocalStorageGetItem('prayer_dst') === 'true',
-      prayerManualMode: false,
-      prayerManualTimes: {
-        Fajr: '05:00',
-        Sunrise: '06:30',
-        Dhuhr: '12:00',
-        Asr: '15:30',
-        Maghrib: '18:00',
-        Isha: '19:30'
-      },
-      inspirationType: 'all',
-      inspirationFont: 'Amiri, serif',
-      inspirationTheme: 'dynamic',
-      hapticTasbihEnabled: true,
-      tasbihBeadStyle: 'emerald',
-      tasbihSoundEnabled: true,
-      tasbihDailyGoal: 100,
-      sidebarTheme: 'glassy',
-      sidebarCompactMode: false,
-      sidebarShowIconsOnly: false,
-      sidebarBlurStrength: 'light',
-      audioPlaybackSpeed: 1,
-      audioAutoAdvance: true,
-      audioSleepTimerMinutes: 0,
-      customRandomAdhkar: [
-        "سبحان الله",
-        "الحمد لله",
-        "لا إله إلا الله",
-        "الله أكبر",
-        "لا حول ولا قوة إلا بالله",
-        "اللهم صلِّ وسلم على نبينا محمد",
-        "أستغفر الله العظيم وأتوب إليه",
-        "سبحان الله وبحمده، سبحان الله العظيم",
-        "حسبي الله ونعم الوكيل",
-        "لا إله إلا أنت سبحانك إني كنت من الظالمين",
-        "اللهم إنك عفو تحب العفو فاعف عني",
-        "يا حي يا قيوم برحمتك أستغيث، أصلح لي شأني كله ولا تكلني إلى نفسي طرفة عين",
-        "اللهم آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار"
-      ],
-    };
+    const defaultSettings: AppSettings = OFFICIAL_DEFAULT_SETTINGS;
 
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         
-        // Force reset existing notification settings to false once, to respect user request that they are disabled by default
-        const resetDone = safeLocalStorageGetItem('believer_notifs_default_v2_reset');
-        if (!resetDone) {
-          parsed.notificationsEnabled = false;
-          parsed.morningNotificationsEnabled = false;
-          parsed.eveningNotificationsEnabled = false;
-          parsed.sunnahReminderEnabled = false;
-          parsed.randomAdhkarEnabled = false;
-          parsed.prayerNotificationsEnabled = false;
-          try {
-            safeLocalStorageSetItem('believer_notifs_default_v2_reset', 'true');
-          } catch (err) {
-            console.warn(err);
-          }
-        }
-
         // Scrub internal triggers to prevent them from firing on every app load
         delete parsed._triggerRandom;
         delete parsed._triggerMorning;
@@ -417,6 +423,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           safeLocalStorageSetItem('believer_settings_v24_upgraded', 'true');
         }
 
+        const isUpgradingToV25 = !safeLocalStorageGetItem('believer_settings_v25_adhkar_list');
+        if (isUpgradingToV25) {
+          merged.adhkarViewMode = 'list';
+          safeLocalStorageSetItem('believer_settings_v25_adhkar_list', 'true');
+        }
+
         const isUpgradingToV23 = !safeLocalStorageGetItem('believer_settings_v23_upgraded');
         if (isUpgradingToV23) {
           merged.notificationsEnabled = true;
@@ -430,8 +442,57 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           merged.tasbihSoundEnabled = true;
           merged.tasbihBeadStyle = 'emerald';
           merged.theme = 'system';
-          merged.adhkarViewMode = 'single';
+          merged.adhkarViewMode = 'list';
           safeLocalStorageSetItem('believer_settings_v23_upgraded', 'true');
+        }
+
+        // Official App Baseline v26: Establish all new features and updates as official defaults
+        const isUpgradingToOfficialV26 = !safeLocalStorageGetItem('believer_settings_v26_official');
+        if (isUpgradingToOfficialV26) {
+          merged.adhkarViewMode = 'list';
+          merged.visualTheme = 'glass';
+          merged.sidebarTheme = 'glassy';
+          merged.tasbihSoundEnabled = true;
+          merged.tasbihBeadStyle = 'emerald';
+          merged.hapticTasbihEnabled = true;
+          merged.audioAutoAdvance = true;
+          merged.audioPlaybackSpeed = 1;
+          merged.audioSleepTimerMinutes = 0;
+          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
+          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
+          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
+          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
+          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
+          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
+          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
+          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
+          safeLocalStorageSetItem('believer_settings_v26_official', 'true');
+        }
+
+        // Migration v27: Ensure all notifications and reminders are firmly enabled by default
+        const isUpgradingToNotifsEnabledV27 = !safeLocalStorageGetItem('believer_notifs_firm_enabled_v27');
+        if (isUpgradingToNotifsEnabledV27) {
+          merged.notificationsEnabled = true;
+          merged.prayerNotificationsEnabled = true;
+          merged.morningNotificationsEnabled = true;
+          merged.eveningNotificationsEnabled = true;
+          merged.morningAdhkarFollowupEnabled = true;
+          merged.eveningAdhkarFollowupEnabled = true;
+          merged.sunnahReminderEnabled = true;
+          merged.randomAdhkarEnabled = true;
+          merged.prayerNotificationSettings = {
+            Fajr: true,
+            Sunrise: false,
+            Dhuhr: true,
+            Asr: true,
+            Maghrib: true,
+            Isha: true
+          };
+          safeLocalStorageSetItem('believer_notifs_firm_enabled_v27', 'true');
+        }
+
+        if (!merged.adhkarViewMode) {
+          merged.adhkarViewMode = 'list';
         }
 
         if (!merged.primaryColor || typeof merged.primaryColor !== 'string') {
@@ -570,10 +631,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           [editionId]: { isDownloading: true, progress }
         }));
       });
+
+      // Also ensure full Quran text for all 114 surahs is cached offline
+      try {
+        await quranOfflineService.downloadFullQuranText('ar.muyassar', editionId);
+      } catch (textErr) {
+        console.warn("Quran text auto-caching warning:", textErr);
+      }
+
+      const finalCount = await mushafService.getDownloadProgress(editionId);
       
       setDownloadProgress(prev => ({
         ...prev,
-        [editionId]: { isDownloading: false, progress: 0 }
+        [editionId]: { isDownloading: false, progress: finalCount || 604 }
       }));
     } catch (error) {
       console.error(error);
@@ -1554,10 +1624,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, []);
 
+  const resetSettings = React.useCallback(() => {
+    setSettings(OFFICIAL_DEFAULT_SETTINGS);
+    safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
+    safeLocalStorageSetItem('quran-reciter', '7');
+    setHomeWidgets(defaultWidgets);
+    safeLocalStorageSetItem('home_widgets_config', JSON.stringify(defaultWidgets.map(w => ({ id: w.id, isVisible: w.isVisible }))));
+  }, [defaultWidgets]);
+
   const contextValue = React.useMemo(() => ({ 
     homeWidgets, updateHomeWidgets, progress, settings, adhkarData,
     addPoints, completeChallenge, markCategoryCompleted, updateSettings, incrementTasbih,
-    addDhikr, updateDhikr, deleteDhikr, reorderDhikr, resetAdhkar, resetCategory,
+    addDhikr, updateDhikr, deleteDhikr, reorderDhikr, resetAdhkar, resetCategory, resetSettings,
     cleanAdhkarData, isCategoryCompleted,
     addQuranLog, updateQuranGoal, updateLastRead, 
     togglePageRead, toggleSurahRead, addBookmark, removeBookmark, addTasbihGoal, incrementTasbihGoal, deleteTasbihGoal,
@@ -1569,7 +1647,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }), [
     homeWidgets, updateHomeWidgets, progress, settings, adhkarData,
     addPoints, completeChallenge, markCategoryCompleted, updateSettings, incrementTasbih,
-    addDhikr, updateDhikr, deleteDhikr, reorderDhikr, resetAdhkar, resetCategory,
+    addDhikr, updateDhikr, deleteDhikr, reorderDhikr, resetAdhkar, resetCategory, resetSettings,
     cleanAdhkarData, isCategoryCompleted,
     addQuranLog, updateQuranGoal, updateLastRead, 
     togglePageRead, toggleSurahRead, addBookmark, removeBookmark, addTasbihGoal, incrementTasbihGoal, deleteTasbihGoal,

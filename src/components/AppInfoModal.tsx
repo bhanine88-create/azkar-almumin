@@ -4,6 +4,7 @@ import { X, Share2, Star, Facebook, Instagram, Twitter, Shield, Heart, Send } fr
 import { AppIcon } from './ui/AppIcon';
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
+import { shareContent } from '../lib/utils';
 
 interface AppInfoModalProps {
   isOpen: boolean;
@@ -20,20 +21,7 @@ export const AppInfoModal: React.FC<AppInfoModalProps> = ({ isOpen, onClose }) =
       'حمل تطبيق أذكار المؤمن وتمتع بتجربة إيمانية فريدة مع الأذكار، القرآن الكريم، المسبحة الإلكترونية والمزيد. تطبيق خالي من الإعلانات تماماً ومصمم براحة للمستخدم.'
     );
     const shareUrl = "https://athkar.app";
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: t('app_name', 'أذكار المؤمن'),
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-      }
-    } else {
-      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      alert(t('copied_link_success', 'تم نسخ رابط التطبيق بنجاح!'));
-    }
+    await shareContent(t('app_name', 'أذكار المؤمن'), shareText, shareUrl);
   };
 
   const handleRate = () => {

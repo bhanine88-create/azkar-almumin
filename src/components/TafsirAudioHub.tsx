@@ -293,7 +293,7 @@ export function TafsirAudioHub() {
   const totalTafsirTracksCount = TAFSIR_SCHOLARS.reduce((acc, s) => acc + s.surahs.reduce((sum, sr) => sum + sr.tracks.length, 0), 0);
 
   return (
-    <div className="flex flex-col min-h-screen px-4 pb-24 w-full max-w-lg mx-auto">
+    <div className="flex flex-col h-full flex-1 overflow-y-auto px-4 pb-24 w-full max-w-lg mx-auto">
       {/* Settings Panel */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>

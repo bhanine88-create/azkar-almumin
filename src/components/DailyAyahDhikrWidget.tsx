@@ -75,7 +75,7 @@ export const DailyAyahDhikrWidget: React.FC = () => {
         isRtl ? "text-right" : "text-left"
       )}>
         {/* Decorative Background Elements */}
-        <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+        <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
         
         <div className={cn(
           "absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl pointer-events-none transition-colors duration-700 mix-blend-screen opacity-50",
@@ -86,7 +86,7 @@ export const DailyAyahDhikrWidget: React.FC = () => {
           activeTab === 'ayah' ? "bg-teal-400/20" : "bg-orange-400/20"
         )} />
 
-        <div className="relative z-10 flex flex-col h-[180px] justify-between">
+        <div className="relative z-10 flex flex-col min-h-[180px] justify-between">
           
           {/* Header Controls */}
           <div className="flex items-center justify-between mb-2">

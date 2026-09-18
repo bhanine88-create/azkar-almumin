@@ -9,9 +9,8 @@ import {
   HEART_FEELINGS_LIST, FeelingItem, CustomHeartDua, 
   getCustomHeartDuas, saveCustomHeartDua, deleteCustomHeartDua 
 } from '../data/heartFeelingsData';
-import { triggerHaptic, checkInputSafety } from '../lib/utils';
-import { Share } from '@capacitor/share';
-import { HeartFeelingsModal } from './HeartFeelingsModal';
+import { triggerHaptic, checkInputSafety, shareContent } from '../lib/utils';
+const HeartFeelingsModal = React.lazy(() => import('./HeartFeelingsModal').then(m => ({ default: m.HeartFeelingsModal })));
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 
@@ -112,15 +111,7 @@ export const HeartFeelingsWidget: React.FC = () => {
   const handleShare = async (title: string, text: string, source: string) => {
     triggerHaptic('light');
     const shareText = `﴿ ${title} ﴾\n\n"${text}"\n\nالمصدر: ${source}\n\nتطبيق أذكار المؤمن`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, text: shareText });
-      } else {
-        await Share.share({ title, text: shareText });
-      }
-    } catch (e) {
-      handleCopy(shareText, title);
-    }
+    await shareContent(title, shareText);
   };
 
   const currentFeeling = HEART_FEELINGS_LIST.find(f => f.id === selectedFeelingId);
@@ -217,7 +208,7 @@ export const HeartFeelingsWidget: React.FC = () => {
           {/* Subtle Arabesque & Ambient Glows */}
           <div 
             className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" 
-            style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} 
+            style={{ backgroundImage: "url('/images/arabesque.png')" }} 
           />
           <div className="absolute -top-16 -right-16 w-44 h-44 bg-white/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-rose-600/30 rounded-full blur-3xl pointer-events-none" />
@@ -1050,12 +1041,16 @@ export const HeartFeelingsWidget: React.FC = () => {
       </motion.div>
 
       {/* Full Modal through React Portal (never clipped by navbar) */}
-      <HeartFeelingsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        initialFeelingId={modalInitialFeeling}
-        initialOpenAddMode={modalAddMode}
-      />
+      {isModalOpen && (
+        <React.Suspense fallback={null}>
+          <HeartFeelingsModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            initialFeelingId={modalInitialFeeling}
+            initialOpenAddMode={modalAddMode}
+          />
+        </React.Suspense>
+      )}
     </>
   );
 };

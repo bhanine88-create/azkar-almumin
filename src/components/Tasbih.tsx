@@ -52,7 +52,7 @@ const DIGITAL_THEMES: Record<
     bg: "bg-gradient-to-b from-[#1b1b19] via-[#282925] to-[#10100f]",
     border:
       "border-[5px] border-[#cca43b] shadow-[0_30px_60px_rgba(0,0,0,0.9),inset_0_3px_8px_rgba(255,255,255,0.06),0_0_20px_rgba(204,164,59,0.15)]",
-    texture: "https://www.transparenttextures.com/patterns/carbon-fibre.png",
+    texture: "/images/arabesque.png",
     lcdFrameBg:
       "bg-gradient-to-tr from-[#9e761c] via-[#ffe895] via-[#ffffff] to-[#aa801a]",
     lcdFrameBorder:
@@ -72,7 +72,7 @@ const DIGITAL_THEMES: Record<
     bg: "bg-gradient-to-b from-[#f3f4f6] via-[#e5e7eb] to-[#cbd5e1]",
     border:
       "border-[5px] border-[#94a3b8] shadow-[0_30px_60px_rgba(0,0,0,0.8),inset_0_3px_10px_rgba(255,255,255,0.9),0_0_20px_rgba(148,163,184,0.15)]",
-    texture: "https://www.transparenttextures.com/patterns/cubes.png",
+    texture: "/images/arabesque.png",
     lcdFrameBg:
       "bg-gradient-to-tr from-[#475569] via-[#94a3b8] via-[#ffffff] to-[#64748b]",
     lcdFrameBorder:
@@ -92,7 +92,7 @@ const DIGITAL_THEMES: Record<
     bg: "bg-gradient-to-b from-[#023126] via-[#054a3c] to-[#011e17]",
     border:
       "border-[5px] border-[#cca43b] shadow-[0_30px_60px_rgba(0,0,0,0.9),inset_0_3px_8px_rgba(255,255,255,0.06),0_0_20px_rgba(204,164,59,0.15)]",
-    texture: "https://www.transparenttextures.com/patterns/diagmonds-light.png",
+    texture: "/images/arabesque.png",
     lcdFrameBg:
       "bg-gradient-to-tr from-[#9e761c] via-[#ffe895] via-[#ffffff] to-[#aa801a]",
     lcdFrameBorder:
@@ -112,7 +112,7 @@ const DIGITAL_THEMES: Record<
     bg: "bg-gradient-to-b from-[#0a1224] via-[#12193b] to-[#05081c]",
     border:
       "border-[5px] border-[#38bdf8] shadow-[0_30px_60px_rgba(0,0,0,0.9),inset_0_3px_8px_rgba(255,255,255,0.06),0_0_20px_rgba(56,189,248,0.2)]",
-    texture: "https://www.transparenttextures.com/patterns/cubes.png",
+    texture: "/images/arabesque.png",
     lcdFrameBg:
       "bg-gradient-to-tr from-[#0284c7] via-[#38bdf8] via-[#ffffff] to-[#0369a1]",
     lcdFrameBorder:
@@ -132,7 +132,7 @@ const DIGITAL_THEMES: Record<
     bg: "bg-gradient-to-b from-[#3b0413] via-[#50061c] to-[#1c0007]",
     border:
       "border-[5px] border-[#fda4af] shadow-[0_30px_60px_rgba(0,0,0,0.9),inset_0_3px_8px_rgba(255,255,255,0.06),0_0_20px_rgba(253,164,175,0.2)]",
-    texture: "https://www.transparenttextures.com/patterns/diagmonds-light.png",
+    texture: "/images/arabesque.png",
     lcdFrameBg:
       "bg-gradient-to-tr from-[#be123c] via-[#fda4af] via-[#ffffff] to-[#e11d48]",
     lcdFrameBorder:

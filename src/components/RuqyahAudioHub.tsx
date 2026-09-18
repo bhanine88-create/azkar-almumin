@@ -300,7 +300,7 @@ export function RuqyahAudioHub() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen px-4 pb-24 w-full max-w-lg mx-auto bg-slate-100 dark:bg-slate-950">
+    <div className="flex flex-col h-full flex-1 overflow-y-auto px-4 pb-24 w-full max-w-lg mx-auto bg-slate-100 dark:bg-slate-950">
       
       {/* Settings Bottom Sheet */}
       {typeof document !== 'undefined' && createPortal(
@@ -452,7 +452,7 @@ export function RuqyahAudioHub() {
 
       {/* Main card representing Al Ruqya */}
       <div className="mb-6 rounded-3xl bg-gradient-to-tr from-[#047857] to-[#10b981] p-6 text-white relative overflow-hidden shadow-lg shadow-teal-500/10">
-        <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')" }} />
+        <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
         <div className="absolute top-0 left-0 w-24 h-full bg-white/5 rotate-12 translate-x-3 pointer-events-none" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="text-right flex-1">

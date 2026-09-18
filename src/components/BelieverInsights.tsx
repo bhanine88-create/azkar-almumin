@@ -636,7 +636,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#01140a]",
       dashboardProgressFill: "bg-[#eab308]",
       buttonTheme: "text-white bg-[#065f35] border border-[#10b981] hover:bg-[#087f47]",
-      patternOpacity: "opacity-[0.1] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.1] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#090909]/90 hover:bg-[#0f0f0f]/90",
       cardBorder: "border-2 border-[#10b981]",
       cardText: "text-white",
@@ -656,7 +656,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#05311b]",
       dashboardProgressFill: "bg-[#10b981]",
       buttonTheme: "text-white bg-[#063c22] border border-[#34d399] hover:bg-[#08522e]",
-      patternOpacity: "opacity-[0.08] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.08] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-2 border-[#34d399]",
       cardText: "text-white",
@@ -678,7 +678,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#021814]",
       dashboardProgressFill: "bg-[#14b8a6]",
       buttonTheme: "text-emerald-100 bg-[#064e3b] border border-[#0d9488] hover:bg-[#0a5c48]",
-      patternOpacity: "opacity-[0.1] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.1] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#070707]/90 hover:bg-[#0d0d0d]/90",
       cardBorder: "border-2 border-[#0d9488]",
       cardText: "text-white",
@@ -698,7 +698,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#07322f]",
       dashboardProgressFill: "bg-[#2dd4bf]",
       buttonTheme: "text-white bg-[#083a37] border border-[#2dd4bf] hover:bg-[#0a4844]",
-      patternOpacity: "opacity-[0.08] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.08] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-2 border-[#2dd4bf]",
       cardText: "text-white",
@@ -720,7 +720,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#050212]",
       dashboardProgressFill: "bg-[#818cf8]",
       buttonTheme: "text-indigo-100 bg-[#1e154a] border border-[#4f46e5] hover:bg-[#281a6e]",
-      patternOpacity: "opacity-[0.1] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.1] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#060606]/90 hover:bg-[#0c0c0c]/90",
       cardBorder: "border-2 border-[#4f46e5]",
       cardText: "text-white",
@@ -740,7 +740,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#1b1557]",
       dashboardProgressFill: "bg-[#818cf8]",
       buttonTheme: "text-white bg-[#1e1960] border border-[#a5b4fc] hover:bg-[#2a2282]",
-      patternOpacity: "opacity-[0.08] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.08] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-2 border-[#a5b4fc]",
       cardText: "text-white",
@@ -762,7 +762,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#010e14]",
       dashboardProgressFill: "bg-gradient-to-r from-cyan-400 via-sky-400 to-teal-300",
       buttonTheme: "text-cyan-100 bg-[#053e54] border border-[#0891b2] hover:border-cyan-400/50",
-      patternOpacity: "opacity-[0.06] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.06] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#050505]/95 hover:bg-[#0b0b0b]/95",
       cardBorder: "border-[#0891b2]",
       cardText: "text-white",
@@ -782,7 +782,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-sky-950/80 border border-sky-800/50",
       dashboardProgressFill: "bg-gradient-to-r from-cyan-400 to-sky-300",
       buttonTheme: "text-white bg-[#014e75] border border-sky-400/50 hover:bg-[#025a87]",
-      patternOpacity: "opacity-[0.06] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] invert",
+      patternOpacity: "opacity-[0.06] bg-[url('/images/arabesque.png')] invert",
       cardBg: "bg-[#025684] hover:bg-[#026296]",
       cardBorder: "border-[#0284c7] shadow-[0_4px_14px_rgba(14,165,233,0.15)]",
       cardText: "text-white",
@@ -804,7 +804,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#2d0f05]",
       dashboardProgressFill: "bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-300",
       buttonTheme: "text-orange-100 bg-[#7c2d12] border border-[#ea580c] hover:border-orange-400/50",
-      patternOpacity: "opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.05] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#040404]/90 hover:bg-[#0a0a0a]/90",
       cardBorder: "border-[#8c2a11]",
       cardText: "text-white",
@@ -824,7 +824,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-orange-100 border border-orange-200/50",
       dashboardProgressFill: "bg-gradient-to-r from-orange-600 to-[#f97316]",
       buttonTheme: "text-orange-900 bg-orange-100/70 border border-orange-200 hover:bg-orange-200",
-      patternOpacity: "opacity-[0.025] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] invert",
+      patternOpacity: "opacity-[0.025] bg-[url('/images/arabesque.png')] invert",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-orange-200 hover:border-orange-350 shadow-[0_4px_12px_rgba(249,115,22,0.03)]",
       cardText: "text-orange-950",
@@ -846,7 +846,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#3b0213]",
       dashboardProgressFill: "bg-gradient-to-r from-rose-500 via-rose-400 to-pink-300",
       buttonTheme: "text-rose-100 bg-[#881337] border border-[#be123c] hover:border-rose-400/50",
-      patternOpacity: "opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.05] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#030303]/90 hover:bg-[#090909]/90",
       cardBorder: "border-[#9c153b]",
       cardText: "text-white",
@@ -866,7 +866,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-rose-100 border border-rose-200/50",
       dashboardProgressFill: "bg-gradient-to-r from-rose-600 to-[#f43f5e]",
       buttonTheme: "text-rose-900 bg-rose-100/70 border border-rose-200 hover:bg-rose-200",
-      patternOpacity: "opacity-[0.025] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] invert",
+      patternOpacity: "opacity-[0.025] bg-[url('/images/arabesque.png')] invert",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-rose-200 hover:border-rose-350 shadow-[0_4px_12px_rgba(244,63,94,0.03)]",
       cardText: "text-rose-950",
@@ -888,7 +888,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#0b1329]",
       dashboardProgressFill: "bg-gradient-to-r from-slate-500 via-slate-400 to-slate-300",
       buttonTheme: "text-slate-100 bg-[#1e293b] border border-[#334155] hover:border-slate-400/50",
-      patternOpacity: "opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.05] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#020202]/95 hover:bg-[#080808]/95",
       cardBorder: "border-[#222e4a]/85",
       cardText: "text-white",
@@ -908,7 +908,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-slate-200 border border-slate-300/50",
       dashboardProgressFill: "bg-gradient-to-r from-slate-600 to-[#64748b]",
       buttonTheme: "text-slate-900 bg-slate-100/75 border border-slate-300 hover:bg-slate-200",
-      patternOpacity: "opacity-[0.025] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] invert",
+      patternOpacity: "opacity-[0.025] bg-[url('/images/arabesque.png')] invert",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-slate-300 hover:border-slate-450 shadow-[0_4px_12px_rgba(100,116,139,0.03)]",
       cardText: "text-slate-950",
@@ -930,7 +930,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-[#2d0505]",
       dashboardProgressFill: "bg-gradient-to-r from-red-500 via-red-400 to-pink-400",
       buttonTheme: "text-red-100 bg-[#7f1d1d] border border-[#b91c1c] hover:border-red-400/50",
-      patternOpacity: "opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]",
+      patternOpacity: "opacity-[0.05] bg-[url('/images/arabesque.png')]",
       cardBg: "bg-[#010101]/90 hover:bg-[#070707]/90",
       cardBorder: "border-[#8c1c1c]",
       cardText: "text-white",
@@ -950,7 +950,7 @@ const THEME_CONFIGS: Record<LocalTheme, { dark: ThemeStyle; light: ThemeStyle }>
       dashboardProgressBg: "bg-red-100 border border-red-200/50",
       dashboardProgressFill: "bg-gradient-to-r from-red-600 to-[#ef4444]",
       buttonTheme: "text-red-900 bg-red-100/70 border border-red-200 hover:bg-red-200",
-      patternOpacity: "opacity-[0.025] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] invert",
+      patternOpacity: "opacity-[0.025] bg-[url('/images/arabesque.png')] invert",
       cardBg: "bg-white/95 hover:bg-white",
       cardBorder: "border-red-200 hover:border-red-350 shadow-[0_4px_12px_rgba(239,68,68,0.03)]",
       cardText: "text-red-950",
@@ -1334,7 +1334,7 @@ export const BelieverInsights: React.FC = () => {
 
  return (
  <div className={cn(
- "w-full h-full flex flex-col font-sans overflow-hidden transition-all duration-300 relative",
+ "w-full min-h-screen flex flex-col font-sans transition-all duration-300 relative",
  currentTheme.bg
  )}>
  {/* Background Pattern */}
@@ -1343,10 +1343,12 @@ export const BelieverInsights: React.FC = () => {
  currentTheme.patternOpacity
  )} />
 
- {/* Header */}
+ {/* Sticky Header - Title remains fixed at the top when scrolling or dragging cards */}
  <header className={cn(
- "shrink-0 px-6 py-5 flex justify-between items-center z-10 transition-all duration-500 border-b",
- currentTheme.headerBg
+ "sticky top-0 z-40 shrink-0 px-4 sm:px-6 py-3.5 sm:py-4.5 flex justify-between items-center transition-all duration-300 border-b backdrop-blur-xl shadow-lg",
+ currentTheme.headerBg.includes('bg-transparent')
+   ? (themeMode === 'dark' ? 'bg-slate-950/90 border-white/10' : 'bg-white/90 border-black/10')
+   : currentTheme.headerBg
  )}>
  <div className="flex items-center gap-4">
  <BackButton forceFallback={true} />
@@ -1384,7 +1386,7 @@ export const BelieverInsights: React.FC = () => {
  </div>
  </header>
 
- <div className="flex-grow overflow-y-auto custom-scrollbar py-6 px-0 space-y-8 pb-4 relative z-10">
+ <div className="flex-1 py-6 px-0 space-y-8 pb-24 relative z-10 max-w-4xl mx-auto w-full">
   {/* Character Progress Dashboard */}
   <div className={cn(
     "mx-4 sm:mx-6 p-4 sm:p-5 rounded-2xl sm:rounded-3xl relative overflow-hidden shadow-xl transition-all duration-300 border",

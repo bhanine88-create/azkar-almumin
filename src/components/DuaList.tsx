@@ -396,31 +396,53 @@ export const DuaList: React.FC = () => {
 
   return (
     <div 
-      className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 px-0 sm:px-4 pt-4 w-full max-w-[1600px] mx-auto relative overflow-hidden"
+      className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 px-0 sm:px-4 pt-0 w-full max-w-[1600px] mx-auto relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex items-center gap-4 mb-4 px-4 sm:px-2">
-        <BackButton />
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight">{title}</h1>
-        <div className="mr-auto flex gap-2">
-          <button 
-            onClick={() => setShowSettings(!showSettings)}
-            className={cn(
-              "p-2.5 rounded-2xl transition-all duration-300",
-              showSettings 
-                ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30" 
-                : "bg-teal-50 text-teal-600 dark:bg-teal-950 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-900"
-            )}
-          >
-            <SlidersHorizontal size={22} className={cn("transition-transform duration-500", showSettings && "rotate-90")} />
-          </button>
-          <div className="hidden sm:flex text-teal-600 p-2.5 bg-teal-50 dark:bg-teal-950 rounded-2xl items-center justify-center">
-            {icon}
+      {/* Sticky Header Section */}
+      <header className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md pt-3 pb-2 px-0 mb-3 border-b border-slate-200/60 dark:border-slate-800/60 shadow-xs shrink-0 transition-all">
+        <div className="flex items-center gap-4 mb-3 px-4 sm:px-2">
+          <BackButton />
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight">{title}</h1>
+          <div className="mr-auto flex gap-2">
+            <button 
+              onClick={() => setShowSettings(!showSettings)}
+              className={cn(
+                "p-2.5 rounded-2xl transition-all duration-300",
+                showSettings 
+                  ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30" 
+                  : "bg-teal-50 text-teal-600 dark:bg-teal-950 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-900"
+              )}
+            >
+              <SlidersHorizontal size={22} className={cn("transition-transform duration-500", showSettings && "rotate-90")} />
+            </button>
+            <div className="hidden sm:flex text-teal-600 p-2.5 bg-teal-50 dark:bg-teal-950 rounded-2xl items-center justify-center">
+              {icon}
+            </div>
           </div>
         </div>
-      </div>
+
+        {categories.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide px-4 sm:px-2 w-full">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={cn(
+                  "px-5 py-2 rounded-2xl whitespace-nowrap text-[15px] sm:text-base font-bold transition-all duration-300 shrink-0",
+                  activeCategory === cat
+                    ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 scale-[1.02]"
+                    : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
 
       {showSettings && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 mb-6 mx-4 sm:mx-2 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300 z-20">
@@ -543,27 +565,8 @@ export const DuaList: React.FC = () => {
           </p>
         </div>
       )}
-
-      {categories.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide px-4 sm:px-2 w-full">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={cn(
-                "px-5 py-2.5 rounded-2xl whitespace-nowrap text-[15px] sm:text-base font-bold transition-all duration-300",
-                activeCategory === cat
-                  ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30 scale-[1.02]"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-              )}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pb-12 w-full px-2 sm:px-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto pb-12 w-full px-2 sm:px-1">
         {displayedDuas.map((dua) => (
           <div id={`dua-card-export-${dua.id}`} key={dua.id} className="w-full px-1 py-1.5 sm:px-3 sm:py-2.5 bg-slate-50 dark:bg-slate-950 rounded-3xl h-full">
             <div className={cn("h-full pt-5 px-4 pb-3 sm:pt-7 sm:px-7 sm:pb-4 rounded-[1.5rem] sm:rounded-[2rem] border-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 w-full relative overflow-hidden group flex flex-col justify-between", currentThemeClasses.bg, currentThemeClasses.border)}>

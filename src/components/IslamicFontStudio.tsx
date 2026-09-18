@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { BackButton } from './ui/BackButton';
 import {
   Type,
   Download,
@@ -145,6 +146,32 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
 
   const content = (
     <div className="w-full max-w-5xl mx-auto space-y-6 pb-12">
+      {/* Sticky Top Header Bar with Back Button */}
+      <div className="sticky top-0 z-30 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/70 dark:border-slate-800/80 rounded-2xl p-3 sm:px-4 shadow-sm flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <BackButton fallbackPath="/library" onClick={onClose} />
+          <div>
+            <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
+              <Type size={16} className="text-teal-600 dark:text-teal-400" />
+              <span>مكتبة الخطوط والخط العربي</span>
+            </h1>
+            <p className="text-[10px] sm:text-[11px] font-bold text-teal-600 dark:text-teal-400">
+              استوديو الخطوط الإسلامية والزخرفة
+            </p>
+          </div>
+        </div>
+
+        {!standalonePage && onClose && (
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+            title="إغلاق"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
+
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 p-6 sm:p-8 text-white shadow-2xl border border-teal-500/30">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#14b8a6_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -154,22 +181,13 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
               <Sparkles size={14} className="animate-pulse" />
               <span>استوديو الخطوط الإسلامية والزخرفة</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
               مكتبة الخطوط والخط العربي
-            </h1>
+            </h2>
             <p className="text-xs sm:text-sm text-teal-100/80 font-bold max-w-xl leading-relaxed">
               اختر ونزّل خطك المفضل من نخبة الخطوط القرآنية والعثمانية والكوفية لإضفاء جمال وإحساس إيماني فريد على قراءة آيات المصحف الشريف والأذكار.
             </p>
           </div>
-
-          {!standalonePage && onClose && (
-            <button
-              onClick={onClose}
-              className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/10"
-            >
-              <X size={20} />
-            </button>
-          )}
         </div>
       </div>
 

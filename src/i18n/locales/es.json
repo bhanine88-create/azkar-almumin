@@ -1539,5 +1539,21 @@
   "feeling_spiritual_advice_title": "Consejo espiritual para tu corazón",
   "feeling_suited_dhikr_title": "Dhikr recomendado para este estado",
   "feeling_view_all_duas": "Ver todas las súplicas y versos",
-  "feeling_target_count": "Cantidad objetivo"
+  "feeling_target_count": "Cantidad objetivo",
+  "support_app_continuation": "Apoyar la continuidad y desarrollo de la aplicación",
+  "support_app_continuation_desc": "Su contribución apoya la caridad continua (Sadaqah Jariyah) y el desarrollo de funciones",
+  "support_developer_btn": "Apoyar al desarrollador",
+  "buy_me_a_coffee_btn": "Buy Me a Coffee",
+  "reset_official_settings_title": "Restaurar configuración oficial predeterminada",
+  "reset_official_settings_desc": "Restablece todas las secciones, funciones y apariencia al estado oficial por defecto",
+  "confirm_reset_official_title": "Presione de nuevo para confirmar la restauración oficial",
+  "confirm_reset_official_desc": "Todas las funciones y configuraciones se restablecerán a los valores oficiales predeterminados",
+  "rate_and_share_app": "Calificar y compartir la aplicación",
+  "rate_share_modal_desc": "Su apoyo y difusión de la aplicación es una caridad continua (Sadaqah Jariyah) para los musulmanes de todo el mundo.",
+  "rate_share_how_rate": "¿Cómo calificaría su experiencia con la aplicación?",
+  "rate_share_submit": "Enviar calificación",
+  "rate_share_thank_you": "¡Que Allah le recompense por su amable reseña!",
+  "rate_share_btn": "Compartir con familiares y amigos",
+  "rate_copy_link_btn": "Copiar enlace de la aplicación",
+  "rate_link_copied": "¡Enlace y mensaje de la aplicación copiados!"
 }

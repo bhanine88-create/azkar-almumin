@@ -125,93 +125,116 @@ export const mushafService = {
 
     const cache = await caches.open(`${CACHE_NAME_PREFIX}${editionId}`);
     
-    // Concurrency limit for stability, support lower value for background silent downloading
-    const CONCURRENCY = customConcurrency || 8; 
-    let completed = 0;
+    // Read all existing keys in cache
+    const existingRequests = await cache.keys();
+    const cachedKeys = new Set(existingRequests.map(req => req.url));
     
     const totalPages = edition.totalPage;
-    const queue = Array.from({ length: totalPages }, (_, i) => i + 1);
     
-    // Progress tracker
-    const reportProgress = () => {
-      completed++;
-      onProgress(completed);
+    // Helper to determine if a page is already cached
+    const isPageCached = (pageNum: number) => {
+      const newKey = mushafService.getAbsoluteCacheKey(editionId, pageNum);
+      const oldKey = `mushaf-${editionId}-page-${pageNum}`;
+      return cachedKeys.has(newKey) || cachedKeys.has(oldKey);
     };
 
-    // Worker function that pulls from the queue
-    const worker = async () => {
-      while (queue.length > 0) {
-        const pageNum = queue.shift();
-        if (pageNum === undefined) break;
+    // Report initial progress
+    let cachedCount = existingRequests.length;
+    onProgress(cachedCount);
 
-        const urls = edition.getUrls(pageNum);
-        const newKey = mushafService.getAbsoluteCacheKey(editionId, pageNum);
-        const oldKey = `mushaf-${editionId}-page-${pageNum}`;
-        
-        // Quick check if already in cache (checking both absolute new key and legacy relative key)
-        let existing = await cache.match(newKey);
-        if (!existing) {
-          existing = await cache.match(oldKey);
-          if (existing) {
-            // Self-heal & migrate legacy relative key to robust absolute URL key
-            try {
-              await cache.put(newKey, existing.clone());
-              await cache.delete(oldKey);
-            } catch (err) {
-              console.warn('Failed to migrate relative cache key:', err);
-            }
-          }
+    const getMissingPages = () => {
+      const missing: number[] = [];
+      for (let i = 1; i <= totalPages; i++) {
+        if (!isPageCached(i)) {
+          missing.push(i);
         }
-
-        if (existing) {
-          reportProgress();
-          continue;
-        }
-
-        let success = false;
-        // Try all sources for each page
-        for (const url of urls) {
-          if (success) break;
-          
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); 
-
-            const response = await fetch(url, { 
-              mode: 'cors',
-              credentials: 'omit',
-              referrerPolicy: 'no-referrer',
-              signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-              const contentType = response.headers.get('content-type');
-              if (contentType && contentType.includes('image')) {
-                // We keep the response object alive just enough to put it in cache
-                await cache.put(newKey, response.clone());
-                success = true;
-              }
-            }
-          } catch (e) {
-            // Silently try next source
-          }
-        }
-
-        reportProgress();
       }
+      return missing;
     };
 
-    // Launch workers
-    const workers = Array.from({ length: CONCURRENCY }, () => worker());
-    await Promise.all(workers);
-
-    // Save persistent downloaded indicator to localStorage so it stays downloaded forever in the UI
-    try {
+    let missingPages = getMissingPages();
+    if (missingPages.length === 0) {
       safeLocalStorageSetItem(`mushaf_downloaded_${editionId}`, 'true');
-    } catch (e) {
-      console.error('Failed to save download status:', e);
+      onProgress(totalPages);
+      return;
+    }
+
+    const CONCURRENCY = customConcurrency || 6;
+
+    // Retry up to 3 passes for any network blips or rate limits
+    for (let pass = 1; pass <= 3 && missingPages.length > 0; pass++) {
+      const queue = [...missingPages];
+      const failedThisPass: number[] = [];
+
+      const worker = async () => {
+        while (queue.length > 0) {
+          const pageNum = queue.shift();
+          if (pageNum === undefined) break;
+
+          const newKey = mushafService.getAbsoluteCacheKey(editionId, pageNum);
+          
+          if (isPageCached(pageNum)) {
+            continue;
+          }
+
+          const urls = edition.getUrls(pageNum);
+          let success = false;
+
+          for (const url of urls) {
+            if (success) break;
+            
+            try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 12000); 
+
+              const response = await fetch(url, { 
+                mode: 'cors',
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                signal: controller.signal
+              });
+              
+              clearTimeout(timeoutId);
+
+              if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                // Ensure response is not an HTML error page
+                if (!contentType || !contentType.includes('text/html')) {
+                  await cache.put(newKey, response.clone());
+                  cachedKeys.add(newKey);
+                  cachedCount++;
+                  onProgress(cachedCount);
+                  success = true;
+                }
+              }
+            } catch (e) {
+              // Silently try next source
+            }
+          }
+
+          if (!success) {
+            failedThisPass.push(pageNum);
+          }
+        }
+      };
+
+      const workers = Array.from({ length: CONCURRENCY }, () => worker());
+      await Promise.all(workers);
+
+      missingPages = failedThisPass;
+      if (missingPages.length > 0 && pass < 3) {
+        // Delay 1 second before retrying failed pages
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    // Final check
+    const finalKeys = await cache.keys();
+    const finalCount = finalKeys.length;
+    onProgress(finalCount);
+
+    if (finalCount >= 500) {
+      safeLocalStorageSetItem(`mushaf_downloaded_${editionId}`, 'true');
     }
   },
 
@@ -263,7 +286,7 @@ export const mushafService = {
 
           if (response.ok) {
             const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('image')) {
+            if (!contentType || !contentType.includes('text/html')) {
               await cache.put(newKey, response.clone());
               break;
             }
@@ -342,7 +365,7 @@ export const mushafService = {
 
         if (response.ok) {
           const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('image')) {
+          if (!contentType || !contentType.includes('text/html')) {
             await cache.put(newKey, response.clone());
             const blob = await response.blob();
             if (blob.size > 0) {

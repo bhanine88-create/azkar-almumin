@@ -67,7 +67,7 @@ export const AuthScreen: React.FC = () => {
   return (
     <div className="w-full h-full min-h-0 bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="absolute inset-0 bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950 pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-[0.03] dark:opacity-[0.05] pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-[0.03] dark:opacity-[0.05] pointer-events-none" />
       
       <motion.div 
         initial={{ opacity: 1, y: 0 }}

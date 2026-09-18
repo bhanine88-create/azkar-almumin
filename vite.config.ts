@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
           'logo-official-maskable-512.png',
           'QadasiRegular.ttf',
           'images/arabesque.png',
-          'images/watermark_clean.jpg'
+          'images/watermark_official.png'
         ],
         devOptions: {
           enabled: false,
@@ -346,20 +346,6 @@ export default defineConfig(({ mode }) => {
               }
             },
             {
-              urlPattern: /^https:\/\/www\.transparenttextures\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'texture-cache-v5',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
               urlPattern: /^https:\/\/cdn-icons-png\.flaticon\.com\/.*/i,
               handler: 'CacheFirst',
               options: {
@@ -426,11 +412,14 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
+              if (id.includes('city-timezones')) {
+                return 'vendor-city-timezones';
+              }
+              if (id.includes('adhan') || id.includes('moment-hijri') || id.includes('moment')) {
+                return 'vendor-prayer';
+              }
               if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) {
                 return 'vendor-charts';
-              }
-              if (id.includes('city-timezones') || id.includes('adhan') || id.includes('moment-hijri') || id.includes('moment')) {
-                return 'vendor-prayer-geo';
               }
               if (id.includes('firebase')) {
                 return 'vendor-firebase';
@@ -444,6 +433,9 @@ export default defineConfig(({ mode }) => {
               if (id.includes('i18next') || id.includes('react-i18next')) {
                 return 'vendor-i18n';
               }
+              if (id.includes('@dnd-kit')) {
+                return 'vendor-dnd';
+              }
               if (id.includes('canvas-confetti') || id.includes('html-to-image') || id.includes('jszip') || id.includes('downloadjs')) {
                 return 'vendor-export-tools';
               }
@@ -453,9 +445,21 @@ export default defineConfig(({ mode }) => {
               if (id.includes('react-router-dom') || id.includes('@remix-run')) {
                 return 'vendor-router';
               }
-              if (id.includes('src/data/')) {
-                return 'data-chunk';
+              if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-is') || id.includes('scheduler')) {
+                return 'vendor-react';
               }
+            }
+            if (id.includes('/src/data/') || id.includes('/data/')) {
+              if (id.includes('lectures')) return 'data-lectures';
+              if (id.includes('tafsir')) return 'data-tafsir';
+              if (id.includes('hadithCollection')) return 'data-hadith';
+              if (id.includes('duasData')) return 'data-duas';
+              if (id.includes('prophetBiographyData') || id.includes('ibnHishamData') || id.includes('ghazwatData')) return 'data-seerah';
+              if (id.includes('quizData')) return 'data-quiz';
+              if (id.includes('qudsiHadiths')) return 'data-qudsi';
+              if (id.includes('islamicStories')) return 'data-stories';
+              if (id.includes('heartFeelingsData')) return 'data-heart-feelings';
+              return 'data-misc';
             }
           }
         }

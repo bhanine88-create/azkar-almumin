@@ -1,7 +1,7 @@
 import { BackButton } from './ui/BackButton';
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, Lightbulb, Droplets, MessageCircle, Gem, Star, History, Scroll, Sparkles, Activity, UserCircle, Quote, Users, Rocket, Fingerprint, Crown, Moon } from 'lucide-react';
+import { BookOpen, Lightbulb, Droplets, MessageCircle, Gem, Star, History, Scroll, Sparkles, Activity, UserCircle, Quote, Users, Rocket, Fingerprint, Crown, Moon, Headphones } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 import { cn } from '../lib/utils';
@@ -29,6 +29,22 @@ const Library: React.FC = () => {
   }, []);
 
   const libraryItems: LibraryItem[] = [
+    {
+      to: "/audio-library",
+      title: t('audio_library') || "المكتبة الصوتية",
+      subtitle: t('audio_library_subtitle') || "تلاوات، تفسير، دروس، ورقية",
+      icon: <Headphones size={24} />,
+      color: "from-fuchsia-950 via-slate-900 to-slate-950",
+      shadow: "shadow-lg shadow-fuchsia-950/40",
+    },
+    {
+      to: "/names",
+      title: t('names_of_allah') || "أسماء الله الحسنى",
+      subtitle: "٩٩ اسماً مع الشرح والدعاء",
+      icon: <Sparkles size={24} />,
+      color: "from-amber-950 via-slate-900 to-slate-950",
+      shadow: "shadow-lg shadow-amber-950/40",
+    },
     {
       to: "/sunnah-hadith/daily",
       title: t('hadith_of_day'),
@@ -129,7 +145,7 @@ const Library: React.FC = () => {
       to: "/font-studio",
       title: "استوديو الخطوط",
       subtitle: "تنزيل وتخصيص خطوط القرآن والأذكار",
-      icon: <Sparkles size={24} className="text-teal-300" />,
+      icon: <Sparkles size={24} />,
       color: "from-teal-800 via-emerald-900 to-slate-950",
       shadow: "shadow-lg shadow-teal-950/40",
     }
@@ -180,16 +196,18 @@ const Library: React.FC = () => {
             onTouchStart={() => preloadLibraryRoutes()}
             onClick={() => navigate(item.to)}
             className={cn(
-              "relative group flex overflow-hidden rounded-2xl transition-all duration-300 border border-white/10 text-center outline-none cursor-pointer",
-              item.fullWidth ? cn("col-span-full h-[90px] p-4 items-center gap-4", isRtl ? "flex-row text-right" : "flex-row-reverse text-left") : "col-span-1 flex-col h-[120px] justify-between p-3",
-              item.shadow
+              "relative group flex overflow-hidden rounded-2xl transition-all duration-300 text-center outline-none cursor-pointer",
+              "border border-[#145d41]/70 dark:border-[#10b981]/30 border-t-white/20 dark:border-t-emerald-400/25",
+              "hover:border-[#feb10b]/80 dark:hover:border-[#feb10b]/80",
+              "bg-gradient-to-br from-[#0d4f37] via-[#083a28] to-[#042418]",
+              "shadow-lg shadow-emerald-950/25 dark:shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-2xl hover:shadow-[#042418]/60 hover:-translate-y-1",
+              item.fullWidth ? cn("col-span-full h-[90px] p-4 items-center gap-4", isRtl ? "flex-row text-right" : "flex-row-reverse text-left") : "col-span-1 flex-col h-[120px] justify-between p-3"
             )}
           >
-            <div className={cn("absolute inset-0 transition-colors duration-500", item.color && item.color.startsWith('bg-') ? item.color : "bg-gradient-to-br " + item.color)} />
-            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
-            <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-white/20 shadow-sm z-10" />
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')]" />
+            <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#feb10b] shadow-[0_0_8px_rgba(254,177,11,0.9)] z-10 transition-all duration-300 group-hover:scale-125 group-hover:bg-[#fec84b]" />
+            <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#10b981]/15 rounded-full blur-2xl group-hover:scale-125 group-hover:bg-[#10b981]/25 transition-all duration-500 pointer-events-none" />
             
             <div className={cn(
               "relative z-10 flex",
@@ -197,14 +215,14 @@ const Library: React.FC = () => {
             )}>
               {item.fullWidth ? (
                 <>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:rotate-6 transition-transform duration-200 shrink-0 w-14 h-14">
-                    {React.cloneElement(item.icon as React.ReactElement<any>, { size: 26, className: "text-white" })}
+                  <div className="bg-[#042418]/70 dark:bg-black/45 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/30 dark:border-[#feb10b]/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] group-hover:rotate-6 group-hover:bg-[#feb10b]/15 group-hover:border-[#feb10b]/70 transition-all duration-300 shrink-0 w-14 h-14">
+                    {React.cloneElement(item.icon as React.ReactElement<any>, { size: 26, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.5)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300" })}
                   </div>
                   <div className="min-w-0 w-full flex-1">
-                    <h3 className="font-black text-white drop-shadow-sm text-lg mb-0.5 truncate">
+                    <h3 className="font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] text-lg mb-0.5 truncate">
                       {item.title}
                     </h3>
-                    <p className="text-white/80 font-bold uppercase tracking-widest text-[9px] line-clamp-1">
+                    <p className="text-emerald-100 font-bold uppercase tracking-wider text-[9.5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] line-clamp-1">
                       {item.subtitle}
                     </p>
                   </div>
@@ -212,23 +230,23 @@ const Library: React.FC = () => {
               ) : (
                 <>
                   <div className="flex-1 flex items-center justify-center w-full pt-1">
-                    <div className="w-11 h-11 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 shrink-0">
-                      {React.cloneElement(item.icon as React.ReactElement<any>, { size: 24, className: "text-white opacity-100" })}
+                    <div className="w-11 h-11 bg-[#042418]/70 dark:bg-black/45 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/30 dark:border-[#feb10b]/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] group-hover:scale-110 group-hover:-rotate-6 group-hover:bg-[#feb10b]/15 group-hover:border-[#feb10b]/70 transition-all duration-500 shrink-0">
+                      {React.cloneElement(item.icon as React.ReactElement<any>, { size: 24, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.5)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300" })}
                     </div>
                   </div>
                   <div className="min-w-0 w-full shrink-0 flex flex-col justify-center items-center">
-                    <h3 className="font-black text-white drop-shadow-sm text-[11px] sm:text-[12px] leading-tight line-clamp-2 px-0.5 mb-1">
+                    <h3 className="font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] text-[11px] sm:text-[12px] leading-tight line-clamp-2 px-0.5 mb-1.5">
                       {item.title}
                     </h3>
-                    <div className="w-4 h-0.5 bg-white/30 rounded-full group-hover:w-8 transition-all duration-300" />
+                    <div className="w-5 h-0.5 bg-[#feb10b] shadow-[0_0_6px_rgba(254,177,11,0.6)] rounded-full group-hover:w-9 group-hover:bg-[#fec84b] transition-all duration-300" />
                   </div>
                 </>
               )}
             </div>
             
             {/* Glossy Effect */}
-            <div className="absolute top-0 right-0 w-full h-[35%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-full h-[15%] bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
+            <div className="absolute top-0 right-0 w-full h-[38%] bg-gradient-to-b from-white/15 via-white/5 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-full h-[18%] bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
           </motion.button>
         ))}
       </div>
