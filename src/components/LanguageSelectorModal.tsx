@@ -171,3 +171,5 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
     </AnimatePresence>
   );
 };
+
+export default LanguageSelectorModal;

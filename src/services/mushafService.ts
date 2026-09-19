@@ -350,35 +350,34 @@ export const mushafService = {
       const urls = edition.getUrls(pageNum);
       const url = urls[attemptIndex % urls.length];
       
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); 
+      memoryUrlCache.set(memKey, url);
 
-        const response = await fetch(url, { 
-          mode: 'cors',
-          credentials: 'omit',
-          referrerPolicy: 'no-referrer',
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
+      // Cache asynchronously in background for future offline continuity without blocking current page view
+      (async () => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
-        if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('text/html')) {
-            await cache.put(newKey, response.clone());
-            const blob = await response.blob();
-            if (blob.size > 0) {
-              const blobUrl = URL.createObjectURL(blob);
-              memoryUrlCache.set(memKey, blobUrl);
-              return blobUrl;
+          const response = await fetch(url, { 
+            mode: 'cors',
+            credentials: 'omit',
+            referrerPolicy: 'no-referrer',
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('text/html')) {
+              await cache.put(newKey, response.clone());
             }
           }
+        } catch (e) {
+          // ignore background cache failure
         }
-      } catch (e) {
-        console.warn(`Failed to auto-cache page ${pageNum}:`, e);
-      }
-      memoryUrlCache.set(memKey, url);
+      })();
+
       return url;
     }
     return null;

@@ -821,6 +821,12 @@ const INITIAL_ADHKAR = PRESET_ADHKAR.map((p) => ({
 
 const DIGITAL_FONTS = [
   {
+    id: "chakra",
+    nameKey: "font_chakra",
+    className: "font-chakra italic font-bold tracking-tight",
+    skew: true,
+  },
+  {
     id: "digital7",
     nameKey: "font_digital7",
     className: "font-digital",
@@ -843,12 +849,6 @@ const DIGITAL_FONTS = [
     nameKey: "font_russo",
     className: "font-russo tracking-normal",
     skew: false,
-  },
-  {
-    id: "chakra",
-    nameKey: "font_chakra",
-    className: "font-chakra tracking-normal",
-    skew: true,
   },
   {
     id: "orbitron",
@@ -935,11 +935,11 @@ export const Tasbih: React.FC = () => {
     safeLocalStorageSetItem("believer_tasbih_hex_screen_mode", hexScreenMode);
   }, [hexScreenMode]);
   const [digitalFont, setDigitalFont] = useState<
-    "digital7" | "bebas" | "teko" | "russo" | "chakra" | "orbitron"
+    "chakra" | "digital7" | "bebas" | "teko" | "russo" | "orbitron"
   >(() => {
     return (
       (safeLocalStorageGetItem("believer_tasbih_digital_font") as any) ||
-      "digital7"
+      "chakra"
     );
   });
   const [lcdBacklight, setLcdBacklight] = useState(false);
@@ -3212,8 +3212,8 @@ export const Tasbih: React.FC = () => {
                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Type size={14}/>خط العداد الرقمي</label>
                        <div className="grid grid-cols-3 gap-2">
                          {DIGITAL_FONTS.map((f) => (
-                           <button key={f.id} onClick={() => setDigitalFont(f.id as any)} className={cn("p-2 rounded-xl text-center border-2 flex flex-col items-center justify-center transition-all", digitalFont === f.id ? "border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 shadow-sm" : "border-slate-100 dark:border-slate-700 text-slate-500 bg-slate-50 dark:bg-slate-900")}>
-                             <span className={cn("text-lg font-bold leading-none", f.className)} style={{ transform: f.skew ? "skewX(-5deg)" : "none" }}>88</span>
+                           <button key={f.id} onClick={() => setDigitalFont(f.id as any)} className={cn("p-2 rounded-xl text-center border-2 flex flex-col items-center justify-center transition-all cursor-pointer", digitalFont === f.id ? "border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 shadow-sm" : "border-slate-100 dark:border-slate-700 text-slate-500 bg-slate-50 dark:bg-slate-900")}>
+                             <span className={cn("text-lg font-bold leading-none tabular-nums", f.className)} style={{ transform: f.skew ? "skewX(-5deg)" : "none" }}>8888</span>
                              <span className="text-[9px] font-black mt-1.5 opacity-70 leading-none">{t(f.nameKey)}</span>
                            </button>
                          ))}

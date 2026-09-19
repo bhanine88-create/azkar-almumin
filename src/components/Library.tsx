@@ -1,7 +1,7 @@
 import { BackButton } from './ui/BackButton';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, Lightbulb, Droplets, MessageCircle, Gem, Star, History, Scroll, Sparkles, Activity, UserCircle, Quote, Users, Rocket, Fingerprint, Crown, Moon, Headphones } from 'lucide-react';
+import { BookOpen, Lightbulb, Droplets, MessageCircle, Gem, Star, History, Scroll, Sparkles, Activity, UserCircle, Quote, Users, Rocket, Fingerprint, Crown, Moon, Headphones, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 import { cn } from '../lib/utils';
@@ -18,17 +18,140 @@ interface LibraryItem {
   fullWidth?: boolean;
 }
 
+interface LibraryCardProps {
+  item: LibraryItem;
+  isRtl: boolean;
+  onNavigate: (to: string) => void;
+}
+
+const LibraryCard = React.memo<LibraryCardProps>(({ item, isRtl, onNavigate }) => {
+  const handleClick = useCallback(() => {
+    onNavigate(item.to);
+  }, [item.to, onNavigate]);
+
+  return (
+    <div className={cn("perspective-1000 transform-gpu", item.fullWidth ? "col-span-full" : "col-span-1")}>
+      <motion.button
+        variants={{
+          hidden: { opacity: 0, y: 28, rotateX: 18, scale: 0.92 },
+          show: { 
+            opacity: 1, 
+            y: 0, 
+            rotateX: 0, 
+            scale: 1,
+            transition: {
+              type: "spring",
+              stiffness: 240,
+              damping: 22
+            }
+          }
+        }}
+        whileHover={{ 
+          y: -6, 
+          scale: 1.03, 
+          rotateX: 6, 
+          rotateY: isRtl ? -5 : 5, 
+          translateZ: 18,
+          transition: { duration: 0.25, ease: "easeOut" }
+        }}
+        whileTap={{ 
+          scale: 0.97, 
+          rotateX: -2,
+          y: 0 
+        }}
+        onMouseEnter={preloadLibraryRoutes}
+        onTouchStart={preloadLibraryRoutes}
+        onClick={handleClick}
+        className={cn(
+          "relative group flex w-full overflow-visible rounded-2xl transition-all duration-300 text-center outline-none cursor-pointer",
+          "preserve-3d transform-gpu",
+          "border border-[#145d41]/70 dark:border-[#10b981]/30 border-t-white/25 dark:border-t-emerald-400/30",
+          "hover:border-[#feb10b]/80 dark:hover:border-[#feb10b]/80",
+          "bg-gradient-to-br from-[#0d4f37] via-[#083a28] to-[#042418]",
+          "shadow-lg shadow-emerald-950/30 dark:shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-2xl hover:shadow-[#042418]/70",
+          item.fullWidth 
+            ? cn("h-[94px] p-4 items-center gap-4", isRtl ? "flex-row text-right" : "flex-row-reverse text-left") 
+            : "flex-col h-[124px] justify-between p-3"
+        )}
+      >
+        {/* 3D Chamfered Edge / Thickness Simulation */}
+        <div className="absolute inset-0 rounded-2xl pointer-events-none border-[0.5px] border-white/20 shadow-[inset_0_2px_4px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.5)] transform translate-z-10" />
+
+        {/* Ambient 3D Shimmer & Parallax Glow */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/0 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none transform translate-z-10" />
+        <div className="absolute inset-0 rounded-2xl opacity-15 mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')] overflow-hidden" />
+        <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#10b981]/15 rounded-full blur-2xl group-hover:scale-125 group-hover:bg-[#10b981]/30 transition-all duration-500 pointer-events-none transform translate-z-10" />
+        
+        {/* Card Foreground Content with 3D Parallax Depth */}
+        <div className={cn(
+          "relative z-10 flex preserve-3d transform-gpu",
+          item.fullWidth ? "flex-row items-center w-full gap-4" : "flex-col items-center justify-between w-full h-full"
+        )}>
+          {item.fullWidth ? (
+            <>
+              <div className="bg-[#042418]/80 dark:bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/35 dark:border-[#feb10b]/45 shadow-[inset_0_1px_2px_rgba(255,255,255,0.15),0_8px_16px_rgba(0,0,0,0.4)] group-hover:rotate-6 group-hover:bg-[#feb10b]/20 group-hover:border-[#feb10b]/80 group-hover:scale-110 transition-all duration-300 shrink-0 w-14 h-14 preserve-3d transform translate-z-30">
+                {React.cloneElement(item.icon as React.ReactElement<any>, { size: 26, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.6)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300 transform translate-z-10" })}
+              </div>
+              <div className="min-w-0 w-full flex-1 transform translate-z-20">
+                <h3 className="font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] text-lg mb-0.5 truncate">
+                  {item.title}
+                </h3>
+                <p className="text-emerald-100 font-bold uppercase tracking-wider text-[9.5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] line-clamp-1">
+                  {item.subtitle}
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 flex items-center justify-center w-full pt-1 transform translate-z-30">
+                <div className="w-11 h-11 bg-[#042418]/80 dark:bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/35 dark:border-[#feb10b]/45 shadow-[inset_0_1px_2px_rgba(255,255,255,0.15),0_8px_16px_rgba(0,0,0,0.4)] group-hover:scale-110 group-hover:-rotate-6 group-hover:bg-[#feb10b]/20 group-hover:border-[#feb10b]/80 transition-all duration-500 shrink-0 preserve-3d">
+                  {React.cloneElement(item.icon as React.ReactElement<any>, { size: 24, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.6)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300 transform translate-z-10" })}
+                </div>
+              </div>
+              <div className="min-w-0 w-full shrink-0 flex flex-col justify-center items-center transform translate-z-20">
+                <h3 className="font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] text-[11px] sm:text-[12px] leading-tight line-clamp-2 px-0.5 mb-1.5">
+                  {item.title}
+                </h3>
+                <div className="w-5 h-0.5 bg-[#feb10b] shadow-[0_0_8px_rgba(254,177,11,0.8)] rounded-full group-hover:w-9 group-hover:bg-[#fec84b] transition-all duration-300 transform translate-z-10" />
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* 3D Glossy Specular Light Reflection */}
+        <div className="absolute top-0 right-0 w-full h-[38%] rounded-t-2xl bg-gradient-to-b from-white/18 via-white/5 to-transparent pointer-events-none transform translate-z-10" />
+        <div className="absolute bottom-0 left-0 w-full h-[18%] rounded-b-2xl bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
+      </motion.button>
+    </div>
+  );
+});
+
+LibraryCard.displayName = 'LibraryCard';
+
 const Library: React.FC = () => {
   const { settings } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
-  const { navigate, goBack } = useSmartNavigation();
+  const { navigate } = useSmartNavigation();
 
   // Preload all library routes as soon as Library screen mounts
   useEffect(() => {
     preloadLibraryRoutes();
   }, []);
 
-  const libraryItems: LibraryItem[] = [
+  const handleNavigate = useCallback((to: string) => {
+    navigate(to);
+  }, [navigate]);
+
+  const libraryItems: LibraryItem[] = useMemo(() => [
+    {
+      to: "/aqeedah",
+      title: t('aqeedah_title') || "العقيدة الصحيحة",
+      subtitle: t('aqeedah_subtitle') || "أركان الإيمان، حماية التوحيد، وفقه الأسماء والصفات وفق منهج أهل السنة",
+      icon: <ShieldCheck size={26} />,
+      color: "from-emerald-950 via-[#083a28] to-[#042418]",
+      shadow: "shadow-lg shadow-emerald-950/40",
+      fullWidth: true,
+    },
     {
       to: "/audio-library",
       title: t('audio_library') || "المكتبة الصوتية",
@@ -143,13 +266,13 @@ const Library: React.FC = () => {
     },
     {
       to: "/font-studio",
-      title: "استوديو الخطوط",
-      subtitle: "تنزيل وتخصيص خطوط القرآن والأذكار",
+      title: t('font_studio_title', "استوديو الخطوط"),
+      subtitle: t('font_studio_desc', "تنزيل وتخصيص خطوط القرآن والأذكار"),
       icon: <Sparkles size={24} />,
       color: "from-teal-800 via-emerald-900 to-slate-950",
       shadow: "shadow-lg shadow-teal-950/40",
     }
-  ];
+  ], [t]);
 
   return (
     <motion.div 
@@ -182,76 +305,21 @@ const Library: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-2.5 gap-y-4 relative z-10 px-1">
+      <div 
+        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-2.5 gap-y-4 relative z-10 px-1 perspective-1000 transform-gpu"
+        style={{ perspective: '1200px' }}
+      >
         {libraryItems.map((item) => (
-          <motion.button
+          <LibraryCard
             key={item.to}
-            variants={{
-              hidden: { opacity: 0, y: 15, scale: 0.95 },
-              show: { opacity: 1, y: 0, scale: 1 }
-            }}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onMouseEnter={() => preloadLibraryRoutes()}
-            onTouchStart={() => preloadLibraryRoutes()}
-            onClick={() => navigate(item.to)}
-            className={cn(
-              "relative group flex overflow-hidden rounded-2xl transition-all duration-300 text-center outline-none cursor-pointer",
-              "border border-[#145d41]/70 dark:border-[#10b981]/30 border-t-white/20 dark:border-t-emerald-400/25",
-              "hover:border-[#feb10b]/80 dark:hover:border-[#feb10b]/80",
-              "bg-gradient-to-br from-[#0d4f37] via-[#083a28] to-[#042418]",
-              "shadow-lg shadow-emerald-950/25 dark:shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-2xl hover:shadow-[#042418]/60 hover:-translate-y-1",
-              item.fullWidth ? cn("col-span-full h-[90px] p-4 items-center gap-4", isRtl ? "flex-row text-right" : "flex-row-reverse text-left") : "col-span-1 flex-col h-[120px] justify-between p-3"
-            )}
-          >
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            <div className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')]" />
-            <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#feb10b] shadow-[0_0_8px_rgba(254,177,11,0.9)] z-10 transition-all duration-300 group-hover:scale-125 group-hover:bg-[#fec84b]" />
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#10b981]/15 rounded-full blur-2xl group-hover:scale-125 group-hover:bg-[#10b981]/25 transition-all duration-500 pointer-events-none" />
-            
-            <div className={cn(
-              "relative z-10 flex",
-              item.fullWidth ? "flex-row items-center w-full gap-4" : "flex-col items-center justify-between w-full h-full"
-            )}>
-              {item.fullWidth ? (
-                <>
-                  <div className="bg-[#042418]/70 dark:bg-black/45 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/30 dark:border-[#feb10b]/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] group-hover:rotate-6 group-hover:bg-[#feb10b]/15 group-hover:border-[#feb10b]/70 transition-all duration-300 shrink-0 w-14 h-14">
-                    {React.cloneElement(item.icon as React.ReactElement<any>, { size: 26, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.5)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300" })}
-                  </div>
-                  <div className="min-w-0 w-full flex-1">
-                    <h3 className="font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] text-lg mb-0.5 truncate">
-                      {item.title}
-                    </h3>
-                    <p className="text-emerald-100 font-bold uppercase tracking-wider text-[9.5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] line-clamp-1">
-                      {item.subtitle}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 flex items-center justify-center w-full pt-1">
-                    <div className="w-11 h-11 bg-[#042418]/70 dark:bg-black/45 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/30 dark:border-[#feb10b]/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)] group-hover:scale-110 group-hover:-rotate-6 group-hover:bg-[#feb10b]/15 group-hover:border-[#feb10b]/70 transition-all duration-500 shrink-0">
-                      {React.cloneElement(item.icon as React.ReactElement<any>, { size: 24, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.5)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300" })}
-                    </div>
-                  </div>
-                  <div className="min-w-0 w-full shrink-0 flex flex-col justify-center items-center">
-                    <h3 className="font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] text-[11px] sm:text-[12px] leading-tight line-clamp-2 px-0.5 mb-1.5">
-                      {item.title}
-                    </h3>
-                    <div className="w-5 h-0.5 bg-[#feb10b] shadow-[0_0_6px_rgba(254,177,11,0.6)] rounded-full group-hover:w-9 group-hover:bg-[#fec84b] transition-all duration-300" />
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {/* Glossy Effect */}
-            <div className="absolute top-0 right-0 w-full h-[38%] bg-gradient-to-b from-white/15 via-white/5 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-full h-[18%] bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
-          </motion.button>
+            item={item}
+            isRtl={isRtl}
+            onNavigate={handleNavigate}
+          />
         ))}
       </div>
     </motion.div>
   );
 };
 
-export default Library;
+export default React.memo(Library);

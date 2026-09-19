@@ -21,16 +21,17 @@ export const RateAndShareModal: React.FC<RateAndShareModalProps> = ({ isOpen, on
 
   if (!isOpen) return null;
 
+  const appShareUrl = 'https://azkaralmumin.netlify.app';
   const appShareText = isRTL
-    ? `✨ أنصحك بتحميل تطبيق "أذكار المؤمن" - رفيقك الروحي الشامل للقرآن الكريم، مواقيت الصلاة، الأذكار والمسبحة الذكية مجاناً بالكامل وبدون إعلانات: ${window.location.origin}`
-    : `✨ Discover Believer Athkar - Your all-in-one Islamic companion for Quran, Prayer Times, Daily Athkar and Digital Tasbih without ads: ${window.location.origin}`;
+    ? `✨ أنصحك بتحميل تطبيق "أذكار المؤمن" - رفيقك الروحي الشامل للقرآن الكريم، مواقيت الصلاة، الأذكار والمسبحة الذكية مجاناً بالكامل وبدون إعلانات: ${appShareUrl}`
+    : `✨ Discover Believer Athkar - Your all-in-one Islamic companion for Quran, Prayer Times, Daily Athkar and Digital Tasbih without ads: ${appShareUrl}`;
 
   const handleShare = async () => {
     triggerHaptic();
     await shareContent(
       isRTL ? 'تطبيق أذكار المؤمن' : 'Believer Athkar App',
       appShareText,
-      window.location.origin
+      appShareUrl
     );
   };
 

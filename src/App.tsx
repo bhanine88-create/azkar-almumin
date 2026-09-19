@@ -5,15 +5,18 @@ import { AppProvider } from './AppContext';
 import { GlobalAudioProvider } from './context/GlobalAudioContext';
 import { DownloadProvider } from './context/DownloadContext';
 import { Layout } from './components/Layout';
-const Home = lazyRetry(() => import('./components/Home'), 'Home');
+import Home from './components/Home';
 import { QuranSettingsProvider } from './context/QuranSettingsContext';
-const PrayerNotificationManager = lazyRetry(() => import('./components/PrayerNotificationManager'), 'PrayerNotificationManager');
+import { PrayerNotificationManager } from './components/PrayerNotificationManager';
 import { AdhkarCountsProvider } from './context/AdhkarCountsContext';
 import { Activity, Loader2 } from 'lucide-react';
 import { lazyRetry } from './lib/lazyRetry';
 import { SafeUnmount } from './components/SafeUnmount';
 import { cn } from './lib/utils';
 import { auth } from './firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { PageSkeletonFallback } from './components/ui/PageSkeletonFallback';
+
 const IndependentHadith = lazyRetry(() => import('./components/IndependentHadith'), 'IndependentHadith');
 const Settings = lazyRetry(() => import('./components/Settings'), 'Settings');
 const TermsOfUse = lazyRetry(() => import('./components/TermsOfUse'), 'TermsOfUse');
@@ -31,7 +34,6 @@ const LecturesAudioHub = lazyRetry(() => import('./components/LecturesAudioHub')
 const TafsirAudioHub = lazyRetry(() => import('./components/TafsirAudioHub'), 'TafsirAudioHub');
 const RuqyahAudioHub = lazyRetry(() => import('./components/RuqyahAudioHub'), 'RuqyahAudioHub');
 const AuthScreen = lazyRetry(() => import('./components/AuthScreen'), 'AuthScreen');
-import { onAuthStateChanged, User } from 'firebase/auth';
 
 const Adhkar = lazyRetry(() => import('./components/Adhkar'), 'Adhkar');
 const DuasHub = lazyRetry(() => import('./components/DuasHub'), 'DuasHub');
@@ -65,8 +67,7 @@ const SadaqahJariyah = lazyRetry(() => import('./components/SadaqahJariyah'), 'S
 const FastingTracker = lazyRetry(() => import('./components/FastingTracker'), 'FastingTracker');
 const IslamicFontStudio = lazyRetry(() => import('./components/IslamicFontStudio').then(m => ({ default: m.IslamicFontStudio })), 'IslamicFontStudio');
 const HeartFeelingsPage = lazyRetry(() => import('./components/HeartFeelingsPage'), 'HeartFeelingsPage');
-
-import { PageSkeletonFallback } from './components/ui/PageSkeletonFallback';
+const AqeedahHub = lazyRetry(() => import('./components/AqeedahHub'), 'AqeedahHub');
 
 const MemoizedLoadingFallback = React.memo(() => (
   <PageSkeletonFallback />
@@ -338,6 +339,7 @@ export default function App() {
                           <Route path="tafsir-audio" element={<SafeUnmount componentName="TafsirAudioHub"><TafsirAudioHub /></SafeUnmount>} />
                           <Route path="ruqyah-audio" element={<SafeUnmount componentName="RuqyahAudioHub"><RuqyahAudioHub /></SafeUnmount>} />
                           <Route path="library" element={<Library />} />
+                          <Route path="aqeedah" element={<SafeUnmount componentName="AqeedahHub"><AqeedahHub /></SafeUnmount>} />
                           <Route path="hadith-qudsi" element={<HadithQudsi />} />
                           <Route path="auth" element={<AuthScreen />} />
                           <Route path="challenges" element={<ChallengesHub />} />

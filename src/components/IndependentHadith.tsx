@@ -544,11 +544,11 @@ export const IndependentHadith: React.FC = () => {
       </div>
 
       <div className="relative z-10 space-y-4 px-3 sm:px-5 md:px-6 max-w-5xl mx-auto">
-        {/* Sticky Header Container - Title remains fixed when scrolling or dragging cards */}
-        <div className="sticky top-0 z-40 pt-1 sm:pt-2 pb-1 bg-white/80 dark:bg-slate-900/85 backdrop-blur-xl transition-all duration-300">
+        {/* Sticky Header Container - Title and Category Tabs remain fixed when scrolling */}
+        <div className="sticky top-0 z-40 pt-1 sm:pt-2 pb-1 bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl transition-all duration-300">
           <div 
             className={cn(
-              "relative overflow-hidden rounded-2xl p-3.5 sm:p-5 shadow-xl transition-all duration-300 border border-white/20",
+              "relative overflow-hidden rounded-2xl p-3.5 sm:p-4 shadow-xl transition-all duration-300 border border-white/20 flex flex-col gap-2.5",
               "bg-gradient-to-br", currentTheme.gradient
             )}
           >
@@ -583,6 +583,78 @@ export const IndependentHadith: React.FC = () => {
                 <Settings2 size={18} className={cn("transition-transform duration-300", showSettings && "rotate-45")} />
               </button>
             </div>
+
+            {/* Sticky Main Collection Switcher Tabs */}
+            <div className="relative z-10 flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-1 border-t border-white/15">
+              {[
+                { id: 'daily', title: 'حديث اليوم' },
+                { id: 'fadael', title: 'فضائل الأعمال' },
+                { id: 'konooz', title: 'موسوعة الأدعية' },
+                { id: 'quran_duas', title: 'جوامع الدعاء' },
+                { id: 'seerah', title: 'مقتطفات السيرة' },
+              ].map((sec) => {
+                const isSecActive = categoryId === sec.id;
+                return (
+                  <button
+                    key={sec.id}
+                    onClick={() => {
+                      if (categoryId !== sec.id) {
+                        triggerHaptic('light');
+                        navigate(`/sunnah-hadith/${sec.id}`);
+                        setExpandedId(null);
+                        setSearchTerm('');
+                        setFocusIndex(0);
+                      }
+                    }}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-black rounded-xl transition-all duration-200 shrink-0 border whitespace-nowrap cursor-pointer",
+                      isSecActive
+                        ? "bg-white text-slate-900 border-white shadow-md font-black scale-102"
+                        : "bg-white/15 text-white/90 border-white/10 hover:bg-white/25 hover:text-white"
+                    )}
+                  >
+                    {sec.title}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Sticky Sub-categories Tabs if grouped */}
+            {isGrouped && (
+              <div className="relative z-10 flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-1.5 border-t border-white/10">
+                {Object.keys(data.subCategories).map((key) => {
+                  const isActive = currentTab === key;
+                  const subItemCount = data.subCategories[key]?.items?.length || 0;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setActiveTab(key);
+                        setExpandedId(null);
+                        setSearchTerm('');
+                        setFocusIndex(0);
+                      }}
+                      className={cn(
+                        "px-3 py-1 rounded-xl text-[11px] sm:text-xs font-black transition-all duration-200 shrink-0 border whitespace-nowrap cursor-pointer flex items-center gap-1.5",
+                        isActive
+                          ? "bg-amber-400 text-slate-950 border-amber-300 font-black shadow-sm"
+                          : "bg-black/20 text-white/85 border-white/10 hover:bg-black/35 hover:text-white"
+                      )}
+                    >
+                      {isActive && <Sparkles size={12} className="text-slate-950 fill-slate-950" />}
+                      <span>{data.subCategories[key].title}</span>
+                      <span className={cn(
+                        "px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold",
+                        isActive ? "bg-slate-950/20 text-slate-950" : "bg-white/15 text-white/80"
+                      )}>
+                        {subItemCount}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
           {/* Collapsible settings workspace */}
           <AnimatePresence>
@@ -1456,63 +1528,6 @@ export const IndependentHadith: React.FC = () => {
 
           return (
             <>
-              {/* Subcategories Tabs with item counts */}
-              {isGrouped && (
-                <div className={cn(
-                  "p-2 rounded-2xl sm:rounded-[2rem] mb-3.5 border-2 shadow-[inset_0_2px_4px_rgba(255,255,255,0.4),0_10px_30px_-10px_rgba(0,0,0,0.1)] backdrop-blur-xl transition-all duration-700",
-                  "bg-white/60 dark:bg-slate-900/60 border-white/80 dark:border-slate-800"
-                )}>
-                  <div className="flex overflow-x-auto hide-scrollbar gap-2 p-1 relative">
-                    {Object.keys(data.subCategories).map(key => {
-                      const isActive = currentTab === key;
-                      const subItemCount = data.subCategories[key]?.items?.length || 0;
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => {
-                            setActiveTab(key);
-                            setExpandedId(null);
-                            setSearchTerm('');
-                            setFocusIndex(0);
-                          }}
-                          className={cn(
-                            "flex-1 min-w-fit px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black rounded-xl sm:rounded-2xl transition-all duration-300 relative whitespace-nowrap overflow-hidden group border",
-                            isActive
-                              ? cn(
-                                  "text-white shadow-[0_12px_24px_-8px_rgba(0,0,0,0.25)] translate-y-[-2px] border-transparent bg-gradient-to-br",
-                                  currentTheme.gradient
-                                )
-                              : "text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 border-transparent bg-transparent"
-                          )}
-                        >
-                          <span className={cn(
-                            "relative z-10 flex items-center justify-center gap-2 transition-transform duration-300",
-                            isActive ? "scale-105 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" : "scale-100 group-hover:scale-105"
-                          )}>
-                            {isActive && <Sparkles size={14} className="text-amber-300 animate-pulse" />}
-                            <span>{data.subCategories[key].title}</span>
-                            <span className={cn(
-                              "px-2 py-0.5 rounded-full text-[10px] font-black border transition-colors",
-                              isActive 
-                                ? "bg-white/20 text-white border-white/30" 
-                                : "bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300/40 dark:border-slate-700"
-                            )}>
-                              {subItemCount}
-                            </span>
-                          </span>
-                          {isActive && (
-                            <motion.div
-                              layoutId="activeTabBg"
-                              className="absolute inset-0 bg-white/10 pointer-events-none"
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* Search and Quick Filters Bar */}
               <div className="relative mb-3" dir="rtl">
                 <div className="relative flex items-center">

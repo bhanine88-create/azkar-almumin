@@ -20,7 +20,7 @@ export const AppInfoModal: React.FC<AppInfoModalProps> = ({ isOpen, onClose }) =
       'app_share_full_text',
       'حمل تطبيق أذكار المؤمن وتمتع بتجربة إيمانية فريدة مع الأذكار، القرآن الكريم، المسبحة الإلكترونية والمزيد. تطبيق خالي من الإعلانات تماماً ومصمم براحة للمستخدم.'
     );
-    const shareUrl = "https://athkar.app";
+    const shareUrl = "https://azkaralmumin.netlify.app";
     await shareContent(t('app_name', 'أذكار المؤمن'), shareText, shareUrl);
   };
 
@@ -133,3 +133,5 @@ export const AppInfoModal: React.FC<AppInfoModalProps> = ({ isOpen, onClose }) =
     </AnimatePresence>
   );
 };
+
+export default AppInfoModal;

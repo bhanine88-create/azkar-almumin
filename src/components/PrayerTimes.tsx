@@ -2033,31 +2033,31 @@ export const PrayerTimes: React.FC = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-slate-400">طريقة الحساب الفلكي للمواقيت</label>
+                      <label className="text-[10px] font-black uppercase text-slate-400">{t('calc_method_label', 'طريقة الحساب الفلكي للمواقيت')}</label>
                       <select 
                         value={method} 
                         onChange={(e) => updateSettings({ prayerCalcMethod: e.target.value })} 
                         className="w-full bg-slate-100 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-right outline-none"
                       >
-                        <option value="4">جامعة أم القرى، مكة المكرمة</option>
-                        <option value="3">رابطة العالم الإسلامي</option>
-                        <option value="2">الجمعية الإسلامية لأمريكا الشمالية (ISNA)</option>
-                        <option value="1">جامعة العلوم الإسلامية بكراتشي</option>
-                        <option value="5">الهيئة المصرية العامة للمساحة</option>
-                        <option value="8">معهد الجيوفيزياء بجامعة طهران</option>
-                        <option value="10">مجلس العلماء السنغافوري لسنغافورة</option>
+                        <option value="4">{t('calc_method_makkah', 'جامعة أم القرى، مكة المكرمة')}</option>
+                        <option value="3">{t('calc_method_mwl', 'رابطة العالم الإسلامي')}</option>
+                        <option value="2">{t('calc_method_isna', 'الجمعية الإسلامية لأمريكا الشمالية (ISNA)')}</option>
+                        <option value="1">{t('calc_method_karachi', 'جامعة العلوم الإسلامية بكراتشي')}</option>
+                        <option value="5">{t('calc_method_egypt', 'الهيئة المصرية العامة للمساحة')}</option>
+                        <option value="8">{t('calc_method_gulf', 'معهد الجيوفيزياء بجامعة طهران')}</option>
+                        <option value="10">{t('calc_method_singapore', 'مجلس العلماء السنغافوري لسنغافورة')}</option>
                       </select>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-slate-400">مذهب صلاة العصر</label>
+                      <label className="text-[10px] font-black uppercase text-slate-400">{t('asr_calc_school', 'مذهب صلاة العصر')}</label>
                       <select 
                         value={asrMethod} 
                         onChange={(e) => updateSettings({ prayerAsrMethod: e.target.value })} 
                         className="w-full bg-slate-105 dark:bg-slate-855 border border-slate-200/50 dark:border-slate-800 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-right outline-none"
                       >
-                        <option value="0">المذهب الشافعي والمالكي والحنبلي (الافتراضي)</option>
-                        <option value="1">المذهب الحنفي</option>
+                        <option value="0">{t('asr_majority_school', 'المذهب الشافعي والمالكي والحنبلي (الافتراضي)')}</option>
+                        <option value="1">{t('asr_hanafi_school', 'المذهب الحنفي')}</option>
                       </select>
                     </div>
                   </div>
@@ -2094,7 +2094,7 @@ export const PrayerTimes: React.FC = () => {
                             : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                         )}
                       >
-                        {sound.label}
+                        {t(`sound_${sound.id.replace(/-/g, '_')}`, sound.label)}
                       </button>
                     ))}
                   </div>
@@ -2102,8 +2102,8 @@ export const PrayerTimes: React.FC = () => {
 
                 <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl text-right">
                   <div>
-                    <span className="text-xs sm:text-sm font-black block text-slate-800 dark:text-slate-100">التوقيت الصيفي</span>
-                    <span className="text-[9px] text-emerald-600/70 font-bold dark:text-emerald-400/80">+1 ساعة للمواقيت</span>
+                    <span className="text-xs sm:text-sm font-black block text-slate-800 dark:text-slate-100">{t('dst_label', 'التوقيت الصيفي')}</span>
+                    <span className="text-[9px] text-emerald-600/70 font-bold dark:text-emerald-400/80">{t('dst_desc', '+1 ساعة للمواقيت')}</span>
                   </div>
                   <button 
                     onClick={() => { 

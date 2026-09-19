@@ -7,7 +7,7 @@ import { cn, copyTextToClipboard, shareContent, triggerHaptic } from '../lib/uti
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 
-import { BookOpen, Sparkles, HandHeart, Heart, SlidersHorizontal, Plus, Minus, Type, Palette, X, Star, Share2, Download, Loader2 } from 'lucide-react';
+import { BookOpen, Sparkles, HandHeart, Heart, SlidersHorizontal, Plus, Minus, Type, Palette, X, Star, Share2, Download, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
@@ -75,6 +75,24 @@ export const DuaList: React.FC = () => {
   useEffect(() => {
     safeLocalStorageSetItem('dua-currentTheme', currentTheme);
   }, [currentTheme]);
+
+  const [isVerseCollapsed, setIsVerseCollapsed] = useState(() => {
+    try {
+      return safeLocalStorageGetItem('salawat-verse-collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleVerseCollapsed = () => {
+    setIsVerseCollapsed(prev => {
+      const next = !prev;
+      safeLocalStorageSetItem('salawat-verse-collapsed', next ? 'true' : 'false');
+      return next;
+    });
+    triggerHaptic('light');
+  };
+
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   // Touch Swipe Gesture Handlers for Category Switching
@@ -402,8 +420,8 @@ export const DuaList: React.FC = () => {
       onTouchEnd={handleTouchEnd}
     >
       {/* Sticky Header Section */}
-      <header className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md pt-3 pb-2 px-0 mb-3 border-b border-slate-200/60 dark:border-slate-800/60 shadow-xs shrink-0 transition-all">
-        <div className="flex items-center gap-4 mb-3 px-4 sm:px-2">
+      <header className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md pt-2 pb-1.5 px-0 mb-2 border-b border-slate-200/60 dark:border-slate-800/60 shadow-xs shrink-0 transition-all">
+        <div className="flex items-center gap-3 mb-2 px-3 sm:px-2">
           <BackButton />
           <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight">{title}</h1>
           <div className="mr-auto flex gap-2">
@@ -551,30 +569,66 @@ export const DuaList: React.FC = () => {
       )}
 
       {type === 'salawat' && (
-        <div className="mx-4 sm:mx-2 mb-6 p-6 rounded-[2rem] bg-gradient-to-br from-teal-500 to-emerald-600 dark:from-teal-800 dark:to-emerald-900 border border-white/20 dark:border-teal-700/50 shadow-xl relative overflow-hidden flex flex-col items-center text-center">
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 dark:bg-black/10 rounded-full blur-2xl pointer-events-none"></div>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 dark:bg-teal-900/40 rounded-full blur-3xl pointer-events-none"></div>
-          
-          <Star className="text-teal-100 mb-3 drop-shadow-md opacity-80 fill-teal-100" size={32} />
-          
-          <p 
-            className="text-white drop-shadow-sm font-bold leading-relaxed text-[20px] sm:text-[26px] z-10"
-            style={{ fontFamily: fontFamily || "'El Messiri', sans-serif" }}
-          >
-            إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ<br/>يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
-          </p>
+        <div className="mx-2 sm:mx-1 mb-3.5">
+          {isVerseCollapsed ? (
+            <button
+              onClick={toggleVerseCollapsed}
+              className="w-full px-3.5 py-2 rounded-2xl bg-teal-500/10 dark:bg-teal-950/40 border border-teal-500/25 dark:border-teal-800/40 flex items-center justify-between text-teal-800 dark:text-teal-200 hover:bg-teal-500/15 transition-all duration-300 shadow-sm active:scale-[0.99] group"
+              title="توسيع الآية القرآنية"
+            >
+              <div className="flex items-center gap-2 overflow-hidden text-right">
+                <Star size={14} className="text-teal-600 dark:text-teal-400 fill-teal-500/20 shrink-0" />
+                <span className="text-xs font-bold truncate">
+                  إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ...
+                </span>
+              </div>
+              <div className="flex items-center gap-1 shrink-0 text-[11px] font-bold text-teal-600 dark:text-teal-400 bg-teal-500/15 px-2 py-0.5 rounded-lg group-hover:bg-teal-500/25">
+                <span>عرض الآية</span>
+                <ChevronDown size={14} />
+              </div>
+            </button>
+          ) : (
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-700 dark:from-teal-800 dark:via-teal-900 dark:to-emerald-950 border border-white/20 dark:border-teal-700/50 shadow-md relative overflow-hidden flex flex-col transition-all duration-300">
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 dark:bg-black/10 rounded-full blur-xl pointer-events-none"></div>
+              <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-teal-300/20 dark:bg-teal-900/40 rounded-full blur-2xl pointer-events-none"></div>
+              
+              {/* Banner Header Row */}
+              <div className="flex items-center justify-between z-10 mb-2 pb-1.5 border-b border-white/15">
+                <div className="flex items-center gap-1.5 text-teal-100">
+                  <Star size={14} className="fill-teal-200/40 text-teal-200" />
+                  <span className="text-[11px] font-bold tracking-wide text-teal-100 uppercase">فضل الصلاة على النبي</span>
+                </div>
+                <button
+                  onClick={toggleVerseCollapsed}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/20 hover:bg-black/35 text-white/90 hover:text-white text-[11px] font-bold transition-all active:scale-95 border border-white/10"
+                  title="طوي الآية لتوفير مساحة للبطاقات"
+                >
+                  <span>طوي</span>
+                  <ChevronUp size={13} />
+                </button>
+              </div>
+              
+              {/* Verse Content */}
+              <p 
+                className="text-white drop-shadow-sm font-bold leading-relaxed text-sm sm:text-base text-center z-10 my-0.5 px-1"
+                style={{ fontFamily: fontFamily || "'El Messiri', sans-serif" }}
+              >
+                إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
+              </p>
+            </div>
+          )}
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto pb-12 w-full px-2 sm:px-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 flex-1 overflow-y-auto pb-10 w-full px-2 sm:px-1">
         {displayedDuas.map((dua) => (
-          <div id={`dua-card-export-${dua.id}`} key={dua.id} className="w-full px-1 py-1.5 sm:px-3 sm:py-2.5 bg-slate-50 dark:bg-slate-950 rounded-3xl h-full">
-            <div className={cn("h-full pt-5 px-4 pb-3 sm:pt-7 sm:px-7 sm:pb-4 rounded-[1.5rem] sm:rounded-[2rem] border-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 w-full relative overflow-hidden group flex flex-col justify-between", currentThemeClasses.bg, currentThemeClasses.border)}>
+          <div id={`dua-card-export-${dua.id}`} key={dua.id} className="w-full px-0.5 py-0.5 sm:px-1.5 sm:py-1 bg-slate-50 dark:bg-slate-950 rounded-2xl sm:rounded-3xl h-full">
+            <div className={cn("h-full pt-3.5 px-3.5 pb-3 sm:pt-4.5 sm:px-5 sm:pb-3.5 rounded-[1.25rem] sm:rounded-[1.75rem] border-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 w-full relative overflow-hidden group flex flex-col justify-between", currentThemeClasses.bg, currentThemeClasses.border)}>
               
               <div className={cn("absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl to-transparent rounded-bl-[5rem] -z-0 pointer-events-none opacity-80", currentThemeClasses.gradient)} />
               
               <div className="relative z-10 w-full flex flex-col h-full">
-                <div className="flex flex-col gap-2 sm:gap-3 mb-6">
+                <div className="flex flex-col gap-1.5 sm:gap-2 mb-3.5 sm:mb-4">
                   <div className="flex justify-between items-start gap-4">
                     <h2 className={cn("text-xl sm:text-2xl font-black leading-tight transition-colors", currentThemeClasses.title)}>{dua.title}</h2>
                     <div className="flex items-center gap-2 shrink-0 z-20" data-html2canvas-ignore>
@@ -631,7 +685,7 @@ export const DuaList: React.FC = () => {
                 </div>
                 
                 {dua.explanation && (
-                  <div className={cn("mt-6 p-4 sm:p-5 rounded-2xl border border-black/5 dark:border-white/5 transition-colors", currentThemeClasses.explanationBg)}>
+                  <div className={cn("mt-3.5 sm:mt-4 p-3 sm:p-4 rounded-2xl border border-black/5 dark:border-white/5 transition-colors", currentThemeClasses.explanationBg)}>
                     <div className="flex items-start gap-4">
                       <div className={cn("mt-1 shrink-0", currentThemeClasses.icon)}>
                         <Sparkles size={22} className="opacity-80" />

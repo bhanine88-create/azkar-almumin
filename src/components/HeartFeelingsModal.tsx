@@ -722,3 +722,5 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
   return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
 };
+
+export default HeartFeelingsModal;

@@ -35,6 +35,7 @@ export function preloadLibraryRoutes() {
   // Idle preloading using requestIdleCallback or setTimeout
   const triggerPreload = () => {
     import('../components/IndependentHadith').catch(() => {});
+    import('../components/AqeedahHub').catch(() => {});
     import('../components/HadithQudsi').catch(() => {});
     import('../components/Inspirations').catch(() => {});
     import('../components/ScholarSayings').catch(() => {});

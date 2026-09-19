@@ -55,7 +55,7 @@ import { useLocation } from 'react-router-dom';
 import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
-export function LecturesAudioHub() {
+function LecturesAudioHubComponent() {
   const { navigate, goBack } = useSmartNavigation();
   const location = useLocation();
   const { settings, progress, toggleScholarFavorite, toggleLectureFavorite, updateSettings, toggleFavoriteUnified } = useAppContext();
@@ -106,10 +106,12 @@ export function LecturesAudioHub() {
   const [searchQuery, setSearchQuery] = useState(location.state?.searchQuery || '');
 
   // Filter scholars using smart Arabic matching
-  const filteredScholars = SCHOLARS.filter(scholar => 
-    (!showFavoritesOnly || (progress.favoriteScholars || []).includes(scholar.id)) &&
-    smartScholarMatch(scholar, searchQuery)
-  );
+  const filteredScholars = React.useMemo(() => {
+    return SCHOLARS.filter(scholar => 
+      (!showFavoritesOnly || (progress.favoriteScholars || []).includes(scholar.id)) &&
+      smartScholarMatch(scholar, searchQuery)
+    );
+  }, [showFavoritesOnly, progress.favoriteScholars, searchQuery]);
 
   // Helper to get clean scholar name for alphabetical sorting
   const getCleanScholarName = (name: string) => {
@@ -117,37 +119,39 @@ export function LecturesAudioHub() {
   };
 
   // Sort scholars based on chosen option
-  const sortedScholars = [...filteredScholars].sort((a, b) => {
-    if (sortBy === 'alphabetical') {
-      const nameA = getCleanScholarName(a.name);
-      const nameB = getCleanScholarName(b.name);
-      const cmp = nameA.localeCompare(nameB, 'ar', { sensitivity: 'base' });
-      return sortOrder === 'asc' ? cmp : -cmp;
-    }
+  const sortedScholars = React.useMemo(() => {
+    return [...filteredScholars].sort((a, b) => {
+      if (sortBy === 'alphabetical') {
+        const nameA = getCleanScholarName(a.name);
+        const nameB = getCleanScholarName(b.name);
+        const cmp = nameA.localeCompare(nameB, 'ar', { sensitivity: 'base' });
+        return sortOrder === 'asc' ? cmp : -cmp;
+      }
 
-    if (sortBy === 'lectures') {
-      const countA = a.series.reduce((acc, s) => acc + s.lectures.length, 0);
-      const countB = b.series.reduce((acc, s) => acc + s.lectures.length, 0);
-      return sortOrder === 'desc' ? countB - countA : countA - countB;
-    }
+      if (sortBy === 'lectures') {
+        const countA = a.series.reduce((acc, s) => acc + s.lectures.length, 0);
+        const countB = b.series.reduce((acc, s) => acc + s.lectures.length, 0);
+        return sortOrder === 'desc' ? countB - countA : countA - countB;
+      }
 
-    if (sortBy === 'series') {
-      const countA = a.series.length;
-      const countB = b.series.length;
-      return sortOrder === 'desc' ? countB - countA : countA - countB;
-    }
+      if (sortBy === 'series') {
+        const countA = a.series.length;
+        const countB = b.series.length;
+        return sortOrder === 'desc' ? countB - countA : countA - countB;
+      }
 
-    // Default sorting: Favorites first, then default catalog order
-    const aFavIdx = (progress.favoriteScholars || []).indexOf(a.id);
-    const bFavIdx = (progress.favoriteScholars || []).indexOf(b.id);
-    const aFav = aFavIdx !== -1;
-    const bFav = bFavIdx !== -1;
-    
-    if (aFav && !bFav) return -1;
-    if (!aFav && bFav) return 1;
-    if (aFav && bFav) return aFavIdx - bFavIdx;
-    return 0;
-  });
+      // Default sorting: Favorites first, then default catalog order
+      const aFavIdx = (progress.favoriteScholars || []).indexOf(a.id);
+      const bFavIdx = (progress.favoriteScholars || []).indexOf(b.id);
+      const aFav = aFavIdx !== -1;
+      const bFav = bFavIdx !== -1;
+      
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+      if (aFav && bFav) return aFavIdx - bFavIdx;
+      return 0;
+    });
+  }, [filteredScholars, sortBy, sortOrder, progress.favoriteScholars]);
 
   // Sync playback speed
   const [cachedLectures, setCachedLectures] = useState<Set<string>>(new Set());
@@ -1209,3 +1213,6 @@ export function LecturesAudioHub() {
     </div>
   );
 }
+
+export const LecturesAudioHub = React.memo(LecturesAudioHubComponent);
+export default LecturesAudioHub;

@@ -15,6 +15,8 @@ export const SettingsModal = React.memo(({
   themeClasses,
   mushafEdition,
   setMushafEdition,
+  mushafDisplayMode,
+  setMushafDisplayMode,
   keepScreenAwake,
   setKeepScreenAwake,
 }: any) => {
@@ -96,6 +98,36 @@ export const SettingsModal = React.memo(({
               animate={{ opacity: 1 }}
               className="space-y-6"
             >
+              <div className="space-y-3">
+                <label className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">
+                  طريقة عرض صفحات المصحف
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: "auto", name: "تلقائي ذكي", desc: "صفحتين للمتصفح، صفحة للجوال" },
+                    { id: "double", name: "صفحتين متقابلتين", desc: "عرض المصحف المفتوح بدون فراغ" },
+                    { id: "single", name: "صفحة واحدة", desc: "عرض صفحة واحدة ملء الشاشة" },
+                  ].map((mode: any) => (
+                    <button
+                      key={mode.id}
+                      onClick={() => setMushafDisplayMode && setMushafDisplayMode(mode.id)}
+                      className={cn(
+                        "p-3 rounded-2xl border-2 transition-all flex flex-col items-start gap-1 text-right relative overflow-hidden group",
+                        mushafDisplayMode === mode.id
+                          ? "border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300"
+                          : "border-slate-100 dark:border-slate-800 hover:border-teal-200 bg-white dark:bg-slate-900",
+                      )}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="font-black text-xs">{mode.name}</span>
+                        {mushafDisplayMode === mode.id && <Check size={12} className="text-teal-600 shrink-0" />}
+                      </div>
+                      <span className="text-[9px] font-bold opacity-60 leading-tight">{mode.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <label className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">
                   نسخة المصحف

@@ -9,6 +9,7 @@ import { cn, shareContent } from '../lib/utils';
 import { useAppContext } from '../AppContext';
 import { useTranslation } from '../i18n';
 import { useSmartNavigation } from '../lib/navigation';
+import { BackButton } from './ui/BackButton';
 
 export const SadaqahJariyah: React.FC = () => {
   const { settings } = useAppContext();
@@ -34,19 +35,15 @@ export const SadaqahJariyah: React.FC = () => {
   }, []);
 
   const getAppShareUrl = () => {
-    let currentOrigin = window.location.origin || '';
-    if (!currentOrigin || currentOrigin === 'null') {
-      currentOrigin = window.location.href.split('?')[0].split('#')[0];
-    }
-    return currentOrigin.replace(/ais-dev-/g, 'ais-pre-');
+    return 'https://azkaralmumin.netlify.app';
   };
 
   const handleShareApp = async (customMessage?: string) => {
     const shareUrl = getAppShareUrl();
     const defaultText = customMessage || 
-      `🌱 *مشروع الصدقة الجارية - تطبيق زاد المؤمن*\n\nتطبيق إسلامي كامل بدون إعلانات احتساباً لوجه الله تعالى: قرآن كريم، أذكار، رقية شرعية، ومحاضرات صوتية.\n\nانشره بين أهلك وأحبابك ليكون لك صدقة جارية ونورٌ يدوم بإذن الله.\n\nرابط التطبيق المباشر:\n${shareUrl}`;
+      `🌱 *مشروع الصدقة الجارية - تطبيق أذكار المؤمن*\n\nتطبيق إسلامي كامل بدون إعلانات احتساباً لوجه الله تعالى: قرآن كريم، أذكار، رقية شرعية، ومحاضرات صوتية.\n\nانشره بين أهلك وأحبابك ليكون لك صدقة جارية ونورٌ يدوم بإذن الله.\n\nرابط التطبيق المباشر:\n${shareUrl}`;
 
-    await shareContent('زاد المؤمن - مشروع الصدقة الجارية', defaultText, shareUrl);
+    await shareContent('أذكار المؤمن - مشروع الصدقة الجارية', defaultText, shareUrl);
   };
 
   const copyToClipboard = (text: string, sectionId: string) => {
@@ -63,7 +60,7 @@ export const SadaqahJariyah: React.FC = () => {
   const handleWhatsAppShare = (customMessage?: string) => {
     const shareUrl = getAppShareUrl();
     const text = customMessage || 
-      `🌱 *مشروع الصدقة الجارية - تطبيق زاد المؤمن*\n\nتطبيق إسلامي جامع بدون إعلانات للقرآن والأذكار والرقية والمحاضرات.\n\nساهم في نشر الخير واحتسب ثوابه ليكون لك صدقة جارية:\n${shareUrl}`;
+      `🌱 *مشروع الصدقة الجارية - تطبيق أذكار المؤمن*\n\nتطبيق إسلامي جامع بدون إعلانات للقرآن والأذكار والرقية والمحاضرات.\n\nساهم في نشر الخير واحتسب ثوابه ليكون لك صدقة جارية:\n${shareUrl}`;
     
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
@@ -84,7 +81,7 @@ export const SadaqahJariyah: React.FC = () => {
   return (
     <div className="min-h-full pb-20 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       {/* Top Banner Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-950 text-white pt-8 pb-10 px-5 rounded-b-[36px] shadow-2xl border-b border-emerald-500/20">
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-950 text-white pt-5 pb-10 px-4 sm:px-5 rounded-b-[36px] shadow-2xl border-b border-emerald-500/20">
         {/* Arabesque Pattern */}
         <div 
           className="absolute inset-0 opacity-15 mix-blend-overlay pointer-events-none" 
@@ -95,15 +92,27 @@ export const SadaqahJariyah: React.FC = () => {
         <div className="absolute -top-12 -right-12 w-56 h-56 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-12 w-64 h-64 bg-teal-400/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-2xl mx-auto text-center space-y-4">
-          {/* Top Pill Badge */}
-          <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md px-4 py-1.5 rounded-full border border-emerald-400/30 shadow-inner">
-            <Sparkles size={16} className="text-emerald-300 animate-pulse" />
-            <span className="text-xs font-black text-emerald-200 tracking-wide">
+        {/* Top Header Navigation Bar */}
+        <div className="relative z-20 flex items-center justify-between gap-3 mb-4 max-w-2xl mx-auto">
+          <BackButton fallbackPath="/" />
+          
+          <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-400/30 shadow-inner">
+            <Sparkles size={14} className="text-emerald-300 animate-pulse" />
+            <span className="text-[11px] font-black text-emerald-200 tracking-wide">
               مشروع لوجه الله تعالى • بدون إعلانات
             </span>
           </div>
 
+          <button
+            onClick={() => handleShareApp()}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-emerald-200 hover:text-white border border-white/10 transition-all cursor-pointer shadow-sm shrink-0"
+            title="مشاركة المشروع"
+          >
+            <Share2 size={18} />
+          </button>
+        </div>
+
+        <div className="relative z-10 max-w-2xl mx-auto text-center space-y-4">
           <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight drop-shadow-md">
             مشروع الصدقة الجارية
           </h1>
@@ -273,7 +282,7 @@ export const SadaqahJariyah: React.FC = () => {
                 </p>
 
                 <div className="pt-2 text-[10px] text-amber-300/70 font-bold border-t border-amber-500/20">
-                  تطبيق زاد المؤمن • صدقة جارية لله تعالى
+                  تطبيق أذكار المؤمن • صدقة جارية لله تعالى
                 </div>
               </div>
             </div>
@@ -282,7 +291,7 @@ export const SadaqahJariyah: React.FC = () => {
             <button
               onClick={() => {
                 const nameText = dedicationName.trim() ? `عن: ${dedicationName}` : '';
-                const message = `🌱 *بطاقة إهداء ثواب صدقة جارية*\n\nنسأل الله تعالى أن يجعل هذا العمل المبارك وحفظ القرآن والأذكار صدقةً جارية ${nameText}.\n\nشاركونا الأجر عبر تطبيق زاد المؤمن:\n${getAppShareUrl()}`;
+                const message = `🌱 *بطاقة إهداء ثواب صدقة جارية*\n\nنسأل الله تعالى أن يجعل هذا العمل المبارك وحفظ القرآن والأذكار صدقةً جارية ${nameText}.\n\nشاركونا الأجر عبر تطبيق أذكار المؤمن:\n${getAppShareUrl()}`;
                 handleShareApp(message);
               }}
               className="w-full py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 active:scale-[0.98] transition-all mt-2"
@@ -476,7 +485,7 @@ export const SadaqahJariyah: React.FC = () => {
               </div>
 
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                تطبيق زاد المؤمن مصمم ليكون صدقة جارية ونوراً في الميزان لكل من قرأ، وذكر، أو ساهم في نشره.
+                تطبيق أذكار المؤمن مصمم ليكون صدقة جارية ونوراً في الميزان لكل من قرأ، وذكر، أو ساهم في نشره.
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2">

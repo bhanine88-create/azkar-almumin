@@ -724,30 +724,31 @@ export function AudioLibraryHub() {
         document.body
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-xl py-4 z-40 -mx-4 px-4 shadow-sm border-b border-black/5 dark:border-white/5">
-        <div className="flex items-center gap-4">
-          <BackButton forceFallback={true} fallbackPath="/" />
-          <div className="flex flex-col">
-            <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
-               استمع
-            </h1>
-            <p className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400">{greetingMsg}، استمع لما ينفعك</p>
+      {/* Sticky Header & Search Container */}
+      <div className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl -mx-4 px-4 pt-3 pb-3 border-b border-black/5 dark:border-white/5 shadow-sm space-y-3">
+        {/* Header Bar */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <BackButton forceFallback={true} fallbackPath="/" />
+            <div className="flex flex-col">
+              <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
+                 استمع
+              </h1>
+              <p className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400">{greetingMsg}، استمع لما ينفعك</p>
+            </div>
           </div>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 border border-black/5 shadow-sm hover:text-fuchsia-500 transition-colors"
+          >
+            <SlidersHorizontal size={20} />
+          </motion.button>
         </div>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsSettingsOpen(true)}
-          className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 border border-black/5 shadow-sm hover:text-fuchsia-500 transition-colors"
-        >
-          <SlidersHorizontal size={20} />
-        </motion.button>
-      </div>
 
-      <div className="flex flex-col gap-6 mt-2">
         {/* Smart Instant Autocomplete Search Bar */}
-        <div className="mx-1">
+        <div>
           <AudioSearchAutocomplete
             searchQuery={searchQuery}
             onSearchChange={(q) => setSearchQuery(q)}
@@ -759,6 +760,9 @@ export function AudioLibraryHub() {
             onSelectTafsir={(tafsirScholarId) => navigate('/tafsir-audio', { state: { scholarId: tafsirScholarId } })}
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-6 mt-4">
 
         {/* Search Results Display */}
         <AnimatePresence>

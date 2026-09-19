@@ -381,7 +381,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20');
+    const saved = safeLocalStorageGetItem('believer_settings_v28') || safeLocalStorageGetItem('believer_settings_v27') || safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20');
     const defaultSettings: AppSettings = OFFICIAL_DEFAULT_SETTINGS;
 
     if (saved) {
@@ -469,6 +469,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           safeLocalStorageSetItem('believer_settings_v26_official', 'true');
         }
 
+        // Official Defaults Synchronization v27 (believer_settings_v27_official)
+        const isUpgradingToOfficialV27 = !safeLocalStorageGetItem('believer_settings_v27_official');
+        if (isUpgradingToOfficialV27) {
+          merged.adhkarViewMode = 'list';
+          merged.visualTheme = 'glass';
+          merged.sidebarTheme = 'glassy';
+          merged.notificationsEnabled = true;
+          merged.prayerNotificationsEnabled = true;
+          merged.morningNotificationsEnabled = true;
+          merged.eveningNotificationsEnabled = true;
+          merged.morningAdhkarFollowupEnabled = true;
+          merged.eveningAdhkarFollowupEnabled = true;
+          merged.sunnahReminderEnabled = true;
+          merged.randomAdhkarEnabled = true;
+          merged.tasbihSoundEnabled = true;
+          merged.tasbihBeadStyle = 'emerald';
+          merged.hapticTasbihEnabled = true;
+          merged.audioAutoAdvance = true;
+          merged.audioPlaybackSpeed = 1;
+          merged.audioSleepTimerMinutes = 0;
+          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
+          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
+          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
+          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
+          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
+          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
+          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
+          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
+          merged.prayerNotificationSettings = {
+            Fajr: true,
+            Sunrise: false,
+            Dhuhr: true,
+            Asr: true,
+            Maghrib: true,
+            Isha: true
+          };
+          safeLocalStorageSetItem('believer_settings_v27_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
+          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(merged));
+        }
+
         // Migration v27: Ensure all notifications and reminders are firmly enabled by default
         const isUpgradingToNotifsEnabledV27 = !safeLocalStorageGetItem('believer_notifs_firm_enabled_v27');
         if (isUpgradingToNotifsEnabledV27) {
@@ -489,6 +530,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             Isha: true
           };
           safeLocalStorageSetItem('believer_notifs_firm_enabled_v27', 'true');
+        }
+
+        // Official Defaults Synchronization v28 (believer_settings_v28_official)
+        const isUpgradingToOfficialV28 = !safeLocalStorageGetItem('believer_settings_v28_official');
+        if (isUpgradingToOfficialV28) {
+          merged.adhkarViewMode = 'list';
+          merged.visualTheme = 'glass';
+          merged.sidebarTheme = 'glassy';
+          merged.notificationsEnabled = true;
+          merged.prayerNotificationsEnabled = true;
+          merged.morningNotificationsEnabled = true;
+          merged.eveningNotificationsEnabled = true;
+          merged.morningAdhkarFollowupEnabled = true;
+          merged.eveningAdhkarFollowupEnabled = true;
+          merged.sunnahReminderEnabled = true;
+          merged.randomAdhkarEnabled = true;
+          merged.tasbihSoundEnabled = true;
+          merged.tasbihBeadStyle = 'emerald';
+          merged.hapticTasbihEnabled = true;
+          merged.audioAutoAdvance = true;
+          merged.audioPlaybackSpeed = 1;
+          merged.audioSleepTimerMinutes = 0;
+          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
+          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
+          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
+          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
+          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
+          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
+          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
+          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
+          merged.prayerNotificationSettings = {
+            Fajr: true,
+            Sunrise: false,
+            Dhuhr: true,
+            Asr: true,
+            Maghrib: true,
+            Isha: true
+          };
+          safeLocalStorageSetItem('believer_settings_v28_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(merged));
+          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
+          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(merged));
         }
 
         if (!merged.adhkarViewMode) {
@@ -870,6 +953,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
+    safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(settings));
+    safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(settings));
     safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(settings));
     
     // Apply theme
@@ -1626,7 +1711,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetSettings = React.useCallback(() => {
     setSettings(OFFICIAL_DEFAULT_SETTINGS);
+    safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
+    safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
     safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
+    safeLocalStorageSetItem('believer_settings_v28_official', 'true');
     safeLocalStorageSetItem('quran-reciter', '7');
     setHomeWidgets(defaultWidgets);
     safeLocalStorageSetItem('home_widgets_config', JSON.stringify(defaultWidgets.map(w => ({ id: w.id, isVisible: w.isVisible }))));

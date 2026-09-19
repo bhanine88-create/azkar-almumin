@@ -8,12 +8,11 @@ import { useTranslation } from '../i18n';
 import { AppIcon } from './ui/AppIcon';
 import { PageSkeletonFallback } from './ui/PageSkeletonFallback';
 import { preloadLibraryRoutes } from '../lib/preloadLibrary';
-import { lazyRetry } from '../lib/lazyRetry';
-const AppInfoModal = lazyRetry(() => import('./AppInfoModal').then(m => ({ default: m.AppInfoModal })), 'AppInfoModal');
-const LanguageSelectorModal = lazyRetry(() => import('./LanguageSelectorModal').then(m => ({ default: m.LanguageSelectorModal })), 'LanguageSelectorModal');
+import { AppInfoModal } from './AppInfoModal';
+import { LanguageSelectorModal } from './LanguageSelectorModal';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
-const GlobalAudioBar = lazyRetry(() => import('./GlobalAudioBar').then(m => ({ default: m.GlobalAudioBar })));
-const DownloadProgressWidget = lazyRetry(() => import('./DownloadProgressWidget').then(m => ({ default: m.DownloadProgressWidget })));
+import { GlobalAudioBar } from './GlobalAudioBar';
+import { DownloadProgressWidget } from './DownloadProgressWidget';
 import { auth } from '../firebase';
 import { SectionErrorBoundary } from './SectionErrorBoundary';
 import { playNotificationChimeSound } from '../lib/sounds';
@@ -1981,8 +1980,8 @@ export const Layout: React.FC = () => {
             </React.Suspense>
           </div>
         </main>
-        <React.Suspense fallback={null}><GlobalAudioBar /></React.Suspense>
-        <React.Suspense fallback={null}><DownloadProgressWidget /></React.Suspense>
+        <GlobalAudioBar />
+        <DownloadProgressWidget />
         {!hideBottomNav && (
           <nav 
             id="bottom-nav"
@@ -2033,9 +2032,7 @@ export const Layout: React.FC = () => {
           </nav>
         )}
       </div>
-      <React.Suspense fallback={null}>
-        <AppInfoModal isOpen={isAppInfoModalOpen} onClose={() => setIsAppInfoModalOpen(false)} />
-      </React.Suspense>
+      <AppInfoModal isOpen={isAppInfoModalOpen} onClose={() => setIsAppInfoModalOpen(false)} />
       {/* Global Toast Notification */}
       <AnimatePresence>
         {toast && (

@@ -32,6 +32,7 @@ import {
 import { useSmartNavigation } from '../lib/navigation';
 import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear } from "../utils/storage";
+import { generateOfficialLogoCard, OFFICIAL_APP_URL } from '../utils/logoGenerator';
 
 export const Settings: React.FC = () => {
   const { progress, settings, updateSettings, resetAdhkar, cleanAdhkarData, resetSettings } = useAppContext();
@@ -57,7 +58,11 @@ export const Settings: React.FC = () => {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [localUserName, setLocalUserName] = useState(settings.userName || '');
   const [customEmojiInput, setCustomEmojiInput] = useState('');
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [logoDownloaded, setLogoDownloaded] = useState(false);
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+  const [logoCardDataUrl, setLogoCardDataUrl] = useState<string | null>(null);
+  const [isGeneratingLogoCard, setIsGeneratingLogoCard] = useState(false);
+  const [copiedLogoUrl, setCopiedLogoUrl] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [isCleaning, setIsCleaning] = useState(false);
   const [cleanupMessage, setCleanupMessage] = useState('');
@@ -223,96 +228,81 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setUploadError(t('invalid_image_file', 'برجاء اختيار ملف صورة صالح'));
-      return;
+  const handleOpenLogoModal = async () => {
+    setIsLogoModalOpen(true);
+    if (!logoCardDataUrl) {
+      try {
+        setIsGeneratingLogoCard(true);
+        const url = await generateOfficialLogoCard(
+          '/logo-512.png',
+          t('app_name', 'أذكار المؤمن'),
+          'التطبيق الإسلامي الشامل — القرآن الكريم والأذكار ومواقيت الصلاة',
+          OFFICIAL_APP_URL
+        );
+        setLogoCardDataUrl(url);
+      } catch (e) {
+        console.error('Failed to generate logo card', e);
+      } finally {
+        setIsGeneratingLogoCard(false);
+      }
     }
+  };
 
-    setUploadError(null);
-    
-    // Process full image for server upload (must be perfect PNG for PWA webAPK)
-    const processFullImage = new FileReader();
-    processFullImage.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const createIcon = (size: number) => {
-          const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            const minDim = Math.min(img.width, img.height);
-            const sx = (img.width - minDim) / 2;
-            const sy = (img.height - minDim) / 2;
-            ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-            return canvas.toDataURL('image/png');
-          }
-          return null;
-        };
+  const handleDownloadOfficialLogoCard = async () => {
+    try {
+      let cardUrl = logoCardDataUrl;
+      if (!cardUrl) {
+        setIsGeneratingLogoCard(true);
+        cardUrl = await generateOfficialLogoCard(
+          '/logo-512.png',
+          t('app_name', 'أذكار المؤمن'),
+          'التطبيق الإسلامي الشامل — القرآن الكريم والأذكار ومواقيت الصلاة',
+          OFFICIAL_APP_URL
+        );
+        setLogoCardDataUrl(cardUrl);
+      }
+      const link = document.createElement('a');
+      link.href = cardUrl;
+      link.download = 'Athkar-Almumin-Official-Logo-Card.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-        const icon512 = createIcon(512);
-        const icon192 = createIcon(192);
+      setLogoDownloaded(true);
+      setTimeout(() => setLogoDownloaded(false), 3500);
+    } catch (err) {
+      console.error('Failed to download logo card', err);
+      handleDownloadRawLogo();
+    } finally {
+      setIsGeneratingLogoCard(false);
+    }
+  };
 
-        if (icon512 && icon192) {
-          fetch('/api/upload-logo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              imageDataUrl: icon512,
-              imageDataUrl192: icon192
-            })
-          }).catch(err => console.error("Logo upload failed", err));
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    processFullImage.readAsDataURL(file);
+  const handleDownloadRawLogo = async () => {
+    try {
+      const response = await fetch('/logo-512.png');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'Athkar-Almumin-Logo.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
 
-    // 2. Process thumbnail for local state
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 128;
-        const MAX_HEIGHT = 128;
-        let width = img.width;
-        let height = img.height;
+      setLogoDownloaded(true);
+      setTimeout(() => setLogoDownloaded(false), 3500);
+    } catch (err) {
+      console.error('Failed to download raw logo', err);
+      window.open('/logo-512.png', '_blank');
+    }
+  };
 
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          try {
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-            updateSettings({ customAppIcon: dataUrl });
-          } catch (err) {
-            console.error('Compression failed', err);
-            setUploadError(t('image_compression_failed', 'فشل ضغط الصورة، يرجى تجربة صورة أخرى'));
-          }
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+  const handleCopyOfficialUrl = () => {
+    copyTextToClipboard(OFFICIAL_APP_URL);
+    setCopiedLogoUrl(true);
+    setTimeout(() => setCopiedLogoUrl(false), 3000);
   };
   
   const timeout1Ref = React.useRef<any>(null);
@@ -327,20 +317,21 @@ export const Settings: React.FC = () => {
   }, []);
 
   const [confirmResetOfficial, setConfirmResetOfficial] = useState(false);
+  const [isResetOfficialModalOpen, setIsResetOfficialModalOpen] = useState(false);
 
   const handleResetOfficial = () => {
-    if (!confirmResetOfficial) {
-      setConfirmResetOfficial(true);
-      setTimeout(() => setConfirmResetOfficial(false), 3500);
-      return;
-    }
+    setIsResetOfficialModalOpen(true);
+  };
+
+  const executeResetOfficial = () => {
     resetSettings();
     setReciter(7);
     setTheme('light');
+    setIsResetOfficialModalOpen(false);
     setConfirmResetOfficial(false);
-    setCleanupMessage('تمت استعادة كافة الإعدادات والميزات الرسمية الافتراضية للتطبيق بنجاح');
+    setCleanupMessage('تمت استعادة كافة الميزات والمظهر والأقسام للضبط الرسمي الافتراضي للتطبيق بنجاح مع الحفاظ على كامل إنجازاتك وبياناتك.');
     setCleanupIsError(false);
-    setTimeout(() => setCleanupMessage(null), 4000);
+    setTimeout(() => setCleanupMessage(null), 5000);
   };
 
   const handleReset = () => {
@@ -363,8 +354,7 @@ export const Settings: React.FC = () => {
       currentOrigin = window.location.href.split('?')[0].split('#')[0];
     }
     
-    // Replace all occurrences of ais-dev- with ais-pre- for sharing
-    const shareUrl = currentOrigin.replace(/ais-dev-/g, 'ais-pre-');
+    const shareUrl = 'https://azkaralmumin.netlify.app';
 
     await shareContent(
       t('share_app_title' as any) || 'تطبيق أذكار المؤمن',
@@ -412,51 +402,92 @@ export const Settings: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-4 px-1">
-      <div className="flex items-center justify-between px-2 mb-2 sticky top-0 z-30 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md py-4 -mx-4 px-4 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-center gap-3">
-          <BackButton />
-          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{t('settings')}</h2>
+      {/* Sticky Header & Navigation Tabs Bar */}
+      <div className="sticky top-0 z-30 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 pt-3 pb-2.5 -mx-4 px-4 shadow-xs space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{t('settings')}</h2>
+              <p className="text-[10px] sm:text-[11px] font-bold text-teal-600 dark:text-teal-400">
+                {activeTab === 'global' && t('tab_app_preferences', 'تفضيلات التطبيق')}
+                {activeTab === 'notifications' && t('tab_notifications_alerts', 'الإشعارات والتنبيهات')}
+                {activeTab === 'sections' && t('tab_sections_settings', 'إعدادات الأقسام')}
+                {activeTab === 'system' && t('tab_data_system', 'البيانات والنظام')}
+              </p>
+            </div>
+          </div>
+          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-600/30">
+            <Monitor size={18} />
+          </div>
         </div>
-        <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-600/30">
-          <Monitor size={20} />
-        </div>
-      </div>
 
-      {/* Primary Navigation Tabs */}
-      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar mb-4">
-        {[
-          { id: 'global', label: t('tab_app_preferences', 'تفضيلات التطبيق'), icon: Palette },
-          { id: 'notifications', label: t('tab_notifications_alerts', 'الإشعارات والتنبيهات'), icon: Bell },
-          { id: 'sections', label: t('tab_sections_settings', 'إعدادات الأقسام'), icon: Sliders },
-          { id: 'system', label: t('tab_data_system', 'البيانات والنظام'), icon: Database }
-        ].map((tab) => {
-          const isActive = activeTab === tab.id;
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={cn(
-                "relative flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-black text-xs sm:text-sm whitespace-nowrap transition-all flex-1 cursor-pointer select-none",
-                isActive
-                  ? "text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
-              )}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeSettingTab"
-                  className="absolute inset-0 bg-teal-600 dark:bg-teal-600 rounded-xl shadow-lg shadow-teal-600/30"
-                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                <Icon size={16} />
-                <span>{tab.label}</span>
-              </span>
-            </button>
-          );
-        })}
+        {/* Primary Navigation Tabs */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-x-auto custom-scrollbar">
+          {[
+            { id: 'global', label: t('tab_app_preferences', 'تفضيلات التطبيق'), icon: Palette },
+            { id: 'notifications', label: t('tab_notifications_alerts', 'الإشعارات والتنبيهات'), icon: Bell },
+            { id: 'sections', label: t('tab_sections_settings', 'إعدادات الأقسام'), icon: Sliders },
+            { id: 'system', label: t('tab_data_system', 'البيانات والنظام'), icon: Database }
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={cn(
+                  "relative flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm whitespace-nowrap transition-all flex-1 cursor-pointer select-none",
+                  isActive
+                    ? "text-white shadow-md"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeSettingTab"
+                    className="absolute inset-0 bg-teal-600 dark:bg-teal-600 rounded-xl shadow-md shadow-teal-600/30"
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                  <Icon size={15} />
+                  <span>{tab.label}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Section Sub-Tabs (rendered conditionally when in 'sections' tab) */}
+        {activeTab === 'sections' && (
+          <div className="flex items-center gap-1 p-1 bg-slate-200/70 dark:bg-slate-900/90 rounded-xl border border-slate-300/60 dark:border-slate-800/80 overflow-x-auto custom-scrollbar">
+            {[
+              { id: 'quran', label: t('subtab_quran_tafsir', 'القرآن والتفسير'), icon: BookOpen },
+              { id: 'adhkar', label: t('subtab_adhkar_tasbih', 'الأذكار والتسبيح'), icon: Activity },
+              { id: 'prayer', label: t('subtab_prayer_times', 'الصلاة والمواقيت'), icon: Clock },
+              { id: 'quiz', label: t('subtab_quiz_activities', 'المسابقات والأنشطة'), icon: Timer }
+            ].map((sub) => {
+              const isSubActive = activeSectionTab === sub.id;
+              const SubIcon = sub.icon;
+              return (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveSectionTab(sub.id as any)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg font-black text-xs whitespace-nowrap transition-all cursor-pointer",
+                    isSubActive
+                      ? "bg-teal-600 text-white shadow-sm shadow-teal-600/30 font-black"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-slate-800/50"
+                  )}
+                >
+                  <SubIcon size={13} />
+                  <span>{sub.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
@@ -568,15 +599,15 @@ export const Settings: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-2">
-                      <span className="font-black text-sm">استوديو الخطوط والخط العربي</span>
-                      <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black">جديد</span>
+                      <span className="font-black text-sm">{t('font_studio_banner_title', 'استوديو الخطوط والخط العربي')}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black">{t('badge_new', 'جديد')}</span>
                     </div>
-                    <span className="text-[11px] text-teal-100/80 font-bold block">استعراض وتنزيل خطوط إسلامية، كوفية، ورقعية للقرآن والأذكار</span>
+                    <span className="text-[11px] text-teal-100/80 font-bold block">{t('font_studio_banner_desc', 'استعراض وتنزيل خطوط إسلامية، كوفية، ورقعية للقرآن والأذكار')}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 text-teal-200 font-bold text-xs bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
                   <Download size={14} />
-                  <span>تصفح وتنزيل الخطوط</span>
+                  <span>{t('font_studio_banner_action', 'تصفح وتنزيل الخطوط')}</span>
                 </div>
               </button>
 
@@ -624,16 +655,16 @@ export const Settings: React.FC = () => {
                 <p className="text-xs sm:text-sm font-black text-white mb-1">{t('quran_font_title', 'خط الآيات القرآنية')}</p>
                 <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                   {[
-                    { id: 'Uthmanic Hafs', name: 'الرسم العثماني (حفص)' },
-                    { id: 'Uthmanic Hafs 1', name: 'الرسم العثماني (البديل)' },
-                    { id: 'Amiri Quran', name: 'أميري قرآن' },
-                    { id: 'Amiri', name: 'الخط الأميري' },
-                    { id: 'Scheherazade New', name: 'خط شهرزاد' },
-                    { id: 'Lateef', name: 'خط لطيف' },
-                    { id: 'Noto Naskh Arabic', name: 'خط النسخ' },
-                    { id: 'Markazi Text', name: 'الخط المركزي' },
-                    { id: 'Mirza', name: 'خط ميرزا' },
-                    { id: 'Katibeh', name: 'خط كتيبة' }
+                    { id: 'Uthmanic Hafs', nameKey: 'font_uthmanic_hafs', fallback: 'الرسم العثماني (حفص)' },
+                    { id: 'Uthmanic Hafs 1', nameKey: 'font_uthmanic_alt', fallback: 'الرسم العثماني (البديل)' },
+                    { id: 'Amiri Quran', nameKey: 'font_amiri_quran', fallback: 'أميري قرآن' },
+                    { id: 'Amiri', nameKey: 'font_amiri_text', fallback: 'الخط الأميري' },
+                    { id: 'Scheherazade New', nameKey: 'font_scheherazade_text', fallback: 'خط شهرزاد' },
+                    { id: 'Lateef', nameKey: 'font_lateef_text', fallback: 'خط لطيف' },
+                    { id: 'Noto Naskh Arabic', nameKey: 'font_naskh_text', fallback: 'خط النسخ' },
+                    { id: 'Markazi Text', nameKey: 'font_markazi_text', fallback: 'الخط المركزي' },
+                    { id: 'Mirza', nameKey: 'font_mirza_text', fallback: 'خط ميرزا' },
+                    { id: 'Katibeh', nameKey: 'font_katibeh_text', fallback: 'خط كتيبة' }
                   ].map((font) => (
                     <button
                       key={font.id}
@@ -646,7 +677,7 @@ export const Settings: React.FC = () => {
                       )}
                       style={{ fontFamily: font.id }}
                     >
-                      {font.name}
+                      {t(font.nameKey, font.fallback)}
                     </button>
                   ))}
                 </div>
@@ -657,13 +688,13 @@ export const Settings: React.FC = () => {
                 <p className="text-xs sm:text-sm font-black text-white mb-1">{t('hadith_font_title', 'خط الأحاديث النبوية الشريفة')}</p>
                 <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                   {[
-                    { id: 'Amiri', name: 'الأميري (كلاسيكي)' },
-                    { id: 'El Messiri', name: 'المسيري (منحني)' },
-                    { id: 'Reem Kufi', name: 'ريم كوفي (هندسي)' },
-                    { id: 'Aref Ruqaa', name: 'رقعة (خط يد)' },
-                    { id: 'Katibeh', name: 'كتيبة (مخطوطة)' },
-                    { id: 'Tajawal', name: 'تجوال (عصري)' },
-                    { id: 'Markazi Text', name: 'المركزي (تقليدي)' }
+                    { id: 'Amiri', nameKey: 'font_amiri_classic', fallback: 'الأميري (كلاسيكي)' },
+                    { id: 'El Messiri', nameKey: 'font_elmessiri', fallback: 'المسيري (منحني)' },
+                    { id: 'Reem Kufi', nameKey: 'font_reem_kufi', fallback: 'ريم كوفي (هندسي)' },
+                    { id: 'Aref Ruqaa', nameKey: 'font_aref_ruqaa', fallback: 'رقعة (خط يد)' },
+                    { id: 'Katibeh', nameKey: 'font_katibeh_manuscript', fallback: 'كتيبة (مخطوطة)' },
+                    { id: 'Tajawal', nameKey: 'font_tajawal_modern', fallback: 'تجوال (عصري)' },
+                    { id: 'Markazi Text', nameKey: 'font_markazi_traditional', fallback: 'المركزي (تقليدي)' }
                   ].map((font) => (
                     <button
                       key={font.id}
@@ -676,7 +707,7 @@ export const Settings: React.FC = () => {
                       )}
                       style={{ fontFamily: font.id }}
                     >
-                      {font.name}
+                      {t(font.nameKey, font.fallback)}
                     </button>
                   ))}
                 </div>
@@ -687,20 +718,20 @@ export const Settings: React.FC = () => {
                 <p className="text-xs sm:text-sm font-black text-white mb-1">{t('adhkar_font_title', 'خط نصوص الأذكار والأوراد')}</p>
                 <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                   {[
-                    { id: 'Amiri', name: 'الأميري (نسخ كلاسيكي)' },
-                    { id: 'Reem Kufi', name: 'ريم كوفي (كوفي هندسي)' },
-                    { id: 'El Messiri', name: 'المسيري (منحني عصري)' },
-                    { id: 'Aref Ruqaa', name: 'الرقعة (خط يد عربي)' },
-                    { id: 'Lalezar', name: 'لاليزار (عريض بارز)' },
-                    { id: 'Rakkas', name: 'رقاص (تعبيري استعراضي)' },
-                    { id: 'Marhey', name: 'مرحي (مرح وجذاب)' },
-                    { id: 'Lemonada', name: 'ليمونادة (معاصر مستدير)' },
-                    { id: 'Changa', name: 'شانجا (مربع متماسك)' },
-                    { id: 'Katibeh', name: 'كتيبة (مخطوطة تاريخية)' },
-                    { id: 'Tajawal', name: 'تجوال (شاشات حديث)' },
-                    { id: 'Baloo Bhaijaan 2', name: 'بالو (ناعم عريض)' },
-                    { id: 'Alexandria', name: 'الإسكندرية (هندسي تقني)' },
-                    { id: 'Noto Kufi Arabic', name: 'نوتو كوفي (واضح)' }
+                    { id: 'Amiri', nameKey: 'font_amiri_classic', fallback: 'الأميري (نسخ كلاسيكي)' },
+                    { id: 'Reem Kufi', nameKey: 'font_reem_kufi', fallback: 'ريم كوفي (كوفي هندسي)' },
+                    { id: 'El Messiri', nameKey: 'font_elmessiri', fallback: 'المسيري (منحني عصري)' },
+                    { id: 'Aref Ruqaa', nameKey: 'font_aref_ruqaa', fallback: 'الرقعة (خط يد عربي)' },
+                    { id: 'Lalezar', nameKey: 'font_lalezar', fallback: 'لاليزار (عريض بارز)' },
+                    { id: 'Rakkas', nameKey: 'font_rakkas', fallback: 'رقاص (تعبيري استعراضي)' },
+                    { id: 'Marhey', nameKey: 'font_marhey', fallback: 'مرحي (مرح وجذاب)' },
+                    { id: 'Lemonada', nameKey: 'font_lemonada', fallback: 'ليمونادة (معاصر مستدير)' },
+                    { id: 'Changa', nameKey: 'font_changa', fallback: 'شانجا (مربع متماسك)' },
+                    { id: 'Katibeh', nameKey: 'font_katibeh_manuscript', fallback: 'كتيبة (مخطوطة تاريخية)' },
+                    { id: 'Tajawal', nameKey: 'font_tajawal_modern', fallback: 'تجوال (شاشات حديث)' },
+                    { id: 'Baloo Bhaijaan 2', nameKey: 'font_baloo', fallback: 'بالو (ناعم عريض)' },
+                    { id: 'Alexandria', nameKey: 'font_alexandria', fallback: 'الإسكندرية (هندسي تقني)' },
+                    { id: 'Noto Kufi Arabic', nameKey: 'font_noto_kufi', fallback: 'نوتو كوفي (واضح)' }
                   ].map((font) => (
                     <button
                       key={font.id}
@@ -713,7 +744,7 @@ export const Settings: React.FC = () => {
                       )}
                       style={{ fontFamily: font.id }}
                     >
-                      {font.name}
+                      {t(font.nameKey, font.fallback)}
                     </button>
                   ))}
                 </div>
@@ -899,12 +930,12 @@ export const Settings: React.FC = () => {
               </div>
             </div>
 
-            {/* App Icon Customization */}
+            {/* App Icon Customization - Protected Official Identity */}
             <div className="space-y-3 pt-3 border-t border-white/10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs sm:text-sm font-black text-white mb-0.5">{t('official_app_icon_title', 'شعار وأيقونة التطبيق الرسمية')}</p>
-                  <p className="text-[11px] font-bold text-white/70">{t('official_app_icon_desc', 'معاينة وتخصيص الأيقونة المستخدمة على هاتفك والتطبيق')}</p>
+                  <p className="text-[11px] font-bold text-white/70">{t('official_app_icon_desc', 'الهوية البصرية الرسمية المعتمدة لتطبيق أذكار المؤمن')}</p>
                 </div>
                 <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg border border-emerald-400/50 bg-emerald-950 flex items-center justify-center shrink-0">
                   <AppIcon className="w-full h-full" />
@@ -912,16 +943,13 @@ export const Settings: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
+                {/* Official Logo Card (Always Certified & Protected) */}
                 <button
+                  type="button"
                   onClick={() => updateSettings({ customAppIcon: 'preset:original' })}
-                  className={cn(
-                    "p-3 rounded-xl border-2 transition-all text-right flex items-center gap-2.5 cursor-pointer",
-                    (!settings.customAppIcon || settings.customAppIcon === 'preset:original')
-                      ? "border-emerald-400 bg-emerald-500/25 shadow-md ring-1 ring-emerald-400/50"
-                      : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20"
-                  )}
+                  className="p-3 rounded-xl border-2 border-emerald-400 bg-emerald-500/25 shadow-md ring-1 ring-emerald-400/50 text-right flex items-center gap-2.5 cursor-pointer transition-all active:scale-98"
                 >
-                  <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-white/20">
+                  <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-white/20 bg-emerald-950 shadow-inner">
                     <img 
                       src="/logo-512.png" 
                       alt={t('official_logo', 'الشعار الرسمي')} 
@@ -929,31 +957,43 @@ export const Settings: React.FC = () => {
                       onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                     />
                   </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-black text-white">{t('official_original_logo', 'الشعار الرسمي الأصلي')}</p>
-                    <p className="text-[11px] font-black text-emerald-300">{t('emerald_green_approved', 'الأخضر الزمردي المعتمد')}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-black text-white truncate">{t('official_original_logo', 'الشعار الرسمي الأصلي')}</p>
+                    <p className="text-[11px] font-black text-emerald-300 flex items-center gap-1">
+                      <CheckCircle2 size={12} className="shrink-0 text-emerald-400" />
+                      <span className="truncate">{t('emerald_green_approved', 'الأخضر الزمردي المعتمد')}</span>
+                    </p>
                   </div>
                 </button>
 
-                <label className="p-3 rounded-xl border-2 border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all text-right flex items-center gap-2.5 cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <div className="w-9 h-9 rounded-lg bg-teal-500/20 border border-teal-500/40 flex items-center justify-center shrink-0 text-teal-300">
-                    <Upload size={18} />
+                {/* Download Official Logo & App Link Badge */}
+                <button
+                  type="button"
+                  onClick={handleOpenLogoModal}
+                  className="p-3 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 hover:border-emerald-400 active:scale-95 transition-all text-right flex items-center gap-2.5 cursor-pointer group shadow-sm"
+                  title={t('download_official_logo', 'تنزيل الشعار الأصلي مرفقاً برابط التطبيق')}
+                >
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/30 border border-emerald-400/50 flex items-center justify-center shrink-0 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-500/40 transition-all shadow-inner">
+                    {logoDownloaded ? <CheckCircle2 size={18} className="text-emerald-300 animate-bounce" /> : <Download size={18} />}
                   </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-black text-white">{t('upload_custom_icon', 'رفع صورة خاصة')}</p>
-                    <p className="text-[11px] font-bold text-white/70">{t('custom_icon_from_gallery', 'تخصيص أيقونة من المعرض')}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-black text-white truncate">
+                      {logoDownloaded ? t('logo_downloaded', 'تم الحفظ بنجاح!') : t('download_official_logo_with_link', 'تنزيل الشعار والرابط')}
+                    </p>
+                    <p className="text-[11px] font-bold text-emerald-300/90 truncate">
+                      {logoDownloaded ? t('saved_to_gallery', 'في معرض صور هاتفك') : 'مرفق بالموقع الرسمي HD'}
+                    </p>
                   </div>
-                </label>
+                </button>
               </div>
-              {uploadError && (
-                <p className="text-xs font-black text-rose-300 text-right">{uploadError}</p>
-              )}
+
+              {/* Protective Identity Notice */}
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-emerald-200/90 text-xs">
+                <ShieldCheck size={16} className="shrink-0 text-emerald-400" />
+                <p className="text-[11px] font-bold leading-relaxed">
+                  {t('official_logo_protected_notice', 'شعار "أذكار المؤمن" محمي ومعتمد ومرفق بالموقع الرسمي https://azkaralmumin.netlify.app لضمان توثيق الهوية.')}
+                </p>
+              </div>
             </div>
 
           </div>
@@ -1182,8 +1222,8 @@ export const Settings: React.FC = () => {
           </div>
         </SubAccordion>
 
-        {/* 1.5. Background Local Notifications (Capacitor) */}
-        <SubAccordion icon={<Smartphone size={18} className="text-teal-400" />} label={t('notif_sub_local_background', 'تنبيهات خلفية النظام (Capacitor)')}>
+        {/* 1.5. Background Local Notifications */}
+        <SubAccordion icon={<Smartphone size={18} className="text-teal-400" />} label={t('notif_sub_local_background', 'تنبيهات خلفية النظام')}>
           <div className={cn("space-y-3.5 transition-all", !settings.notificationsEnabled && "opacity-40 pointer-events-none")}>
             <div className="bg-teal-950/30 border border-teal-500/20 rounded-2xl p-4 flex flex-col gap-3 text-right">
               <div className="flex items-center justify-between flex-wrap gap-2">
@@ -1304,7 +1344,7 @@ export const Settings: React.FC = () => {
               >
                 {(NOTIFICATION_SOUNDS || []).map((sound) => (
                   <option key={sound.id} value={sound.id} className="bg-slate-900 text-white font-bold">
-                    {sound.label}
+                    {t(`sound_${sound.id.replace(/-/g, '_')}`, sound.label)}
                   </option>
                 ))}
               </select>
@@ -1316,18 +1356,18 @@ export const Settings: React.FC = () => {
                 <label className="text-xs font-black text-white/70 block pr-1">{t('calc_method_label', 'طريقة الحساب')}</label>
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                   {[
-                    { value: '4', label: t('calc_makkah', 'أم القرى، مكة') },
-                    { value: '3', label: t('calc_mwl', 'رابطة العالم الإسلامي') },
-                    { value: '2', label: t('calc_isna', 'أمريكا الشمالية (ISNA)') },
-                    { value: '1', label: t('calc_karachi', 'كراتشي') },
-                    { value: '5', label: t('calc_egypt', 'المساحة المصرية') },
-                    { value: '8', label: t('calc_gulf', 'الخليج العربي') },
-                    { value: '9', label: t('calc_kuwait', 'الكويت') },
-                    { value: '10', label: t('calc_qatar', 'قطر') },
-                    { value: '11', label: t('calc_singapore', 'سنغافورة') },
-                    { value: '12', label: t('calc_france', 'فرنسا (UOIF)') },
-                    { value: '13', label: t('calc_turkey', 'تركيا') },
-                    { value: '14', label: t('calc_russia', 'روسيا') },
+                    { value: '4', label: t('calc_method_makkah', 'أم القرى، مكة') },
+                    { value: '3', label: t('calc_method_mwl', 'رابطة العالم الإسلامي') },
+                    { value: '2', label: t('calc_method_isna', 'أمريكا الشمالية (ISNA)') },
+                    { value: '1', label: t('calc_method_karachi', 'كراتشي') },
+                    { value: '5', label: t('calc_method_egypt', 'المساحة المصرية') },
+                    { value: '8', label: t('calc_method_gulf', 'الخليج العربي') },
+                    { value: '9', label: t('calc_method_kuwait', 'الكويت') },
+                    { value: '10', label: t('calc_method_qatar', 'قطر') },
+                    { value: '11', label: t('calc_method_singapore', 'سنغافورة') },
+                    { value: '12', label: t('calc_method_france', 'فرنسا (UOIF)') },
+                    { value: '13', label: t('calc_method_turkey', 'تركيا') },
+                    { value: '14', label: t('calc_method_russia', 'روسيا') },
                   ].map((method) => (
                     <button
                       key={method.value}
@@ -1531,7 +1571,7 @@ export const Settings: React.FC = () => {
                    >
                      {(NOTIFICATION_SOUNDS || []).map((sound) => (
                        <option key={sound.id} value={sound.id} className="font-bold bg-slate-900 text-white">
-                         {sound.label}
+                         {t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}
                        </option>
                      ))}
                    </select>
@@ -1616,7 +1656,7 @@ export const Settings: React.FC = () => {
                    >
                      {(NOTIFICATION_SOUNDS || []).map((sound) => (
                        <option key={sound.id} value={sound.id} className="font-bold bg-slate-900 text-white">
-                         {sound.label}
+                         {t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}
                        </option>
                      ))}
                    </select>
@@ -1762,7 +1802,7 @@ export const Settings: React.FC = () => {
                >
                  {(NOTIFICATION_SOUNDS || []).map((sound) => (
                    <option key={sound.id} value={sound.id} className="font-bold bg-slate-900 text-white">
-                     {sound.label}
+                     {t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}
                    </option>
                  ))}
                </select>
@@ -1996,7 +2036,7 @@ export const Settings: React.FC = () => {
                            : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
                        )}
                      >
-                       {sound.label}
+                       {t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}
                      </button>
                    ))}
                  </div>
@@ -2020,34 +2060,6 @@ export const Settings: React.FC = () => {
             transition={{ duration: 0.2 }}
             className="space-y-4"
           >
-            {/* Section Sub-Tabs Bar */}
-            <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar">
-              {[
-                { id: 'quran', label: t('subtab_quran_tafsir', 'القرآن والتفسير'), icon: BookOpen },
-                { id: 'adhkar', label: t('subtab_adhkar_tasbih', 'الأذكار والتسبيح'), icon: Activity },
-                { id: 'prayer', label: t('subtab_prayer_times', 'الصلاة والمواقيت'), icon: Clock },
-                { id: 'quiz', label: t('subtab_quiz_activities', 'المسابقات والأنشطة'), icon: Timer }
-              ].map((sub) => {
-                const isSubActive = activeSectionTab === sub.id;
-                const SubIcon = sub.icon;
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => setActiveSectionTab(sub.id as any)}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-black text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer",
-                      isSubActive
-                        ? "bg-teal-600 text-white shadow-md shadow-teal-600/30 font-black"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
-                    )}
-                  >
-                    <SubIcon size={16} />
-                    <span>{sub.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
             {/* Quran Sub-Tab */}
             {activeSectionTab === 'quran' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -2063,20 +2075,20 @@ export const Settings: React.FC = () => {
                           className="text-xs font-black text-teal-300 hover:text-teal-200 bg-teal-500/10 px-2.5 py-1 rounded-lg border border-teal-500/30 flex items-center gap-1 cursor-pointer"
                         >
                           <Sparkles size={12} className="text-amber-300 animate-pulse" />
-                          <span>تنزيل واستوديو الخطوط</span>
+                          <span>{t('font_studio_btn', 'تنزيل واستوديو الخطوط')}</span>
                         </button>
                       </div>
                       <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                         {[
-                          { id: 'Uthmanic Hafs', name: 'الرسم العثماني (حفص)' },
-                          { id: 'Uthmanic Hafs 1', name: 'الرسم العثماني (البديل)' },
-                          { id: 'Amiri Quran', name: 'أميري قرآن' },
-                          { id: 'Amiri', name: 'الخط الأميري' },
-                          { id: 'Scheherazade New', name: 'خط شهرزاد' },
-                          { id: 'Lateef', name: 'خط لطيف' },
-                          { id: 'Noto Naskh Arabic', name: 'خط النسخ' },
-                          { id: 'Markazi Text', name: 'الخط المركزي' },
-                          { id: 'Mirza', name: 'خط ميرزا' }
+                          { id: 'Uthmanic Hafs', nameKey: 'font_uthmanic_hafs', fallback: 'الرسم العثماني (حفص)' },
+                          { id: 'Uthmanic Hafs 1', nameKey: 'font_uthmanic_alt', fallback: 'الرسم العثماني (البديل)' },
+                          { id: 'Amiri Quran', nameKey: 'font_amiri_quran', fallback: 'أميري قرآن' },
+                          { id: 'Amiri', nameKey: 'font_amiri_text', fallback: 'الخط الأميري' },
+                          { id: 'Scheherazade New', nameKey: 'font_scheherazade_text', fallback: 'خط شهرزاد' },
+                          { id: 'Lateef', nameKey: 'font_lateef_text', fallback: 'خط لطيف' },
+                          { id: 'Noto Naskh Arabic', nameKey: 'font_naskh_text', fallback: 'خط النسخ' },
+                          { id: 'Markazi Text', nameKey: 'font_markazi_text', fallback: 'الخط المركزي' },
+                          { id: 'Mirza', nameKey: 'font_mirza_text', fallback: 'خط ميرزا' }
                         ].map((font) => (
                           <button
                             key={font.id}
@@ -2089,7 +2101,7 @@ export const Settings: React.FC = () => {
                             )}
                             style={{ fontFamily: font.id }}
                           >
-                            {font.name}
+                            {t(font.nameKey, font.fallback)}
                           </button>
                         ))}
                       </div>
@@ -2111,8 +2123,11 @@ export const Settings: React.FC = () => {
                         <option value="ar.qurtubi">{t('tafsir_qurtubi', 'تفسير القرطبي')}</option>
                         <option value="ar.baghawi">{t('tafsir_baghawi', 'تفسير البغوي')}</option>
                         <option value="ar.miqbas">{t('tafsir_miqbas', 'تنوير المقباس من تفسير ابن عباس')}</option>
-                        <option value="en.sahih">English (Sahih International)</option>
-                        <option value="fr.hamidullah">Français (Muhammad Hamidullah)</option>
+                        <option value="en.sahih">{t('tafsir_en_sahih', 'English (Sahih International)')}</option>
+                        <option value="fr.hamidullah">{t('tafsir_fr_hamidullah', 'Français (Muhammad Hamidullah)')}</option>
+                        <option value="tr.ates">{t('tafsir_tr_ates', 'Türkçe (Süleyman Ateş)')}</option>
+                        <option value="ur.ahmedali">{t('tafsir_ur_ahmedali', 'اردو (احمد علی)')}</option>
+                        <option value="id.indonesian">{t('tafsir_id_indonesian', 'Bahasa Indonesia (Kemenag)')}</option>
                       </select>
                     </div>
 
@@ -2972,39 +2987,45 @@ export const Settings: React.FC = () => {
         {/* Developer */}
         <DeveloperCard />
 
-        {/* Reset Buttons - Compact 3D */}
+        {/* Reset Buttons - Official Defaults Card & Dialog */}
         <div className="flex flex-col gap-3">
           {cleanupMessage && (
-            <div className={`p-3 rounded-xl text-xs sm:text-sm font-black text-center border shadow-sm ${cleanupIsError ? 'bg-red-500/15 text-red-300 border-red-500/30' : 'bg-teal-500/15 text-teal-300 border-teal-500/30'}`}>
+            <div className={`p-3.5 rounded-2xl text-xs sm:text-sm font-black text-center border shadow-lg ${cleanupIsError ? 'bg-red-500/15 text-red-300 border-red-500/30' : 'bg-teal-500/15 text-teal-300 border-teal-500/30'}`}>
               {cleanupMessage}
             </div>
           )}
 
-          <button
-            onClick={handleResetOfficial}
-            className={`relative w-full flex items-center justify-between p-4 rounded-2xl text-white overflow-hidden shadow-[0_4px_0_0_rgba(15,23,42,1)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-[0_0px_0_0_rgba(15,23,42,1)] transition-all border ${
-              confirmResetOfficial ? 'bg-amber-600 border-amber-400' : 'bg-gradient-to-r from-emerald-800 to-teal-900 border-emerald-500/30'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/15">
-                <CheckCircle2 size={20} className={confirmResetOfficial ? 'text-white' : 'text-emerald-300'} />
-              </div>
-              <div className="text-right">
-                <div className="font-black text-xs sm:text-sm text-white">
-                  {confirmResetOfficial 
-                    ? t('confirm_reset_official_title', 'اضغط مرة أخرى لتأكيد الاستعادة الرسمية') 
-                    : t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}
+          {/* Prominent Official Defaults Button */}
+          <div className="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-teal-950 via-slate-900 to-emerald-950 border border-teal-500/40 shadow-xl space-y-4">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-emerald-400 to-amber-400" />
+            
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0 shadow-inner text-teal-300">
+                  <ShieldCheck size={24} />
                 </div>
-                <div className="text-[11px] text-emerald-200/80 font-medium">
-                  {confirmResetOfficial 
-                    ? t('confirm_reset_official_desc', 'سيتم ضبط الميزات والأقسام والإعدادات وفق الضبط الرسمي المعتمد') 
-                    : t('reset_official_settings_desc', 'يعيد ضبط كافة الأقسام والميزات والمظهر للوضع الرسمي الافتراضي')}
+                <div className="text-right">
+                  <div className="font-black text-sm sm:text-base text-white flex items-center gap-2 flex-wrap">
+                    <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      v28 الرسمي
+                    </span>
+                  </div>
+                  <div className="text-xs text-teal-200/80 font-medium mt-1 leading-relaxed">
+                    {t('reset_official_settings_desc', 'يعيد ضبط كافة الأقسام والميزات والمظهر للوضع الرسمي الافتراضي بضغطة واحدة مع الحفاظ التام على إنجازاتك')}
+                  </div>
                 </div>
               </div>
             </div>
-            <RotateCw size={18} className={`text-white/80 shrink-0 ${confirmResetOfficial ? 'animate-spin' : ''}`} />
-          </button>
+
+            <button
+              onClick={() => setIsResetOfficialModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-teal-950/50 hover:-translate-y-0.5 active:translate-y-0 transition-all border border-emerald-400/40 cursor-pointer"
+            >
+              <RotateCw size={18} />
+              <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
+            </button>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -3014,28 +3035,105 @@ export const Settings: React.FC = () => {
               }}
               className="relative w-full flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl text-white overflow-hidden shadow-[0_4px_0_0_rgba(15,23,42,1)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-[0_0px_0_0_rgba(15,23,42,1)] transition-all bg-slate-800 border border-white/10"
             >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/20 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none" />
-            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/15">
-              <Database size={18} className="text-emerald-400" />
-            </div>
-            <span className="font-black text-xs sm:text-sm text-slate-100 tracking-wide">
-              {confirmCleanAdhkar ? (t('confirm_delete' as any) || 'تأكيد الحذف') : (t('clean_data' as any) || 'تنظيف البيانات')}
-            </span>
-          </button>
-          <button
-            onClick={handleReset}
-            className="relative w-full flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl text-white overflow-hidden shadow-[0_4px_0_0_rgba(15,23,42,1)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-[0_0px_0_0_rgba(15,23,42,1)] transition-all bg-slate-800 border border-white/10"
-          >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/10 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/20 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none" />
-            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/15">
-              <RotateCw size={18} className="text-rose-400" />
-            </div>
-            <span className="font-black text-xs sm:text-sm text-slate-100 tracking-wide">{t('reset_all' as any) || 'إعادة تعيين الكل'}</span>
-          </button>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/20 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none" />
+              <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/15">
+                <Database size={18} className="text-emerald-400" />
+              </div>
+              <span className="font-black text-xs sm:text-sm text-slate-100 tracking-wide">
+                {confirmCleanAdhkar ? (t('confirm_delete' as any) || 'تأكيد الحذف') : (t('clean_data' as any) || 'تنظيف البيانات')}
+              </span>
+            </button>
+            <button
+              onClick={handleReset}
+              className="relative w-full flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl text-white overflow-hidden shadow-[0_4px_0_0_rgba(15,23,42,1)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-[0_0px_0_0_rgba(15,23,42,1)] transition-all bg-slate-800 border border-white/10"
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/10 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/20 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none" />
+              <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/15">
+                <RotateCw size={18} className="text-rose-400" />
+              </div>
+              <span className="font-black text-xs sm:text-sm text-slate-100 tracking-wide">{t('reset_all' as any) || 'إعادة تعيين الكل'}</span>
+            </button>
+          </div>
         </div>
-        </div>
+
+        {/* Official Reset Confirmation Modal Dialog */}
+        <AnimatePresence>
+          {isResetOfficialModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="relative w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 shadow-2xl text-white overflow-hidden text-right"
+                dir="rtl"
+              >
+                <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-400 to-amber-400" />
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center shadow-inner">
+                      <ShieldCheck size={26} className="text-teal-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-base sm:text-lg text-white">
+                        {t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}
+                      </h3>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        مزامنة الضبط الرسمي v28
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsResetOfficialModalOpen(false)}
+                    className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="space-y-3.5 my-5 text-xs sm:text-sm text-slate-200/90 leading-relaxed">
+                  <div className="p-3.5 rounded-2xl bg-teal-950/40 border border-teal-500/20 space-y-2">
+                    <div className="font-black text-teal-300 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <Sparkles size={16} />
+                      <span>ما الذي سيحدث عند الاستعادة؟</span>
+                    </div>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      سيتم إعادة ضبط كافة خيارات المظهر، التنبيهات، وضع عرض الأذكار والقرآن للضبط الافتراضي المعتمد رسمياً للتطبيق.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
+                    <div className="font-black text-emerald-400 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <ShieldCheck size={16} />
+                      <span>ضمان سلامة بياناتك وإنجازاتك 100%</span>
+                    </div>
+                    <p className="text-emerald-200/90 text-xs leading-relaxed">
+                      جميع نقاطك، إنجازاتك، ختمات القرآن، أذكارك المفضلة، وسجل العبادات آمنة تماماً ولن تمحى أو تتأثر بهذا الإجراء.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 mt-6">
+                  <button
+                    onClick={executeResetOfficial}
+                    className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/30"
+                  >
+                    <CheckCircle2 size={18} />
+                    <span>تأكيد الاستعادة الرسمية</span>
+                  </button>
+                  <button
+                    onClick={() => setIsResetOfficialModalOpen(false)}
+                    className="py-3.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs sm:text-sm transition-colors cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Backup & Restore Card */}
         <ThreeDCard color="bg-slate-800" shadow="shadow-slate-900/30" icon={<Database size={18} className="text-teal-400" />} label={t('setting_backup')}>
@@ -3131,11 +3229,138 @@ export const Settings: React.FC = () => {
         isOpen={showRateShareModal} 
         onClose={() => setShowRateShareModal(false)} 
       />
+
+      {/* Official Logo & Brand Badge Download Modal */}
+      <AnimatePresence>
+        {isLogoModalOpen && (
+          <React.Fragment>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsLogoModalOpen(false)}
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[120]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg bg-slate-900 border border-emerald-500/30 rounded-3xl shadow-2xl z-[121] overflow-hidden max-h-[90vh] flex flex-col text-right dir-rtl"
+              dir="rtl"
+            >
+              {/* Modal Header */}
+              <div className="relative p-4 sm:p-5 bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 border-b border-emerald-500/20 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shadow-inner">
+                    <ShieldCheck size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black text-white">
+                      هوية وشعار أذكار المؤمن الرسمية
+                    </h3>
+                    <p className="text-xs font-bold text-emerald-300/80">
+                      تنزيل الشعار المعتمد مرفقاً برابط الموقع الإلكتروني
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsLogoModalOpen(false)}
+                  className="w-9 h-9 rounded-full bg-black/30 text-white/80 hover:text-white hover:bg-black/50 flex items-center justify-center transition-all cursor-pointer border border-white/10"
+                  aria-label="إغلاق"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Modal Body / Scrollable Content */}
+              <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                {/* Generated Card Preview */}
+                <div className="relative rounded-2xl overflow-hidden border-2 border-emerald-500/30 bg-slate-950 shadow-xl flex items-center justify-center min-h-[260px]">
+                  {isGeneratingLogoCard ? (
+                    <div className="flex flex-col items-center justify-center p-8 gap-3 text-emerald-300">
+                      <RefreshCw size={32} className="animate-spin text-emerald-400" />
+                      <p className="text-xs font-black">جاري إعداد بطاقة الشعار والهوية الرسمية...</p>
+                    </div>
+                  ) : logoCardDataUrl ? (
+                    <img 
+                      src={logoCardDataUrl} 
+                      alt="بطاقة الشعار الرسمي لأذكار المؤمن"
+                      className="w-full h-auto object-contain max-h-[340px] rounded-xl" 
+                    />
+                  ) : (
+                    <div className="p-6 text-center text-white/70">
+                      <p className="text-xs font-bold">يمكنك تنزيل بطاقة الشعار المعتمدة برابط التطبيق المباشر أدناه.</p>
+                    </div>
+                  )}
+                  
+                  {/* Verified Identity Badge */}
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-emerald-300 text-[10px] font-black flex items-center gap-1 shadow-md backdrop-blur-sm">
+                    <CheckCircle2 size={12} className="text-emerald-400" />
+                    <span>بطاقة الهوية الرسمية المعتمدة</span>
+                  </div>
+                </div>
+
+                {/* Official URL Banner */}
+                <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-between gap-3 shadow-inner">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold text-emerald-300/80 mb-0.5">الموقع الإلكتروني الرسمي للتطبيق:</p>
+                    <p className="text-xs sm:text-sm font-black text-amber-300 font-mono truncate dir-ltr text-right">
+                      {OFFICIAL_APP_URL}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleCopyOfficialUrl}
+                    className="px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 hover:text-white text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
+                  >
+                    {copiedLogoUrl ? (
+                      <>
+                        <CheckCircle2 size={14} className="text-emerald-400" />
+                        <span>تم النسخ!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink size={14} />
+                        <span>نسخ الرابط</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Download Actions Grid */}
+                <div className="grid grid-cols-1 gap-2.5 pt-1">
+                  {/* Download HD Card with URL */}
+                  <button
+                    onClick={handleDownloadOfficialLogoCard}
+                    disabled={isGeneratingLogoCard}
+                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition-all active:scale-98 cursor-pointer disabled:opacity-50"
+                  >
+                    {logoDownloaded ? (
+                      <CheckCircle2 size={18} className="text-emerald-300 animate-bounce" />
+                    ) : (
+                      <Download size={18} className="text-emerald-200" />
+                    )}
+                    <span>تنزيل بطاقة الشعار المعتمدة مع رابط التطبيق (PNG HD)</span>
+                  </button>
+
+                  {/* Download Raw Logo PNG */}
+                  <button
+                    onClick={handleDownloadRawLogo}
+                    className="w-full py-3 px-4 rounded-2xl bg-white/5 hover:bg-white/10 text-white/90 hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-white/15 transition-all active:scale-98 cursor-pointer"
+                  >
+                    <Download size={16} className="text-emerald-400" />
+                    <span>تنزيل الشعار الشفاف المستقل (PNG)</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </React.Fragment>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-const ThreeDCard: React.FC<{ color: string; shadow: string; icon: React.ReactNode; label: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ color, shadow, icon, label, children, defaultOpen = false }) => {
+const ThreeDCard = React.memo<{ color: string; shadow: string; icon: React.ReactNode; label: string; children: React.ReactNode; defaultOpen?: boolean }>(({ color, shadow, icon, label, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -3185,9 +3410,10 @@ const ThreeDCard: React.FC<{ color: string; shadow: string; icon: React.ReactNod
       <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/5 rounded-full -ml-8 -mb-8 blur-xl pointer-events-none" />
     </motion.div>
   );
-};
+});
+ThreeDCard.displayName = 'ThreeDCard';
 
-const ThreeDLink: React.FC<{ color: string; icon: React.ReactNode; label: string; onClick?: () => void }> = ({ color, icon, label, onClick }) => (
+const ThreeDLink = React.memo<{ color: string; icon: React.ReactNode; label: string; onClick?: () => void }>(({ color, icon, label, onClick }) => (
   <button 
     onClick={onClick}
     className={cn(
@@ -3206,10 +3432,11 @@ const ThreeDLink: React.FC<{ color: string; icon: React.ReactNode; label: string
     <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-2xl pointer-events-none" />
     <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/5 rounded-full -ml-8 -mb-8 blur-xl pointer-events-none" />
   </button>
-);
+));
+ThreeDLink.displayName = 'ThreeDLink';
 
 
-const SubAccordion: React.FC<{ icon: React.ReactNode; label: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ icon, label, children, defaultOpen = false }) => {
+const SubAccordion = React.memo<{ icon: React.ReactNode; label: string; children: React.ReactNode; defaultOpen?: boolean }>(({ icon, label, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -3247,9 +3474,10 @@ const SubAccordion: React.FC<{ icon: React.ReactNode; label: string; children: R
       </AnimatePresence>
     </div>
   );
-};
+});
+SubAccordion.displayName = 'SubAccordion';
 
-const DeveloperCard: React.FC = () => {
+const DeveloperCard = React.memo(() => {
   const { settings } = useAppContext();
   const { t } = useTranslation(settings.appLanguage);
   const { navigate } = useSmartNavigation();
@@ -3324,5 +3552,6 @@ const DeveloperCard: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/5 rounded-full -ml-8 -mb-8 blur-xl pointer-events-none" />
     </motion.div>
   );
-};
+});
+DeveloperCard.displayName = 'DeveloperCard';
 

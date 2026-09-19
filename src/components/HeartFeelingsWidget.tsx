@@ -10,9 +10,10 @@ import {
   getCustomHeartDuas, saveCustomHeartDua, deleteCustomHeartDua 
 } from '../data/heartFeelingsData';
 import { triggerHaptic, checkInputSafety, shareContent } from '../lib/utils';
-const HeartFeelingsModal = React.lazy(() => import('./HeartFeelingsModal').then(m => ({ default: m.HeartFeelingsModal })));
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
+
+const HeartFeelingsModal = React.lazy(() => import('./HeartFeelingsModal').then(m => ({ default: m.HeartFeelingsModal })));
 
 export const HeartFeelingsWidget: React.FC = () => {
   const { settings } = useAppContext();

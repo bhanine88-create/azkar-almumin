@@ -465,18 +465,18 @@ export const ScholarSayings: React.FC = () => {
         <div className="absolute top-0 inset-x-0 h-80 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none" />
       )}
 
-      {/* Premium Header Bar */}
-      <div className={cn("sticky top-0 z-40 backdrop-blur-xl transition-all duration-500 py-4 px-4 sm:px-6", currentStyle.header)}>
+      {/* Premium Header Bar with Integrated Sticky Category Tabs */}
+      <div className={cn("sticky top-0 z-40 backdrop-blur-xl transition-all duration-500 pt-3.5 pb-2.5 px-4 sm:px-6 shadow-xs", currentStyle.header)}>
         <div className="flex items-center justify-between">
-          <div className={cn("flex items-center gap-4", isRtl ? "flex-row" : "flex-row-reverse")}>
+          <div className={cn("flex items-center gap-3 sm:gap-4", isRtl ? "flex-row" : "flex-row-reverse")}>
             <BackButton />
             <div>
               <div className="flex items-center gap-2">
-                <span className={cn("px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 shadow-sm", currentStyle.badgeLabel)}>
+                <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 shadow-sm", currentStyle.badgeLabel)}>
                   {t('sayings_badge')}
                 </span>
               </div>
-              <h1 className={cn("text-2xl font-black tracking-tight mt-1 transition-colors duration-500", currentStyle.headerTitle)}>
+              <h1 className={cn("text-xl sm:text-2xl font-black tracking-tight mt-0.5 transition-colors duration-500", currentStyle.headerTitle)}>
                 {t('sayings_title')}
               </h1>
             </div>
@@ -487,29 +487,79 @@ export const ScholarSayings: React.FC = () => {
             <button
               onClick={handleShuffleInspiration}
               title={isRtl ? "اقتباس عشوائي" : "Shuffle Wisdom"}
-              className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-300 active:scale-90"
+              className="p-2.5 sm:p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-300 active:scale-90"
             >
-              <Shuffle size={20} />
+              <Shuffle size={18} />
             </button>
             <button
               onClick={() => setShowSettings(!showSettings)}
               title={isRtl ? "إعدادات القراءة والمظهر" : "Reading Settings & Themes"}
               className={cn(
-                "p-3 rounded-2xl transition-all duration-500 flex items-center gap-2 font-black text-xs active:scale-90 shadow-sm",
+                "p-2.5 sm:p-3 rounded-2xl transition-all duration-500 flex items-center gap-2 font-black text-xs active:scale-90 shadow-sm",
                 showSettings 
                   ? currentStyle.settingsBtnActive 
                   : currentStyle.settingsBtnInactive
               )}
             >
-              <SlidersHorizontal size={18} />
+              <SlidersHorizontal size={16} />
               <span className="hidden sm:inline">{isRtl ? "تخصيص" : "Customize"}</span>
             </button>
           </div>
         </div>
 
-        <p className="text-[11px] opacity-60 mt-3 font-bold max-w-xl leading-relaxed tracking-wide">
+        <p className="text-[11px] opacity-60 mt-1 font-bold max-w-xl leading-relaxed tracking-wide hidden sm:block">
           {t('sayings_subtitle')}
         </p>
+
+        {/* Sticky Category Tabs Bar */}
+        <div className="relative overflow-hidden pt-2 border-t border-black/5 dark:border-white/10 mt-2">
+          <div className="flex gap-2 overflow-x-auto pb-0.5 hide-scrollbar touch-pan-x snap-x scroll-smooth -mx-1 px-1">
+            {scholarTabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              if (tab.id === 'favorites' && tab.count === 0) return null;
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative shrink-0 flex items-center gap-2 px-3.5 py-1.5 rounded-xl transition-all duration-300 outline-none snap-center group active:scale-95 border cursor-pointer",
+                    isActive 
+                      ? cn("shadow-md border-transparent", currentStyle.categoryBtnActive)
+                      : cn("border-black/5 dark:border-white/5", currentStyle.categoryBtnInactive)
+                  )}
+                >
+                  <span className={cn(
+                    "transition-all duration-300 group-hover:scale-110",
+                    isActive 
+                      ? "text-inherit" 
+                      : "text-slate-400 group-hover:text-amber-500"
+                  )}>
+                    {tab.icon}
+                  </span>
+                  
+                  <span className="text-xs font-black tracking-wide whitespace-nowrap">{tab.name}</span>
+                  
+                  <span className={cn(
+                    "text-[10px] font-black px-1.5 py-0.2 rounded-full transition-all duration-300 min-w-[1.2rem] text-center",
+                    isActive 
+                      ? "bg-white/20 dark:bg-black/20 text-inherit" 
+                      : "bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400 group-hover:bg-amber-500/10 group-hover:text-amber-600"
+                  )}>
+                    {tab.count}
+                  </span>
+
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabUnderline"
+                      className="absolute inset-0 rounded-xl ring-2 ring-amber-500/50 pointer-events-none"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Expandable Typography & Visual Theme Setting Panel */}
@@ -781,7 +831,7 @@ export const ScholarSayings: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('sayings_search_placeholder')}
               className={cn(
-                "w-full pr-14 pl-12 py-4 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 text-sm font-bold transition-all duration-500", 
+                "w-full pr-14 pl-12 py-3.5 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 text-sm font-bold transition-all duration-500", 
                 currentStyle.searchBg
               )}
             />
@@ -796,57 +846,7 @@ export const ScholarSayings: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Category Filter Pills */}
-        <div className="relative overflow-hidden">
-          <div className="flex gap-2.5 overflow-x-auto pb-4 pt-1 hide-scrollbar touch-pan-x snap-x scroll-smooth">
-            {scholarTabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              if (tab.id === 'favorites' && tab.count === 0) return null;
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "relative shrink-0 flex items-center gap-2.5 px-5 py-3 rounded-2xl transition-all duration-500 outline-none snap-center group active:scale-95 border",
-                    isActive 
-                      ? cn("shadow-lg shadow-amber-500/10 border-transparent", currentStyle.categoryBtnActive)
-                      : cn("border-slate-100 dark:border-slate-800/50", currentStyle.categoryBtnInactive)
-                  )}
-                >
-                  <span className={cn(
-                    "transition-all duration-500 group-hover:scale-110",
-                    isActive 
-                      ? "text-inherit" 
-                      : "text-slate-400 group-hover:text-amber-500"
-                  )}>
-                    {tab.icon}
-                  </span>
-                  
-                  <span className="text-xs font-black tracking-wide uppercase whitespace-nowrap">{tab.name}</span>
-                  
-                  <span className={cn(
-                    "text-[10px] font-black px-2 py-0.5 rounded-full transition-all duration-500 min-w-[1.5rem] text-center",
-                    isActive 
-                      ? "bg-white/20 dark:bg-black/20 text-inherit" 
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-amber-500/10 group-hover:text-amber-600"
-                  )}>
-                    {tab.count}
-                  </span>
-
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTabUnderline"
-                      className="absolute inset-0 rounded-2xl ring-2 ring-amber-500/50 pointer-events-none"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 4. Sayings List with Staggered Transition Animations */}
+        {/* 3. Sayings List with Staggered Transition Animations */}
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-2.5 pt-1" dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex items-center gap-2">

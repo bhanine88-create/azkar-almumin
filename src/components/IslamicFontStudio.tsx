@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BackButton } from './ui/BackButton';
 import {
@@ -134,42 +134,98 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
     return matchesCategory && matchesQuery;
   });
 
-  const categories = [
-    { id: 'all', label: 'الكل' },
-    { id: 'quranic', label: 'عثماني وقرآني' },
-    { id: 'kufi', label: 'خطوط كوفية' },
-    { id: 'naskh_ruqaa', label: 'رقعة ونسخ' },
-    { id: 'modern', label: 'حديث وعرض' }
-  ];
+  const categories = useMemo(() => [
+    { id: 'all', label: 'الكل', count: CURATED_ISLAMIC_FONTS.length },
+    { id: 'quranic', label: 'عثماني وقرآني', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'quranic').length },
+    { id: 'kufi', label: 'خطوط كوفية', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'kufi').length },
+    { id: 'naskh_ruqaa', label: 'رقعة ونسخ', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'naskh_ruqaa').length },
+    { id: 'modern', label: 'حديث وعرض', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'modern').length }
+  ], []);
 
   if (!isOpen && !standalonePage) return null;
 
   const content = (
     <div className="w-full max-w-5xl mx-auto space-y-6 pb-12">
-      {/* Sticky Top Header Bar with Back Button */}
-      <div className="sticky top-0 z-30 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/70 dark:border-slate-800/80 rounded-2xl p-3 sm:px-4 shadow-sm flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <BackButton fallbackPath="/library" onClick={onClose} />
-          <div>
-            <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
-              <Type size={16} className="text-teal-600 dark:text-teal-400" />
-              <span>مكتبة الخطوط والخط العربي</span>
-            </h1>
-            <p className="text-[10px] sm:text-[11px] font-bold text-teal-600 dark:text-teal-400">
-              استوديو الخطوط الإسلامية والزخرفة
-            </p>
+      {/* Sticky Top Header Bar & Category Navigation Tabs */}
+      <div className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 sm:px-4 shadow-sm flex flex-col gap-2.5 transition-all">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <BackButton fallbackPath="/library" onClick={onClose} />
+            <div>
+              <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                <Type size={16} className="text-teal-600 dark:text-teal-400" />
+                <span>مكتبة الخطوط والخط العربي</span>
+              </h1>
+              <p className="text-[10px] sm:text-[11px] font-bold text-teal-600 dark:text-teal-400">
+                استوديو الخطوط الإسلامية والزخرفة
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {!standalonePage && onClose && (
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                title="إغلاق"
+              >
+                <X size={18} />
+              </button>
+            )}
           </div>
         </div>
 
-        {!standalonePage && onClose && (
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-            title="إغلاق"
-          >
-            <X size={18} />
-          </button>
-        )}
+        {/* Sticky Category Tabs & Integrated Search Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800/70">
+          {/* Category Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide -mx-1 px-1">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  triggerHaptic('light');
+                  setActiveCategory(cat.id);
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all border flex items-center gap-1.5 cursor-pointer shrink-0",
+                  activeCategory === cat.id
+                    ? "bg-teal-600 dark:bg-teal-500 text-white border-teal-500 dark:border-teal-400 shadow-sm"
+                    : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-200/70 dark:hover:bg-slate-700"
+                )}
+              >
+                <span>{cat.label}</span>
+                <span className={cn(
+                  "text-[10px] font-mono px-1.5 py-0.2 rounded-full",
+                  activeCategory === cat.id
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                )}>
+                  {cat.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-56 shrink-0">
+            <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="بحث عن خط أو خطاط..."
+              className="w-full pr-8 pl-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-900 dark:text-white text-xs font-bold placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
+            />
+            {searchQuery !== '' && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 hover:text-rose-500 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Header Banner */}
@@ -257,42 +313,6 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
               </button>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Category Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                triggerHaptic('selection');
-                setActiveCategory(cat.id);
-              }}
-              className={cn(
-                "px-4 py-2 rounded-2xl text-xs sm:text-sm font-black whitespace-nowrap transition-all border",
-                activeCategory === cat.id
-                  ? "bg-teal-500 text-white border-teal-400 shadow-lg shadow-teal-900/40"
-                  : "bg-slate-900/80 text-white/70 border-white/10 hover:bg-white/10 hover:text-white"
-              )}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Input */}
-        <div className="relative w-full sm:w-64">
-          <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="بحث عن خط أو خطاط..."
-            className="w-full pr-9 pl-4 py-2 rounded-2xl bg-slate-900/80 border border-white/10 text-white text-xs sm:text-sm font-bold placeholder-white/40 focus:outline-none focus:border-teal-400/50"
-          />
         </div>
       </div>
 

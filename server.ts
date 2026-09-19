@@ -340,64 +340,9 @@ async function startServer() {
     next();
   });
 
-  // Upload Logo Endpoint (Rate Limited to prevent DoS/disk space exploitation)
-  app.post("/api/upload-logo", rateLimiter(5, 60 * 1000, "UploadLogo"), async (req, res) => {
-    try {
-      const { imageDataUrl, imageDataUrl192 } = req.body;
-      if (!imageDataUrl || typeof imageDataUrl !== "string") {
-        return res.status(400).json({ error: "Missing or invalid imageDataUrl" });
-      }
-
-      // Base64 image validator (Strict signature limit)
-      const base64Regex = /^data:(image\/(png|jpeg|jpg|svg\+xml));base64,([A-Za-z0-9+/=]{10,})$/;
-      if (!base64Regex.test(imageDataUrl)) {
-        return res.status(400).json({ error: "Unsupported image payload type or encoding" });
-      }
-
-      if (imageDataUrl192 && (typeof imageDataUrl192 !== "string" || !base64Regex.test(imageDataUrl192))) {
-        return res.status(400).json({ error: "Invalid optional imageDataUrl192 structure" });
-      }
-
-      const writeBase64 = async (dataUrl: string, filename: string) => {
-        const matches = dataUrl.match(base64Regex);
-        if (!matches || matches.length !== 4) return;
-        
-        // Strict filename whitelist to prevent arbitrary path traversal writing
-        const safeFilenames = ["logo-512.png", "logo-192.png", "logo.png", "logo.svg"];
-        if (!safeFilenames.includes(filename)) {
-          throw new Error("Potential path traversal audit block");
-        }
-
-        const buffer = Buffer.from(matches[3], "base64");
-        const publicPath = path.join(process.cwd(), "public", filename);
-        const distPath = path.join(process.cwd(), "dist", filename);
-
-        fs.writeFileSync(publicPath, buffer);
-        if (fs.existsSync(path.dirname(distPath))) {
-          fs.writeFileSync(distPath, buffer);
-        }
-      };
-
-      await writeBase64(imageDataUrl, "logo-512.png");
-      if (imageDataUrl192) {
-        await writeBase64(imageDataUrl192, "logo-192.png");
-      } else {
-        await writeBase64(imageDataUrl, "logo-192.png");
-      }
-      
-      // Keep logo.png for fallback
-      await writeBase64(imageDataUrl, "logo.png");
-      
-      // Safe SVG backup (avoid injection scripts inside svg tag attributes)
-      const publicSvgPath = path.join(process.cwd(), "public", "logo.svg");
-      const sanitizedHref = imageDataUrl.replace(/[<>"]/g, "");
-      fs.writeFileSync(publicSvgPath, `<!-- custom logo provided --> <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><image href="${sanitizedHref}" width="512" height="512" /></svg>`);
-
-      res.json({ success: true });
-    } catch (err) {
-      console.error("Upload logo error:", err);
-      res.status(500).json({ error: "Failed to process logo" });
-    }
+  // Official Logo Endpoint (Protected - Preserves official branding)
+  app.post("/api/upload-logo", (_req, res) => {
+    res.json({ success: true, message: "Official logo is locked and protected" });
   });
 
   // Gemini API Proxy (Protect with Prompt Sanitizers & strict Rate Limiting)

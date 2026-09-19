@@ -1592,3 +1592,5 @@ export const GlobalAudioBar: React.FC = () => {
     </>
   );
 };
+
+export default GlobalAudioBar;

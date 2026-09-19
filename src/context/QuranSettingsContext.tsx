@@ -53,6 +53,8 @@ interface QuranSettingsContextType {
   setMushafZoom: (zoom: number) => void;
   mushafEdition: 'hafs' | 'warsh' | 'tajweed';
   setMushafEdition: (edition: 'hafs' | 'warsh' | 'tajweed') => void;
+  mushafDisplayMode: 'auto' | 'single' | 'double';
+  setMushafDisplayMode: (mode: 'auto' | 'single' | 'double') => void;
   bookmark: { surah: number; page: number; juz: number; hizb: number; surahName: string } | null;
   setBookmark: (bookmark: { surah: number; page: number; juz: number; hizb: number; surahName: string } | null) => void;
   bookmarks: QuranBookmark[];
@@ -243,6 +245,16 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
       return 'hafs';
     }
   });
+  const [mushafDisplayMode, setMushafDisplayMode] = useState<'auto' | 'single' | 'double'>(() => {
+    try {
+      const saved = safeLocalStorageGetItem('quran-mushafDisplayMode');
+      const valid = ['auto', 'single', 'double'];
+      if (saved && valid.includes(saved)) return saved as any;
+      return 'auto';
+    } catch (e) {
+      return 'auto';
+    }
+  });
   const [bookmark, setBookmark] = useState<{ surah: number; page: number; juz: number; hizb: number; surahName: string } | null>(() => {
     try {
       const saved = safeLocalStorageGetItem('quran-bookmark');
@@ -333,6 +345,7 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
       secondaryTafsirType, setSecondaryTafsirType: (v: TafsirType | null) => updateSetting('secondaryTafsirType', v as any, setSecondaryTafsirType),
       mushafZoom, setMushafZoom: (v: number) => updateSetting('mushafZoom', v, setMushafZoom),
       mushafEdition, setMushafEdition: (v: 'hafs' | 'warsh' | 'tajweed') => updateSetting('mushafEdition', v, setMushafEdition),
+      mushafDisplayMode, setMushafDisplayMode: (v: 'auto' | 'single' | 'double') => updateSetting('mushafDisplayMode', v, setMushafDisplayMode),
       bookmark, setBookmark: (v: any) => updateSetting('bookmark', v, setBookmark),
       bookmarks, setBookmarks: (v: any[]) => updateSetting('bookmarks', v, setBookmarks),
       keepScreenAwake, setKeepScreenAwake: (v: boolean) => updateSetting('keepScreenAwake', v, setKeepScreenAwake),
@@ -345,7 +358,7 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
   }), [
       fontSize, theme, readingMode, viewMode, focusMode, showTafsir, tafsirType, tafsirTheme,
       tafsirFontSize, tafsirFontFamily, fontFamily, recitation, reciter, autoPlay, secondaryTafsirType,
-      mushafZoom, mushafEdition, bookmark, bookmarks, keepScreenAwake, ayahRepeatCount, rangeRepeatCount,
+      mushafZoom, mushafEdition, mushafDisplayMode, bookmark, bookmarks, keepScreenAwake, ayahRepeatCount, rangeRepeatCount,
       playbackRate, autoNextSurah, ayahInterval, isStoragePersistent
   ]);
 

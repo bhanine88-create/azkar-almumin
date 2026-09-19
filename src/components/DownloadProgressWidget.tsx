@@ -444,3 +444,5 @@ export const DownloadProgressWidget: React.FC = () => {
     </div>
   );
 };
+
+export default DownloadProgressWidget;

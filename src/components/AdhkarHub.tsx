@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -9,13 +9,235 @@ import { useSmartNavigation } from "../lib/navigation";
 import { useAppContext } from '../AppContext';
 import { useTranslation } from '../i18n';
 
+interface AdhkarItem {
+  to: string;
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  color: string;
+  shadow: string;
+  isDarkText?: boolean;
+}
+
+interface AdhkarSection {
+  title: string;
+  description: string;
+  items: AdhkarItem[];
+}
+
+const PrayerJourneyBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: any }>(({ item, isRtl, t }) => (
+  <Link
+    to={item.to}
+    className={cn(
+      "relative block overflow-hidden rounded-3xl border border-teal-500/20 dark:border-teal-400/10 shadow-lg group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 duration-200 w-full col-span-1 md:col-span-2",
+      item.shadow
+    )}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950" />
+    <div className="absolute -right-16 -top-16 w-48 h-48 bg-teal-500/15 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+    <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
+    <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
+
+    <div className="relative z-10 px-6 py-6 flex flex-col justify-between h-full gap-4">
+      <div className={cn("flex items-start justify-between", isRtl ? "flex-row" : "flex-row-reverse")}>
+        <div className={cn("flex-1 select-none", isRtl ? "text-right" : "text-left")}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/20 text-[9px] font-black text-teal-400 mb-2 animate-pulse">
+            <Sparkles size={10} />
+            <span>{t('integrated_journey')}</span>
+          </span>
+          <h3 className="font-black text-lg text-white mb-1 tracking-tight">
+            {item.title}
+          </h3>
+          <p className="text-xs text-slate-300 font-bold leading-relaxed">
+            {t('integrated_journey_desc')}
+          </p>
+        </div>
+
+        <div className={cn("w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/30 text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-inner", isRtl ? "mr-4" : "ml-4")}>
+          {item.icon}
+        </div>
+      </div>
+
+      <div className={cn("w-full bg-white/5 dark:bg-black/20 border border-white/5 rounded-2xl p-3 flex items-center justify-between gap-1 mt-1", isRtl ? "flex-row" : "flex-row-reverse")}>
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">💧</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_purification')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">🕌</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_mosque')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">🔔</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_adhan')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">📖</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_insalat')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">💖</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_after')}</span>
+        </div>
+      </div>
+    </div>
+  </Link>
+));
+PrayerJourneyBanner.displayName = 'PrayerJourneyBanner';
+
+const DuasBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: any }>(({ item, isRtl, t }) => (
+  <Link
+    to={item.to}
+    className={cn(
+      "relative block overflow-hidden rounded-3xl border border-emerald-500/20 dark:border-emerald-400/10 shadow-lg group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 duration-200 w-full col-span-1 md:col-span-2",
+      item.shadow
+    )}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950" />
+    <div className="absolute -right-16 -top-16 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+    <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-teal-500/15 rounded-full blur-2xl pointer-events-none" />
+    <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+
+    <div className="relative z-10 px-6 py-6 flex flex-col justify-between h-full gap-4">
+      <div className={cn("flex items-start justify-between", isRtl ? "flex-row" : "flex-row-reverse")}>
+        <div className={cn("flex-1 select-none", isRtl ? "text-right" : "text-left")}>
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-[9px] font-black text-emerald-400 mb-2 animate-pulse">
+            <Sparkles size={10} />
+            <span>{t('duas_tag')}</span>
+          </span>
+          <h3 className="font-black text-lg text-white mb-1 tracking-tight">
+            {item.title}
+          </h3>
+          <p className="text-xs text-slate-300 font-bold leading-relaxed">
+            {t('duas_desc')}
+          </p>
+        </div>
+
+        <div className={cn("w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-inner", isRtl ? "mr-4" : "ml-4")}>
+          {item.icon}
+        </div>
+      </div>
+
+      <div className={cn("w-full bg-white/5 dark:bg-black/20 border border-white/5 rounded-2xl p-3 flex items-center justify-between gap-1 mt-1", isRtl ? "flex-row" : "flex-row-reverse")}>
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">📖</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('quranic_duas')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">✨</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prophets_duas')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">🤲</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('prophetic_duas')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">🌿</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('seeking_forgiveness')}</span>
+        </div>
+        <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+        <div className="flex flex-col items-center justify-center flex-1">
+          <span className="text-[14px]">❤️</span>
+          <span className="text-[9px] text-slate-300 font-black mt-1">{t('mercy_healing')}</span>
+        </div>
+      </div>
+    </div>
+  </Link>
+));
+DuasBanner.displayName = 'DuasBanner';
+
+const AdhkarItemCard = React.memo<{
+  item: AdhkarItem;
+  isRtl: boolean;
+  isFavorite: boolean;
+  layout: string;
+  showIcons: boolean;
+  showDescriptions: boolean;
+  onToggleFavorite: (item: AdhkarItem) => void;
+}>(({ item, isRtl, isFavorite, layout, showIcons, showDescriptions, onToggleFavorite }) => {
+  const isRuqyah = item.to.includes('ruqyah');
+
+  return (
+    <Link
+      to={item.to}
+      className={cn(
+        "relative block overflow-hidden rounded-2xl shadow-sm transition-all duration-300 border border-white/10 dark:border-white/5 group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 duration-200",
+        item.shadow,
+        layout === 'list' ? "h-auto p-4" : "h-28"
+      )}
+    >
+      <div className={cn("absolute inset-0 bg-gradient-to-br", item.color)} />
+      <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+      
+      {/* Favorite Heart Button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleFavorite(item);
+        }}
+        className={cn(
+          "absolute top-2 left-2 z-20 p-1.5 rounded-xl transition-all duration-300",
+          "hover:bg-white/20 text-white/40 hover:text-rose-500 hover:scale-110",
+          isRuqyah && "text-slate-900/40 hover:text-rose-600 hover:bg-black/5",
+          isFavorite && (isRuqyah ? "text-rose-600 fill-rose-600 animate-pulse" : "text-rose-500 fill-rose-500 animate-pulse")
+        )}
+      >
+        <Heart size={15} className={isFavorite ? "fill-current" : ""} />
+      </button>
+
+      {layout === 'list' ? (
+        <div className="relative z-10 flex items-center justify-start gap-4 h-full" style={{ color: isRuqyah ? '#0f172a' : '#ffffff' }}>
+          {showIcons && (
+            <div className={cn("w-12 h-12 shrink-0 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-md border group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300", isRuqyah ? 'bg-black/10 border-black/10 text-slate-900' : 'bg-white/20 border-white/20 text-white')}>
+              {item.icon}
+            </div>
+          )}
+          <div className={cn("flex flex-col flex-1", isRtl ? "text-right" : "text-left")}>
+            <h3 className={cn("font-bold text-[15px] leading-tight drop-shadow-md", isRuqyah ? 'text-slate-950' : 'text-white')}>{item.title}</h3>
+            {item.subtitle && showDescriptions && (
+              <p className={cn("text-[10px] font-bold uppercase tracking-widest mt-1 opacity-90 drop-shadow-sm", isRuqyah ? 'text-slate-900' : 'text-white/90')}>
+                {item.subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center z-10" style={{ color: isRuqyah ? '#0f172a' : '#ffffff' }}>
+          {showIcons && (
+            <div className={cn("w-10 h-10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-md border mb-2 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300", isRuqyah ? 'bg-black/10 border-black/10 text-slate-900' : 'bg-white/20 border-white/20 text-white')}>
+              {item.icon}
+            </div>
+          )}
+          <h3 className={cn("font-bold text-[13px] leading-tight drop-shadow-md", isRuqyah ? 'text-slate-950' : 'text-white')}>{item.title}</h3>
+          {item.subtitle && showDescriptions && (
+            <p className={cn("text-[9px] font-bold uppercase tracking-widest mt-1 opacity-90 drop-shadow-sm", isRuqyah ? 'text-slate-900' : 'text-white/90')}>
+              {item.subtitle}
+            </p>
+          )}
+        </div>
+      )}
+    </Link>
+  );
+});
+AdhkarItemCard.displayName = 'AdhkarItemCard';
+
 const AdhkarHub: React.FC = () => {
   const { navigate } = useSmartNavigation();
   const { settings, progress, toggleFavoriteUnified, updateSettings } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const sections = [
+  const sections: AdhkarSection[] = useMemo(() => [
     {
       title: t('essential_daily_adhkar'),
       description: t('essential_daily_adhkar_desc'),
@@ -67,7 +289,25 @@ const AdhkarHub: React.FC = () => {
         { to: "/adhkar/favorites", title: t('adhkar_favorites'), icon: <Heart size={20} />, color: "from-pink-600 to-rose-700", shadow: "shadow-lg shadow-pink-600/30" },
       ]
     }
-  ];
+  ], [t]);
+
+  const handleToggleFavorite = useCallback((item: AdhkarItem) => {
+    toggleFavoriteUnified({
+      id: `adhkar_${item.to.split('/').pop()}`,
+      type: 'adhkar',
+      title: item.title,
+      subtitle: item.subtitle || 'أذكار وأدعية',
+      route: item.to
+    });
+  }, [toggleFavoriteUnified]);
+
+  const favoritesSet = useMemo(() => {
+    return new Set(
+      (progress.favorites || [])
+        .filter(f => f.type === 'adhkar')
+        .map(f => f.id)
+    );
+  }, [progress.favorites]);
 
   return (
     <div className="h-full flex flex-col bg-slate-50/50 dark:bg-slate-950">
@@ -123,224 +363,39 @@ const AdhkarHub: React.FC = () => {
                 {section.items.map((item, itemIdx) => {
                   if (item.to === "/adhkar/prayer") {
                     return (
-                      <Link
+                      <PrayerJourneyBanner
                         key={itemIdx}
-                        to={item.to}
-                        className={cn(
-                          "relative block overflow-hidden rounded-3xl border border-teal-500/20 dark:border-teal-400/10 shadow-lg group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 duration-200 w-full col-span-1 md:col-span-2",
-                          item.shadow
-                        )}
-                      >
-                        {/* Background Gradients */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950" />
-                        <div className="absolute -right-16 -top-16 w-48 h-48 bg-teal-500/15 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
-                        <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
-                        
-                        {/* Arabesque Pattern Overlay */}
-                        <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-                        
-                        {/* Glowing Border Line */}
-                        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
-
-                        {/* Card Content Wrapper */}
-                        <div className="relative z-10 px-6 py-6 flex flex-col justify-between h-full gap-4">
-                          <div className={cn("flex items-start justify-between", isRtl ? "flex-row" : "flex-row-reverse")}>
-                            {/* Title & Description */}
-                            <div className={cn("flex-1 select-none", isRtl ? "text-right" : "text-left")}>
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/20 text-[9px] font-black text-teal-400 mb-2 animate-pulse">
-                                <Sparkles size={10} />
-                                <span>{t('integrated_journey')}</span>
-                              </span>
-                              <h3 className="font-black text-lg text-white mb-1 tracking-tight">
-                                {item.title}
-                              </h3>
-                              <p className="text-xs text-slate-300 font-bold leading-relaxed">
-                                {t('integrated_journey_desc')}
-                              </p>
-                            </div>
-
-                            {/* Main Icon Circle */}
-                            <div className={cn("w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/30 text-teal-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-inner", isRtl ? "mr-4" : "ml-4")}>
-                              {item.icon}
-                            </div>
-                          </div>
-
-                          {/* Quick visual steps line representing the prayer journey */}
-                          <div className={cn("w-full bg-white/5 dark:bg-black/20 border border-white/5 rounded-2xl p-3 flex items-center justify-between gap-1 mt-1", isRtl ? "flex-row" : "flex-row-reverse")}>
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">💧</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_purification')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">🕌</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_mosque')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">🔔</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_adhan')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">📖</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_insalat')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">💖</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prayer_steps_after')}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                        item={item}
+                        isRtl={isRtl}
+                        t={t}
+                      />
                     );
                   }
 
                   if (item.to === "/duas") {
                     return (
-                      <Link
+                      <DuasBanner
                         key={itemIdx}
-                        to={item.to}
-                        className={cn(
-                          "relative block overflow-hidden rounded-3xl border border-emerald-500/20 dark:border-emerald-400/10 shadow-lg group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 duration-200 w-full col-span-1 md:col-span-2",
-                          item.shadow
-                        )}
-                      >
-                        {/* Background Gradients */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950" />
-                        <div className="absolute -right-16 -top-16 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
-                        <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-teal-500/15 rounded-full blur-2xl pointer-events-none" />
-                        
-                        {/* Arabesque Pattern Overlay */}
-                        <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-                        
-                        {/* Glowing Border Line */}
-                        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
-
-                        {/* Card Content Wrapper */}
-                        <div className="relative z-10 px-6 py-6 flex flex-col justify-between h-full gap-4">
-                          <div className={cn("flex items-start justify-between", isRtl ? "flex-row" : "flex-row-reverse")}>
-                            {/* Title & Description */}
-                            <div className={cn("flex-1 select-none", isRtl ? "text-right" : "text-left")}>
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-[9px] font-black text-emerald-400 mb-2 animate-pulse">
-                                <Sparkles size={10} />
-                                <span>{t('duas_tag')}</span>
-                              </span>
-                              <h3 className="font-black text-lg text-white mb-1 tracking-tight">
-                                {item.title}
-                              </h3>
-                              <p className="text-xs text-slate-300 font-bold leading-relaxed">
-                                {t('duas_desc')}
-                              </p>
-                            </div>
-
-                            {/* Main Icon Circle */}
-                            <div className={cn("w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-inner", isRtl ? "mr-4" : "ml-4")}>
-                              {item.icon}
-                            </div>
-                          </div>
-
-                          {/* Quick visual steps line representing categories in Duas */}
-                          <div className={cn("w-full bg-white/5 dark:bg-black/20 border border-white/5 rounded-2xl p-3 flex items-center justify-between gap-1 mt-1", isRtl ? "flex-row" : "flex-row-reverse")}>
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">📖</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('quranic_duas')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">✨</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prophets_duas')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">🤲</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('prophetic_duas')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">🌿</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('seeking_forgiveness')}</span>
-                            </div>
-                            <div className="h-4 w-[1px] bg-white/10 shrink-0" />
-                            <div className="flex flex-col items-center justify-center flex-1">
-                              <span className="text-[14px]">❤️</span>
-                              <span className="text-[9px] text-slate-300 font-black mt-1">{t('mercy_healing')}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                        item={item}
+                        isRtl={isRtl}
+                        t={t}
+                      />
                     );
                   }
 
-                  return (
-                    <Link
-                      key={itemIdx}
-                      to={item.to}
-                      className={cn(
-                        "relative block overflow-hidden rounded-2xl shadow-sm transition-all duration-300 border border-white/10 dark:border-white/5 group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 duration-200",
-                        item.shadow,
-                        settings.adhkarLayout === 'list' ? "h-auto p-4" : "h-28"
-                      )}
-                    >
-                      <div className={cn("absolute inset-0 bg-gradient-to-br", item.color)} />
-                      <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-                      
-                      {/* Favorite Heart Button */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          toggleFavoriteUnified({
-                            id: `adhkar_${item.to.split('/').pop()}`,
-                            type: 'adhkar',
-                            title: item.title,
-                            subtitle: item.subtitle || 'أذكار وأدعية',
-                            route: item.to
-                          });
-                        }}
-                        className={cn(
-                          "absolute top-2 left-2 z-20 p-1.5 rounded-xl transition-all duration-300",
-                          "hover:bg-white/20 text-white/40 hover:text-rose-500 hover:scale-110",
-                          item.to.includes('ruqyah') && "text-slate-900/40 hover:text-rose-600 hover:bg-black/5",
-                          progress.favorites?.some(f => f.id === `adhkar_${item.to.split('/').pop()}` && f.type === 'adhkar') && (item.to.includes('ruqyah') ? "text-rose-600 fill-rose-600 animate-pulse" : "text-rose-500 fill-rose-500 animate-pulse")
-                        )}
-                      >
-                        <Heart size={15} className={progress.favorites?.some(f => f.id === `adhkar_${item.to.split('/').pop()}` && f.type === 'adhkar') ? "fill-current" : ""} />
-                      </button>
+                  const isFav = favoritesSet.has(`adhkar_${item.to.split('/').pop()}`);
 
-                      {settings.adhkarLayout === 'list' ? (
-                        <div className="relative z-10 flex items-center justify-start gap-4 h-full" style={{ color: item.to.includes('ruqyah') ? '#0f172a' : '#ffffff' }}>
-                          {settings.adhkarHubShowIcons !== false && (
-                            <div className={cn("w-12 h-12 shrink-0 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-md border group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300", item.to.includes('ruqyah') ? 'bg-black/10 border-black/10 text-slate-900' : 'bg-white/20 border-white/20 text-white')}>
-                              {item.icon}
-                            </div>
-                          )}
-                          <div className={cn("flex flex-col flex-1", isRtl ? "text-right" : "text-left")}>
-                            <h3 className={cn("font-bold text-[15px] leading-tight drop-shadow-md", item.to.includes('ruqyah') ? 'text-slate-950' : 'text-white')}>{item.title}</h3>
-                            {item.subtitle && settings.adhkarHubShowDescriptions !== false && (
-                              <p className={cn("text-[10px] font-bold uppercase tracking-widest mt-1 opacity-90 drop-shadow-sm", item.to.includes('ruqyah') ? 'text-slate-900' : 'text-white/90')}>
-                                {item.subtitle}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center z-10" style={{ color: item.to.includes('ruqyah') ? '#0f172a' : '#ffffff' }}>
-                          {settings.adhkarHubShowIcons !== false && (
-                            <div className={cn("w-10 h-10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-md border mb-2 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300", item.to.includes('ruqyah') ? 'bg-black/10 border-black/10 text-slate-900' : 'bg-white/20 border-white/20 text-white')}>
-                              {item.icon}
-                            </div>
-                          )}
-                          <h3 className={cn("font-bold text-[13px] leading-tight drop-shadow-md", item.to.includes('ruqyah') ? 'text-slate-950' : 'text-white')}>{item.title}</h3>
-                          {item.subtitle && settings.adhkarHubShowDescriptions !== false && (
-                            <p className={cn("text-[9px] font-bold uppercase tracking-widest mt-1 opacity-90 drop-shadow-sm", item.to.includes('ruqyah') ? 'text-slate-900' : 'text-white/90')}>
-                              {item.subtitle}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </Link>
+                  return (
+                    <AdhkarItemCard
+                      key={itemIdx}
+                      item={item}
+                      isRtl={isRtl}
+                      isFavorite={isFav}
+                      layout={settings.adhkarLayout || 'grid'}
+                      showIcons={settings.adhkarHubShowIcons !== false}
+                      showDescriptions={settings.adhkarHubShowDescriptions !== false}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
                   );
                 })}
               </div>

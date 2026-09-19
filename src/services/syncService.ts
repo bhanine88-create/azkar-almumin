@@ -163,7 +163,7 @@ class SyncManager {
     try {
       // Fetch latest values directly from localStorage to prevent thread blocking
       const progressRaw = safeLocalStorageGetItem('believer_progress_v23') || safeLocalStorageGetItem('believer_progress_v22') || safeLocalStorageGetItem('believer_progress_v21') || safeLocalStorageGetItem('believer_progress_v20') || safeLocalStorageGetItem('believer_progress_v5');
-      const settingsRaw = safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20') || safeLocalStorageGetItem('believer_settings_v6');
+      const settingsRaw = safeLocalStorageGetItem('believer_settings_v28') || safeLocalStorageGetItem('believer_settings_v27') || safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20') || safeLocalStorageGetItem('believer_settings_v6');
       const countsRaw = safeLocalStorageGetItem('believer_adhkar_counts_v23') || safeLocalStorageGetItem('believer_adhkar_counts_v22') || safeLocalStorageGetItem('believer_adhkar_counts_v21') || safeLocalStorageGetItem('believer_adhkar_counts_v20') || safeLocalStorageGetItem('believer_adhkar_counts_v6') || safeLocalStorageGetItem('believer_adhkar_counts_v5');
 
       const progress = progressRaw ? JSON.parse(progressRaw) : null;

@@ -355,8 +355,8 @@ const MushafPage = React.memo<{
   return (
     <div
       className={cn(
-        "relative w-full flex items-start justify-center overflow-visible transition-colors duration-200 bg-transparent",
-        isVertical ? "h-auto min-h-0 py-0" : "h-full max-h-full items-start pt-0"
+        "relative w-full flex items-center justify-center overflow-visible transition-colors duration-200 bg-transparent p-0 m-0",
+        isVertical ? "h-auto min-h-0 py-0" : "h-full max-h-full"
       )}
     >
       {/* Complex Background Texture for Realism and Comfort */}
@@ -406,7 +406,7 @@ const MushafPage = React.memo<{
               "relative group/mushaf-page select-none cursor-pointer flex items-center justify-center transition-all duration-150 active:scale-[0.995]",
               isVertical
                 ? "w-full max-w-[650px] mx-auto h-auto my-0"
-                : "h-full max-h-full max-w-full my-0 mt-0.5 mx-auto"
+                : "h-full max-h-full max-w-full my-0 p-0 mx-auto"
             )}
             style={
               isVertical
@@ -433,8 +433,14 @@ const MushafPage = React.memo<{
               alt={`${t("page")} ${pageNum}`}
               loading="eager"
               decoding="async"
+              ref={(img) => {
+                if (img && img.complete && img.naturalWidth > 0 && loading) {
+                  setLoading(false);
+                  setPageAspectRatio(img.naturalWidth / img.naturalHeight);
+                }
+              }}
               className={cn(
-                "origin-center [image-rendering:high-quality] relative z-0 transition-opacity duration-200 block w-full h-full object-fill pointer-events-none select-none",
+                "origin-center [image-rendering:high-quality] relative z-0 transition-opacity duration-150 block w-full h-full object-fill pointer-events-none select-none",
                 loading ? "opacity-0" : "opacity-100",
                 isCreamyNight
                   ? "invert hue-rotate-[160deg] contrast-125 brightness-[0.85] sepia-[0.3]"
@@ -713,6 +719,8 @@ export const SurahDetail: React.FC = () => {
     setMushafZoom,
     mushafEdition,
     setMushafEdition,
+    mushafDisplayMode,
+    setMushafDisplayMode,
     bookmark,
     setBookmark,
     bookmarks,
@@ -732,6 +740,20 @@ export const SurahDetail: React.FC = () => {
     focusMode,
     setFocusMode,
   } = useQuranSettings();
+
+  const [windowWidth, setWindowWidth] = useState(() => typeof window !== "undefined" ? window.innerWidth : 1024);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isDoubleSpread = mushafDisplayMode === "double" || (mushafDisplayMode === "auto" && windowWidth >= 768);
+
+  const getAyahsForPage = React.useCallback((pNum: number) => {
+    if (!surah || !surah.ayahs) return [];
+    return surah.ayahs.filter((a) => a.page === pNum);
+  }, [surah]);
   const [secondaryTafsirData, setSecondaryTafsirData] = useState<any[]>([]);
 
   const [wakeLock, setWakeLock] = useState<any>(null);
@@ -1056,6 +1078,7 @@ export const SurahDetail: React.FC = () => {
       ayahsData === "next_surah_trigger" &&
       surah
     ) {
+      if (initializedSurahNumberRef.current !== surah.number) return;
       if (settings.hapticTasbihEnabled !== false) {
         Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
           if ("vibrate" in navigator) navigator.vibrate(20);
@@ -1070,6 +1093,7 @@ export const SurahDetail: React.FC = () => {
       ayahsData === "prev_surah_trigger" &&
       surah
     ) {
+      if (initializedSurahNumberRef.current !== surah.number) return;
       if (settings.hapticTasbihEnabled !== false) {
         Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
           if ("vibrate" in navigator) navigator.vibrate(20);
@@ -2579,6 +2603,33 @@ export const SurahDetail: React.FC = () => {
                     <p className="px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                       طريقة العرض
                     </p>
+                    {viewMode === "mushaf" && (
+                      <div className="p-2 bg-black/5 dark:bg-white/5 rounded-2xl space-y-1.5 mb-2">
+                        <p className="px-1 text-[9px] font-black text-teal-600 dark:text-teal-400">
+                          نظام عرض صفحات المصحف:
+                        </p>
+                        <div className="grid grid-cols-3 gap-1">
+                          {[
+                            { id: "double", label: "صفحتين" },
+                            { id: "single", label: "صفحة" },
+                            { id: "auto", label: "تلقائي" },
+                          ].map((mode) => (
+                            <button
+                              key={mode.id}
+                              onClick={() => setMushafDisplayMode(mode.id as any)}
+                              className={cn(
+                                "py-1.5 px-2 rounded-xl text-[10px] font-black transition-all text-center",
+                                mushafDisplayMode === mode.id
+                                  ? "bg-teal-500 text-white shadow-sm"
+                                  : "bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
+                              )}
+                            >
+                              {mode.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <button
                       onClick={() => {
                         setViewMode(
@@ -3219,6 +3270,8 @@ export const SurahDetail: React.FC = () => {
           themeClasses={themeClasses}
           mushafEdition={mushafEdition}
           setMushafEdition={setMushafEdition}
+          mushafDisplayMode={mushafDisplayMode}
+          setMushafDisplayMode={setMushafDisplayMode}
           keepScreenAwake={keepScreenAwake}
           setKeepScreenAwake={setKeepScreenAwake}
           mushafZoom={mushafZoom}
@@ -3246,7 +3299,8 @@ export const SurahDetail: React.FC = () => {
 
         {/* Smart & Modern Tajweed Assistant overlays */}
         <div
-          className="quran-viewer-container w-full p-0 relative flex-1 flex flex-col overflow-hidden min-h-0"
+          className="quran-viewer-container w-full h-full p-0 relative flex-1 flex flex-col overflow-hidden min-h-0"
+          style={{ contain: 'strict', willChange: 'transform' }}
         >
           {/* Interactive Tajweed Rules Panel (Bottom Sheet style) */}
           <AnimatePresence>
@@ -3415,46 +3469,127 @@ export const SurahDetail: React.FC = () => {
                              <span className="font-black text-xs">{surah?.name}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                             <span className="font-black text-xs">الصفحة {pageNum}</span>
+                             <span className="font-black text-xs">
+                               {isDoubleSpread ? `الصفحتان ${pageNum % 2 === 0 ? pageNum : (pageNum === 1 ? 1 : pageNum - 1)} - ${pageNum % 2 === 0 ? (pageNum + 1 <= 604 ? pageNum + 1 : 604) : pageNum}` : `الصفحة ${pageNum}`}
+                             </span>
                              <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70 dark:bg-teal-400/70 shrink-0" />
                              <span className="font-extrabold text-xs opacity-90">الجزء {ayahs?.[0]?.juz || '...'}</span>
                           </div>
                         </div>
                       )}
-                      <div
-                        className={cn(
-                          "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-col items-center justify-start pt-0.5 sm:pt-1 transition-all duration-300 rounded-none border-none shadow-none",
-                          settings.visualTheme === "glass"
-                            ? "bg-white/30 backdrop-blur-md"
-                            : theme === "creamyNight"
-                            ? "bg-[#25211d]"
-                            : theme === "dark"
-                            ? "bg-slate-900"
-                            : theme === "sepia"
-                            ? "bg-[#f4ebd0]"
-                            : theme === "parchment"
-                            ? "bg-[#e8dcc4]"
-                            : theme === "sand"
-                            ? "bg-[#f3ead3]"
-                            : theme === "slate"
-                            ? "bg-[#1e293b]"
-                            : "bg-white"
-                        )}
-                        style={cardStyle}
-                      >
-                        <div className="relative w-full h-full flex flex-1 items-start justify-center p-0 m-0 overflow-hidden">
-                          <MushafPage 
-                            pageNum={pageNum} 
-                            recitation={recitation} 
-                            ayahs={Array.isArray(ayahs) ? ayahs : []} 
-                            surahName={surah?.name} 
-                            setSelectedAyah={setSelectedAyah} 
-                            isVertical={false} 
-                            isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === pageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === pageNum))}
-                            onBookmarkClick={() => handleRibbonClick(pageNum)}
-                          />
+                      
+                      {isDoubleSpread ? (() => {
+                        const isEven = pageNum % 2 === 0;
+                        let rightPageNum = pageNum;
+                        let leftPageNum = pageNum + 1;
+
+                        if (pageNum === 1) {
+                          rightPageNum = 1;
+                          leftPageNum = 2;
+                        } else if (!isEven) {
+                          rightPageNum = pageNum - 1;
+                          leftPageNum = pageNum;
+                        }
+
+                        const rightAyahs = getAyahsForPage(rightPageNum);
+                        const leftAyahs = getAyahsForPage(leftPageNum);
+
+                        return (
+                          <div
+                            className={cn(
+                              "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-row items-center justify-center transition-all duration-300 rounded-none border-none shadow-none gap-0",
+                              settings.visualTheme === "glass"
+                                ? "bg-white/30 backdrop-blur-md"
+                                : theme === "creamyNight"
+                                ? "bg-[#25211d]"
+                                : theme === "dark"
+                                ? "bg-slate-900"
+                                : theme === "sepia"
+                                ? "bg-[#f4ebd0]"
+                                : theme === "parchment"
+                                ? "bg-[#e8dcc4]"
+                                : theme === "sand"
+                                ? "bg-[#f3ead3]"
+                                : theme === "slate"
+                                ? "bg-[#1e293b]"
+                                : "bg-white"
+                            )}
+                            style={cardStyle}
+                            dir="rtl"
+                          >
+                            {/* Right Page (الصحيفة اليمنى) */}
+                            <div className="flex-1 h-full w-1/2 flex items-center justify-end p-0 m-0 relative overflow-hidden">
+                              <MushafPage 
+                                pageNum={rightPageNum} 
+                                recitation={recitation} 
+                                ayahs={rightAyahs} 
+                                surahName={surah?.name} 
+                                setSelectedAyah={setSelectedAyah} 
+                                isVertical={false} 
+                                isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === rightPageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === rightPageNum))}
+                                onBookmarkClick={() => handleRibbonClick(rightPageNum)}
+                              />
+                            </div>
+
+                            {/* Central Book Spine (فاصل طي المصحف الشريف المعتمد بين الصفحتين) */}
+                            <div className="w-[2px] h-[98%] bg-gradient-to-b from-amber-900/10 via-amber-900/40 to-amber-900/10 dark:from-teal-400/10 dark:via-teal-400/40 dark:to-teal-400/10 shrink-0 z-30 shadow-[0_0_8px_rgba(0,0,0,0.2)] rounded-full my-auto" />
+
+                            {/* Left Page (الصحيفة اليسرى) */}
+                            {leftPageNum <= 604 ? (
+                              <div className="flex-1 h-full w-1/2 flex items-center justify-start p-0 m-0 relative overflow-hidden">
+                                <MushafPage 
+                                  pageNum={leftPageNum} 
+                                  recitation={recitation} 
+                                  ayahs={leftAyahs} 
+                                  surahName={surah?.name} 
+                                  setSelectedAyah={setSelectedAyah} 
+                                  isVertical={false} 
+                                  isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === leftPageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === leftPageNum))}
+                                  onBookmarkClick={() => handleRibbonClick(leftPageNum)}
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex-1 h-full w-1/2" />
+                            )}
+                          </div>
+                        );
+                      })() : (
+                        <div
+                          className={cn(
+                            "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-col items-center justify-center transition-all duration-300 rounded-none border-none shadow-none",
+                            settings.visualTheme === "glass"
+                              ? "bg-white/30 backdrop-blur-md"
+                              : theme === "creamyNight"
+                              ? "bg-[#25211d]"
+                              : theme === "dark"
+                              ? "bg-slate-900"
+                              : theme === "sepia"
+                              ? "bg-[#f4ebd0]"
+                              : theme === "parchment"
+                              ? "bg-[#e8dcc4]"
+                              : theme === "sand"
+                              ? "bg-[#f3ead3]"
+                              : theme === "slate"
+                              ? "bg-[#1e293b]"
+                              : "bg-white"
+                          )}
+                          style={cardStyle}
+                        >
+                          <div className="relative w-full h-full flex flex-1 items-center justify-center p-0 m-0 overflow-hidden">
+                            <MushafPage 
+                              pageNum={pageNum} 
+                              recitation={recitation} 
+                              ayahs={Array.isArray(ayahs) ? ayahs : []} 
+                              surahName={surah?.name} 
+                              setSelectedAyah={setSelectedAyah} 
+                              isVertical={false} 
+                              isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === pageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === pageNum))}
+                              onBookmarkClick={() => handleRibbonClick(pageNum)}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
+
                       <div className="w-full max-w-full mx-auto px-1 pb-0.5 pt-0 shrink-0 z-20">
                         <PageTafsir pageNum={pageNum} theme={theme} />
                       </div>

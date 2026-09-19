@@ -403,73 +403,100 @@ export const Istighfar: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-28 text-right select-none" dir="rtl">
       
-      {/* Top App Bar */}
-      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-3xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <BackButton />
-            <div>
-              <h1 className="text-lg md:text-xl font-black bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight flex items-center gap-2">
-                <span>رُكْنُ التَّوْبَةِ وَالِاسْتِغْفَارِ</span>
-              </h1>
-              <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold">
-                أدعية الاستغفار المأثورة وصلاة التوبة خطوة بخطوة
-              </p>
+      {/* Top App Bar & Integrated Sticky Navigation Tabs */}
+      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-40 shadow-xs pt-3 pb-2.5 px-3 sm:px-4 transition-all">
+        <div className="max-w-3xl mx-auto flex flex-col gap-2.5">
+          {/* Top Bar Row */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <BackButton />
+              <div>
+                <h1 className="text-base sm:text-xl font-black bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight flex items-center gap-1.5 sm:gap-2">
+                  <span>رُكْنُ التَّوْبَةِ وَالِاسْتِغْفَارِ</span>
+                </h1>
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">
+                  أدعية الاستغفار المأثورة وصلاة التوبة خطوة بخطوة
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5 shadow-xs whitespace-nowrap">
+                <Droplets size={14} className="text-emerald-500 animate-pulse" />
+                <span>{totalRecited} استغفار</span>
+              </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5 shadow-xs">
-              <Droplets size={14} className="text-emerald-500 animate-pulse" />
-              <span>{totalRecited} استغفار</span>
-            </div>
+
+          {/* Main View Segmented Tabs */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/80 p-1 rounded-2xl flex items-center gap-1 border border-slate-200/70 dark:border-slate-700/60 shadow-inner">
+            <button
+              onClick={() => setMainView('athkar')}
+              className={cn(
+                "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                mainView === 'athkar'
+                  ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm scale-[1.01]"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              )}
+            >
+              <Sparkles size={15} />
+              <span>صِيَغُ الِاسْتِغْفَارِ</span>
+            </button>
+
+            <button
+              onClick={() => setMainView('salat_tawbah')}
+              className={cn(
+                "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                mainView === 'salat_tawbah'
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-sm scale-[1.01]"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              )}
+            >
+              <Moon size={15} />
+              <span>صَلَاةُ التَّوْبَةِ</span>
+            </button>
+
+            <button
+              onClick={() => setMainView('virtues')}
+              className={cn(
+                "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                mainView === 'virtues'
+                  ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-300 shadow-sm scale-[1.01]"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              )}
+            >
+              <Heart size={15} />
+              <span>فَضَائِلُ التَّوْبَةِ</span>
+            </button>
           </div>
+
+          {/* Sub-Category Filter Chips (Sticky when in athkar view) */}
+          {mainView === 'athkar' && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+              {[
+                { id: 'all', name: 'الكل' },
+                { id: 'prophetic', name: 'السنة النبوية' },
+                { id: 'quranic', name: 'القرآن الكريم' },
+                { id: 'salat_tawbah', name: 'صلاة التوبة' },
+                { id: 'major', name: 'الكبائر والوالدين' },
+              ].map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryFilter(cat.id as any)}
+                  className={cn(
+                    "shrink-0 px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all border cursor-pointer whitespace-nowrap",
+                    categoryFilter === cat.id
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs font-black"
+                      : "bg-slate-100/90 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-200/80 dark:hover:bg-slate-700"
+                  )}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </header>
-
-      {/* Main View Segmented Controller */}
-      <div className="max-w-3xl mx-auto px-4 pt-4 pb-2">
-        <div className="bg-slate-200/80 dark:bg-slate-900 p-1.5 rounded-2xl flex items-center gap-1 border border-slate-300/50 dark:border-slate-800 shadow-inner">
-          <button
-            onClick={() => setMainView('athkar')}
-            className={cn(
-              "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer",
-              mainView === 'athkar'
-                ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 shadow-md scale-[1.01]"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            )}
-          >
-            <Sparkles size={16} />
-            <span>صِيَغُ وَأَدْعِيَةُ الِاسْتِغْفَارِ</span>
-          </button>
-
-          <button
-            onClick={() => setMainView('salat_tawbah')}
-            className={cn(
-              "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer",
-              mainView === 'salat_tawbah'
-                ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/30 scale-[1.01]"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            )}
-          >
-            <Moon size={16} />
-            <span>دَلِيلُ صَلَاةِ التَّوْبَةِ</span>
-          </button>
-
-          <button
-            onClick={() => setMainView('virtues')}
-            className={cn(
-              "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer",
-              mainView === 'virtues'
-                ? "bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-md scale-[1.01]"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            )}
-          >
-            <Heart size={16} />
-            <span>فَضَائِلُ التَّوْبَةِ</span>
-          </button>
-        </div>
-      </div>
 
       <main className="max-w-3xl mx-auto px-4 py-3 space-y-6">
 
@@ -522,30 +549,6 @@ export const Istighfar: React.FC = () => {
         {/* ========================================================================= */}
         {mainView === 'athkar' && (
           <div className="space-y-5">
-            {/* Category Filter Chips */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide snap-x">
-              {[
-                { id: 'all', name: 'جميع الصيغ والأدعية' },
-                { id: 'prophetic', name: 'من السنة النبوية' },
-                { id: 'quranic', name: 'استغفار الأنبياء في القرآن' },
-                { id: 'salat_tawbah', name: 'أدعية صلاة التوبة' },
-                { id: 'major', name: 'استغفار الكبائر والوالدين' },
-              ].map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategoryFilter(cat.id as any)}
-                  className={cn(
-                    "snap-start shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer",
-                    categoryFilter === cat.id
-                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xs"
-                      : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100"
-                  )}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-
             {/* Supplications Quick Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x">
               {filteredItems.map((item) => {

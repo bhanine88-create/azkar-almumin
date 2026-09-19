@@ -506,30 +506,86 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const track = currentTrackRef.current;
     if (!track) return;
 
-    if (track.type === 'quran' && track.surahNumber && track.reciterId) {
-      const reciterId = Number(track.reciterId);
-      const activeReciter = RECITERS.find(r => r.id === reciterId);
+    if (track.type === 'quran' || track.surahNumber || (track.id && track.id.includes('quran'))) {
+      let reciterId = track.reciterId ? Number(track.reciterId) : null;
+      let surahNumber = track.surahNumber;
+
+      if (!surahNumber && track.id) {
+        const parts = track.id.split('-');
+        const numCandidates = parts.map(p => parseInt(p, 10)).filter(n => !isNaN(n) && n >= 1 && n <= 114);
+        if (numCandidates.length > 0) {
+          surahNumber = numCandidates[0];
+        }
+      }
+
+      if (!reciterId && RECITERS.length > 0) {
+        reciterId = RECITERS[0].id;
+      }
+
+      const activeReciter = RECITERS.find(r => r.id === reciterId) || RECITERS[0];
       if (!activeReciter) return;
 
-      let available = [];
+      const currentSurah = surahNumber || 1;
+      let available: number[] = [];
       if ((activeReciter as any).surahUrls) {
         available = Object.keys((activeReciter as any).surahUrls).map(Number).sort((a, b) => a - b);
       } else {
         available = Array.from({ length: 114 }, (_, i) => i + 1);
       }
 
-      const currentIndex = available.indexOf(track.surahNumber);
-      if (currentIndex === -1) return;
-      const nextIndex = (currentIndex + 1) % available.length;
-      playSurahByNumber(available[nextIndex], track);
+      const currentIndex = available.indexOf(currentSurah);
+      const nextIndex = currentIndex !== -1 ? (currentIndex + 1) % available.length : (currentSurah % 114);
+      const nextSurah = available[nextIndex] || ((currentSurah % 114) + 1);
+      
+      playSurahByNumber(nextSurah, track);
+    } else if (track.id && track.id.startsWith('ruqyah-')) {
+      const ruqyahList = [
+        {
+          id: "ruqyah-ahmad-alajmy",
+          title: "الرقية الشرعية بصوت القارئ أحمد العجمي",
+          reciterName: "القارئ أحمد العجمي",
+          audioUrl: "https://server10.mp3quran.net/ajm/Rokaia.mp3"
+        },
+        {
+          id: "ruqyah-alaa-aqel-new",
+          title: "سورة البقرة كاملة رقية للبيت وعلاج للسحر",
+          reciterName: "القارئ علاء عقل",
+          audioUrl: "https://ia800506.us.archive.org/13/items/surah-al-baqarah-mp-3-160-k/%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D8%A8%D9%82%D8%B1%D8%A9%20%D9%83%D8%A7%D9%85%D9%84%D8%A9_%20%D8%B1%D9%82%D9%8A%D8%A9%20%D9%84%D9%84%D8%A8%D9%8A%D8%AA_%20%D9%88%D8%B9%D9%84%D8%A7%D8%AC%20%D9%84%D9%84%D8%B3%D8%AD%D8%B1%20_%20%D8%A7%D9%84%D9%82%D8%A7%D8%B1%D8%A6%20%D8%B9%D9%84%D8%A1%20%D8%B9%D9%82%D9%84%20-%20Surah%20Al%20Baqarah(MP3_160K).mp3"
+        },
+        {
+          id: "ruqyah-mishary-alafasy",
+          title: "الرقية الشرعية المطولة للتحصين والشفاء",
+          reciterName: "الشيخ مشاري بن راشد العفاسي",
+          audioUrl: "https://ia800909.us.archive.org/15/items/rokia-alafacy/rokia07.mp3"
+        },
+        {
+          id: "ruqyah-nabil-alawadi",
+          title: "الرقية الشرعية بصوت الشيخ نبيل العوضي",
+          reciterName: "الشيخ نبيل العوضي",
+          audioUrl: "https://ia801804.us.archive.org/6/items/al-roqia/al-roqia.mp3"
+        }
+      ];
+      const cleanId = track.id.replace('ruqyah-', '');
+      const idx = ruqyahList.findIndex(r => r.id === track.id || r.id === cleanId || track.id.includes(r.id));
+      const nextIdx = idx !== -1 ? (idx + 1) % ruqyahList.length : 0;
+      const nextRuqyah = ruqyahList[nextIdx];
+      if (nextRuqyah) {
+        playTrack({
+          id: `ruqyah-${nextRuqyah.id}`,
+          title: nextRuqyah.title,
+          subtitle: nextRuqyah.reciterName,
+          audioUrl: nextRuqyah.audioUrl,
+          type: 'lecture'
+        });
+      }
     } else if (track.type === 'lecture') {
       import('../data/lectures').then(({ SCHOLARS }) => {
-        const scholarId = track.scholarId || SCHOLARS.find(s => s.series.some(ser => ser.lectures.some(l => l.id === track.id)))?.id;
+        const scholarId = track.scholarId || SCHOLARS.find(s => s.series.some(ser => ser.lectures.some(l => l.id === track.id || track.id.includes(l.id))))?.id;
         if (!scholarId) return;
         const scholar = SCHOLARS.find(s => s.id === scholarId);
         if (!scholar) return;
         const allLectures = scholar.series.flatMap(s => s.lectures);
-        const currentIndex = allLectures.findIndex(l => l.id === track.id);
+        const currentIndex = allLectures.findIndex(l => l.id === track.id || track.id.includes(l.id));
         if (currentIndex === -1) return;
         const nextIndex = (currentIndex + 1) % allLectures.length;
         const nextLecture = allLectures[nextIndex];
@@ -539,12 +595,12 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }).catch(err => console.error('Error loading lectures data for next track', err));
     } else if (track.type === 'tafsir') {
       import('../data/tafsir').then(({ TAFSIR_SCHOLARS }) => {
-        const scholarId = track.scholarId || TAFSIR_SCHOLARS.find(s => s.surahs.some(sur => sur.tracks.some(t => t.id === track.id)))?.id;
+        const scholarId = track.scholarId || TAFSIR_SCHOLARS.find(s => s.surahs.some(sur => sur.tracks.some(t => t.id === track.id || track.id.includes(t.id))))?.id;
         if (!scholarId) return;
         const scholar = TAFSIR_SCHOLARS.find(s => s.id === scholarId);
         if (!scholar) return;
         const allTracks = scholar.surahs.flatMap(s => s.tracks);
-        const currentIndex = allTracks.findIndex(t => t.id === track.id);
+        const currentIndex = allTracks.findIndex(t => t.id === track.id || track.id.includes(t.id));
         if (currentIndex === -1) return;
         const nextIndex = (currentIndex + 1) % allTracks.length;
         const nextTrack = allTracks[nextIndex];
@@ -742,14 +798,11 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
         saveTrackPlaybackPosition(currentTrackRef.current.id, 0, 0); // resets position on completion
       }
 
-      // Check if automatic continuation is enabled and the track is of type quran or lecture
+      // Check if automatic continuation is enabled
       const autoPlayNextEnabled = safeLocalStorageGetItem('believer_auto_play_next') !== 'false';
       const track = currentTrackRef.current;
-      if (autoPlayNextEnabled && track && (
-        (track.type === 'quran' && track.surahNumber && track.reciterId) ||
-        (track.type === 'lecture')
-      )) {
-        let count = 4; // Smooth 4-second delay transition
+      if (autoPlayNextEnabled && track) {
+        let count = 1; // Smooth 1-second transition
         setNextTrackCountdown(count);
 
         if (countdownIntervalRef.current) {

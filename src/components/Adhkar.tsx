@@ -856,10 +856,10 @@ export const Adhkar: React.FC = () => {
 
   const handleBackAttempt = () => {
     // Check if category is not fully completed yet
-    const isCategoryFullCompleted = catProgress.completed === catProgress.total;
+    const isCategoryFullCompleted = catProgress.total > 0 && catProgress.completed === catProgress.total;
 
-    // If they spent at least 3 seconds on the page, haven't completed the category yet, and there are items, show the smart exit modal
-    if (!isCategoryFullCompleted && secondsElapsed >= 3 && currentCategory && currentCategory.items && currentCategory.items.length > 0) {
+    // If they spent at least 2 seconds on the page or have counted, and category is not fully completed, show the exit modal
+    if (!isCategoryFullCompleted && (secondsElapsed >= 2 || catProgress.completed > 0) && currentCategory && currentCategory.items && currentCategory.items.length > 0) {
       setShowExitModal(true);
     } else {
       // Just go back immediately
@@ -1158,271 +1158,203 @@ export const Adhkar: React.FC = () => {
 
 
   // We will inline the modals below inside the render tree to avoid recreating component types on every render tick
-  const renderResetConfirmModal = () => (
-    <AnimatePresence>
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-16 sm:pt-20">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowResetConfirm(false)}
-            className="absolute inset-0 bg-slate-900/20"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: -40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -40 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl border border-slate-100 dark:border-slate-800 text-center"
-          >
-            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <ListRestart size={32} />
-            </div>
-            <h3 className="text-xl font-bold mb-2">{t('reset_confirm_title')}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">
-              {t('reset_confirm_desc')}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowResetConfirm(false)}
-                className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-2xl"
-              >
-                {t('cancel')}
-              </button>
-              <button
-                onClick={() => {
-                  if (currentCategory) resetCategory(currentCategory.category);
-                  setShowResetConfirm(false);
-                }}
-                className="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-600/20"
-              >
-                {t('yes_reset')}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
+  const renderResetConfirmModal = () => {
+    if (typeof document === 'undefined') return null;
+    return createPortal(
+      <AnimatePresence>
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowResetConfirm(false)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-800 text-center z-10"
+            >
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <ListRestart size={32} />
+              </div>
+              <h3 className="text-xl font-bold mb-2">{t('reset_confirm_title')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">
+                {t('reset_confirm_desc')}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-2xl cursor-pointer"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (currentCategory) resetCategory(currentCategory.category);
+                    setShowResetConfirm(false);
+                  }}
+                  className="flex-1 py-3.5 bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-600/20 cursor-pointer"
+                >
+                  {t('yes_reset')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>,
+      document.body
+    );
+  };
 
   const renderExitSessionModal = () => {
-    // Standard estimated seconds
-    const estSecs = Math.max(60, (estimatedReadingTimeMinutes || 3) * 60);
-    // Percentage rate of time spent compared to standard expectation
-    const timeProgressPercent = Math.min(100, Math.round((secondsElapsed / estSecs) * 100));
+    if (typeof document === 'undefined') return null;
 
     const isMorning = category === 'morning';
     const isEvening = category === 'evening';
 
     // Theme values tailored for morning, evening, or others
-    let themeTitle = t('exit_modal_default_title');
-    let themeSubtitle = t('exit_modal_default_subtitle');
-    
-    // Light-mode / Dark-mode consistent gradients emphasizing three-dimensional depth
-    let themeCardGradient = "from-emerald-50/98 via-teal-55/95 to-slate-100/98 dark:from-[#081e14] dark:via-[#05140e] dark:to-[#020a07]";
-    let themeBezelBorder = "border-emerald-500/30 dark:border-emerald-500/20";
-    let themeGlow1 = "bg-emerald-500/20 dark:bg-emerald-400/10 blur-3xl";
-    let themeGlow2 = "bg-amber-400/20 dark:bg-amber-400/10 blur-3xl";
-    let themeTitleColor = "text-[#065f46] dark:text-emerald-300";
-    let themeHighlightColor = "text-emerald-700 dark:text-emerald-400";
-    let themeBtnPrimary = "bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 shadow-lg shadow-emerald-500/25";
-    let themeBtnSecondary = "bg-rose-100/85 text-rose-800 hover:bg-rose-200 dark:bg-rose-950/40 dark:hover:bg-rose-900/45 dark:text-rose-300 border border-rose-300/30 dark:border-rose-900/30";
+    let themeTitle = t('exit_modal_default_title', 'إنهاء الورد المبارك؟');
+    let themeSubtitle = t('exit_modal_default_subtitle', 'حالة جلسة الذكر الحالية ✨');
+    let themeCardBg = "bg-gradient-to-b from-[#0e291e] via-[#081b13] to-[#040e0a] text-white";
+    let themeBorder = "border-emerald-500/40 shadow-[0_25px_60px_rgba(5,150,105,0.35)]";
+    let themeTitleColor = "text-emerald-300";
+    let themeHighlightColor = "text-emerald-400";
+    let themeBtnPrimary = "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/30";
+    let themeBtnSecondary = "bg-white/10 text-slate-200 hover:bg-white/20 border border-white/15";
+    let themeIcon = "📿";
 
     if (isMorning) {
-      themeTitle = t('exit_modal_morning_title');
-      themeSubtitle = t('exit_modal_morning_subtitle');
-      themeCardGradient = "from-amber-50/98 via-yellow-50/95 to-orange-50/98 dark:from-[#2e1c0c] dark:via-[#1e1207] dark:to-[#120a03]";
-      themeBezelBorder = "border-amber-400/40 dark:border-amber-500/30";
-      themeGlow1 = "bg-amber-400/25 dark:bg-amber-400/10 blur-3xl";
-      themeGlow2 = "bg-yellow-400/25 dark:bg-yellow-400/10 blur-3xl";
-      themeTitleColor = "text-[#854d0e] dark:text-amber-300";
-      themeHighlightColor = "text-amber-700 dark:text-amber-400";
-      themeBtnPrimary = "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-500 hover:to-orange-500 shadow-lg shadow-amber-500/25";
-      themeBtnSecondary = "bg-amber-900/15 text-amber-900 hover:bg-amber-900/25 dark:bg-amber-950/40 dark:hover:bg-amber-900/45 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/10";
+      themeTitle = t('exit_modal_morning_title', 'حفظ ورد الصباح؟');
+      themeSubtitle = t('exit_modal_morning_subtitle', 'نور الضحى وضياء اليوم 🌤️');
+      themeCardBg = "bg-gradient-to-b from-[#2e1805] via-[#1c0e03] to-[#0d0601] text-white";
+      themeBorder = "border-amber-500/40 shadow-[0_25px_60px_rgba(245,158,11,0.3)]";
+      themeTitleColor = "text-amber-300";
+      themeHighlightColor = "text-amber-400";
+      themeBtnPrimary = "bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-400 hover:to-orange-500 shadow-lg shadow-amber-500/30";
+      themeBtnSecondary = "bg-white/10 text-amber-100 hover:bg-white/20 border border-white/15";
+      themeIcon = "🌤️";
     } else if (isEvening) {
-      themeTitle = t('exit_modal_evening_title');
-      themeSubtitle = t('exit_modal_evening_subtitle');
-      themeCardGradient = "from-[#0d0922]/98 via-[#070514]/98 to-[#030107]/98 dark:from-[#060418]/98 dark:via-[#03020d]/98 dark:to-[#010104]/98";
-      themeBezelBorder = "border-indigo-500/40 dark:border-indigo-500/25";
-      themeGlow1 = "bg-indigo-600/30 dark:bg-indigo-500/15 blur-3xl";
-      themeGlow2 = "bg-fuchsia-600/20 dark:bg-fuchsia-500/10 blur-3xl";
-      themeTitleColor = "text-indigo-400 dark:text-indigo-300";
-      themeHighlightColor = "text-indigo-500 dark:text-indigo-400";
+      themeTitle = t('exit_modal_evening_title', 'حفظ ورد المساء؟');
+      themeSubtitle = t('exit_modal_evening_subtitle', 'سكينة الليل وحراسة الرحمن 🌙');
+      themeCardBg = "bg-gradient-to-b from-[#0f1433] via-[#090d24] to-[#040612] text-white";
+      themeBorder = "border-indigo-500/40 shadow-[0_25px_60px_rgba(99,102,241,0.3)]";
+      themeTitleColor = "text-indigo-300";
+      themeHighlightColor = "text-indigo-400";
       themeBtnPrimary = "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30";
-      themeBtnSecondary = "bg-slate-900 text-indigo-200 hover:bg-slate-800 dark:bg-zinc-950 dark:hover:bg-zinc-900 dark:text-indigo-300 border border-indigo-500/25";
+      themeBtnSecondary = "bg-white/10 text-indigo-100 hover:bg-white/20 border border-white/15";
+      themeIcon = "🌙";
     }
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-      const card = e.currentTarget;
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      const tiltX = -(y / (rect.height / 2)) * 12;
-      const tiltY = (x / (rect.width / 2)) * 12;
-      setExitCardTiltX(tiltX);
-      setExitCardTiltY(tiltY);
-    };
-
-    const handleMouseLeave = () => {
-      setExitCardTiltX(8);
-      setExitCardTiltY(-4);
-    };
-
-    return (
+    return createPortal(
       <AnimatePresence>
         {showExitModal && (
-          <div className="fixed inset-0 z-[110] flex items-start justify-center p-4 pt-12 sm:pt-20 overflow-y-auto">
-            {/* Smooth crisp translucent backdrop without backdrop blur */}
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+            {/* Dark translucent backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowExitModal(false)}
-              className="absolute inset-0 bg-slate-950/70 dark:bg-black/85 transition-all"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-all"
             />
-            
-            {/* Perspective Viewport Box */}
-            <div className="[perspective:1200px] w-full max-w-[340px] sm:max-w-[350px] relative z-10">
-              {/* Floating Shadow that scales inversely with heights */}
-              <div 
-                className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[85%] h-6 bg-black/30 dark:bg-black/60 rounded-full blur-[12px] opacity-80 pointer-events-none transition-transform duration-500"
-                style={{
-                  transform: `translateX(-50%) scale(${1 + (Math.abs(exitCardTiltX) / 100)})`,
-                }}
-              />
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: -40 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -40 }}
-                transition={{ type: "spring", damping: 24, stiffness: 280 }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                style={{
-                  transform: `rotateX(${exitCardTiltX}deg) rotateY(${exitCardTiltY}deg)`,
-                  transformStyle: 'preserve-3d',
-                }}
-                className={cn(
-                  "relative w-full rounded-[24px] p-4.5 sm:p-5 text-center overflow-hidden transition-all duration-300 border bg-gradient-to-br select-none",
-                  themeCardGradient,
-                  themeBezelBorder,
-                  "shadow-[0_25px_60px_rgba(0,0,0,0.4)] dark:shadow-[0_45px_100px_rgba(0,0,0,0.95)]",
-                  "border-t-white/30 border-r-white/20 dark:border-t-white/10 dark:border-r-white/5",
+            {/* Modal Card with crisp high-contrast layout */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: "spring", damping: 26, stiffness: 320 }}
+              className={cn(
+                "relative w-full max-w-[360px] rounded-[28px] p-5 sm:p-6 text-center shadow-2xl border select-none z-10",
+                themeCardBg,
+                themeBorder
+              )}
+              dir={isRtl ? "rtl" : "ltr"}
+            >
+              {/* Floating Decorative Icon */}
+              <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3 shadow-inner text-2xl">
+                <span>{themeIcon}</span>
+              </div>
+
+              {/* Header Title & Subtitle */}
+              <h3 className={cn("text-lg sm:text-xl font-black tracking-tight leading-tight mb-1", themeTitleColor)}>
+                {themeTitle}
+              </h3>
+              <p className="text-xs text-white/70 font-bold mb-4">
+                {themeSubtitle}
+              </p>
+
+              {/* Time Spent in Session Card */}
+              <div className="rounded-2xl p-4 mb-3.5 border border-white/15 bg-black/45 text-center shadow-inner relative overflow-hidden">
+                <span className="text-xs text-white/80 font-black mb-1 flex items-center justify-center gap-1.5">
+                  <Timer size={15} className="text-amber-400 animate-pulse" />
+                  <span>{t('dhikr_timer_label', 'الميقات الذي قضيته في الذِّكْر')}</span>
+                </span>
+                
+                <div className="text-3xl sm:text-4xl font-black font-mono tracking-widest text-white drop-shadow-sm my-1.5">
+                  {formatTime(secondsElapsed)}
+                </div>
+
+                {secondsElapsed > 0 && (
+                  <p className="text-xs text-white/90 font-bold mt-1.5 leading-relaxed">
+                    {t('may_allah_accept', 'تقبل الله طاعتك!')} قضيت <span className={cn("font-black underline decoration-2 decoration-teal-400", themeHighlightColor)}>{formatTimePhrase(secondsElapsed)}</span> {t('in_this_blessed_ward', 'في هذا الورد المبارك. ✨')}
+                  </p>
                 )}
-                dir={isRtl ? "rtl" : "ltr"}
-              >
-                {/* 3D Dynamic Ambient Atmosphere Lights in the background */}
-                <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full pointer-events-none mix-blend-screen opacity-75", themeGlow1)} />
-                <div className={cn("absolute -bottom-12 -left-12 w-32 h-32 rounded-full pointer-events-none mix-blend-screen opacity-70", themeGlow2)} />
+              </div>
 
-                {/* Islamic Pattern overlay watermark in background for rich feel */}
-                <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-
-                {/* HEADER: Centered, highly visible text */}
-                <div 
-                  className="flex flex-col items-center gap-1.5 mb-3 transition-transform duration-300"
-                  style={{ transform: 'translateZ(30px)' }}
-                >
-                  <div className="w-11 h-11 bg-white/75 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
-                    <Timer size={22} className="text-teal-650 dark:text-emerald-400 stroke-[2.5]" />
-                  </div>
-                  <div className="mt-1">
-                    <h3 className={cn("text-lg sm:text-xl font-black tracking-tight leading-tight", themeTitleColor)}>
-                      {themeTitle}
-                    </h3>
-                    <p className="text-[11px] sm:text-[12px] text-slate-505 dark:text-zinc-400 font-extrabold mt-0.5">
-                      {themeSubtitle}
-                    </p>
-                  </div>
+              {/* Completed Wards & Completion Percentage */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <span className="text-[10px] text-white/60 block font-bold mb-0.5">{t('completed_wards', 'الأوراد المنجزة')}</span>
+                  <span className="text-sm font-black text-white font-mono leading-none">
+                    {catProgress.completed} / {catProgress.total}
+                  </span>
                 </div>
-
-                {/* HERO ACTIVE STATS CARD: Highly polished and shortened vertically */}
-                <div 
-                  className="mb-3 relative z-10"
-                  style={{ transform: 'translateZ(50px)', transformStyle: 'preserve-3d' }}
-                >
-                  <div className={cn(
-                    "relative overflow-hidden rounded-xl p-3 sm:p-4 border text-center transition-all",
-                    "bg-white/60 dark:bg-black/50 border-white/40 dark:border-white/10",
-                    "shadow-sm"
-                  )}>
-                    {/* Glowing effect inside the clock panel */}
-                    <div className={cn("absolute inset-0 opacity-[0.06] bg-gradient-to-tr pointer-events-none", 
-                      isMorning ? "from-amber-400 to-yellow-300" : isEvening ? "from-indigo-500 to-purple-500" : "from-emerald-400 to-teal-300"
-                    )} />
-
-                    <span className="text-[11px] sm:text-[12px] text-slate-500 dark:text-zinc-400 font-extrabold block mb-0.5">
-                      ⏳ {t('dhikr_timer_label')}
-                    </span>
-
-                    {/* Highly readable extra bold digital clock font */}
-                    <div className="text-3xl sm:text-4xl font-black font-mono tracking-widest leading-none my-1 select-all text-slate-950 dark:text-white drop-shadow-sm">
-                      {formatTime(secondsElapsed)}
-                    </div>
-
-                    {/* Dynamic friendly timing phrase feedback */}
-                    {secondsElapsed > 0 && (
-                      <p className="text-[12px] sm:text-[13px] text-slate-700 dark:text-zinc-350 font-black mt-1.5 leading-relaxed">
-                        {t('may_allah_accept')} <span className={cn("font-black text-[13px] sm:text-[14px] underline decoration-2 decoration-teal-500", themeHighlightColor)}>{formatTimePhrase(secondsElapsed)}</span> {t('in_this_blessed_ward')}
-                      </p>
-                    )}
-                  </div>
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <span className="text-[10px] text-white/60 block font-bold mb-0.5">{t('completion_percent', 'نسبة الإتمام')}</span>
+                  <span className="text-sm font-black text-emerald-400 font-mono leading-none">
+                    {catProgress.percent}%
+                  </span>
                 </div>
+              </div>
 
-                {/* COMPACT DASHBOARD BADGES: Highlight counts with thick font and large size */}
-                <div 
-                  className="grid grid-cols-2 gap-2 mb-4 pt-0.5"
-                  style={{ transform: 'translateZ(45px)' }}
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExitModal(false);
+                    goBack();
+                  }}
+                  className={cn(
+                    "py-3 font-black rounded-xl text-center text-xs sm:text-sm transition-all duration-150 active:scale-95 outline-none cursor-pointer",
+                    themeBtnSecondary
+                  )}
                 >
-                  <div className="p-2 rounded-xl bg-white/70 dark:bg-black/35 border border-white/40 dark:border-white/5 shadow-sm text-center">
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-zinc-400 block font-extrabold mb-0.5">{t('completed_wards')}</span>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-zinc-100 font-mono leading-none">
-                      {catProgress.completed} / {catProgress.total}
-                    </span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/70 dark:bg-black/35 border border-white/40 dark:border-white/5 shadow-sm text-center">
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-zinc-400 block font-extrabold mb-0.5">{t('completion_percent')}</span>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-zinc-100 font-mono leading-none">
-                      {catProgress.percent}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* ACTION BUTTONS: Modern high-contrast styled buttons */}
-                <div 
-                  className="grid grid-cols-2 gap-2 relative z-20 mt-1.5" 
-                  style={{ transform: 'translateZ(70px)' }}
+                  {t('confirm_exit', 'تأكيد الخروج')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowExitModal(false)}
+                  className={cn(
+                    "py-3 font-black rounded-xl text-center text-xs sm:text-sm transition-all duration-150 active:scale-95 outline-none cursor-pointer",
+                    themeBtnPrimary
+                  )}
                 >
-                  <button
-                    onClick={() => {
-                      setShowExitModal(false);
-                      goBack();
-                    }}
-                    className={cn(
-                      "py-2.5 font-black rounded-xl text-center text-[12px] sm:text-[13px] transition-all duration-300 active:scale-95 outline-none cursor-pointer",
-                      themeBtnSecondary,
-                      "shadow-md hover:-translate-y-0.5 active:translate-y-0"
-                    )}
-                  >
-                    {t('confirm_exit')}
-                  </button>
-                  <button
-                    onClick={() => setShowExitModal(false)}
-                    className={cn(
-                      "py-2.5 font-black rounded-xl text-center text-[12px] sm:text-[13px] transition-all duration-300 active:scale-95 outline-none cursor-pointer",
-                      themeBtnPrimary,
-                      "hover:-translate-y-0.5 active:translate-y-0"
-                    )}
-                  >
-                    {t('continue_dhikr')}
-                  </button>
-                </div>
-              </motion.div>
-            </div>
+                  {t('continue_dhikr', 'حسناً، استمر في الذكر')}
+                </button>
+              </div>
+            </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
     );
   };
 
@@ -2671,25 +2603,25 @@ export const Adhkar: React.FC = () => {
                 pillBg: "bg-emerald-500/10 border-emerald-500/20 text-[#6ee7b7]",
               };
 
-          return (
+          if (typeof document === 'undefined') return null;
+          return createPortal(
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[150] flex items-start justify-center p-4 pt-16 sm:pt-24 bg-black/65 backdrop-blur-sm overflow-y-auto"
+              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
               dir="rtl"
             >
               <motion.div
-                initial={{ scale: 0.9, y: -120, rotateX: -10 }}
-                animate={{ scale: 1, y: 0, rotateX: 0 }}
-                exit={{ scale: 0.9, y: -120, rotateX: -10 }}
+                initial={{ scale: 0.9, y: 30 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 30 }}
                 transition={{ type: "spring", stiffness: 320, damping: 24 }}
                 className={cn(
                   "rounded-[36px] p-6 max-w-[340px] sm:max-w-[350px] w-full text-center relative overflow-visible transition-all select-none border-[3.5px]",
                   cardStyles.bg,
                   cardStyles.shadow
                 )}
-                style={{ perspective: "1000px" }}
               >
                 {/* 3D Sheen highlight sweep overlay */}
                 <div className="absolute top-1 left-4 w-48 h-40 bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.08] rounded-full blur-2xl pointer-events-none" />
@@ -2780,7 +2712,8 @@ export const Adhkar: React.FC = () => {
                   </button>
                 </div>
               </motion.div>
-            </motion.div>
+            </motion.div>,
+            document.body
           );
         })()}
       </AnimatePresence>

@@ -32,25 +32,25 @@ export const QuranPager: React.FC<QuranPagerProps> = ({
     const targetChild = container.children[targetIndex] as HTMLElement;
     if (!targetChild) return;
 
-    const diff = targetChild.getBoundingClientRect().left - container.getBoundingClientRect().left;
-    if (Math.abs(diff) > 1) {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      isProgrammaticScrollRef.current = true;
-
-      container.scrollBy({
-        left: diff,
-        behavior: smooth ? 'smooth' : 'auto',
-      });
-
-      const delay = smooth ? 500 : 100;
-      scrollTimeoutRef.current = setTimeout(() => {
-        isProgrammaticScrollRef.current = false;
-      }, delay);
-    } else {
-      isProgrammaticScrollRef.current = false;
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
+    isProgrammaticScrollRef.current = true;
+
+    try {
+      targetChild.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+        inline: 'center',
+        block: 'nearest'
+      });
+    } catch {
+      container.scrollLeft = targetChild.offsetLeft;
+    }
+
+    const delay = smooth ? 400 : 80;
+    scrollTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, delay);
   };
 
   // Hide swipe hint automatically after 4 seconds
@@ -162,7 +162,7 @@ export const QuranPager: React.FC<QuranPagerProps> = ({
         }}
       >
         {pages.map((page, index) => {
-          const isVisible = Math.abs(index - currentIndex) <= 2;
+          const isVisible = Math.abs(index - currentIndex) <= 5;
 
           if (!isVisible) {
             return (

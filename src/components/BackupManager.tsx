@@ -216,6 +216,8 @@ export const BackupManager: React.FC = () => {
         const data = backupService.restoreFromJSON(json);
         if (window.confirm(t('confirm_restore_full_backup', 'هل أنت متأكد؟ سيتم استبدال جميع البيانات الحالية بالبيانات الموجودة في الملف.'))) {
           safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(data.progress));
+          safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(data.settings));
+          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(data.settings));
           safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(data.settings));
           if ((data as any).adhkarData) safeLocalStorageSetItem('believer_adhkar_v23', JSON.stringify((data as any).adhkarData));
           if ((data as any).counts) safeLocalStorageSetItem('believer_adhkar_counts_v23', JSON.stringify((data as any).counts));

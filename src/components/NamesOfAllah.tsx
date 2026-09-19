@@ -1,10 +1,11 @@
 import { BackButton } from './ui/BackButton';
 import { shareContent, copyTextToClipboard, triggerHaptic, cn } from '../lib/utils';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { NAMES_OF_ALLAH, NameOfAllah } from '../data/namesOfAllah';
+import { ALLAH_NAMES_TRANSLATIONS } from '../data/namesOfAllahTranslations';
 import {  ChevronRight, 
   ChevronLeft, 
   X, 
@@ -169,7 +170,321 @@ const FRAMES_CONFIG: { id: FrameStyle; name: string; iconLabel: string; desc: st
   { id: 'royal', name: 'إطار ملكي مزخرف', iconLabel: '❖', desc: 'حدود مذهبة مع زوايا أرابيسك' }
 ];
 
-export const NamesOfAllah: React.FC = () => {
+// Render Frame Container Styling based on selected shape
+const renderFrameClasses = (currentFrame: FrameStyle) => {
+  switch (currentFrame) {
+    case 'circle':
+      return 'rounded-full aspect-square border-2 ring-4 ring-amber-400/20';
+    case 'hexagon':
+      return 'aspect-square [clip-path:polygon(50%_0%,_100%_25%,_100%_75%,_50%_100%,_0%_75%,_0%_25%)]';
+    case 'star':
+      return 'aspect-square [clip-path:polygon(50%_0%,_60%_15%,_85%_15%,_85%_40%,_100%_50%,_85%_60%,_85%_85%,_60%_85%,_50%_100%,_40%_85%,_15%_85%,_15%_60%,_0%_50%,_15%_40%,_15%_15%,_40%_15%)]';
+    case 'arch':
+      return 'rounded-t-[3.5rem] rounded-b-2xl aspect-[4/5] border-2';
+    case 'squircle':
+      return 'rounded-[2.2rem] aspect-square border-2';
+    case 'diamond':
+      return 'aspect-square [clip-path:polygon(50%_0%,_100%_50%,_50%_100%,_0%_50%)]';
+    case 'royal':
+      return 'rounded-2xl aspect-square border-4 border-double';
+    case 'rounded':
+    default:
+      return 'rounded-2xl aspect-square border';
+  }
+};
+
+interface FilmstripItemProps {
+  item: NameOfAllah;
+  idx: number;
+  isActive: boolean;
+  isStarred: boolean;
+  activeTheme: typeof THEMES_CONFIG[ThemeColor];
+  activeFontFamily: string;
+  onSelect: (idx: number) => void;
+}
+
+const FilmstripItem = React.memo<FilmstripItemProps>(({
+  item,
+  idx,
+  isActive,
+  isStarred,
+  activeTheme,
+  activeFontFamily,
+  onSelect
+}) => {
+  const handleClick = useCallback(() => {
+    onSelect(idx);
+  }, [idx, onSelect]);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={cn(
+        "px-3 py-2.5 rounded-xl text-xs font-black shrink-0 border transition-all duration-200 flex flex-col items-center gap-1 min-w-[70px] cursor-pointer active:scale-90 relative",
+        isActive
+          ? cn("bg-gradient-to-r shadow-lg scale-105 z-10", activeTheme.gradient, activeTheme.borderColor, activeTheme.textColor)
+          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-amber-400"
+      )}
+    >
+      {isStarred && (
+        <Star size={10} className="text-amber-400 fill-amber-400 absolute top-1 left-1" />
+      )}
+      <span className="text-[10px] font-mono opacity-70">#{item.id}</span>
+      <span 
+        className="text-sm font-black whitespace-nowrap"
+        style={{ fontFamily: activeFontFamily }}
+      >
+        {item.name}
+      </span>
+    </button>
+  );
+});
+FilmstripItem.displayName = 'FilmstripItem';
+
+interface Grid4NameCardProps {
+  item: NameOfAllah;
+  index: number;
+  isFav: boolean;
+  frame: FrameStyle;
+  activeTheme: typeof THEMES_CONFIG[ThemeColor];
+  showNumber: boolean;
+  fontSizeClass: string;
+  activeFontFamily: string;
+  onSelect: (item: NameOfAllah) => void;
+}
+
+const Grid4NameCard = React.memo<Grid4NameCardProps>(({
+  item,
+  index,
+  isFav,
+  frame,
+  activeTheme,
+  showNumber,
+  fontSizeClass,
+  activeFontFamily,
+  onSelect
+}) => {
+  const handleClick = useCallback(() => {
+    onSelect(item);
+  }, [item, onSelect]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        delay: Math.min(index * 0.008, 0.3),
+        type: "spring",
+        stiffness: 120
+      }}
+      whileHover={{ scale: 1.04, z: 10 }}
+      whileTap={{ scale: 0.94 }}
+      onClick={handleClick}
+      className="relative group cursor-pointer"
+    >
+      <div 
+        className={cn(
+          "bg-gradient-to-br border shadow-md flex flex-col items-center justify-center text-center p-1 sm:p-2 relative overflow-hidden transition-all duration-300 group-hover:border-amber-400/70",
+          renderFrameClasses(frame),
+          activeTheme.cardGradient,
+          activeTheme.borderColor,
+          activeTheme.shadowColor
+        )}
+      >
+        {/* Subtle Pattern */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+        
+        {/* Top: Star Favorite Icon if marked */}
+        {isFav && (
+          <div className="absolute top-1 left-1 bg-amber-400/90 text-slate-950 p-0.5 rounded-full z-10 shadow-sm">
+            <Star size={9} className="fill-slate-950" />
+          </div>
+        )}
+
+        {/* Order Number Badge */}
+        {showNumber && (
+          <span className="text-[9px] sm:text-[10px] font-mono font-bold opacity-60 mb-0.5" style={{ color: activeTheme.accentColor }}>
+            #{item.id}
+          </span>
+        )}
+
+        {/* Name typography */}
+        <h3 
+          className={cn(
+            "font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] leading-tight px-0.5",
+            fontSizeClass,
+            activeTheme.textColor
+          )}
+          style={{ 
+            fontFamily: activeFontFamily,
+            WebkitTextStroke: "0.5px currentColor"
+          }}
+        >
+          {item.name}
+        </h3>
+        
+        <div className="mt-1.5 w-4 h-0.5 bg-amber-200/50 rounded-full group-hover:w-8 transition-all duration-300" />
+      </div>
+    </motion.div>
+  );
+});
+Grid4NameCard.displayName = 'Grid4NameCard';
+
+interface Grid2NameCardProps {
+  item: NameOfAllah;
+  index: number;
+  isFav: boolean;
+  activeTheme: typeof THEMES_CONFIG[ThemeColor];
+  showMeaning: boolean;
+  activeFontFamily: string;
+  onSelect: (item: NameOfAllah) => void;
+  onToggleFavorite: (id: number, e: React.MouseEvent) => void;
+}
+
+const Grid2NameCard = React.memo<Grid2NameCardProps>(({
+  item,
+  index,
+  isFav,
+  activeTheme,
+  showMeaning,
+  activeFontFamily,
+  onSelect,
+  onToggleFavorite
+}) => {
+  const handleClick = useCallback(() => {
+    onSelect(item);
+  }, [item, onSelect]);
+
+  const handleFav = useCallback((e: React.MouseEvent) => {
+    onToggleFavorite(item.id, e);
+  }, [item.id, onToggleFavorite]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: Math.min(index * 0.01, 0.3) }}
+      whileTap={{ scale: 0.96 }}
+      onClick={handleClick}
+      className={cn(
+        "bg-gradient-to-br p-3.5 rounded-3xl border shadow-lg relative overflow-hidden flex flex-col justify-between cursor-pointer group transition-all duration-300 hover:border-amber-400",
+        activeTheme.cardGradient,
+        activeTheme.borderColor,
+        activeTheme.shadowColor
+      )}
+    >
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+      
+      <div className="flex items-center justify-between relative z-10 mb-2">
+        <span className={cn("text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/10", activeTheme.badgeBg, activeTheme.textColor)}>
+          #{item.id}
+        </span>
+        <button
+          onClick={handleFav}
+          className="p-1 text-amber-400 hover:scale-125 transition-transform"
+        >
+          <Star size={15} className={isFav ? "fill-amber-400" : "opacity-40"} />
+        </button>
+      </div>
+
+      <div className="py-2 text-center relative z-10">
+        <h3 
+          className={cn("text-2xl sm:text-3xl font-black drop-shadow-md", activeTheme.textColor)}
+          style={{ fontFamily: activeFontFamily }}
+        >
+          {item.name}
+        </h3>
+      </div>
+
+      {showMeaning && (
+        <p className="text-[11px] font-bold text-slate-200/90 leading-snug line-clamp-2 text-center relative z-10 bg-black/20 p-2 rounded-xl border border-white/5">
+          {item.meaning}
+        </p>
+      )}
+    </motion.div>
+  );
+});
+Grid2NameCard.displayName = 'Grid2NameCard';
+
+interface ListNameCardProps {
+  item: NameOfAllah;
+  index: number;
+  isFav: boolean;
+  activeTheme: typeof THEMES_CONFIG[ThemeColor];
+  activeFontFamily: string;
+  onSelect: (item: NameOfAllah) => void;
+  onToggleFavorite: (id: number, e: React.MouseEvent) => void;
+}
+
+const ListNameCard = React.memo<ListNameCardProps>(({
+  item,
+  index,
+  isFav,
+  activeTheme,
+  activeFontFamily,
+  onSelect,
+  onToggleFavorite
+}) => {
+  const handleClick = useCallback(() => {
+    onSelect(item);
+  }, [item, onSelect]);
+
+  const handleFav = useCallback((e: React.MouseEvent) => {
+    onToggleFavorite(item.id, e);
+  }, [item.id, onToggleFavorite]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: Math.min(index * 0.01, 0.3) }}
+      whileTap={{ scale: 0.98 }}
+      onClick={handleClick}
+      className={cn(
+        "bg-gradient-to-r p-3.5 sm:p-4 rounded-2xl border shadow-md flex items-center justify-between gap-3 cursor-pointer group transition-all duration-200 hover:border-amber-400",
+        activeTheme.cardGradient,
+        activeTheme.borderColor
+      )}
+    >
+      <div className="flex items-center gap-3.5 min-w-0">
+        <div className={cn(
+          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner",
+          activeTheme.badgeBg,
+          activeTheme.borderColor
+        )}>
+          <span className={cn("text-xs font-mono font-black", activeTheme.textColor)}>
+            #{item.id}
+          </span>
+        </div>
+
+        <div className="min-w-0">
+          <h3 
+            className={cn("text-xl sm:text-2xl font-black leading-tight", activeTheme.textColor)}
+            style={{ fontFamily: activeFontFamily }}
+          >
+            {item.name}
+          </h3>
+          <p className="text-xs font-bold text-slate-200/90 truncate mt-0.5">
+            {item.meaning}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          onClick={handleFav}
+          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-amber-400 transition-all"
+        >
+          <Star size={16} className={isFav ? "fill-amber-400" : ""} />
+        </button>
+        <ChevronLeft size={16} className="text-slate-400 group-hover:text-amber-400 group-hover:-translate-x-1 transition-all" />
+      </div>
+    </motion.div>
+  );
+});
+ListNameCard.displayName = 'ListNameCard';
+
+const NamesOfAllahComponent: React.FC = () => {
   const { settings, updateSettings } = useAppContext();
   
   // Active settings with fallbacks
@@ -213,7 +528,7 @@ export const NamesOfAllah: React.FC = () => {
     }
   }, [settings.namesOfAllahFavoriteIds]);
 
-  const toggleFavorite = (id: number, e?: React.MouseEvent) => {
+  const toggleFavorite = useCallback((id: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     triggerHaptic('medium');
     const next = favoriteIds.includes(id) 
@@ -222,7 +537,17 @@ export const NamesOfAllah: React.FC = () => {
     
     updateSettings({ namesOfAllahFavoriteIds: next });
     safeLocalStorageSetItem('believer_names_favorites', JSON.stringify(next));
-  };
+  }, [favoriteIds, updateSettings]);
+
+  const handleSelectName = useCallback((item: NameOfAllah) => {
+    setSelectedName(item);
+    triggerHaptic('light');
+  }, []);
+
+  const handleFilmstripSelect = useCallback((idx: number) => {
+    setActiveHorizontalIdx(idx);
+    triggerHaptic('light');
+  }, []);
 
   // Get active font config
   const activeFont = useMemo(() => {
@@ -310,29 +635,6 @@ export const NamesOfAllah: React.FC = () => {
       }
     }
     return 'text-xs sm:text-sm';
-  };
-
-  // Render Frame Container Styling based on selected shape
-  const renderFrameClasses = (currentFrame: FrameStyle) => {
-    switch (currentFrame) {
-      case 'circle':
-        return 'rounded-full aspect-square border-2 ring-4 ring-amber-400/20';
-      case 'hexagon':
-        return 'aspect-square [clip-path:polygon(50%_0%,_100%_25%,_100%_75%,_50%_100%,_0%_75%,_0%_25%)]';
-      case 'star':
-        return 'aspect-square [clip-path:polygon(50%_0%,_60%_15%,_85%_15%,_85%_40%,_100%_50%,_85%_60%,_85%_85%,_60%_85%,_50%_100%,_40%_85%,_15%_85%,_15%_60%,_0%_50%,_15%_40%,_15%_15%,_40%_15%)]';
-      case 'arch':
-        return 'rounded-t-[3.5rem] rounded-b-2xl aspect-[4/5] border-2';
-      case 'squircle':
-        return 'rounded-[2.2rem] aspect-square border-2';
-      case 'diamond':
-        return 'aspect-square [clip-path:polygon(50%_0%,_100%_50%,_50%_100%,_0%_50%)]';
-      case 'royal':
-        return 'rounded-2xl aspect-square border-4 border-double';
-      case 'rounded':
-      default:
-        return 'rounded-2xl aspect-square border';
-    }
   };
 
   const virtueContent = {
@@ -801,37 +1103,18 @@ export const NamesOfAllah: React.FC = () => {
                       ref={filmstripRef}
                       className="flex items-center gap-2 overflow-x-auto p-2 bg-slate-100 dark:bg-slate-900/80 rounded-2xl border border-slate-200 dark:border-slate-800 custom-scrollbar scroll-smooth"
                     >
-                      {filteredNames.map((item, idx) => {
-                        const isActive = idx === activeHorizontalIdx;
-                        const isStarred = favoriteIds.includes(item.id);
-
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => {
-                              setActiveHorizontalIdx(idx);
-                              triggerHaptic('light');
-                            }}
-                            className={cn(
-                              "px-3 py-2.5 rounded-xl text-xs font-black shrink-0 border transition-all duration-200 flex flex-col items-center gap-1 min-w-[70px] cursor-pointer active:scale-90 relative",
-                              isActive
-                                ? cn("bg-gradient-to-r shadow-lg scale-105 z-10", activeTheme.gradient, activeTheme.borderColor, activeTheme.textColor)
-                                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-amber-400"
-                            )}
-                          >
-                            {isStarred && (
-                              <Star size={10} className="text-amber-400 fill-amber-400 absolute top-1 left-1" />
-                            )}
-                            <span className="text-[10px] font-mono opacity-70">#{item.id}</span>
-                            <span 
-                              className="text-sm font-black whitespace-nowrap"
-                              style={{ fontFamily: activeFont.family }}
-                            >
-                              {item.name}
-                            </span>
-                          </button>
-                        );
-                      })}
+                      {filteredNames.map((item, idx) => (
+                        <FilmstripItem
+                          key={item.id}
+                          item={item}
+                          idx={idx}
+                          isActive={idx === activeHorizontalIdx}
+                          isStarred={favoriteIds.includes(item.id)}
+                          activeTheme={activeTheme}
+                          activeFontFamily={activeFont.family}
+                          onSelect={handleFilmstripSelect}
+                        />
+                      ))}
                     </div>
                   </div>
 
@@ -847,73 +1130,20 @@ export const NamesOfAllah: React.FC = () => {
       {/* ========================================================================= */}
       {layout === 'grid4' && (
         <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 px-1" style={{ perspective: '1200px' }}>
-          {filteredNames.map((item, index) => {
-            const isFav = favoriteIds.includes(item.id);
-
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  delay: Math.min(index * 0.008, 0.3),
-                  type: "spring",
-                  stiffness: 120
-                }}
-                whileHover={{ scale: 1.04, z: 10 }}
-                whileTap={{ scale: 0.94 }}
-                onClick={() => {
-                  setSelectedName(item);
-                  triggerHaptic('light');
-                }}
-                className="relative group cursor-pointer"
-              >
-                <div 
-                  className={cn(
-                    "bg-gradient-to-br border shadow-md flex flex-col items-center justify-center text-center p-1 sm:p-2 relative overflow-hidden transition-all duration-300 group-hover:border-amber-400/70",
-                    renderFrameClasses(frame),
-                    activeTheme.cardGradient,
-                    activeTheme.borderColor,
-                    activeTheme.shadowColor
-                  )}
-                >
-                  {/* Subtle Pattern */}
-                  <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-                  
-                  {/* Top: Star Favorite Icon if marked */}
-                  {isFav && (
-                    <div className="absolute top-1 left-1 bg-amber-400/90 text-slate-950 p-0.5 rounded-full z-10 shadow-sm">
-                      <Star size={9} className="fill-slate-950" />
-                    </div>
-                  )}
-
-                  {/* Order Number Badge */}
-                  {showNumber && (
-                    <span className="text-[9px] sm:text-[10px] font-mono font-bold opacity-60 mb-0.5" style={{ color: activeTheme.accentColor }}>
-                      #{item.id}
-                    </span>
-                  )}
-
-                  {/* Name typography */}
-                  <h3 
-                    className={cn(
-                      "font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] leading-tight px-0.5",
-                      getFontSizeClass(true),
-                      activeTheme.textColor
-                    )}
-                    style={{ 
-                      fontFamily: activeFont.family,
-                      WebkitTextStroke: "0.5px currentColor"
-                    }}
-                  >
-                    {item.name}
-                  </h3>
-                  
-                  <div className="mt-1.5 w-4 h-0.5 bg-amber-200/50 rounded-full group-hover:w-8 transition-all duration-300" />
-                </div>
-              </motion.div>
-            );
-          })}
+          {filteredNames.map((item, index) => (
+            <Grid4NameCard
+              key={item.id}
+              item={item}
+              index={index}
+              isFav={favoriteIds.includes(item.id)}
+              frame={frame}
+              activeTheme={activeTheme}
+              showNumber={showNumber}
+              fontSizeClass={getFontSizeClass(true)}
+              activeFontFamily={activeFont.family}
+              onSelect={handleSelectName}
+            />
+          ))}
         </div>
       )}
 
@@ -922,58 +1152,19 @@ export const NamesOfAllah: React.FC = () => {
       {/* ========================================================================= */}
       {layout === 'grid2' && (
         <div className="grid grid-cols-2 gap-2.5 px-1">
-          {filteredNames.map((item, index) => {
-            const isFav = favoriteIds.includes(item.id);
-
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: Math.min(index * 0.01, 0.3) }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  setSelectedName(item);
-                  triggerHaptic('light');
-                }}
-                className={cn(
-                  "bg-gradient-to-br p-3.5 rounded-3xl border shadow-lg relative overflow-hidden flex flex-col justify-between cursor-pointer group transition-all duration-300 hover:border-amber-400",
-                  activeTheme.cardGradient,
-                  activeTheme.borderColor,
-                  activeTheme.shadowColor
-                )}
-              >
-                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-                
-                <div className="flex items-center justify-between relative z-10 mb-2">
-                  <span className={cn("text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/10", activeTheme.badgeBg, activeTheme.textColor)}>
-                    #{item.id}
-                  </span>
-                  <button
-                    onClick={(e) => toggleFavorite(item.id, e)}
-                    className="p-1 text-amber-400 hover:scale-125 transition-transform"
-                  >
-                    <Star size={15} className={isFav ? "fill-amber-400" : "opacity-40"} />
-                  </button>
-                </div>
-
-                <div className="py-2 text-center relative z-10">
-                  <h3 
-                    className={cn("text-2xl sm:text-3xl font-black drop-shadow-md", activeTheme.textColor)}
-                    style={{ fontFamily: activeFont.family }}
-                  >
-                    {item.name}
-                  </h3>
-                </div>
-
-                {showMeaning && (
-                  <p className="text-[11px] font-bold text-slate-200/90 leading-snug line-clamp-2 text-center relative z-10 bg-black/20 p-2 rounded-xl border border-white/5">
-                    {item.meaning}
-                  </p>
-                )}
-              </motion.div>
-            );
-          })}
+          {filteredNames.map((item, index) => (
+            <Grid2NameCard
+              key={item.id}
+              item={item}
+              index={index}
+              isFav={favoriteIds.includes(item.id)}
+              activeTheme={activeTheme}
+              showMeaning={showMeaning}
+              activeFontFamily={activeFont.family}
+              onSelect={handleSelectName}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
         </div>
       )}
 
@@ -982,62 +1173,18 @@ export const NamesOfAllah: React.FC = () => {
       {/* ========================================================================= */}
       {layout === 'list' && (
         <div className="space-y-2 px-1">
-          {filteredNames.map((item, index) => {
-            const isFav = favoriteIds.includes(item.id);
-
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: Math.min(index * 0.01, 0.3) }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  setSelectedName(item);
-                  triggerHaptic('light');
-                }}
-                className={cn(
-                  "bg-gradient-to-r p-3.5 sm:p-4 rounded-2xl border shadow-md flex items-center justify-between gap-3 cursor-pointer group transition-all duration-200 hover:border-amber-400",
-                  activeTheme.cardGradient,
-                  activeTheme.borderColor
-                )}
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner",
-                    activeTheme.badgeBg,
-                    activeTheme.borderColor
-                  )}>
-                    <span className={cn("text-xs font-mono font-black", activeTheme.textColor)}>
-                      #{item.id}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0">
-                    <h3 
-                      className={cn("text-xl sm:text-2xl font-black leading-tight", activeTheme.textColor)}
-                      style={{ fontFamily: activeFont.family }}
-                    >
-                      {item.name}
-                    </h3>
-                    <p className="text-xs font-bold text-slate-200/90 truncate mt-0.5">
-                      {item.meaning}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={(e) => toggleFavorite(item.id, e)}
-                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-amber-400 transition-all"
-                  >
-                    <Star size={16} className={isFav ? "fill-amber-400" : ""} />
-                  </button>
-                  <ChevronLeft size={16} className="text-slate-400 group-hover:text-amber-400 group-hover:-translate-x-1 transition-all" />
-                </div>
-              </motion.div>
-            );
-          })}
+          {filteredNames.map((item, index) => (
+            <ListNameCard
+              key={item.id}
+              item={item}
+              index={index}
+              isFav={favoriteIds.includes(item.id)}
+              activeTheme={activeTheme}
+              activeFontFamily={activeFont.family}
+              onSelect={handleSelectName}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
         </div>
       )}
 
@@ -1850,6 +1997,12 @@ export const NamesOfAllah: React.FC = () => {
                   >
                     {selectedName.name}
                   </h3>
+
+                  {ALLAH_NAMES_TRANSLATIONS[selectedName.id]?.transliteration && (
+                    <span className="text-xs font-semibold text-amber-200/80 tracking-wider mt-1">
+                      {ALLAH_NAMES_TRANSLATIONS[selectedName.id].transliteration}
+                    </span>
+                  )}
                 </div>
 
                 <div className="p-5 sm:p-6 text-center overflow-y-auto custom-scrollbar flex-1 flex flex-col justify-between space-y-4">
@@ -1861,8 +2014,13 @@ export const NamesOfAllah: React.FC = () => {
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 relative group min-h-[90px] flex items-center justify-center">
+                    <div className="bg-slate-50 dark:bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 relative group min-h-[90px] flex flex-col items-center justify-center gap-2">
                       <p className="text-base sm:text-lg leading-relaxed text-slate-800 dark:text-slate-200 font-bold">{selectedName.meaning}</p>
+                      {ALLAH_NAMES_TRANSLATIONS[selectedName.id]?.enMeaning && (
+                        <p className="text-xs text-slate-500 dark:text-emerald-400/80 font-medium italic border-t border-slate-200/50 dark:border-emerald-500/10 pt-2 w-full">
+                          {ALLAH_NAMES_TRANSLATIONS[selectedName.id].enMeaning}
+                        </p>
+                      )}
                     </div>
 
                     {/* Quick Star in Modal */}
@@ -2016,3 +2174,6 @@ export const NamesOfAllah: React.FC = () => {
     </div>
   );
 };
+
+export const NamesOfAllah = React.memo(NamesOfAllahComponent);
+export default NamesOfAllah;
