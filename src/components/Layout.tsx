@@ -158,6 +158,7 @@ export const Layout: React.FC = () => {
                      location.pathname.toLowerCase().includes('compass') ||
                      location.pathname.toLowerCase().includes('inspiration') ||
                      location.pathname.toLowerCase().includes('zad') ||
+                     location.pathname.toLowerCase().includes('aqeedah') ||
                      window.location.hash.toLowerCase().includes('adhkar') || 
                      window.location.hash.toLowerCase().includes('quran') ||
                      window.location.hash.toLowerCase().includes('hadith') ||
@@ -166,7 +167,8 @@ export const Layout: React.FC = () => {
                      window.location.hash.toLowerCase().includes('user-card') ||
                      window.location.hash.toLowerCase().includes('tasbih') ||
                      window.location.hash.toLowerCase().includes('inspiration') ||
-                     window.location.hash.toLowerCase().includes('zad');
+                     window.location.hash.toLowerCase().includes('zad') ||
+                     window.location.hash.toLowerCase().includes('aqeedah');
 
   const isSurahPage = Boolean(location.pathname.match(/^\/(quran|surah)\/\d+/));
   const isFullHeightPage = Boolean(
@@ -178,7 +180,8 @@ export const Layout: React.FC = () => {
     location.pathname.startsWith("/lectures-audio") ||
     location.pathname.startsWith("/tafsir-audio") ||
     location.pathname.startsWith("/ruqyah-audio") ||
-    location.pathname.startsWith("/names")
+    location.pathname.startsWith("/names") ||
+    location.pathname.startsWith("/aqeedah")
   );
 
   const hideBottomNav = false;

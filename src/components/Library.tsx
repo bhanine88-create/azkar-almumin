@@ -1,7 +1,7 @@
 import { BackButton } from './ui/BackButton';
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, Lightbulb, Droplets, MessageCircle, Gem, Star, History, Scroll, Sparkles, Activity, UserCircle, Quote, Users, Rocket, Fingerprint, Crown, Moon, Headphones, ShieldCheck } from 'lucide-react';
+import { BookOpen, Lightbulb, Droplets, MessageCircle, Star, History, Scroll, Sparkles, Activity, Quote, Fingerprint, Crown, Moon, Headphones, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 import { cn } from '../lib/utils';
@@ -24,103 +24,73 @@ interface LibraryCardProps {
   onNavigate: (to: string) => void;
 }
 
-const LibraryCard = React.memo<LibraryCardProps>(({ item, isRtl, onNavigate }) => {
+const LibraryCard = React.memo<LibraryCardProps>(({ item, onNavigate }) => {
   const handleClick = useCallback(() => {
     onNavigate(item.to);
   }, [item.to, onNavigate]);
 
   return (
-    <div className={cn("perspective-1000 transform-gpu", item.fullWidth ? "col-span-full" : "col-span-1")}>
+    <div className="col-span-1">
       <motion.button
         variants={{
-          hidden: { opacity: 0, y: 28, rotateX: 18, scale: 0.92 },
+          hidden: { opacity: 0, y: 20, scale: 0.95 },
           show: { 
             opacity: 1, 
             y: 0, 
-            rotateX: 0, 
             scale: 1,
             transition: {
               type: "spring",
-              stiffness: 240,
-              damping: 22
+              stiffness: 260,
+              damping: 24
             }
           }
         }}
         whileHover={{ 
-          y: -6, 
-          scale: 1.03, 
-          rotateX: 6, 
-          rotateY: isRtl ? -5 : 5, 
-          translateZ: 18,
-          transition: { duration: 0.25, ease: "easeOut" }
+          y: -5, 
+          scale: 1.025,
+          transition: { duration: 0.2, ease: "easeOut" }
         }}
-        whileTap={{ 
-          scale: 0.97, 
-          rotateX: -2,
-          y: 0 
-        }}
+        whileTap={{ scale: 0.97 }}
         onMouseEnter={preloadLibraryRoutes}
         onTouchStart={preloadLibraryRoutes}
         onClick={handleClick}
         className={cn(
-          "relative group flex w-full overflow-visible rounded-2xl transition-all duration-300 text-center outline-none cursor-pointer",
-          "preserve-3d transform-gpu",
-          "border border-[#145d41]/70 dark:border-[#10b981]/30 border-t-white/25 dark:border-t-emerald-400/30",
-          "hover:border-[#feb10b]/80 dark:hover:border-[#feb10b]/80",
-          "bg-gradient-to-br from-[#0d4f37] via-[#083a28] to-[#042418]",
-          "shadow-lg shadow-emerald-950/30 dark:shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-2xl hover:shadow-[#042418]/70",
-          item.fullWidth 
-            ? cn("h-[94px] p-4 items-center gap-4", isRtl ? "flex-row text-right" : "flex-row-reverse text-left") 
-            : "flex-col h-[124px] justify-between p-3"
+          "relative group flex flex-col justify-between items-center w-full h-[142px] sm:h-[152px] p-3 sm:p-3.5 overflow-hidden rounded-2xl sm:rounded-3xl transition-all duration-300 text-center outline-none cursor-pointer",
+          "border border-emerald-500/60 dark:border-emerald-400/50",
+          "hover:border-[#feb10b] dark:hover:border-[#feb10b]",
+          "bg-gradient-to-br from-[#063b28] via-[#04281b] to-[#021810]",
+          "shadow-xl shadow-emerald-950/50 dark:shadow-[0_8px_30px_rgba(0,0,0,0.85)] hover:shadow-2xl hover:shadow-emerald-950/70"
         )}
       >
-        {/* 3D Chamfered Edge / Thickness Simulation */}
-        <div className="absolute inset-0 rounded-2xl pointer-events-none border-[0.5px] border-white/20 shadow-[inset_0_2px_4px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.5)] transform translate-z-10" />
+        {/* Subtle Ambient Islamic Arabesque Pattern without color-washing overlay */}
+        <div className="absolute inset-0 opacity-20 bg-[url('/images/arabesque.png')] pointer-events-none" />
+        
+        {/* Warm Golden Corner Glow */}
+        <div className="absolute -top-10 -right-10 w-28 h-28 bg-[#feb10b]/20 rounded-full blur-2xl group-hover:scale-125 group-hover:bg-[#feb10b]/35 transition-all duration-500 pointer-events-none" />
+        
+        {/* Card Foreground Content */}
+        <div className="relative z-10 flex flex-col items-center justify-between w-full h-full">
+          {/* Icon in High-Contrast Dark Capsule with Golden Glowing Border */}
+          <div className="flex-1 flex items-center justify-center w-full pt-0.5">
+            <div className="w-12 h-12 rounded-2xl bg-black/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center border border-[#feb10b]/60 dark:border-[#feb10b]/70 shadow-lg group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-[#feb10b]/25 group-hover:border-[#feb10b] transition-all duration-300 shrink-0">
+              {React.cloneElement(item.icon as React.ReactElement<any>, { 
+                size: 24, 
+                className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.8)] group-hover:scale-110 group-hover:brightness-125 transition-all duration-300" 
+              })}
+            </div>
+          </div>
 
-        {/* Ambient 3D Shimmer & Parallax Glow */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/0 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none transform translate-z-10" />
-        <div className="absolute inset-0 rounded-2xl opacity-15 mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')] overflow-hidden" />
-        <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#10b981]/15 rounded-full blur-2xl group-hover:scale-125 group-hover:bg-[#10b981]/30 transition-all duration-500 pointer-events-none transform translate-z-10" />
-        
-        {/* Card Foreground Content with 3D Parallax Depth */}
-        <div className={cn(
-          "relative z-10 flex preserve-3d transform-gpu",
-          item.fullWidth ? "flex-row items-center w-full gap-4" : "flex-col items-center justify-between w-full h-full"
-        )}>
-          {item.fullWidth ? (
-            <>
-              <div className="bg-[#042418]/80 dark:bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/35 dark:border-[#feb10b]/45 shadow-[inset_0_1px_2px_rgba(255,255,255,0.15),0_8px_16px_rgba(0,0,0,0.4)] group-hover:rotate-6 group-hover:bg-[#feb10b]/20 group-hover:border-[#feb10b]/80 group-hover:scale-110 transition-all duration-300 shrink-0 w-14 h-14 preserve-3d transform translate-z-30">
-                {React.cloneElement(item.icon as React.ReactElement<any>, { size: 26, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.6)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300 transform translate-z-10" })}
-              </div>
-              <div className="min-w-0 w-full flex-1 transform translate-z-20">
-                <h3 className="font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] text-lg mb-0.5 truncate">
-                  {item.title}
-                </h3>
-                <p className="text-emerald-100 font-bold uppercase tracking-wider text-[9.5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] line-clamp-1">
-                  {item.subtitle}
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex-1 flex items-center justify-center w-full pt-1 transform translate-z-30">
-                <div className="w-11 h-11 bg-[#042418]/80 dark:bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-[#feb10b]/35 dark:border-[#feb10b]/45 shadow-[inset_0_1px_2px_rgba(255,255,255,0.15),0_8px_16px_rgba(0,0,0,0.4)] group-hover:scale-110 group-hover:-rotate-6 group-hover:bg-[#feb10b]/20 group-hover:border-[#feb10b]/80 transition-all duration-500 shrink-0 preserve-3d">
-                  {React.cloneElement(item.icon as React.ReactElement<any>, { size: 24, className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.6)] group-hover:scale-110 group-hover:brightness-110 transition-all duration-300 transform translate-z-10" })}
-                </div>
-              </div>
-              <div className="min-w-0 w-full shrink-0 flex flex-col justify-center items-center transform translate-z-20">
-                <h3 className="font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] text-[11px] sm:text-[12px] leading-tight line-clamp-2 px-0.5 mb-1.5">
-                  {item.title}
-                </h3>
-                <div className="w-5 h-0.5 bg-[#feb10b] shadow-[0_0_8px_rgba(254,177,11,0.8)] rounded-full group-hover:w-9 group-hover:bg-[#fec84b] transition-all duration-300 transform translate-z-10" />
-              </div>
-            </>
-          )}
+          {/* Title and Subtitle with Maximum Contrast and Legibility */}
+          <div className="min-w-0 w-full shrink-0 flex flex-col justify-center items-center pb-0.5">
+            <h3 className="font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] group-hover:text-[#feb10b] transition-colors text-xs sm:text-[13.5px] leading-tight line-clamp-1 px-1 mb-1 tracking-tight text-center">
+              {item.title}
+            </h3>
+            <p className="text-emerald-100 dark:text-emerald-100 font-extrabold text-[10px] sm:text-[10.5px] leading-tight line-clamp-1 px-1 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] opacity-90 mb-1.5">
+              {item.subtitle}
+            </p>
+            <div className="w-5 h-0.5 bg-[#feb10b] shadow-[0_0_8px_rgba(254,177,11,1)] rounded-full group-hover:w-9 group-hover:bg-[#fec84b] transition-all duration-300" />
+          </div>
         </div>
-        
-        {/* 3D Glossy Specular Light Reflection */}
-        <div className="absolute top-0 right-0 w-full h-[38%] rounded-t-2xl bg-gradient-to-b from-white/18 via-white/5 to-transparent pointer-events-none transform translate-z-10" />
-        <div className="absolute bottom-0 left-0 w-full h-[18%] rounded-b-2xl bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
       </motion.button>
     </div>
   );
@@ -147,130 +117,129 @@ const Library: React.FC = () => {
       to: "/aqeedah",
       title: t('aqeedah_title') || "العقيدة الصحيحة",
       subtitle: t('aqeedah_subtitle') || "أركان الإيمان، حماية التوحيد، وفقه الأسماء والصفات وفق منهج أهل السنة",
-      icon: <ShieldCheck size={26} />,
-      color: "from-emerald-950 via-[#083a28] to-[#042418]",
-      shadow: "shadow-lg shadow-emerald-950/40",
-      fullWidth: true,
+      icon: <ShieldCheck size={24} />,
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/audio-library",
       title: t('audio_library') || "المكتبة الصوتية",
       subtitle: t('audio_library_subtitle') || "تلاوات، تفسير، دروس، ورقية",
       icon: <Headphones size={24} />,
-      color: "from-fuchsia-950 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-fuchsia-950/40",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/names",
       title: t('names_of_allah') || "أسماء الله الحسنى",
       subtitle: "٩٩ اسماً مع الشرح والدعاء",
       icon: <Sparkles size={24} />,
-      color: "from-amber-950 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-amber-950/40",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/sunnah-hadith/daily",
       title: t('hadith_of_day'),
       subtitle: t('subtitle_hadith'),
       icon: <MessageCircle size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/hadith-qudsi",
       title: t('home_qudsi_title') || "الأحاديث القدسية",
       subtitle: t('home_qudsi_subtitle') || "شرح موسع وبطاقات واسعة",
       icon: <Crown size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/inspiration",
       title: t('inspiration_title'),
       subtitle: t('inspiration_subtitle'),
       icon: <Quote size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/scholar-sayings",
       title: t('sayings_title'),
       subtitle: t('sayings_subtitle'),
       icon: <Scroll size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/insights",
       title: t('insights_title'),
       subtitle: t('insights_subtitle'),
       icon: <Activity size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/sunnah-hadith/fadael",
       title: t('fadael'),
       subtitle: t('subtitle_fadael'),
       icon: <Star size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/prophet",
       title: t('seerah'),
       subtitle: t('subtitle_seerah'),
       icon: <History size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/istighfar",
       title: t('istighfar_title') || "ركن التوبة والاستغفار",
       subtitle: t('istighfar_subtitle') || "الاستغفار اليومي والندم",
       icon: <Droplets size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/quiz",
       title: t('quiz_title') || "اختبر معلوماتك",
       subtitle: t('quiz_subtitle') || "مسابقات واختبارات إسلامية",
       icon: <Lightbulb size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/stories",
       title: t('islamic_stories'),
       subtitle: t('islamic_stories_subtitle'),
       icon: <BookOpen size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/tasbih",
       title: t('tasbih_card'),
       subtitle: t('subtitle_tasbih'),
       icon: <Fingerprint size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/fasting-tracker",
       title: t('fasting_tracker_title') || "عداد الصيام",
       subtitle: t('fasting_tracker_subtitle') || "صيام النافلة والأيام البيض",
       icon: <Moon size={24} />,
-      color: "from-slate-800 via-slate-900 to-slate-950",
-      shadow: "shadow-lg shadow-slate-900/30",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     },
     {
       to: "/font-studio",
       title: t('font_studio_title', "استوديو الخطوط"),
       subtitle: t('font_studio_desc', "تنزيل وتخصيص خطوط القرآن والأذكار"),
       icon: <Sparkles size={24} />,
-      color: "from-teal-800 via-emerald-900 to-slate-950",
-      shadow: "shadow-lg shadow-teal-950/40",
+      color: "from-[#063b28] via-[#04281b] to-[#021810]",
+      shadow: "shadow-lg shadow-emerald-950/50",
     }
   ], [t]);
 
@@ -306,8 +275,7 @@ const Library: React.FC = () => {
       </div>
 
       <div 
-        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-2.5 gap-y-4 relative z-10 px-1 perspective-1000 transform-gpu"
-        style={{ perspective: '1200px' }}
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10 px-1"
       >
         {libraryItems.map((item) => (
           <LibraryCard

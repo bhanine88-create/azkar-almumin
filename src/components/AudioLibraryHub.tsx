@@ -22,7 +22,28 @@ import { audioCacheService } from '../services/audioCacheService';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
 import { smartScholarMatch, smartReciterMatch, smartLectureMatch } from '../lib/arabicSearch';
 import { AudioSearchAutocomplete } from './AudioSearchAutocomplete';
-import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
+let isAudioSubRoutesPreloaded = false;
+function preloadAudioSubRoutes() {
+  if (isAudioSubRoutesPreloaded || typeof window === 'undefined') return;
+  isAudioSubRoutesPreloaded = true;
+
+  const triggerPreload = () => {
+    import('./QuranAudioHub').catch(() => {});
+    import('./QuranAudioReciter').catch(() => {});
+    import('./QuranAudioDownloadsHub').catch(() => {});
+    import('./LecturesAudioHub').catch(() => {});
+    import('./TafsirAudioHub').catch(() => {});
+    import('./RuqyahAudioHub').catch(() => {});
+    import('./FavoriteRecitersPage').catch(() => {});
+    import('./FavoriteScholarsPage').catch(() => {});
+  };
+
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(triggerPreload, { timeout: 2500 });
+  } else {
+    setTimeout(triggerPreload, 200);
+  }
+}
 
 // Generates an interactive offline-capable index player HTML
 function generateHTMLOfflineIndex(quranMeta: any[], lectureMeta: any[]) {
@@ -263,8 +284,11 @@ function generateHTMLOfflineIndex(quranMeta: any[], lectureMeta: any[]) {
     const playingContainer = document.getElementById('playingContainer');
     const nowPlayingTitle = document.getElementById('nowPlayingTitle');
     const nowPlayingMeta = document.getElementById('nowPlayingMeta');
+    let currentPlayingIndex = -1;
 
     function playTrack(path, title, subtitle) {
+      const cards = Array.from(document.querySelectorAll('.item-card'));
+      currentPlayingIndex = cards.findIndex(card => card.getAttribute('data-search').includes(title));
       globalAudio.src = encodeURI(path);
       nowPlayingTitle.textContent = title;
       nowPlayingMeta.textContent = subtitle;
@@ -276,6 +300,17 @@ function generateHTMLOfflineIndex(quranMeta: any[], lectureMeta: any[]) {
       // Scroll smoothly
       playingContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    globalAudio.addEventListener('ended', function() {
+      const cards = Array.from(document.querySelectorAll('.item-card'));
+      if (cards.length > 0 && currentPlayingIndex >= 0) {
+        const nextIndex = (currentPlayingIndex + 1) % cards.length;
+        const nextCard = cards[nextIndex];
+        if (nextCard) {
+          nextCard.click();
+        }
+      }
+    });
 
     function filterItems() {
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -326,7 +361,7 @@ export function AudioLibraryHub() {
   useEffect(() => {
     setQuranMeta(audioCacheService.getMetadataList());
     setLectureMeta(lectureCacheService.getMetadataList());
-    preloadAudioLibraryRoutes();
+    preloadAudioSubRoutes();
   }, []);
 
   const refreshBagData = () => {
@@ -1317,3 +1352,5 @@ export function AudioLibraryHub() {
     </div>
   );
 }
+
+export default AudioLibraryHub;

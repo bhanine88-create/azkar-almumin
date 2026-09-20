@@ -3008,7 +3008,7 @@ export const Settings: React.FC = () => {
                   <div className="font-black text-sm sm:text-base text-white flex items-center gap-2 flex-wrap">
                     <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      v28 الرسمي
+                      v29 الرسمي
                     </span>
                   </div>
                   <div className="text-xs text-teal-200/80 font-medium mt-1 leading-relaxed">
@@ -3081,7 +3081,7 @@ export const Settings: React.FC = () => {
                         {t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}
                       </h3>
                       <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        مزامنة الضبط الرسمي v28
+                        مزامنة الضبط الرسمي v29
                       </span>
                     </div>
                   </div>

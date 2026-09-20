@@ -183,9 +183,8 @@ function rateLimiter(limit: number, windowMs: number, apiName = "Global") {
 
 async function startServer() {
   const app = express();
-  // Support both Cloud Run production deployment ($PORT, typically 8080) and AI Studio dev environment (port 3000)
-  const isDev = process.env.NODE_ENV !== "production" || Boolean(process.env.CONTROL_PLANE_PORT);
-  const PORT = isDev ? 3000 : (Number(process.env.PORT) || 8080);
+  const PORT = 3000;
+  const isDev = process.env.NODE_ENV !== "production";
 
   // Set CORS headers for all requests (including static assets, PWA manifest and icons) to support PWABuilder validation
   app.use((req, res, next) => {

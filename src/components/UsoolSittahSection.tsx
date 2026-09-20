@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { USOOL_SITTAH_ITEMS, UsoolSittahCardItem } from '../data/usoolSittahCardsData';
 import { AQEEDAH_ARTICLES, AqeedahArticle } from '../data/aqeedahData';
+import { ExternalAudioLinkModal } from './ExternalAudioLinkModal';
 import { cn, shareContent } from '../lib/utils';
 
 interface UsoolSittahSectionProps {
@@ -56,6 +57,56 @@ export const UsoolSittahSection: React.FC<UsoolSittahSectionProps> = ({
     return initial;
   });
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [externalAudioModal, setExternalAudioModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    sourceLabel: string;
+    url: string;
+    type: 'listen' | 'download';
+  } | null>(null);
+
+  const handleOpenExternalAudio = (
+    url: string,
+    title: string,
+    sourceLabel: string,
+    type: 'listen' | 'download',
+    e?: React.MouseEvent
+  ) => {
+    // Only stop propagation so parent card click handlers do not fire
+    if (e) {
+      e.stopPropagation();
+      // DO NOT call e.preventDefault();
+      // This ensures <a href="..." target="_blank"> opens directly in the user's default browser!
+    }
+    if (!url) return;
+
+    // Fallback if not an anchor element or programmatic call
+    if (!e || !(e.currentTarget instanceof HTMLAnchorElement)) {
+      try {
+        const win = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+          setExternalAudioModal({
+            isOpen: true,
+            title,
+            sourceLabel,
+            url,
+            type
+          });
+        }
+      } catch (err) {
+        console.warn('Window open error:', err);
+        setExternalAudioModal({
+          isOpen: true,
+          title,
+          sourceLabel,
+          url,
+          type
+        });
+      }
+    }
+
+    showToast(type === 'listen' ? 'جاري فتح رابط الاستماع في المتصفح...' : 'جاري فتح رابط التحميل في المتصفح...');
+  };
 
   // Toggle card expansion
   const toggleCard = (id: string) => {
@@ -381,7 +432,10 @@ ${item.matnOriginal}`;
                       href={item.audioListenUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-xl bg-white dark:bg-emerald-950/40 text-slate-600 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20 hover:border-[#feb10b] hover:text-[#feb10b] transition-colors"
+                      onClick={(e) => {
+                        handleOpenExternalAudio(item.audioListenUrl, item.title, item.audioLabel, 'listen', e);
+                      }}
+                      className="p-2 rounded-xl bg-white dark:bg-emerald-950/40 text-slate-600 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20 hover:border-[#feb10b] hover:text-[#feb10b] transition-colors cursor-pointer"
                       title={`استماع خارجي: ${item.audioLabel}`}
                     >
                       <Headphones className="w-4 h-4 text-[#feb10b]" />
@@ -548,7 +602,10 @@ ${item.matnOriginal}`;
                               href={item.audioListenUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] text-white font-bold text-xs flex items-center gap-1 shadow transition-colors"
+                              onClick={(e) => {
+                                handleOpenExternalAudio(item.audioListenUrl, item.title, item.audioLabel, 'listen', e);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] text-white font-bold text-xs flex items-center gap-1 shadow transition-colors cursor-pointer"
                               title="فتح رابط الاستماع الخارجي"
                             >
                               <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
@@ -560,7 +617,10 @@ ${item.matnOriginal}`;
                               href={item.audioDownloadUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1 hover:border-[#feb10b] transition-colors"
+                              onClick={(e) => {
+                                handleOpenExternalAudio(item.audioDownloadUrl, item.title, item.audioLabel, 'download', e);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1 hover:border-[#feb10b] transition-colors cursor-pointer"
                               title="فتح رابط تحميل الدرس الخارجي"
                             >
                               <Download className="w-3.5 h-3.5 text-emerald-500 dark:text-[#feb10b]" />
@@ -615,6 +675,18 @@ ${item.matnOriginal}`;
           «من لزم هذه الأصول الستة مخلصاً لله متبعاً لسنة نبيه ﷺ، لزم الصراط المستقيم، وأَمِنَ من الشبهات المضلة، وكان من الفرقة الناجية والطائفة المنصورة بإذن الله تعالى».
         </p>
       </div>
+
+      {/* External Audio Link Fallback Modal */}
+      {externalAudioModal && (
+        <ExternalAudioLinkModal
+          isOpen={externalAudioModal.isOpen}
+          onClose={() => setExternalAudioModal(null)}
+          title={externalAudioModal.title}
+          sourceLabel={externalAudioModal.sourceLabel}
+          url={externalAudioModal.url}
+          type={externalAudioModal.type}
+        />
+      )}
     </div>
   );
 };
