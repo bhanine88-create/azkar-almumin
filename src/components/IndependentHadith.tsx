@@ -1338,7 +1338,7 @@ export const IndependentHadith: React.FC = () => {
                 className={cn(
                   "w-full transition-all duration-300 transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform",
                   snapScrolling && "hadith-snap-card snap-start snap-always scroll-mt-3 sm:scroll-mt-4",
-                  isFocus ? "max-w-lg mx-auto w-[92%] sm:w-[88%]" : "h-full flex flex-col w-[96%] sm:w-[94%] md:w-full mx-auto"
+                  isFocus ? "w-full mx-auto" : "h-full flex flex-col w-full mx-auto"
                 )}
                 style={snapScrolling ? { scrollSnapAlign: 'start', scrollSnapStop: 'always' } : undefined}
               >
@@ -1728,7 +1728,7 @@ export const IndependentHadith: React.FC = () => {
                               }
                             }
                           }}
-                          className="w-full max-w-lg mx-auto transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
+                          className="w-full max-w-5xl mx-auto transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
                         >
                           {renderHadithCard(items[focusIndex], focusIndex, true)}
                         </motion.div>
@@ -1737,7 +1737,7 @@ export const IndependentHadith: React.FC = () => {
 
                     {/* Focus Mode Navigation & Quick Jump */}
                     <div className="w-full flex flex-col items-center gap-3 mt-4" dir="rtl" data-html2canvas-ignore>
-                      <div className="flex items-center justify-between w-full max-w-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
+                      <div className="flex items-center justify-between w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
                         {/* Previous button */}
                         <button
                           type="button"
@@ -1840,7 +1840,7 @@ export const IndependentHadith: React.FC = () => {
                   <div 
                     className={cn(
                       "grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 items-stretch transition-all duration-300 max-w-5xl mx-auto w-full",
-                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] px-1 sm:px-2 py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
+                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
                     )}
                     style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
                   >
@@ -1850,8 +1850,8 @@ export const IndependentHadith: React.FC = () => {
                   /* Continuous List Mode with CSS snap-points */
                   <div 
                     className={cn(
-                      "flex flex-col gap-3.5 sm:gap-4.5 max-w-xl sm:max-w-2xl mx-auto w-full transition-all duration-300",
-                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] px-1 sm:px-2 py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
+                      "flex flex-col gap-3.5 sm:gap-4.5 max-w-5xl mx-auto w-full transition-all duration-300",
+                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
                     )}
                     style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
                   >
