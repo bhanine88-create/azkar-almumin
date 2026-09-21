@@ -280,10 +280,13 @@ img {
   padding-right: env(safe-area-inset-right, 0px) !important;
   padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   height: 100% !important;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  position: relative !important;
+  overflow: hidden !important;
   gap: 0 !important;
 }
 
@@ -295,31 +298,57 @@ img {
   margin-bottom: 0 !important;
 }
 
-/* Ensure seamless consecutive & double spread page transitions with zero side gaps */
+/* Ensure seamless consecutive & double spread page transitions with zero gaps */
 #root .quran-viewer-container .quran-page-snap,
 #root .quran-viewer-container .quran-vertical-page,
-#root .quran-viewer-container [class*="group/mushaf-page"] {
+#root .quran-viewer-container [class*="group/mushaf-page"],
+#root .quran-viewer-container .mushaf-double-spread,
+#root .quran-viewer-container .mushaf-page-container {
+  display: flex !important;
   margin: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  padding: 0 !important;
   gap: 0 !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+}
+
+#root .quran-viewer-container .quran-page-snap,
+#root .quran-viewer-container .quran-vertical-page,
+#root .quran-viewer-container .mushaf-double-spread {
+  width: 100vw !important;
+  flex-shrink: 0 !important;
+}
+
+#root .quran-viewer-container .mushaf-double-spread {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+#root .quran-viewer-container .mushaf-page-container {
+  flex: 1 1 50% !important;
+  width: 50% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
 }
 
 #root .quran-viewer-container .quran-vertical-page {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: none !important;
 }
 
-.dark #root .quran-viewer-container .quran-vertical-page {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Tight image positioning eliminating any unjustified top white space */
+/* Tight image positioning eliminating any unjustified margin or padding */
 #root .quran-viewer-container img {
   max-width: 100% !important;
   height: 100% !important;
   object-fit: contain !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
   padding: 0 !important;
   display: block !important;
 }

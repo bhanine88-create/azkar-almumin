@@ -677,7 +677,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [adhkarData, setAdhkarData] = useState<AdhkarData[]>(() => {
-    const saved = safeLocalStorageGetItem('believer_adhkar_v23') || safeLocalStorageGetItem('believer_adhkar_v22') || safeLocalStorageGetItem('believer_adhkar_v21') || safeLocalStorageGetItem('believer_adhkar_v20') || safeLocalStorageGetItem('believer_adhkar_v6') || safeLocalStorageGetItem('believer_adhkar_v5');
+    const saved = safeLocalStorageGetItem('believer_adhkar_v24') || safeLocalStorageGetItem('believer_adhkar_v23') || safeLocalStorageGetItem('believer_adhkar_v22') || safeLocalStorageGetItem('believer_adhkar_v21') || safeLocalStorageGetItem('believer_adhkar_v20') || safeLocalStorageGetItem('believer_adhkar_v6') || safeLocalStorageGetItem('believer_adhkar_v5');
     if (saved) {
       try {
         const parsedData = JSON.parse(saved);
@@ -826,7 +826,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(progress));
+      safeLocalStorageSetItem('believer_progress_v24', JSON.stringify(progress));
     }, 1500); 
     return () => clearTimeout(handler);
   }, [progress]);
@@ -837,15 +837,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (dataToSave.length > 100000) {
         console.warn(`Huge adhkarData! Length: ${dataToSave.length}`);
       }
-      safeLocalStorageSetItem('believer_adhkar_v23', dataToSave);
+      safeLocalStorageSetItem('believer_adhkar_v24', dataToSave);
     }, 1500);
     return () => clearTimeout(handler);
   }, [adhkarData]);
 
   useEffect(() => {
     // Automated database synchronization on mount to ensure standard items reflect latest updates without touching favorites or custom adhkar
-    const hasScrubbedV23 = safeLocalStorageGetItem('believer_scrubbed_v23_sync');
-    if (hasScrubbedV23) return;
+    const hasScrubbedV24 = safeLocalStorageGetItem('believer_scrubbed_v24_sync');
+    if (hasScrubbedV24) return;
     
     setAdhkarData(prev => {
       const updatedData = prev.map(cat => {
@@ -915,11 +915,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
 
       // Synchronize immediately to storage
-      safeLocalStorageSetItem('believer_adhkar_v23', JSON.stringify(updatedData));
+      safeLocalStorageSetItem('believer_adhkar_v24', JSON.stringify(updatedData));
       return updatedData;
     });
     
-    safeLocalStorageSetItem('believer_scrubbed_v23_sync', 'true');
+    safeLocalStorageSetItem('believer_scrubbed_v24_sync', 'true');
   }, []);
 
   // Automated Daily Backup Logic

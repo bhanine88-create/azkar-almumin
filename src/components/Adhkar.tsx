@@ -1491,37 +1491,37 @@ export const Adhkar: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-black text-slate-500 dark:text-slate-400 mb-1 block">{t('dhikr_title_label')}</label>
+                    <label className="text-xs sm:text-sm font-black text-slate-600 dark:text-slate-300 mb-1.5 block">{t('dhikr_title_label')}</label>
                     <input
                       type="text"
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder={t('dhikr_title_placeholder')}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:bg-white outline-none dark:text-slate-200 transition-all"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm sm:text-base font-bold focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-900 outline-none dark:text-slate-100 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-black text-slate-500 dark:text-slate-400 mb-1 block">{t('dhikr_desc_label')}</label>
+                    <label className="text-xs sm:text-sm font-black text-slate-600 dark:text-slate-300 mb-1.5 block">{t('dhikr_desc_label')}</label>
                     <input
                       type="text"
                       value={formDescription}
                       onChange={(e) => setFormDescription(e.target.value)}
                       placeholder={t('dhikr_desc_placeholder')}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:bg-white outline-none dark:text-slate-200 transition-all"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm sm:text-base font-bold focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-900 outline-none dark:text-slate-100 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-black text-slate-500 dark:text-slate-400 mb-1 block">{t('dhikr_text_label')}</label>
+                    <label className="text-xs sm:text-sm font-black text-slate-600 dark:text-slate-300 mb-1.5 block">{t('dhikr_text_label')}</label>
                     <textarea
                       value={formText}
                       onChange={(e) => setFormText(e.target.value)}
                       placeholder={t('dhikr_text_placeholder')}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:bg-white outline-none dark:text-slate-200 transition-all font-adhkar"
-                      rows={4}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-base sm:text-lg font-black font-adhkar text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-900 outline-none transition-all leading-loose"
+                      rows={5}
                     />
                   </div>
                 </div>
@@ -1599,79 +1599,83 @@ export const Adhkar: React.FC = () => {
                 <motion.div
                    key={item.id}
                    layout
-                   className="group bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-150/80 dark:border-slate-850 shadow-sm hover:shadow-md transition-all duration-300 flex items-start gap-4 relative overflow-hidden"
+                   className="group bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-150/80 dark:border-slate-850 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-3 relative overflow-hidden"
                 >
                   {/* Subtle decorative left/right light colored stripe on focus */}
                   <div className={cn("absolute top-0 bottom-0 w-[4px] bg-teal-500 opacity-0 group-hover:opacity-100 transition-opacity", isRtl ? "right-0" : "left-0")} />
 
-                  {/* Dual Position Controller - Reordering Buttons Pill */}
-                  <div className="flex flex-col bg-slate-50 dark:bg-slate-950 p-1 rounded-xl shrink-0 self-center border border-slate-100 dark:border-slate-800/80">
-                    <button 
-                      onClick={() => reorderDhikr(currentCategory.category, actualIdx, actualIdx - 1)}
-                      disabled={actualIdx === 0}
-                      className="p-1 px-[5px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-white dark:hover:bg-slate-850 rounded-lg transition-all disabled:opacity-10 disabled:hover:bg-transparent"
-                      title={isRtl ? "تقديم الترتيب للأعلى" : "Move up"}
-                    >
-                      <ArrowUp size={16} strokeWidth={3} />
-                    </button>
-                    <div className="h-[1px] bg-slate-200 dark:bg-slate-800 mx-1 my-0.5" />
-                    <button 
-                      onClick={() => reorderDhikr(currentCategory.category, actualIdx, actualIdx + 1)}
-                      disabled={actualIdx === currentCategory.items.length - 1}
-                      className="p-1 px-[5px] text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-white dark:hover:bg-slate-850 rounded-lg transition-all disabled:opacity-10 disabled:hover:bg-transparent"
-                      title={isRtl ? "تأخير الترتيب للأسفل" : "Move down"}
-                    >
-                      <ArrowDown size={16} strokeWidth={3} />
-                    </button>
-                  </div>
-                  
-                  {/* Text Content Block */}
-                  <div className={cn("flex-1 min-w-0 space-y-1", isRtl ? "text-right" : "text-left")}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-black text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 px-2.5 py-0.5 rounded-lg">
-                        {item.title || t('general_dhikr')}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono">
+                  {/* Top Bar: Controls & Meta Information */}
+                  <div className="flex items-center justify-between gap-2.5 border-b border-slate-100 dark:border-slate-800/80 pb-3 flex-wrap">
+                    {/* Info & Badges */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-mono font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md">
                         #{actualIdx + 1}
                       </span>
+                      <span className="text-xs sm:text-sm font-black text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 px-3 py-1 rounded-lg border border-teal-100 dark:border-teal-900/30">
+                        {item.title || t('general_dhikr')}
+                      </span>
+                      {/* Repetition Count Badge */}
+                      <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 px-2.5 py-1 rounded-xl text-xs font-black text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800">
+                        <span>{item.count}</span>
+                        <span className="text-slate-400 text-[10px] font-bold font-sans">{t('repetition_count_label')}</span>
+                      </div>
                     </div>
 
-                    <p className="text-xs sm:text-sm font-medium font-adhkar text-slate-800 dark:text-slate-100 pt-1.5 leading-relaxed break-words">
+                    {/* Action Buttons & Reorder Controller */}
+                    <div className="flex items-center gap-2">
+                      {/* Dual Position Controller - Reordering Buttons Pill */}
+                      <div className="flex items-center bg-slate-50 dark:bg-slate-950 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                        <button 
+                          onClick={() => reorderDhikr(currentCategory.category, actualIdx, actualIdx - 1)}
+                          disabled={actualIdx === 0}
+                          className="p-1.5 text-slate-500 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-white dark:hover:bg-slate-850 rounded-lg transition-all disabled:opacity-20 disabled:hover:bg-transparent"
+                          title={isRtl ? "تقديم الترتيب للأعلى" : "Move up"}
+                        >
+                          <ArrowUp size={16} strokeWidth={2.5} />
+                        </button>
+                        <div className="w-[1px] h-4 bg-slate-200 dark:bg-slate-800 mx-0.5" />
+                        <button 
+                          onClick={() => reorderDhikr(currentCategory.category, actualIdx, actualIdx + 1)}
+                          disabled={actualIdx === currentCategory.items.length - 1}
+                          className="p-1.5 text-slate-500 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-white dark:hover:bg-slate-850 rounded-lg transition-all disabled:opacity-20 disabled:hover:bg-transparent"
+                          title={isRtl ? "تأخير الترتيب للأسفل" : "Move down"}
+                        >
+                          <ArrowDown size={16} strokeWidth={2.5} />
+                        </button>
+                      </div>
+
+                      {/* Edit Button */}
+                      <button 
+                        onClick={() => startEdit(item)} 
+                        className="w-9 h-9 flex items-center justify-center text-teal-600 dark:text-teal-400 bg-teal-50/80 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-950/70 rounded-xl transition-all active:scale-90 border border-teal-100 dark:border-teal-900/40 shadow-sm"
+                        title={t('edit_this_dhikr')}
+                      >
+                        <Pen size={16} strokeWidth={2.5} />
+                      </button>
+
+                      {/* Delete Button */}
+                      <button 
+                        onClick={() => deleteDhikr(currentCategory.category, item.id)} 
+                        className="w-9 h-9 flex items-center justify-center text-rose-600 dark:text-rose-450 bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 rounded-xl transition-all active:scale-90 border border-rose-100 dark:border-rose-950/30 shadow-sm"
+                        title={t('delete_this_dhikr')}
+                      >
+                        <Trash2 size={16} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Full Width Text Content Block */}
+                  <div className={cn("w-full space-y-2 pt-0.5", isRtl ? "text-right" : "text-left")}>
+                    <p className="text-base sm:text-lg md:text-xl font-black font-adhkar text-slate-900 dark:text-slate-50 leading-[2.2] break-words tracking-wide">
                       {item.text}
                     </p>
 
                     {item.description && (
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 pt-1 font-bold leading-normal">
-                        <Info size={11} className="shrink-0 text-slate-350" />
-                        <span className="truncate">{item.description}</span>
+                      <div className="flex items-start gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 pt-2 font-bold leading-relaxed border-t border-slate-100/80 dark:border-slate-800/50 mt-2">
+                        <Info size={14} className="shrink-0 text-teal-600 dark:text-teal-400 mt-0.5" />
+                        <span>{item.description}</span>
                       </div>
                     )}
-                  </div>
-
-                  {/* Actions Tools Cluster */}
-                  <div className="flex flex-row md:flex-col items-center gap-1.5 shrink-0 self-center">
-                    {/* Badge showing target count clearly */}
-                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 px-2 py-1 rounded-xl text-[10px] text-slate-600 dark:text-slate-400 font-black border border-slate-100 dark:border-slate-850">
-                      <span>{item.count}</span>
-                      <span className="text-slate-400 text-[8px] font-normal font-sans">{t('repetition_count_label')}</span>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => startEdit(item)} 
-                        className="w-10 h-10 flex items-center justify-center text-teal-600 dark:text-teal-400 bg-teal-50/50 hover:bg-teal-50 dark:bg-teal-950/20 dark:hover:bg-teal-950/40 rounded-xl transition-all active:scale-90 border border-transparent hover:border-teal-100 dark:hover:border-teal-900/40 shadow-sm"
-                        title={t('edit_this_dhikr')}
-                      >
-                        <Pen size={18} strokeWidth={2.5} />
-                      </button>
-                      <button 
-                        onClick={() => deleteDhikr(currentCategory.category, item.id)} 
-                        className="w-10 h-10 flex items-center justify-center text-rose-600 dark:text-rose-450 bg-rose-50/50 hover:bg-rose-50 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 rounded-xl transition-all active:scale-90 border border-transparent hover:border-rose-100 dark:hover:border-rose-950/30 shadow-sm"
-                        title={t('delete_this_dhikr')}
-                      >
-                        <Trash2 size={18} strokeWidth={2.5} />
-                      </button>
-                    </div>
                   </div>
                 </motion.div>
               );

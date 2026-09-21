@@ -104,7 +104,6 @@ export const Layout: React.FC = () => {
       else if (cleanPath === '/quran-audio') import('./QuranAudioHub');
     } catch (_) {}
   };
-  const [activeNotification, setActiveNotification] = useState<'morning' | 'evening' | null>(null);
   
   const [touchStart, setTouchStart] = useState<{x: number, y: number, time: number} | null>(null);
 
@@ -213,90 +212,17 @@ export const Layout: React.FC = () => {
 
   const [randomDhikr, setRandomDhikr] = useState<string | null>(null);
 
-  // Random Adhkar Logic
+  // Random Adhkar Banner triggered by PrayerNotificationManager
   useEffect(() => {
-    if (!settings.notificationsEnabled || !settings.randomAdhkarEnabled || !settings.customRandomAdhkar?.length) return;
-
-    const intervalMs = (settings.randomAdhkarInterval || 30) * 60 * 1000;
-    
-    const showRandomDhikr = () => {
-      const list = settings.customRandomAdhkar || [];
-      const random = list[Math.floor(Math.random() * list.length)];
-      setRandomDhikr(random);
-      
-      // Play sound
-      try {
-        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-        audio.volume = 0.4;
-        audio.play().catch(() => {
-          playNotificationChimeSound();
-        });
-      } catch (e) {
-        playNotificationChimeSound();
-      }
-
-      // Auto hide after 5 seconds
-      setTimeout(() => {
-        setRandomDhikr(null);
-      }, 5000);
-    };
-
-    const interval = setInterval(showRandomDhikr, intervalMs);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [settings.notificationsEnabled, settings.randomAdhkarEnabled, settings.randomAdhkarInterval, settings.customRandomAdhkar]);
-
-  // Manual Trigger for Random Dhikr (Testing)
-  useEffect(() => {
-    if (settings._triggerRandom && settings.customRandomAdhkar?.length) {
-      const list = settings.customRandomAdhkar || [];
-      const random = list[Math.floor(Math.random() * list.length)];
-      setRandomDhikr(random);
-      
-      // Auto hide after 5 seconds
+    if (settings._triggerRandomText) {
+      setRandomDhikr(settings._triggerRandomText);
       const timer = setTimeout(() => {
         setRandomDhikr(null);
-      }, 5000);
-      
-      // Clear the trigger to prevent it from firing again on every setting change
-      updateSettings({ _triggerRandom: undefined });
-      
+      }, 6000);
+      updateSettings({ _triggerRandomText: undefined });
       return () => clearTimeout(timer);
     }
-  }, [settings._triggerRandom, settings.customRandomAdhkar, updateSettings]);
-
-  // Manual Trigger for Adhkar Notifications (Testing)
-  useEffect(() => {
-    if (settings._triggerMorning) {
-      setActiveNotification('morning');
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-      audio.volume = 0.5;
-      audio.play().catch(e => console.log('Audio play failed:', e));
-      updateSettings({ _triggerMorning: undefined });
-    }
-  }, [settings._triggerMorning, updateSettings]);
-
-  useEffect(() => {
-    if (settings._triggerEvening) {
-      setActiveNotification('evening');
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-      audio.volume = 0.5;
-      audio.play().catch(e => console.log('Audio play failed:', e));
-      updateSettings({ _triggerEvening: undefined });
-    }
-  }, [settings._triggerEvening, updateSettings]);
-
-  // Clear notification if category is completed
-  useEffect(() => {
-    if (activeNotification === 'morning' && isCategoryCompleted('morning')) {
-      setActiveNotification(null);
-    }
-    if (activeNotification === 'evening' && isCategoryCompleted('evening')) {
-      setActiveNotification(null);
-    }
-  }, [isCategoryCompleted, activeNotification]);
+  }, [settings._triggerRandomText, updateSettings]);
 
   // Toast notifications & Clipboard patching
   useEffect(() => {
@@ -407,107 +333,7 @@ export const Layout: React.FC = () => {
   // Notification Check Logic
   const lastNotifiedMinute = React.useRef<string | null>(null);
 
-  const lastMorningAttempt = React.useRef<number>(Date.now());
-  const lastEveningAttempt = React.useRef<number>(Date.now());
-  const mountTimeRef = React.useRef<number>(Date.now());
 
-  useEffect(() => {
-    if (!settings.notificationsEnabled) return;
-
-    const checkNotifications = () => {
-      // 15-second grace period on mount before allowing any in-app popups to show up
-      if (Date.now() - mountTimeRef.current < 15000) return;
-
-      const now = new Date();
-      const nowMs = now.getTime();
-      const currentH = now.getHours().toString().padStart(2, '0');
-      const currentM = now.getMinutes().toString().padStart(2, '0');
-      const currentTimeStr = `${currentH}:${currentM}`;
-      const today = now.toDateString();
-      const uniqueMinuteKey = `${today}_${currentTimeStr}`;
-
-      // Prevent multiple notifications in the same minute
-      if (lastNotifiedMinute.current === uniqueMinuteKey) return;
-
-      const playNotificationSound = () => {
-        try {
-          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-          audio.volume = 0.5;
-          audio.play().catch(() => {
-            playNotificationChimeSound();
-          });
-        } catch {
-          playNotificationChimeSound();
-        }
-      };
-
-      const COOLDOWN = 30 * 60 * 1000; // 30 minutes cooldown
-
-      const triggerSystemNotification = (type: 'morning' | 'evening') => {
-        const title = type === 'morning' ? 'أذكار الصباح' : 'أذكار المساء';
-        const body = type === 'morning' ? 'أشرقت الشمس، ابدأ يومك بذكر الله' : 'أقبل المساء، حصن نفسك بذكر الله';
-        
-        if ("Notification" in window && Notification.permission === "granted") {
-          triggerSafeNotification(`حان وقت ${title}`, {
-            body: body,
-            icon: '/logo-192.png'
-          });
-        }
-
-        // Auto dismiss the in-app notification after 15 seconds
-        setTimeout(() => {
-          setActiveNotification(prev => prev === type ? null : prev);
-        }, 15000);
-      };
-
-      // Check AdhkarCounts Context directly
-      const morningItems = adhkarData.find(c => c.category === 'morning')?.items || [];
-      const eveningItems = adhkarData.find(c => c.category === 'evening')?.items || [];
-      const isMorningFinished = isCategoryFinished('morning', morningItems);
-      const isEveningFinished = isCategoryFinished('evening', eveningItems);
-
-      const currentPath = window.location.pathname;
-
-      // Morning Notification
-      if (settings.morningNotificationsEnabled && !isCategoryCompleted('morning') && !isMorningFinished && currentPath !== '/adhkar/morning') {
-        const startTime = settings.morningAdhkarTime || '06:00';
-        const endTime = settings.morningAdhkarEndTime || '10:00';
-        
-        if (currentTimeStr >= startTime && currentTimeStr <= endTime) {
-          if (!progress.notifiedMorning || (nowMs - lastMorningAttempt.current > COOLDOWN && !activeNotification)) {
-            lastNotifiedMinute.current = uniqueMinuteKey;
-            lastMorningAttempt.current = nowMs;
-            setActiveNotification('morning');
-            setNotified('morning', true);
-            playNotificationSound();
-            triggerSystemNotification('morning');
-          }
-        }
-      }
-      
-      // Evening Notification
-      if (settings.eveningNotificationsEnabled && !isCategoryCompleted('evening') && !isEveningFinished && currentPath !== '/adhkar/evening') {
-        const startTime = settings.eveningAdhkarTime || '18:00';
-        const endTime = settings.eveningAdhkarEndTime || '22:00';
-
-        if (currentTimeStr >= startTime && currentTimeStr <= endTime) {
-          if (!progress.notifiedEvening || (nowMs - lastEveningAttempt.current > COOLDOWN && !activeNotification)) {
-            lastNotifiedMinute.current = uniqueMinuteKey;
-            lastEveningAttempt.current = nowMs;
-            setActiveNotification('evening');
-            setNotified('evening', true);
-            playNotificationSound();
-            triggerSystemNotification('evening');
-          }
-        }
-      }
-    };
-
-    const interval = setInterval(checkNotifications, 15000); // Check every 15 seconds for better precision
-    checkNotifications(); // Initial check
-
-    return () => clearInterval(interval);
-  }, [settings.notificationsEnabled, settings.morningNotificationsEnabled, settings.eveningNotificationsEnabled, settings.morningAdhkarTime, settings.morningAdhkarEndTime, settings.eveningAdhkarTime, settings.eveningAdhkarEndTime, isCategoryCompleted, isCategoryFinished, adhkarData, progress.notifiedMorning, progress.notifiedEvening, setNotified]);
 
   const { scrollYProgress } = useScroll({ container: mainRef });
 
@@ -1006,81 +832,7 @@ export const Layout: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Adhkar Notification Card - Modern Compact Design */}
-      <AnimatePresence>
-        {activeNotification && (
-          <motion.div
-            initial={{ opacity: 0, y: -100, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -100, scale: 0.9 }}
-            className="fixed top-6 left-4 right-4 z-[70] flex justify-center"
-          >
-            <div className="w-full max-w-[340px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 dark:border-white/10 overflow-hidden flex items-center p-3.5 gap-4 relative">
-              {/* Glow Background */}
-              <div className={cn(
-                "absolute -right-10 -top-10 w-24 h-24 rounded-full blur-3xl opacity-20",
-                activeNotification === 'morning' ? "bg-amber-400" : "bg-indigo-600"
-              )} />
 
-              {/* Bell Icon with Vibration */}
-              <motion.div 
-                animate={{ 
-                  rotate: [0, -15, 15, -15, 15, 0],
-                }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 0.5, 
-                  repeatDelay: 2 
-                }}
-                className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0 relative z-10",
-                  activeNotification === 'morning' ? "bg-amber-400 text-white" : "bg-indigo-600 text-white"
-                )}
-              >
-                <BellRing size={24} className="drop-shadow-sm" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900" />
-              </motion.div>
-              
-              {/* Content Section */}
-              <div className="flex-1 min-w-0 relative z-10">
-                <h3 className="text-[13px] font-black text-slate-800 dark:text-white mb-0.5 flex items-center gap-1">
-                  حان وقت {activeNotification === 'morning' ? 'أذكار الصباح' : 'أذكار المساء'}
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
-                    {activeNotification === 'morning' ? settings.morningAdhkarTime : settings.eveningAdhkarTime}
-                  </span>
-                </h3>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold leading-tight line-clamp-1">
-                  {activeNotification === 'morning' ? 'أشرقت الشمس، ابدأ يومك بذكر الله' : 'أقبل المساء، حصن نفسك بذكر الله'}
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-1.5 shrink-0 relative z-10">
-                <Link 
-                  to={activeNotification === 'morning' ? '/adhkar/morning' : '/adhkar/evening'}
-                  onClick={() => setActiveNotification(null)}
-                  className={cn(
-                    "px-4 py-1.5 rounded-xl text-[10px] font-black text-white shadow-md transition-all duration-75 active:scale-[0.85] active:opacity-70 text-center",
-                    activeNotification === 'morning' ? "bg-amber-500 hover:bg-amber-600" : "bg-indigo-600 hover:bg-indigo-700"
-                  )}
-                >
-                  ابدأ
-                </Link>
-                <button 
-                  onClick={() => {
-                    if (activeNotification === 'morning') lastMorningAttempt.current = Date.now();
-                    if (activeNotification === 'evening') lastEveningAttempt.current = Date.now();
-                    setActiveNotification(null);
-                  }}
-                  className="text-[9px] text-slate-400 dark:text-slate-500 font-black hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                >
-                  لاحقاً
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* About App Modal */}
       <AnimatePresence>

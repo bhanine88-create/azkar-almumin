@@ -164,7 +164,8 @@ const MushafPage = React.memo<{
   isVertical?: boolean;
   isBookmarked?: boolean;
   onBookmarkClick?: () => void;
-}>(({ pageNum, recitation, ayahs = [], surahName, setSelectedAyah, isVertical, isBookmarked, onBookmarkClick }) => {
+  align?: "left" | "right" | "center";
+}>(({ pageNum, recitation, ayahs = [], surahName, setSelectedAyah, isVertical, isBookmarked, onBookmarkClick, align = "center" }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -354,9 +355,11 @@ const MushafPage = React.memo<{
 
   return (
     <div
+      dir="ltr"
       className={cn(
-        "relative w-full flex items-center justify-center overflow-visible transition-colors duration-200 bg-transparent p-0 m-0",
-        isVertical ? "h-auto min-h-0 py-0" : "h-full max-h-full"
+        "relative w-full flex items-center overflow-visible transition-colors duration-200 bg-transparent p-0 m-0",
+        isVertical ? "h-auto min-h-0 py-0 justify-center" : "h-full max-h-full",
+        !isVertical && (align === "left" ? "justify-start" : align === "right" ? "justify-end" : "justify-center")
       )}
     >
       {/* Complex Background Texture for Realism and Comfort */}
@@ -405,8 +408,15 @@ const MushafPage = React.memo<{
             className={cn(
               "relative group/mushaf-page select-none cursor-pointer flex items-center justify-center transition-all duration-150 active:scale-[0.995]",
               isVertical
-                ? "w-full max-w-[650px] mx-auto h-auto my-0"
-                : "h-full max-h-full max-w-full my-0 p-0 mx-auto"
+                ? "w-full max-w-[650px] mx-auto h-auto my-0 p-0"
+                : cn(
+                    "h-full max-h-full max-w-full my-0 p-0 transition-transform duration-200",
+                    align === "left" 
+                      ? "ml-0 mr-auto" 
+                      : align === "right" 
+                      ? "mr-0 ml-auto" 
+                      : "mx-auto"
+                  )
             )}
             style={
               isVertical
@@ -474,9 +484,19 @@ const MushafPage = React.memo<{
               referrerPolicy="no-referrer"
             />
 
-            {/* Realistic Page Fold Shadows */}
-            <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/[0.03] to-transparent pointer-events-none z-10" />
-            <div className="absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-black/[0.03] to-transparent pointer-events-none z-10" />
+            {/* Realistic Book Spine & Page Crease Shadows for physical Quran effect */}
+            {align === "left" && (
+              <div className="absolute inset-y-0 left-0 w-8 sm:w-14 bg-gradient-to-r from-black/20 via-black/5 to-transparent pointer-events-none z-10" />
+            )}
+            {align === "right" && (
+              <div className="absolute inset-y-0 right-0 w-8 sm:w-14 bg-gradient-to-l from-black/20 via-black/5 to-transparent pointer-events-none z-10" />
+            )}
+            {!align && (
+              <>
+                <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/[0.03] to-transparent pointer-events-none z-10" />
+                <div className="absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-black/[0.03] to-transparent pointer-events-none z-10" />
+              </>
+            )}
           </div>
         ) : null}
 
@@ -488,7 +508,8 @@ const MushafPage = React.memo<{
     prevProps.recitation === nextProps.recitation &&
     prevProps.isVertical === nextProps.isVertical &&
     prevProps.isBookmarked === nextProps.isBookmarked &&
-    prevProps.surahName === nextProps.surahName
+    prevProps.surahName === nextProps.surahName &&
+    prevProps.align === nextProps.align
   );
 });
 
@@ -3437,7 +3458,7 @@ export const SurahDetail: React.FC = () => {
                   }
 
                   const isTajweed = mushafEdition === "tajweed";
-                  const heightOffset = focusMode || !showControls ? 10 : 70;
+                  const heightOffset = focusMode || !showControls ? 6 : 42;
                   const cardStyle: React.CSSProperties = {
                     maxHeight: `calc(100vh - ${heightOffset}px)`,
                     height: "100%",
@@ -3497,7 +3518,7 @@ export const SurahDetail: React.FC = () => {
                         return (
                           <div
                             className={cn(
-                              "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-row items-center justify-center transition-all duration-300 rounded-none border-none shadow-none gap-0",
+                              "mushaf-double-spread flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-row items-center justify-center transition-all duration-300 rounded-none border-none shadow-none gap-0",
                               settings.visualTheme === "glass"
                                 ? "bg-white/30 backdrop-blur-md"
                                 : theme === "creamyNight"
@@ -3518,7 +3539,7 @@ export const SurahDetail: React.FC = () => {
                             dir="rtl"
                           >
                             {/* Right Page (الصحيفة اليمنى) */}
-                            <div className="flex-1 h-full w-1/2 flex items-center justify-end p-0 m-0 relative overflow-hidden">
+                            <div className="mushaf-page-container flex-1 h-full w-1/2 flex items-center justify-end p-0 m-0 relative overflow-hidden">
                               <MushafPage 
                                 pageNum={rightPageNum} 
                                 recitation={recitation} 
@@ -3528,15 +3549,16 @@ export const SurahDetail: React.FC = () => {
                                 isVertical={false} 
                                 isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === rightPageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === rightPageNum))}
                                 onBookmarkClick={() => handleRibbonClick(rightPageNum)}
+                                align="left"
                               />
                             </div>
 
                             {/* Central Book Spine (فاصل طي المصحف الشريف المعتمد بين الصفحتين) */}
-                            <div className="w-[2px] h-[98%] bg-gradient-to-b from-amber-900/10 via-amber-900/40 to-amber-900/10 dark:from-teal-400/10 dark:via-teal-400/40 dark:to-teal-400/10 shrink-0 z-30 shadow-[0_0_8px_rgba(0,0,0,0.2)] rounded-full my-auto" />
+                            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-b from-amber-900/10 via-amber-900/40 to-amber-900/10 dark:from-teal-400/10 dark:via-teal-400/40 dark:to-teal-400/10 shrink-0 z-30 shadow-[0_0_6px_rgba(0,0,0,0.15)] pointer-events-none" />
 
                             {/* Left Page (الصحيفة اليسرى) */}
                             {leftPageNum <= 604 ? (
-                              <div className="flex-1 h-full w-1/2 flex items-center justify-start p-0 m-0 relative overflow-hidden">
+                              <div className="mushaf-page-container flex-1 h-full w-1/2 flex items-center justify-start p-0 m-0 relative overflow-hidden">
                                 <MushafPage 
                                   pageNum={leftPageNum} 
                                   recitation={recitation} 
@@ -3546,6 +3568,7 @@ export const SurahDetail: React.FC = () => {
                                   isVertical={false} 
                                   isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === leftPageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === leftPageNum))}
                                   onBookmarkClick={() => handleRibbonClick(leftPageNum)}
+                                  align="right"
                                 />
                               </div>
                             ) : (
@@ -3590,8 +3613,8 @@ export const SurahDetail: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="w-full max-w-full mx-auto px-1 pb-0.5 pt-0 shrink-0 z-20">
-                        <PageTafsir pageNum={pageNum} theme={theme} />
+                      <div className="w-full flex items-center justify-center py-0.5 shrink-0 z-20">
+                        <PageTafsir pageNum={pageNum} theme={theme} compact={true} />
                       </div>
                     </div>
                   );
@@ -3622,7 +3645,7 @@ export const SurahDetail: React.FC = () => {
                   <div
                     key={`vertical-page-${pageNum}-${index}`}
                     data-index={index}
-                    className="quran-vertical-page w-full flex flex-col items-center shrink-0 relative z-10 py-0 my-0 px-0 mx-0 border-b border-black/5 dark:border-white/5"
+                    className="quran-vertical-page w-full flex flex-col items-center shrink-0 relative z-10 py-0 -my-2 sm:-my-3 md:-my-4 px-0 mx-0 border-none"
                   >
                     <div className="relative w-full h-auto flex items-center justify-center p-0 m-0">
                       <MushafPage 
@@ -3635,9 +3658,10 @@ export const SurahDetail: React.FC = () => {
                         isBookmarked={(bookmark?.surah === surah?.number && bookmark?.page === pageNum) || (bookmarks?.some(b => b.surah === surah?.number && b.page === pageNum))}
                         onBookmarkClick={() => handleRibbonClick(pageNum)}
                       />
-                    </div>
-                    <div className="w-full max-w-full mx-auto px-2 py-1">
-                      <PageTafsir pageNum={pageNum} theme={theme} />
+                      {/* Floating tafsir button overlay on the bottom corner */}
+                      <div className="absolute bottom-2 left-4 z-20 pointer-events-auto">
+                        <PageTafsir pageNum={pageNum} theme={theme} compact={true} />
+                      </div>
                     </div>
                   </div>
                 );

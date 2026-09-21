@@ -3,7 +3,7 @@ import { BookOpen, ChevronUp, Loader2, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
-export const PageTafsir = ({ pageNum, theme = "light" }: { pageNum: number; theme?: string }) => {
+export const PageTafsir = ({ pageNum, theme = "light", compact = false }: { pageNum: number; theme?: string; compact?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tafsir, setTafsir] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -110,26 +110,45 @@ export const PageTafsir = ({ pageNum, theme = "light" }: { pageNum: number; them
   return (
     <>
       {/* Inline Trigger Button under page */}
-      <div className={cn(
-        "w-full rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 border shadow-xs",
-        currentTheme.cardBg,
-        currentTheme.border
-      )}>
-        <button 
-          onClick={() => setIsOpen(true)}
-          className={cn(
-            "w-full flex items-center justify-between px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold transition-colors",
-            currentTheme.heading,
-            currentTheme.btnHover
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <BookOpen size={16} />
-            <span>شرح ومعاني كلمات الصفحة {pageNum}</span>
-          </div>
-          <ChevronUp size={16} />
-        </button>
-      </div>
+      {compact ? (
+        <div className="flex items-center justify-center my-0.5">
+          <button
+            onClick={() => setIsOpen(true)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs transition-all hover:scale-105 active:scale-95",
+              currentTheme.cardBg,
+              currentTheme.border,
+              currentTheme.heading,
+              currentTheme.btnHover
+            )}
+          >
+            <BookOpen size={13} />
+            <span>تفسير ص {pageNum}</span>
+            <ChevronUp size={13} />
+          </button>
+        </div>
+      ) : (
+        <div className={cn(
+          "w-full rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 border shadow-xs",
+          currentTheme.cardBg,
+          currentTheme.border
+        )}>
+          <button 
+            onClick={() => setIsOpen(true)}
+            className={cn(
+              "w-full flex items-center justify-between px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold transition-colors",
+              currentTheme.heading,
+              currentTheme.btnHover
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen size={16} />
+              <span>شرح ومعاني كلمات الصفحة {pageNum}</span>
+            </div>
+            <ChevronUp size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Floating Bottom Sheet Overlay (Appears on top of / فوق the page) */}
       <AnimatePresence>

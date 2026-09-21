@@ -40,6 +40,7 @@ export const PrayerNotificationManager: React.FC = () => {
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
   const lastNotifiedRef = useRef<Record<string, string>>({});
   const lastRandomTimestampRef = useRef<number>(Date.now());
+  const mountTimeRef = useRef<number>(Date.now());
 
   // 1. Initialize Capacitor notification channels and deep link navigation on mount
   useEffect(() => {
@@ -297,13 +298,28 @@ export const PrayerNotificationManager: React.FC = () => {
       const currentTimeStr = `${currentH.toString().padStart(2, '0')}:${currentM.toString().padStart(2, '0')}`;
       const nowDateStr = `${pY}-${pM}-${pD} ${currentTimeStr}`;
 
+      const shouldTriggerNow = (key: string, targetTime: string): boolean => {
+        if (targetTime !== currentTimeStr) return false;
+        
+        // If app was opened within the last 10 seconds, mark as already notified for this minute
+        // to strictly prevent notifications/alerts on app open
+        if (Date.now() - mountTimeRef.current < 10000) {
+          lastNotifiedRef.current[key] = nowDateStr;
+          return false;
+        }
+
+        if (lastNotifiedRef.current[key] === nowDateStr) return false;
+
+        lastNotifiedRef.current[key] = nowDateStr;
+        return true;
+      };
+
       // 1. Prayer Notifications
       if (prayerTimes && settings.prayerNotificationsEnabled) {
         Object.entries(prayerTimes).forEach(([key, time]) => {
           if (PRAYER_NAMES[key] && settings.prayerNotificationSettings?.[key]) {
-            if (time === currentTimeStr && lastNotifiedRef.current[key] !== nowDateStr) {
+            if (shouldTriggerNow(key, time as string)) {
               triggerNotification(key, time as string);
-              lastNotifiedRef.current[key] = nowDateStr;
             }
           }
         });
@@ -316,35 +332,40 @@ export const PrayerNotificationManager: React.FC = () => {
       const isEveningFinished = isCategoryFinished('evening', eveningItems);
 
       // 2. Morning Adhkar Primary Notification
-      if (settings.morningNotificationsEnabled && !isCategoryCompleted('morning') && !isMorningFinished && settings.morningAdhkarTime === currentTimeStr && lastNotifiedRef.current['morning-adhkar'] !== nowDateStr) {
-        triggerMorningNotification();
-        lastNotifiedRef.current['morning-adhkar'] = nowDateStr;
+      if (settings.morningNotificationsEnabled && !isCategoryCompleted('morning') && !isMorningFinished) {
+        if (shouldTriggerNow('morning-adhkar', settings.morningAdhkarTime || '06:00')) {
+          triggerMorningNotification();
+        }
       }
 
       // 3. Morning Adhkar Follow-up Notification (if unread)
       const morningEndTime = settings.morningAdhkarEndTime || '10:00';
-      if (settings.morningNotificationsEnabled && settings.morningAdhkarFollowupEnabled && !isCategoryCompleted('morning') && !isMorningFinished && morningEndTime === currentTimeStr && lastNotifiedRef.current['morning-adhkar-followup'] !== nowDateStr) {
-        triggerMorningFollowupNotification();
-        lastNotifiedRef.current['morning-adhkar-followup'] = nowDateStr;
+      if (settings.morningNotificationsEnabled && settings.morningAdhkarFollowupEnabled && !isCategoryCompleted('morning') && !isMorningFinished) {
+        if (shouldTriggerNow('morning-adhkar-followup', morningEndTime)) {
+          triggerMorningFollowupNotification();
+        }
       }
 
       // 4. Evening Adhkar Primary Notification
-      if (settings.eveningNotificationsEnabled && !isCategoryCompleted('evening') && !isEveningFinished && settings.eveningAdhkarTime === currentTimeStr && lastNotifiedRef.current['evening-adhkar'] !== nowDateStr) {
-        triggerEveningNotification();
-        lastNotifiedRef.current['evening-adhkar'] = nowDateStr;
+      if (settings.eveningNotificationsEnabled && !isCategoryCompleted('evening') && !isEveningFinished) {
+        if (shouldTriggerNow('evening-adhkar', settings.eveningAdhkarTime || '17:00')) {
+          triggerEveningNotification();
+        }
       }
 
       // 5. Evening Adhkar Follow-up Notification (if unread)
       const eveningEndTime = settings.eveningAdhkarEndTime || '22:00';
-      if (settings.eveningNotificationsEnabled && settings.eveningAdhkarFollowupEnabled && !isCategoryCompleted('evening') && !isEveningFinished && eveningEndTime === currentTimeStr && lastNotifiedRef.current['evening-adhkar-followup'] !== nowDateStr) {
-        triggerEveningFollowupNotification();
-        lastNotifiedRef.current['evening-adhkar-followup'] = nowDateStr;
+      if (settings.eveningNotificationsEnabled && settings.eveningAdhkarFollowupEnabled && !isCategoryCompleted('evening') && !isEveningFinished) {
+        if (shouldTriggerNow('evening-adhkar-followup', eveningEndTime)) {
+          triggerEveningFollowupNotification();
+        }
       }
 
       // 6. Sunnah Reminder Notification
-      if (settings.sunnahReminderEnabled && settings.sunnahReminderTime === currentTimeStr && lastNotifiedRef.current['sunnah-reminder'] !== nowDateStr) {
-        triggerSunnahReminderNotification();
-        lastNotifiedRef.current['sunnah-reminder'] = nowDateStr;
+      if (settings.sunnahReminderEnabled) {
+        if (shouldTriggerNow('sunnah-reminder', settings.sunnahReminderTime || '21:30')) {
+          triggerSunnahReminderNotification();
+        }
       }
 
       // 7. Custom Reminders Check
@@ -361,15 +382,14 @@ export const PrayerNotificationManager: React.FC = () => {
             const diff = nowTimeMinutes - startTimeMinutes;
             if (diff >= 0 && diff % reminder.interval === 0) {
               const notificationKey = `custom-${reminder.id}`;
-              if (lastNotifiedRef.current[notificationKey] !== nowDateStr) {
+              if (shouldTriggerNow(notificationKey, currentTimeStr)) {
                 triggerCustomNotification(reminder);
-                lastNotifiedRef.current[notificationKey] = nowDateStr;
               }
             }
           } else {
-            if (reminder.time === currentTimeStr && lastNotifiedRef.current[`custom-${reminder.id}`] !== nowDateStr) {
+            const notificationKey = `custom-${reminder.id}`;
+            if (shouldTriggerNow(notificationKey, reminder.time)) {
               triggerCustomNotification(reminder);
-              lastNotifiedRef.current[`custom-${reminder.id}`] = nowDateStr;
             }
           }
         }
