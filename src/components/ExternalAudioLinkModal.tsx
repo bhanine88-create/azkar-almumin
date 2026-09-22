@@ -147,6 +147,9 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               className="w-full py-3.5 px-4 rounded-2xl bg-[#feb10b] hover:bg-[#fec84b] active:scale-[0.98] text-[#042418] font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#feb10b]/20 transition-all cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />

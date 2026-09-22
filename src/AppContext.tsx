@@ -147,7 +147,7 @@ export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
   adhkarWallpaperPattern: 'islamic',
   adhkarParticlesEnabled: true,
   adhkarViewMode: 'list',
-  hadithViewMode: 'single',
+  hadithViewMode: 'list',
   adhkarAutoAdvance: true,
   adhkarCategoryThemes: {
     morning: 'classicGold',

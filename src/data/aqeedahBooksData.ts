@@ -59,9 +59,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'واظب يومياً على دعاء النبي ﷺ للتحصين: «اللهم إني أعوذ بك أن أشرك بك وأنا أعلم، وأستغفرك لما لا أعلم».',
     readOnlineUrl: 'https://shamela.ws/book/7454',
-    audioListenUrl: 'https://ar.islamway.net/collection/275/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/275',
-    audioSourceLabel: 'شرح صوتي مسموع - سماحة الشيخ عبد العزيز بن باز رحمه الله',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/83/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/83/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF',
+    audioSourceLabel: 'شرح صوتي مسموع - الموقع الرسمي لسماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'emerald'
   },
   {
@@ -101,9 +101,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'راجع مع أهلك وأبنائك معاني أسئلة القبر الثلاثة وأدلتها حتى ترسخ في القلوب كرسوخ الجبال.',
     readOnlineUrl: 'https://shamela.ws/book/10574',
-    audioListenUrl: 'https://ar.islamway.net/collection/274/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/274',
-    audioSourceLabel: 'شرح صوتي مسموع - سماحة الشيخ ابن باز رحمه الله',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/98/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/98/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioSourceLabel: 'شرح صوتي مسموع - الموقع الرسمي لسماحة الشيخ ابن باز رحمه الله',
     colorTheme: 'amber'
   },
   {
@@ -143,9 +143,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'تأمل عند قراءة سورة يونس والزمر كيف كان كفار مكة يقرون بالربوبية، وجدد إخلاصك في كل دعاء ونداء.',
     readOnlineUrl: 'https://shamela.ws/book/10575',
-    audioListenUrl: 'https://ar.islamway.net/collection/343/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%B9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/343',
-    audioSourceLabel: 'شرح صوتي مسموع - سماحة الشيخ ابن باز رحمه الله',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/99/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/99/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA',
+    audioSourceLabel: 'شرح متون التوحيد والقواعد - الموقع الرسمي لسماحة الشيخ ابن باز رحمه الله',
     colorTheme: 'teal'
   },
   {
@@ -186,10 +186,10 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
       'العبرة في العلم بالخشية والاتباع، لا بكثرة الكلام والتقعر في الجدل.'
     ],
     actionableStep: 'احرص على أداء الصلوات في جماعة، وادعُ لولاة أمر المسلمين بالصلاح والتوفيق والبطانة الصالحة.',
-    readOnlineUrl: 'https://binbaz.org.sa/books/78',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
-    audioSourceLabel: 'شرح صوتي كامل مسموع - سماحة الشيخ عبد العزيز بن باز رحمه الله',
+    readOnlineUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioSourceLabel: 'شرح صوتي كامل مسموع - الموقع الرسمي لسماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'blue'
   },
   {
@@ -230,9 +230,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'اجعل لسانك رطباً بـ «سبحان الله وبحمده سبحان الله العظيم» مستحضراً تعظيم الله وتنزيهه في كل لحظة.',
     readOnlineUrl: 'https://shamela.ws/book/1681/7361',
-    audioListenUrl: 'https://ar.islamway.net/collection/11833/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D9%85%D9%86-%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/11833',
-    audioSourceLabel: 'شرح صوتي مسموع لكتاب التوحيد من صحيح البخاري - الشيخ عبد العزيز الراجحي',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/87/%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/87/%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioSourceLabel: 'شرح كتاب التوحيد من صحيح البخاري - سماحة الشيخ ابن باز رحمه الله',
     colorTheme: 'purple'
   },
 
@@ -276,9 +276,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'طهر لسانك وقلبك من انتقاص أي صحابي أو عالم من علماء المسلمين، وتعبد الله بسلامة الصدر للمؤمنين.',
     readOnlineUrl: 'https://shamela.ws/book/10582',
-    audioListenUrl: 'https://ar.islamway.net/collection/276/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D9%88%D8%A7%D8%B3%D8%B7%D9%8A%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/276',
-    audioSourceLabel: 'شرح العقيدة الواسطية - سماحة الشيخ ابن باز والشيخ ابن عثيمين',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/95/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D9%88%D8%A7%D8%B3%D8%B7%D9%8A%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/95/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D9%88%D8%A7%D8%B3%D8%B7%D9%8A%D8%A9',
+    audioSourceLabel: 'شرح العقيدة الواسطية - الموقع الرسمي لسماحة الشيخ ابن باز رحمه الله',
     colorTheme: 'blue'
   },
   {
@@ -319,9 +319,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'راقب مستوى إيمانك يومياً؛ فإذا أحسست بفتور فبادر إلى الذكر، وتلاوة القرآن، وصدقة السر، وبر الوالدين.',
     readOnlineUrl: 'https://shamela.ws/book/1253',
-    audioListenUrl: 'https://ar.islamway.net/collection/6045/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%A5%D9%8A%D9%85%D8%A7%D9%86-%D9%84%D8%A7%D8%A8%D9%86-%D8%AA%D9%8A%D9%85%D9%8A%D8%A9',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/6045',
-    audioSourceLabel: 'شرح كتاب الإيمان لابن تيمية - معالي الشيخ صالح آل الشيخ',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/45/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%82%D8%A7%D9%85%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/45/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%82%D8%A7%D9%85%D8%A9',
+    audioSourceLabel: 'شرح أصول الإيمان والاستقامة - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'teal'
   },
   {
@@ -363,9 +363,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'احفظ قاعدة الطحاوي: «ولا تثبت قدم الإسلام إلا على ظهر التسليم والاستسلام»، وعوّد عقلك الخضوع لحكم الوحي.',
     readOnlineUrl: 'https://shamela.ws/book/10580',
-    audioListenUrl: 'https://ar.islamway.net/collection/344/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%B7%D8%AD%D8%A7%D9%88%D9%8A%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%B5%D8%A7%D9%84%D8%AD-%D8%A7%D9%84%D9%81%D9%88%D8%B2%D8%A7%D9%86',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/344',
-    audioSourceLabel: 'شرح صوتي مسموع للعقيدة الطحاوية - الشيخ صالح الفوزان',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/51/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%B7%D8%AD%D8%A7%D9%88%D9%8A%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/51/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%B7%D8%AD%D8%A7%D9%88%D9%8A%D8%A9',
+    audioSourceLabel: 'شرح العقيدة الطحاوية - الموقع الرسمي لسماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'emerald'
   },
   {
@@ -406,9 +406,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'إذا قرأت صفة من صفات الله في القرآن فأثبتها بقلبك مستحضراً عظمته دون أن تمثلها بصفات المخلوقين.',
     readOnlineUrl: 'https://shamela.ws/book/10581',
-    audioListenUrl: 'https://ar.islamway.net/collection/280/%D8%B4%D8%B1%D8%AD-%D9%84%D9%85%D8%B9%D8%A9-%D8%A7%D9%84%D8%A7%D8%B9%D8%AA%D9%82%D8%A7%D8%AF-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%B9%D8%AB%D9%8A%D9%85%D9%8A%D9%86',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/280',
-    audioSourceLabel: 'شرح صوتي مسموع لمعة الاعتقاد - فضيلة الشيخ ابن عثيمين رحمه الله',
+    audioListenUrl: 'https://binbaz.org.sa/audios/kind/1',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/kind/1',
+    audioSourceLabel: 'شروح متون العقيدة - المكتبة الصوتية الرسمية لسماحة الشيخ ابن باز',
     colorTheme: 'amber'
   },
 
@@ -452,9 +452,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'حدد اليوم ذنباً خفياً يراودك في خلواتك، واعقد العزم على تركه فوراً لله واستبداله بركعتين ودعاء صادق.',
     readOnlineUrl: 'https://shamela.ws/book/10531',
-    audioListenUrl: 'https://ar.islamway.net/collection/14022/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AF%D8%A7%D8%A1-%D9%88%D8%A7%D9%84%D8%AF%D9%88%D8%A7%D8%A1-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%B9%D8%A8%D8%AF-%D8%A7%D9%84%D8%B1%D8%B2%D8%A7%D9%82-%D8%A7%D9%84%D8%A8%D8%AF%D8%B1',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/14022',
-    audioSourceLabel: 'شرح صوتي مسموع لكتاب الداء والدواء - الشيخ عبد الرزاق البدر',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/19/%D8%A7%D9%84%D8%AC%D9%88%D8%A7%D8%A8-%D8%A7%D9%84%D9%83%D8%A7%D9%81%D9%8A',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/19/%D8%A7%D9%84%D8%AC%D9%88%D8%A7%D8%A8-%D8%A7%D9%84%D9%83%D8%A7%D9%81%D9%8A',
+    audioSourceLabel: 'شرح كتاب الجواب الكافي (الداء والدواء) - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'rose'
   },
   {
@@ -495,9 +495,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'عند نزول أي خبر مزعج، عوّد لسانك أن يسبق عاطفتك بقول: «إنا لله وإنا إليه راجعون، قدر الله وما شاء فعل، الحمد لله على كل حال».',
     readOnlineUrl: 'https://shamela.ws/book/10532',
-    audioListenUrl: 'https://ar.islamway.net/collection/15729/%D9%81%D9%88%D8%A7%D8%A6%D8%AF-%D9%85%D9%86-%D9%83%D8%AA%D8%A7%D8%A8-%D8%B9%D8%AF%D8%A9-%D8%A7%D9%84%D8%B5%D8%A7%D8%A8%D8%B1%D9%8A%D9%86',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/15729',
-    audioSourceLabel: 'فوائد ودروس مسموعة من عدة الصابرين - الشيخ عبد الرزاق البدر',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/42/%D8%A7%D9%84%D9%88%D8%A7%D8%A8%D9%84-%D8%A7%D9%84%D8%B5%D9%8A%D8%A8-%D9%85%D9%86-%D8%A7%D9%84%D9%83%D9%84%D9%85-%D8%A7%D9%84%D8%B7%D9%8A%D8%A8-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/42/%D8%A7%D9%84%D9%88%D8%A7%D8%A8%D9%84-%D8%A7%D9%84%D8%B5%D9%8A%D8%A8-%D9%85%D9%86-%D8%A7%D9%84%D9%83%D9%84%D9%85-%D8%A7%D9%84%D8%B7%D9%8A%D8%A8-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioSourceLabel: 'دروس أعمال القلوب والوابل الصيب - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'amber'
   },
   {
@@ -538,9 +538,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'طالع فهرس الكبائر، وتفقد سجلك مع حقوق الله وحقوق العباد، وتحلل من المظالم واستغفر ربك على الفور.',
     readOnlineUrl: 'https://shamela.ws/book/10540',
-    audioListenUrl: 'https://ar.islamway.net/collection/4996/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D9%83%D8%A8%D8%A7%D8%A6%D8%B1-%D9%84%D9%84%D8%B0%D9%87%D8%A8%D9%8A',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4996',
-    audioSourceLabel: 'شرح صوتي مسموع لكتاب الكبائر للإمام الذهبي',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/127/%D8%A7%D9%84%D9%83%D8%A8%D8%A7%D9%89%D8%B1',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/127/%D8%A7%D9%84%D9%83%D8%A8%D8%A7%D9%89%D8%B1',
+    audioSourceLabel: 'شرح كتاب الكبائر للإمام الذهبي - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'rose'
   },
 
@@ -583,9 +583,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'تعلم صفة صلاة النبي ﷺ كما في كتاب الطهارة والصلاة وطبقها في صلاتك اليوم بدقة وطمأنينة.',
     readOnlineUrl: 'https://shamela.ws/book/12028',
-    audioListenUrl: 'https://ar.islamway.net/collection/5092/%D8%B4%D8%B1%D8%AD-%D9%85%D9%86%D9%87%D8%AC-%D8%A7%D9%84%D8%B3%D8%A7%D9%84%D9%83%D9%8A%D9%86-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%B9%D8%A8%D8%AF-%D8%A7%D9%84%D9%84%D9%87-%D8%A8%D9%86-%D8%AC%D8%A8%D8%B1%D9%8A%D9%86',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/5092',
-    audioSourceLabel: 'شرح صوتي لمنهج السالكين - العلامة عبد الله بن جبرين رحمه الله',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/1/%D8%B4%D8%B1%D8%AD-%D8%A8%D9%84%D9%88%D8%BA-%D8%A7%D9%84%D9%85%D8%B1%D8%A7%D9%85-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/1/%D8%B4%D8%B1%D8%AD-%D8%A8%D9%84%D9%88%D8%BA-%D8%A7%D9%84%D9%85%D8%B1%D8%A7%D9%85-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioSourceLabel: 'شرح أحكام الفقه والعبادات - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'purple'
   },
   {
@@ -626,9 +626,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'اقرأ يومياً صفحة من القرآن مع مطالعة تفسيرها من تفسير السعدي، ودون فائدة قلبية تطبقها في يومك.',
     readOnlineUrl: 'https://shamela.ws/book/23635',
-    audioListenUrl: 'https://ar.islamway.net/collection/10667/%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D8%B3%D8%B9%D8%AF%D9%8A-%D8%A7%D9%84%D9%85%D8%B3%D9%85%D9%88%D8%B9',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/10667',
-    audioSourceLabel: 'تسجيلات مسموعة لتفسير السعدي كاملاً',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/7/%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%82%D8%B1%D8%A7%D9%86-%D8%A7%D9%84%D8%B9%D8%B8%D9%8A%D9%85-%D8%A7%D8%A8%D9%86-%D9%83%D8%AB%D9%8A%D8%B1',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/7/%D8%AA%D9%81%D8%B3%D9%8A%D8%B1-%D8%A7%D9%84%D9%82%D8%B1%D8%A7%D9%86-%D8%A7%D9%84%D8%B9%D8%B8%D9%8A%D9%85-%D8%A7%D8%A8%D9%86-%D9%83%D8%AB%D9%8A%D8%B1',
+    audioSourceLabel: 'دروس التفسير والقرآن العظيم - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'emerald'
   },
   {
@@ -670,9 +670,9 @@ export const AQEEDAH_BOOKS_LIBRARY: AqeedahBookSummary[] = [
     ],
     actionableStep: 'احفظ وصية النبي ﷺ لابن عباس: «احفظ الله تجده تجاهك، تعرف إلى الله في الرخاء يعرفك في الشدة»، ورددها في نفسك دائماً.',
     readOnlineUrl: 'https://shamela.ws/book/10777',
-    audioListenUrl: 'https://ar.islamway.net/collection/286/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%B9%D9%8A%D9%86-%D8%A7%D9%84%D9%86%D9%88%D9%88%D9%8A%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%B9%D8%AB%D9%8A%D9%85%D9%8A%D9%86',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/286',
-    audioSourceLabel: 'شرح صوتي مسموع للأربعين النووية - فضيلة الشيخ ابن عثيمين رحمه الله',
+    audioListenUrl: 'https://binbaz.org.sa/audios/series/29/%D8%B1%D9%8A%D8%A7%D8%B6-%D8%A7%D9%84%D8%B5%D8%A7%D9%84%D8%AD%D9%8A%D9%86-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioDownloadUrl: 'https://binbaz.org.sa/audios/series/29/%D8%B1%D9%8A%D8%A7%D8%B6-%D8%A7%D9%84%D8%B5%D8%A7%D9%84%D8%AD%D9%8A%D9%86-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+    audioSourceLabel: 'شرح أحاديث جوامع الكلم والرياض - سماحة الشيخ عبد العزيز بن باز رحمه الله',
     colorTheme: 'blue'
   }
 ];

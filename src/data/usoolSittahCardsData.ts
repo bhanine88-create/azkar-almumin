@@ -71,9 +71,9 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       'العلم النافع نور يلقيه الله في قلب العبد المنيب المخلص، وليس بكثرة الشقشقة والجدل.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
-    audioLabel: 'شرح الأصول الستة - الشيخ عبد العزيز بن باز رحمه الله'
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioLabel: 'شرح الأصول الستة - الموقع الرسمي لسماحة الشيخ عبد العزيز بن باز رحمه الله'
   },
   {
     id: 'usool-1-ikhlas',
@@ -115,8 +115,8 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       'التوحيد عزة وحرية؛ يخلص قلبك من رق المخلوقين ويربطك بالخالق الغني الحميد.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
     audioLabel: 'شرح الأصل الأول - سماحة الشيخ ابن باز'
   },
   {
@@ -159,8 +159,8 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       'لن تجتمع قلوب هذه الأمة ولن يعلو شأنها إلا بما اجتمعت عليه أول مرة: التوحيد الصافي واتباع النبي ﷺ.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
     audioLabel: 'شرح الأصل الثاني - سماحة الشيخ ابن باز'
   },
   {
@@ -203,8 +203,8 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       'الأمن في الأوطان والصحة في الأبدان وقوت اليوم هي حيازة الدنيا بحذافيرها، والصبر على مشقة التنظيم خير من نار الفوضى.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
     audioLabel: 'شرح الأصل الثالث - سماحة الشيخ ابن باز'
   },
   {
@@ -247,8 +247,8 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       'العلم نور يقذفه الله في القلب؛ فمن طلب العلم ليماري به السفهاء أو يجاري به العلماء كبه الله في النار، فطوبى للمخلصين.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
     audioLabel: 'شرح الأصل الرابع - سماحة الشيخ ابن باز'
   },
   {
@@ -291,8 +291,8 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       'ليس الولي من خرق العوائد، وإنما الولي من ثبت على أوامر ربه ونهيه في الرضا والغضب.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
     audioLabel: 'شرح الأصل الخامس - سماحة الشيخ ابن باز'
   },
   {
@@ -335,8 +335,8 @@ export const USOOL_SITTAH_ITEMS: UsoolSittahCardItem[] = [
     ],
     heartPause:
       '«تركت فيكم ما إن تمسكتم به لن تضلوا بعدي أبداً: كتاب الله وسنتي».. فالاعتصام بالوحي نجاة من كل فتنة وشبهة.',
-    audioListenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-    audioDownloadUrl: 'https://ar.islamway.net/collection/4252',
+    audioListenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+    audioDownloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
     audioLabel: 'شرح الأصل السادس - سماحة الشيخ ابن باز'
   }
 ];
