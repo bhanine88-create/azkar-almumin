@@ -236,124 +236,127 @@ export const AqeedahHub: React.FC = () => {
     switch (article.category) {
       case 'usool_sittah':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/4252',
-          label: 'شرح الأصول الستة - سماحة الشيخ عبد العزيز بن باز رحمه الله'
+          listenUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+          downloadUrl: 'https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9',
+          label: 'شرح الأصول الستة - الموقع الرسمي لسماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'usool_thalatha':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/274/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/274',
+          listenUrl: 'https://binbaz.org.sa/audios/series/98/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/98/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
           label: 'شرح الأصول الثلاثة وأدلتها - سماحة الشيخ ابن باز رحمه الله'
         };
       case 'qawaid_arbaa':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/343/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%B9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/343',
-          label: 'شرح القواعد الأربع في التوحيد - سماحة الشيخ ابن باز رحمه الله'
+          listenUrl: 'https://binbaz.org.sa/audios/series/99/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/99/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA',
+          label: 'شرح متون التوحيد والقواعد - سماحة الشيخ ابن باز رحمه الله'
         };
       case 'kashf_shubuhat':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/342/%D8%B4%D8%B1%D8%AD-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/342',
+          listenUrl: 'https://binbaz.org.sa/audios/series/99/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/99/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D9%83%D8%B4%D9%81-%D8%A7%D9%84%D8%B4%D8%A8%D9%87%D8%A7%D8%AA',
           label: 'شرح كشف الشبهات - سماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'kitab_tawheed':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/275/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/275',
+          listenUrl: 'https://binbaz.org.sa/audios/series/83/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/83/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF',
           label: 'شرح كتاب التوحيد - سماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'aqeedah_wasitiyyah':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/276/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D9%88%D8%A7%D8%B3%D8%B7%D9%8A%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/276',
-          label: 'شرح العقيدة الواسطية - سماحة الشيخ ابن باز والشيخ ابن عثيمين'
+          listenUrl: 'https://binbaz.org.sa/audios/series/95/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D9%88%D8%A7%D8%B3%D8%B7%D9%8A%D8%A9',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/95/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D9%88%D8%A7%D8%B3%D8%B7%D9%8A%D8%A9',
+          label: 'شرح العقيدة الواسطية - سماحة الشيخ ابن باز رحمه الله'
         };
       case 'tahawiyyah_lumaa':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/344/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%B7%D8%AD%D8%A7%D9%88%D9%8A%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%B5%D8%A7%D9%84%D8%AD-%D8%A7%D9%84%D9%81%D9%88%D8%B2%D8%A7%D9%86',
-          downloadUrl: 'https://ar.islamway.net/collection/344',
-          label: 'شروح الطحاوية ولمعة الاعتقاد - الشيخ الفوزان والشيخ ابن عثيمين'
+          listenUrl: 'https://binbaz.org.sa/audios/series/51/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%B7%D8%AD%D8%A7%D9%88%D9%8A%D8%A9',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/51/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%B7%D8%AD%D8%A7%D9%88%D9%8A%D8%A9',
+          label: 'شرح العقيدة الطحاوية - سماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'heart_purification':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/14022/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AF%D8%A7%D8%A1-%D9%88%D8%A7%D9%84%D8%AF%D9%88%D8%A7%D8%A1-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%B9%D8%A8%D8%AF-%D8%A7%D9%84%D8%B1%D8%B2%D8%A7%D9%82-%D8%A7%D9%84%D8%A8%D8%AF%D8%B1',
-          downloadUrl: 'https://ar.islamway.net/collection/14022',
-          label: 'أعمال القلوب والداء والدواء - الشيخ عبد الرزاق البدر'
+          listenUrl: 'https://binbaz.org.sa/audios/series/19/%D8%A7%D9%84%D8%AC%D9%88%D8%A7%D8%A8-%D8%A7%D9%84%D9%83%D8%A7%D9%81%D9%8A',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/19/%D8%A7%D9%84%D8%AC%D9%88%D8%A7%D8%A8-%D8%A7%D9%84%D9%83%D8%A7%D9%81%D9%8A',
+          label: 'أعمال القلوب والجواب الكافي - سماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'nullifiers':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/341/%D8%B4%D8%B1%D8%AD-%D9%86%D9%88%D8%A7%D9%82%D8%B6-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/341',
-          label: 'شرح نواقض الإسلام - سماحة الشيخ عبد العزيز بن باز رحمه الله'
+          listenUrl: 'https://binbaz.org.sa/audios/series/83/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/83/%D8%B4%D8%B1%D8%AD-%D9%83%D8%AA%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA%D9%88%D8%AD%D9%8A%D8%AF',
+          label: 'بيان نواقض الإسلام والتوحيد - سماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'names_attributes':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/279/%D8%A7%D9%84%D9%82%D9%88%D8%A7%D8%B9%D8%AF-%D8%A7%D9%84%D9%85%D8%AB%D9%84%D9%89-%D9%81%D9%8A-%D8%B5%D9%81%D8%A7%D8%AA-%D8%A7%D9%84%D9%84%D9%87-%D9%88%D8%A3%D8%B3%D9%85%D8%A7%D8%A6%D9%87-%D8%A7%D9%84%D8%AD%D8%B3%D9%86%D9%89-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%B9%D8%AB%D9%8A%D9%85%D9%8A%D9%86',
-          downloadUrl: 'https://ar.islamway.net/collection/279',
-          label: 'القواعد المثلى في أسماء الله وصفاته - فضيلة الشيخ ابن عثيمين'
+          listenUrl: 'https://binbaz.org.sa/audios/series/87/%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/87/%D8%B5%D8%AD%D9%8A%D8%AD-%D8%A7%D9%84%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+          label: 'إثبات الأسماء والصفات - سماحة الشيخ عبد العزيز بن باز رحمه الله'
         };
       case 'pillars':
         return {
-          listenUrl: 'https://ar.islamway.net/collection/274/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2',
-          downloadUrl: 'https://ar.islamway.net/collection/274',
+          listenUrl: 'https://binbaz.org.sa/audios/series/98/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
+          downloadUrl: 'https://binbaz.org.sa/audios/series/98/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A7%D9%84%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D9%88%D9%84',
           label: 'شرح أصول الإيمان والإسلام - سماحة الشيخ ابن باز رحمه الله'
         };
       default:
         return {
-          listenUrl: 'https://ar.islamway.net/lessons/category/53/%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9',
-          downloadUrl: 'https://ar.islamway.net/lessons/category/53/%D8%A7%D9%84%D8%B9%D9%82%D9%8A%D8%AF%D8%A9-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9',
-          label: 'شروح ودروس العقيدة والتوحيد - كبار العلماء (طريق الإسلام)'
+          listenUrl: 'https://binbaz.org.sa/audios/kind/1',
+          downloadUrl: 'https://binbaz.org.sa/audios/kind/1',
+          label: 'فهرس شروح كتب العقيدة والتوحيد - الموقع الرسمي لسماحة الشيخ ابن باز'
         };
     }
   }, []);
 
-  // Dedicated robust handler for external audio links
-  const handleOpenExternalAudio = useCallback((
+  // Dedicated helper function to safely open external links in a new browser window/tab
+  const openExternalUrl = useCallback((
     url: string,
-    title: string,
-    sourceLabel: string,
-    type: 'listen' | 'download',
+    title: string = 'رابط خارجي',
+    sourceLabel: string = 'المكتبة العلمية',
+    type: 'listen' | 'download' | 'read' = 'listen',
     e?: React.MouseEvent
   ) => {
-    // Only stop propagation so parent card click handlers do not fire
     if (e) {
       e.stopPropagation();
-      // DO NOT call e.preventDefault();
-      // Leaving native navigation active allows <a href="..." target="_blank"> to open
-      // directly in the user's default browser window without popup blocker issues.
+      e.preventDefault(); // Prevent default anchor navigation inside iframe/webview
     }
 
     if (!url) return;
 
-    // Direct window open fallback when triggered by non-anchor click or programmatically
-    if (!e || !(e.currentTarget instanceof HTMLAnchorElement)) {
-      try {
-        const win = window.open(url, '_blank', 'noopener,noreferrer');
-        if (!win || win.closed || typeof win.closed === 'undefined') {
-          setExternalAudioModal({
-            isOpen: true,
-            title,
-            sourceLabel,
-            url,
-            type
-          });
-        }
-      } catch (err) {
-        console.warn('Direct window.open blocked by environment:', err);
+    // Use window.open with '_blank' and 'noopener,noreferrer' to open safely in external browser
+    try {
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        // Fallback: If popup was blocked or window.open failed, show modal with direct link
         setExternalAudioModal({
           isOpen: true,
           title,
           sourceLabel,
           url,
-          type
+          type: type === 'read' ? 'listen' : type
         });
       }
+    } catch (err) {
+      console.warn('Direct window.open blocked by environment:', err);
+      setExternalAudioModal({
+        isOpen: true,
+        title,
+        sourceLabel,
+        url,
+        type: type === 'read' ? 'listen' : type
+      });
     }
 
-    showToast(type === 'listen' ? 'جاري فتح رابط الاستماع في المتصفح...' : 'جاري فتح رابط التحميل في المتصفح...');
+    const toastMsg = type === 'listen' 
+      ? 'جاري فتح رابط الاستماع في المتصفح الخارجي...'
+      : type === 'download'
+      ? 'جاري فتح رابط التحميل في المتصفح الخارجي...'
+      : 'جاري فتح رابط القراءة والتصفح في المتصفح الخارجي...';
+    showToast(toastMsg);
   }, [showToast]);
+
+  const handleOpenExternalAudio = openExternalUrl;
 
   // Close modal
   const handleCloseArticle = useCallback(() => {
@@ -1296,7 +1299,8 @@ export const AqeedahHub: React.FC = () => {
                             href={book.readOnlineUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
+                            onClick={(e) => openExternalUrl(book.readOnlineUrl!, book.title, 'المكتبة الشاملة / المصدر الرقمي', 'read', e)}
+                            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <span>تصفح وقراءة</span>
                             <ExternalLink className="w-3 h-3" />

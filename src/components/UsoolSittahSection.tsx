@@ -72,29 +72,17 @@ export const UsoolSittahSection: React.FC<UsoolSittahSectionProps> = ({
     type: 'listen' | 'download',
     e?: React.MouseEvent
   ) => {
-    // Only stop propagation so parent card click handlers do not fire
     if (e) {
       e.stopPropagation();
-      // DO NOT call e.preventDefault();
-      // This ensures <a href="..." target="_blank"> opens directly in the user's default browser!
+      e.preventDefault(); // Prevent default anchor navigation inside iframe/webview
     }
     if (!url) return;
 
-    // Fallback if not an anchor element or programmatic call
-    if (!e || !(e.currentTarget instanceof HTMLAnchorElement)) {
-      try {
-        const win = window.open(url, '_blank', 'noopener,noreferrer');
-        if (!win || win.closed || typeof win.closed === 'undefined') {
-          setExternalAudioModal({
-            isOpen: true,
-            title,
-            sourceLabel,
-            url,
-            type
-          });
-        }
-      } catch (err) {
-        console.warn('Window open error:', err);
+    // Use window.open with '_blank' and 'noopener,noreferrer' to open safely in external browser
+    try {
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        // Fallback modal
         setExternalAudioModal({
           isOpen: true,
           title,
@@ -103,9 +91,18 @@ export const UsoolSittahSection: React.FC<UsoolSittahSectionProps> = ({
           type
         });
       }
+    } catch (err) {
+      console.warn('Window open error:', err);
+      setExternalAudioModal({
+        isOpen: true,
+        title,
+        sourceLabel,
+        url,
+        type
+      });
     }
 
-    showToast(type === 'listen' ? 'جاري فتح رابط الاستماع في المتصفح...' : 'جاري فتح رابط التحميل في المتصفح...');
+    showToast(type === 'listen' ? 'جاري فتح رابط الاستماع في المتصفح الخارجي...' : 'جاري فتح رابط التحميل في المتصفح الخارجي...');
   };
 
   // Toggle card expansion
@@ -250,7 +247,7 @@ ${item.matnOriginal}`;
           {/* Quick Audio listening card */}
           <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
             <a
-              href="https://ar.islamway.net/collection/4252/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D8%A8%D9%86-%D8%A8%D8%A7%D8%B2"
+              href="https://binbaz.org.sa/books/78/%D8%B4%D8%B1%D8%AD-%D8%A7%D9%84%D8%A7%D8%B5%D9%88%D9%84-%D8%A7%D9%84%D8%B3%D8%AA%D8%A9"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2.5 rounded-xl bg-[#feb10b] hover:bg-[#fec84b] text-[#042418] font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"

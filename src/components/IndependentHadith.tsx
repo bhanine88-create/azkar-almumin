@@ -212,11 +212,12 @@ export const IndependentHadith: React.FC = () => {
   });
 
   const [readingMode, setReadingMode] = useState<'grid' | 'scroll' | 'focus'>(() => {
-    if (settings.hadithViewMode === 'single') return 'focus';
-    if (settings.hadithViewMode === 'list') return 'grid';
     const saved = safeLocalStorageGetItem('hadith-reading-mode');
     if (saved === 'grid' || saved === 'scroll' || saved === 'focus') return saved as any;
-    return 'grid';
+    if (categoryId === 'daily') return 'scroll';
+    if (settings.hadithViewMode === 'single') return 'focus';
+    if (settings.hadithViewMode === 'list') return 'scroll';
+    return 'scroll';
   });
 
   const [snapScrolling, setSnapScrolling] = useState<boolean>(() => {
@@ -245,6 +246,9 @@ export const IndependentHadith: React.FC = () => {
 
   const handleUpdateReadingMode = (mode: 'grid' | 'scroll' | 'focus') => {
     setReadingMode(mode);
+    if (categoryId === 'daily') {
+      safeLocalStorageSetItem('hadith-reading-mode-daily', mode);
+    }
     safeLocalStorageSetItem('hadith-reading-mode', mode);
     updateSettings({ hadithViewMode: mode === 'focus' ? 'single' : 'list' });
     setFocusIndex(0); // Reset index
@@ -1339,13 +1343,12 @@ export const IndependentHadith: React.FC = () => {
                 className={cn(
                   "w-full transition-all duration-300 transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform",
                   snapScrolling && "hadith-snap-card snap-start snap-always scroll-mt-3 sm:scroll-mt-4",
-                  // Same width as the section header above, so the page edges line up.
-                  isFocus ? "w-full" : "h-full flex flex-col w-full"
+                  isFocus ? "w-full mx-auto" : "h-full flex flex-col w-full mx-auto"
                 )}
                 style={snapScrolling ? { scrollSnapAlign: 'start', scrollSnapStop: 'always' } : undefined}
               >
                 <div className={cn(
-                  "relative rounded-[1.65rem] sm:rounded-[1.9rem] border-2 shadow-[0_10px_28px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_38px_rgba(0,0,0,0.13)] transition-all duration-300 w-full overflow-hidden text-white flex-1 flex flex-col justify-between p-3.5 sm:p-5 transform-gpu [backface-visibility:hidden]",
+                  "relative rounded-2xl border-2 shadow-[0_10px_28px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_38px_rgba(0,0,0,0.13)] transition-all duration-300 w-full overflow-hidden text-white flex-1 flex flex-col justify-between p-3.5 sm:p-5 transform-gpu [backface-visibility:hidden]",
                   "bg-gradient-to-br", currentTheme.gradient, currentTheme.border
                 )}>
                   {/* Artistic Islamic background pattern watermark */}
@@ -1730,7 +1733,7 @@ export const IndependentHadith: React.FC = () => {
                               }
                             }
                           }}
-                          className="w-full transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
+                          className="w-full max-w-5xl mx-auto transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
                         >
                           {renderHadithCard(items[focusIndex], focusIndex, true)}
                         </motion.div>
@@ -1739,7 +1742,7 @@ export const IndependentHadith: React.FC = () => {
 
                     {/* Focus Mode Navigation & Quick Jump */}
                     <div className="w-full flex flex-col items-center gap-3 mt-4" dir="rtl" data-html2canvas-ignore>
-                      <div className="flex items-center justify-between w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
+                      <div className="flex items-center justify-between w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
                         {/* Previous button */}
                         <button
                           type="button"
@@ -1838,22 +1841,24 @@ export const IndependentHadith: React.FC = () => {
                     </div>
                   </div>
                 ) : readingMode === 'grid' ? (
-                  /* Grid Mode: 2 Columns on md+, 1 Column on mobile with CSS snap-points */
+                  /* Grid Mode: 1 Column on Hadith Al-Yawm to match top card width, 2 columns on other sections */
                   <div 
                     className={cn(
-                      "grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 items-stretch transition-all duration-300 max-w-5xl mx-auto w-full",
-                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] px-1 sm:px-2 py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
+                      categoryId === 'daily'
+                        ? "grid grid-cols-1 gap-3.5 sm:gap-5 items-stretch transition-all duration-300 max-w-5xl mx-auto w-full"
+                        : "grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 items-stretch transition-all duration-300 max-w-5xl mx-auto w-full",
+                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
                     )}
                     style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
                   >
                     {items.map((hadith: any, index: number) => renderHadithCard(hadith, index, false))}
                   </div>
                 ) : (
-                  /* Continuous List Mode with CSS snap-points */
+                  /* Continuous List Mode with CSS snap-points: full width matching top fixed card */
                   <div 
                     className={cn(
-                      "flex flex-col gap-3.5 sm:gap-4.5 max-w-xl sm:max-w-2xl mx-auto w-full transition-all duration-300",
-                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] px-1 sm:px-2 py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
+                      "flex flex-col gap-3.5 sm:gap-5 max-w-5xl mx-auto w-full transition-all duration-300",
+                      snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
                     )}
                     style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
                   >
