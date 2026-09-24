@@ -5,9 +5,9 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.azkaralmumin.app",
+      "package_name": "com.azkar.almumin",
       "sha256_cert_fingerprints": [
-        "8B:51:8A:20:57:48:9F:69:57:1E:98:EB:DE:F9:6E:AE:54:A6:19:60:F5:F7:0B:1D:70:6F:99:25:CE:44:85:3F"
+        "FB:1D:BA:72:0E:02:91:B5:78:5D:2B:63:74:FF:E7:F1:0F:8B:A8:96:AD:5C:57:F1:B8:F5:AB:7B:27:5C:A6:EF"
       ]
     }
   }

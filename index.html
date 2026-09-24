@@ -1,6 +1,13 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-booting>
   <head>
+    <meta charset="UTF-8" />
+    <style>
+      /* Paint the native brand colour before scripts, fonts, or CSS arrive. */
+      html { background: #052418; }
+      body { margin: 0; }
+      html[data-booting], html[data-booting] body { background: #052418 !important; }
+    </style>
     <script>
       // Intercept and mock Vite HMR WebSocket to prevent console connection errors in the sandboxed preview
       (function() {
@@ -110,7 +117,6 @@
         }
       }
     </script>
-    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>أذكار المؤمن azkar almumin</title>
     <meta name="theme-color" content="#052418" />
@@ -172,12 +178,8 @@
           }
           if (isDark) {
             document.documentElement.classList.add('dark');
-            document.documentElement.style.backgroundColor = '#0f172a'; // match bg-slate-900
-            document.body.style.backgroundColor = '#0f172a';
           } else {
             document.documentElement.classList.remove('dark');
-            document.documentElement.style.backgroundColor = '#ffffff'; // match bg-white
-            document.body.style.backgroundColor = '#ffffff';
           }
         } catch(e) {}
       })();
@@ -191,36 +193,134 @@
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Share+Tech+Mono&family=Orbitron:wght@700;900&family=Outfit:wght@700;900&family=Righteous&display=swap" rel="stylesheet" crossorigin="anonymous">
     </noscript>
+    <!--
+      Boot splash styling.
+
+      Inline, and above the module script, so it is painted by the very first
+      HTML parse. A stylesheet link would not do: the brand screen has to be on
+      screen before anything is fetched, or the gap it exists to cover reopens.
+    -->
+    <style>
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        background: #052418;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        opacity: 1;
+        transition: opacity 140ms ease-out;
+      }
+      #boot-splash.is-hiding { opacity: 0; }
+      #boot-recovery {
+        position: absolute;
+        inset-inline: 24px;
+        bottom: max(32px, env(safe-area-inset-bottom));
+        color: white;
+        font: 16px/1.7 system-ui, sans-serif;
+        text-align: center;
+      }
+      #boot-recovery[hidden] { display: none; }
+      #boot-retry {
+        margin-top: 12px;
+        padding: 12px 24px;
+        border: 0;
+        border-radius: 12px;
+        background: #f6b00f;
+        color: #052418;
+        font: inherit;
+        cursor: pointer;
+      }
+      #boot-splash img {
+        width: min(216px, calc(100vw - 48px));
+        height: auto;
+        display: block;
+      }
+      #boot-splash-bar {
+        width: min(40vw, 150px);
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        overflow: hidden;
+      }
+      #boot-splash-bar > i {
+        display: block;
+        width: 40%;
+        height: 100%;
+        border-radius: inherit;
+        background: #F6B00F;
+        animation: boot-splash-sweep 1.15s ease-in-out infinite;
+      }
+      @keyframes boot-splash-sweep {
+        from { transform: translateX(300%); }
+        to   { transform: translateX(-120%); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash { transition: none; }
+        #boot-splash-bar > i { animation: none; width: 100%; opacity: 0.45; }
+      }
+    </style>
   </head>
   <body>
+    <!--
+      Continue the native window's brand screen until React has visible content.
+      The matching wordmark is inlined so the first HTML paint does not depend
+      on a network request or a JavaScript chunk. Android's plugin launch
+      overlay is disabled; MainActivity keeps a native branded cover over
+      the green WebView until this HTML cover has drawn.
+
+      This sits outside #root so the controller below can display a retry even
+      if React cannot mount. main.tsx signals appReady after the first route is
+      ready; the controller then fades and removes this cover.
+    -->
+    <div id="boot-splash">
+      <img decoding="sync" src="data:image/png;base64,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" alt="أذكار المؤمن" width="440" height="456" />
+      <div id="boot-splash-bar"><i></i></div>
+      <div id="boot-recovery" role="status" hidden>
+        <p>استغرق فتح التطبيق وقتاً أطول من المعتاد. يمكنك الانتظار أو إعادة المحاولة.</p>
+        <button id="boot-retry" type="button">إعادة المحاولة</button>
+      </div>
+    </div>
+
     <div id="root"></div>
 
-    <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Fallback Recovery: If React fails to mount after 4 seconds (e.g. chunk load error from old SW),
-      // unregister the service worker and force a reload.
-      setTimeout(function() {
-        var root = document.getElementById('root');
-        if (root && root.innerHTML.trim() === '') {
-          if (!sessionStorage.getItem('fallback_sw_reload')) {
-            sessionStorage.setItem('fallback_sw_reload', 'true');
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(var i=0; i<registrations.length; i++) {
-                  registrations[i].unregister();
-                }
-                window.location.reload();
-              });
-            } else {
-              window.location.reload();
-            }
-          } else {
-            // Second failure, show a manual recovery UI instead of white screen
-            root.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;font-family:sans-serif;text-align:center;padding:20px;background:#052418;color:white;" dir="rtl"><h2>عذراً، حدث خطأ أثناء التحديث</h2><p style="opacity:0.8;margin:10px 0 20px;">يرجى مسح بيانات المتصفح والتخزين المؤقت، والمحاولة مرة أخرى.</p><button onclick="localStorage.clear();sessionStorage.clear();window.location.reload();" style="padding:15px 30px;font-size:16px;background:#0f766e;color:white;border:none;border-radius:12px;cursor:pointer;">إصلاح المشكلة الآن</button></div>';
+      // This controller also runs when the main JS bundle fails to load.
+      // A slow first install must never trigger a reload loop or erase data.
+      (function() {
+        var splash = document.getElementById('boot-splash');
+        var watchdog = setTimeout(function() {
+          // The page can finish mounting while requestAnimationFrame is paused
+          // in the background. Release an already rendered route instead of
+          // showing a misleading retry prompt on the next foreground.
+          var root = document.getElementById('root');
+          var content = root && (root.querySelector('main') || root);
+          if (content && content.innerText && content.innerText.trim()) {
+            window.dispatchEvent(new Event('appReady'));
+            return;
           }
-        }
-      }, 4000);
+          document.getElementById('boot-recovery').hidden = false;
+        }, 15000);
+
+        document.getElementById('boot-retry').addEventListener('click', function() {
+          window.location.reload();
+        });
+
+        window.addEventListener('appReady', function() {
+          clearTimeout(watchdog);
+          document.documentElement.removeAttribute('data-booting');
+          splash.classList.add('is-hiding');
+          function removeSplash() { splash.remove(); }
+          splash.addEventListener('transitionend', removeSplash, { once: true });
+          // Reduced motion and background tabs may not emit transitionend.
+          setTimeout(removeSplash, 240);
+        }, { once: true });
+      })();
     </script>
+    <script type="module" src="/src/main.tsx"></script>
     <script>
       document.addEventListener('gesturestart', function (e) {
         e.preventDefault();

@@ -17,6 +17,7 @@ import { smartReciterMatch } from '../lib/arabicSearch';
 import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
 
 import { useSmartNavigation } from '../lib/navigation';
+import { useProgressiveList } from '../lib/useProgressiveList';
 
 export const QuranAudioHub: React.FC = () => {
   const { navigate } = useSmartNavigation();
@@ -34,6 +35,9 @@ export const QuranAudioHub: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredReciters = RECITERS.filter(r => smartReciterMatch(r, searchQuery));
+
+  // 54 reciter cards on entry. See useProgressiveList.
+  const visibleReciterCount = useProgressiveList(filteredReciters.length, 16);
 
   useEffect(() => {
     const list = audioCacheService.getMetadataList();
@@ -285,7 +289,7 @@ export const QuranAudioHub: React.FC = () => {
             if (aFav && !bFav) return -1;
             if (!aFav && bFav) return 1;
             return 0;
-          }).map((r, idx) => {
+          }).slice(0, visibleReciterCount).map((r, idx) => {
             const isFavorite = (progress.favorites || []).some(fav => fav.id === String(r.id) && fav.type === 'reciter');
             return (
               <div

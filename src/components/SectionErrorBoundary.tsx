@@ -13,31 +13,35 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
-  errorPathname: string | null;
+  /** The route this boundary last rendered; a new route clears the error. */
+  lastPathname: string | null;
 }
 
 export class SectionErrorBoundaryInner extends React.Component<Props & { navigate: any }, State> {
   public state: State = {
     hasError: false,
     error: null,
-    errorPathname: null
+    lastPathname: this.props.pathname ?? null
   };
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorPathname: null };
+  public static getDerivedStateFromError(error: Error): Partial<State> {
+    return { hasError: true, error };
   }
   
-  public static getDerivedStateFromProps(props: Props, state: State): State | null {
-    // If the path changes while we are in an error state, clear the error
-    if (state.hasError && props.pathname !== state.errorPathname) {
-      return { hasError: false, error: null, errorPathname: null };
+  public static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
+    // Clear the error only when the user actually moves to another route.
+    // (Comparing against a value set later in componentDidCatch cleared it in
+    // the very render that should show the fallback, so the page threw again
+    // and the whole app shell fell through to the root boundary.)
+    const pathname = props.pathname ?? null;
+    if (pathname !== state.lastPathname) {
+      return { lastPathname: pathname, hasError: false, error: null };
     }
     return null;
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Section Error caught:', error, errorInfo);
-    this.setState({ errorPathname: this.props.pathname || null });
   }
 
   public render() {

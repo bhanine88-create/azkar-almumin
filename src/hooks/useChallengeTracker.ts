@@ -2,18 +2,16 @@ import { useState, useCallback, useEffect } from 'react';
 import { CHALLENGES, UserChallengeProgress, ChallengeCategory, ChallengeType,  } from '../challengesData';
 import { useAppContext } from '../AppContext';
 import { evaluateAllBadges, VISUAL_BADGES, getBadgeStatus, VisualBadge } from '../services/badgeService';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem,  } from "../utils/storage";
+import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeJsonParse } from "../utils/storage";
 
 export const useChallengeTracker = () => {
   const { progress: userProgress, addPoints: addLevelPoints } = useAppContext();
   const [progress, setProgressState] = useState<Record<string, UserChallengeProgress>>(() => {
-    const saved = safeLocalStorageGetItem('believer_challenges_progress_v2');
-    return saved ? JSON.parse(saved) : {};
+    return safeJsonParse<Record<string, UserChallengeProgress>>(safeLocalStorageGetItem('believer_challenges_progress_v2'), {});
   });
 
   const [earnedBadges, setEarnedBadges] = useState<string[]>(() => {
-    const saved = safeLocalStorageGetItem('believer_earned_badges_v2');
-    return saved ? JSON.parse(saved) : [];
+    return safeJsonParse<string[]>(safeLocalStorageGetItem('believer_earned_badges_v2'), []);
   });
 
   const getPoints = useCallback(() => {
@@ -46,7 +44,7 @@ export const useChallengeTracker = () => {
   const updateProgress = useCallback((challengeIds: string[], amount: number = 1) => {
     try {
       const savedProgress = safeLocalStorageGetItem('believer_challenges_progress_v2');
-      let currentProgress: Record<string, UserChallengeProgress> = savedProgress ? JSON.parse(savedProgress) : {};
+      let currentProgress = safeJsonParse<Record<string, UserChallengeProgress>>(savedProgress, {});
       
       const now = new Date();
       const today = now.toISOString().split('T')[0];
@@ -117,7 +115,7 @@ export const useChallengeTracker = () => {
         
         // Check for badges
         const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-        let badges: string[] = savedBadges ? JSON.parse(savedBadges) : [];
+        let badges = safeJsonParse<string[]>(savedBadges, []);
         
         syncBadges(currentProgress, badges);
 
@@ -140,17 +138,17 @@ export const useChallengeTracker = () => {
   // Synchronize on mount and when userProgress changes
   useEffect(() => {
     const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-    const badges: string[] = savedBadges ? JSON.parse(savedBadges) : [];
+    const badges = safeJsonParse<string[]>(savedBadges, []);
     syncBadges(progress, badges);
   }, [userProgress, syncBadges, progress]);
 
   useEffect(() => {
     const handleUpdate = () => {
       const saved = safeLocalStorageGetItem('believer_challenges_progress_v2');
-      if (saved) setProgressState(JSON.parse(saved));
+      if (saved) setProgressState(safeJsonParse(saved, {}));
       
       const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-      if (savedBadges) setEarnedBadges(JSON.parse(savedBadges));
+      if (savedBadges) setEarnedBadges(safeJsonParse<string[]>(savedBadges, []));
     };
 
     window.addEventListener('challenge-updated', handleUpdate);

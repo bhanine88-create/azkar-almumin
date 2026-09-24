@@ -35,6 +35,7 @@ import { useSmartNavigation } from "../lib/navigation";
 import { useTranslation } from '../i18n';
 import { toPng } from 'html-to-image';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { useProgressiveList } from '../lib/useProgressiveList';
 
 
 export const ScholarSayings: React.FC = () => {
@@ -428,6 +429,11 @@ export const ScholarSayings: React.FC = () => {
       return scoreA - scoreB;
     });
   }, [activeTab, favorites, searchQuery, shuffledMap]);
+
+  // 148 sayings, each a tall card with five `transition-all` declarations, all
+  // built before the screen may paint. See useProgressiveList. The first batch
+  // is smaller than the default because these cards are a screenful each.
+  const visibleSayingCount = useProgressiveList(filteredSayings.length, 8);
 
   return (
     <div 
@@ -879,7 +885,7 @@ export const ScholarSayings: React.FC = () => {
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 gap-4 md:gap-[18px]"
               >
-                {filteredSayings.map((saying, index) => {
+                {filteredSayings.slice(0, visibleSayingCount).map((saying, index) => {
                   const isFav = favorites.includes(saying.id);
                   const isDownloading = downloadingId === `saying-card-export-${saying.id}`;
 

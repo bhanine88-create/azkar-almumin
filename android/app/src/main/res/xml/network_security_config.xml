@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Every endpoint the app talks to is HTTPS: the Quran text and audio CDNs, the
+    prayer-time and geocoding APIs, Firebase, and the Netlify origin the
+    over-the-air bundle is downloaded from. Cleartext is therefore refused
+    outright, so a hostile network cannot downgrade a request and inject content
+    into the WebView.
+
+    The app's own pages are served by Capacitor's local server over
+    https://localhost, so they are unaffected.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

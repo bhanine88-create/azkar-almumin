@@ -121,3 +121,37 @@ export const safeLocalStorageClear = (): void => {
   }
   try { localStorage.clear(); } catch (e) { memoryStorage.clear(); }
 };
+
+/**
+ * The live localStorage keys for the user's core data, newest first.
+ *
+ * Every reader and writer must go through these. When a save moved to a new
+ * version key but the loader, cloud sync and backup restore still used the old
+ * one, progress rolled back on every launch and restores silently did nothing.
+ */
+export const STORAGE_KEYS = {
+  progress: ['believer_progress_v24', 'believer_progress_v23', 'believer_progress_v22', 'believer_progress_v21', 'believer_progress_v20', 'believer_progress_v5'],
+  settings: ['believer_settings_v30', 'believer_settings_v29', 'believer_settings_v28', 'believer_settings_v27', 'believer_settings_v23', 'believer_settings_v22', 'believer_settings_v21', 'believer_settings_v20'],
+  adhkar: ['believer_adhkar_v24', 'believer_adhkar_v23', 'believer_adhkar_v22', 'believer_adhkar_v21', 'believer_adhkar_v20', 'believer_adhkar_v6', 'believer_adhkar_v5'],
+  counts: ['believer_adhkar_counts_v23', 'believer_adhkar_counts_v22', 'believer_adhkar_counts_v21', 'believer_adhkar_counts_v20', 'believer_adhkar_counts_v6', 'believer_adhkar_counts_v5'],
+} as const;
+
+/** The first stored value among the given keys (newest first). */
+export const readFirstStored = (keys: readonly string[]): string | null => {
+  for (const key of keys) {
+    const value = safeLocalStorageGetItem(key);
+    if (value) return value;
+  }
+  return null;
+};
+
+/** Parses JSON, returning the fallback instead of throwing on corrupt data. */
+export const safeJsonParse = <T,>(raw: string | null | undefined, fallback: T): T => {
+  if (!raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed === null || parsed === undefined ? fallback : parsed;
+  } catch {
+    return fallback;
+  }
+};

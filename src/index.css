@@ -69,21 +69,38 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  overscroll-behavior-y: contain;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  /* Prevent layout thrashing */
-  contain: paint layout;
+  /*
+    No `contain: paint layout` here.
+
+    On the root element containment is not a free optimisation: paint
+    containment clips every descendant to the html box and makes html a
+    containing block for fixed and absolutely positioned elements, which is
+    exactly the combination that leaves cards half-drawn while a list is being
+    dragged in the Android WebView. The scroll containers below are where
+    containment actually belongs.
+
+    `scroll-behavior: smooth` is gone for the same reason: it turns every
+    programmatic scroll into an animation that fights the WebView's own fling,
+    which reads as the list stuttering under the finger.
+
+    `text-rendering: optimizeLegibility` is gone too — on long Arabic pages it
+    forces the slow shaping path for every glyph run on each repaint.
+  */
 }
 
 body {
   @apply bg-white text-slate-900 font-sans;
   direction: rtl;
-  overscroll-behavior-y: contain;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
   text-size-adjust: none;
@@ -104,20 +121,79 @@ button, a, input, select, textarea, [role="button"] {
 }
 
 /* 🚀 Visual Feedback (Active State) - استجابة فورية للأزرار واللمس */
-.active-feedback:active,
-button:not(:disabled):active,
-a:not([disabled]):active,
-[role="button"]:not([disabled]):active {
+.active-feedback:not(.navigation-card):active,
+button:not(:disabled):not(.navigation-card):active,
+a:not([disabled]):not(.navigation-card):active,
+[role="button"]:not([disabled]):not(.navigation-card):active {
   transform: scale(0.96) !important;
   opacity: 0.80 !important;
   transition: transform 50ms cubic-bezier(0.4, 0, 0.2, 1), opacity 50ms cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* Smooth return animation for clickables */
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* A touch that starts on a navigation card may become a scroll. Keep the
+   card and its Arabic text on the same paint surface throughout that gesture. */
+.navigation-card {
+  min-width: 0;
+  transition-property: color, background-color, border-color;
+}
+
+.navigation-card:active {
+  transform: none;
+  scale: none;
+  opacity: 1;
+  outline: 2px solid rgb(255 255 255 / 35%);
+  outline-offset: -3px;
+}
+
+.card-glow {
+  background: radial-gradient(closest-side, currentColor, transparent);
+  pointer-events: none;
+}
+
+/*
+  Smooth return animation for clickables.
+
+  Deliberately narrow. This selector matches every button and link in the app,
+  and the list used to include box-shadow, filter and backdrop-filter — three
+  properties the WebView cannot composite, so each one turns a tap anywhere into
+  a 200ms repaint of the tapped element and everything behind it. What is left
+  animates on the compositor.
+*/
 button, a, [role="button"] {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+}
+
+/*
+  Page enter animation.
+
+  Replaces a Motion <AnimatePresence mode="popLayout"> transition on the route
+  wrapper. That kept the outgoing and incoming pages mounted at the same time
+  and ran layout projection over both, so every navigation paid for two full
+  page trees in the DOM at the moment the new one was being built — the worst
+  possible moment. Dropping the exit animation means the old page is gone before
+  the new one is laid out.
+
+  Opacity and transform only, so it runs on the compositor and never triggers
+  layout. `both` holds the start frame so there is no flash before it begins.
+*/
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.page-enter {
+  animation: page-enter 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
 }
 
 /* GPU Acceleration utility for 60/120fps fluid motion */
@@ -133,11 +209,27 @@ button, a, [role="button"] {
   will-change: transform, opacity;
 }
 
-/* High performance smooth momentum scroll container */
+/*
+  High performance momentum scroll container.
+
+  No `scroll-behavior: smooth`. This class is on <main>, the app's primary
+  scroller, and smooth scrolling there animates every scroll the app performs
+  itself — route restores, scroll-to-top, anchor jumps — on top of whatever the
+  finger is already doing. The two compete and the result is the list appearing
+  to stutter and catch mid-drag. Native fling is smooth on its own.
+*/
 .momentum-scroll {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+/* Home and library use the main element as their only vertical scroller.
+   Keep a drag on a card on that axis, with no elastic edge effect or scroll
+   chaining to the document behind the app shell. */
+.stable-list-scroll {
+  touch-action: pan-y;
+  overscroll-behavior: none;
+  scroll-behavior: auto;
 }
 
 /* Hadith Snap-Points and Anti-Flicker Card Engine */
@@ -521,3 +613,12 @@ body.reading-focus-mode #bottom-nav {
   }
 }
 
+
+/* Header toolbars sized for 360px+ phones spill off a 320px screen. Below
+   360px they are drawn slightly smaller as a unit, which keeps every control
+   reachable and the tap targets proportionate. */
+@media (max-width: 359px) {
+  .fit-narrow {
+    zoom: 0.84;
+  }
+}

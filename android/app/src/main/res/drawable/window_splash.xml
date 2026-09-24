@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The activity window's background: the brand green with the wordmark at
+  216dp, which is exactly what the HTML boot splash in index.html draws.
+
+  Used by the activity window and MainActivity's opaque startup cover. A
+  transparent WebView alone can still submit black frames while Chromium starts.
+  The cover stays above the visible, green WebView until the local HTML has
+  committed, its visual state is ready, and a subsequent draw has occurred.
+  The matching HTML splash then covers React startup and handles web recovery.
+
+  The 34dp bottom inset lifts the wordmark by 17dp to match the HTML splash,
+  whose wordmark sits above a progress bar and a 30px gap.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#052418" />
+        </shape>
+    </item>
+    <item android:bottom="34dp">
+        <bitmap
+            android:src="@drawable/window_wordmark"
+            android:gravity="center" />
+    </item>
+</layer-list>

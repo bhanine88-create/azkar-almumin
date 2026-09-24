@@ -7,7 +7,14 @@ import { cn } from '../lib/utils';
 import { auth } from '../firebase';
 
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, STORAGE_KEYS } from "../utils/storage";
+
+/** Restored settings go to every settings key the loader might read first. */
+const writeRestoredSettings = (settings: unknown) => {
+  if (!settings) return;
+  const json = JSON.stringify(settings);
+  STORAGE_KEYS.settings.slice(0, 5).forEach((key) => safeLocalStorageSetItem(key, json));
+};
 import { useTranslation } from '../i18n';
 
 export const BackupManager: React.FC = () => {
@@ -200,10 +207,10 @@ export const BackupManager: React.FC = () => {
               updatedProgress.baqiyatSalihat = parsed.baqiyatSalihat;
             }
 
-            safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(updatedProgress));
+            safeLocalStorageSetItem(STORAGE_KEYS.progress[0], JSON.stringify(updatedProgress));
             
             if (parsed.dhikrCounts) {
-              safeLocalStorageSetItem('believer_adhkar_counts_v23', JSON.stringify(parsed.dhikrCounts));
+              safeLocalStorageSetItem(STORAGE_KEYS.counts[0], JSON.stringify(parsed.dhikrCounts));
             }
 
             showStatus('success', t('backup_prayer_restore_success', 'تم استعادة سجل الصلوات والأذكار بنجاح'));
@@ -215,12 +222,10 @@ export const BackupManager: React.FC = () => {
         // Default full backup restore
         const data = backupService.restoreFromJSON(json);
         if (window.confirm(t('confirm_restore_full_backup', 'هل أنت متأكد؟ سيتم استبدال جميع البيانات الحالية بالبيانات الموجودة في الملف.'))) {
-          safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(data.progress));
-          safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(data.settings));
-          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(data.settings));
-          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(data.settings));
-          if ((data as any).adhkarData) safeLocalStorageSetItem('believer_adhkar_v23', JSON.stringify((data as any).adhkarData));
-          if ((data as any).counts) safeLocalStorageSetItem('believer_adhkar_counts_v23', JSON.stringify((data as any).counts));
+          safeLocalStorageSetItem(STORAGE_KEYS.progress[0], JSON.stringify(data.progress));
+          writeRestoredSettings(data.settings);
+          if ((data as any).adhkarData) safeLocalStorageSetItem(STORAGE_KEYS.adhkar[0], JSON.stringify((data as any).adhkarData));
+          if ((data as any).counts) safeLocalStorageSetItem(STORAGE_KEYS.counts[0], JSON.stringify((data as any).counts));
           
           window.location.reload();
         }
@@ -406,9 +411,9 @@ export const BackupManager: React.FC = () => {
                 <button
                   onClick={() => {
                     if (window.confirm(t('confirm_restore_local_backup', 'هل تريد استعادة هذه النسخة المحلية؟'))) {
-                      if (backup.progress) safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(backup.progress));
-                      if (backup.settings) safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(backup.settings));
-                      if (backup.counts) safeLocalStorageSetItem('believer_adhkar_counts_v23', JSON.stringify(backup.counts));
+                      if (backup.progress) safeLocalStorageSetItem(STORAGE_KEYS.progress[0], JSON.stringify(backup.progress));
+                      if (backup.settings) writeRestoredSettings(backup.settings);
+                      if (backup.counts) safeLocalStorageSetItem(STORAGE_KEYS.counts[0], JSON.stringify(backup.counts));
                       window.location.reload();
                     }
                   }}
@@ -439,10 +444,10 @@ export const BackupManager: React.FC = () => {
                 <button
                   onClick={() => {
                     if (window.confirm(t('confirm_restore_cloud_backup', 'استعادة هذه النسخة؟'))) {
-                      safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(backup.data.progress));
-                      safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(backup.data.settings));
-                      if (backup.data.adhkarData) safeLocalStorageSetItem('believer_adhkar_v23', JSON.stringify(backup.data.adhkarData));
-                      if (backup.data.counts) safeLocalStorageSetItem('believer_adhkar_counts_v23', JSON.stringify(backup.data.counts));
+                      safeLocalStorageSetItem(STORAGE_KEYS.progress[0], JSON.stringify(backup.data.progress));
+                      writeRestoredSettings(backup.data.settings);
+                      if (backup.data.adhkarData) safeLocalStorageSetItem(STORAGE_KEYS.adhkar[0], JSON.stringify(backup.data.adhkarData));
+                      if (backup.data.counts) safeLocalStorageSetItem(STORAGE_KEYS.counts[0], JSON.stringify(backup.data.counts));
                       window.location.reload();
                     }
                   }}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">أذكار المؤمن</string>
+    <string name="title_activity_main">أذكار المؤمن</string>
+    <string name="package_name">com.azkar.almumin</string>
+    <string name="custom_url_scheme">com.azkar.almumin</string>
+</resources>

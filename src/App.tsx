@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, Profiler } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppProvider } from './AppContext';
@@ -143,27 +143,25 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-const onRenderCallback: React.ProfilerOnRenderCallback = (
-  id,
-  phase,
-  actualDuration,
-  baseDuration,
-  startTime,
-  commitTime
-) => {
-  // Log renders that take longer than 16ms (indicates a dropped frame at 60fps)
-  if (actualDuration > 16) {
-    console.debug(
-      `[Performance] Component: ${id} | Phase: ${phase} | Time: ${actualDuration.toFixed(2)}ms (Base: ${baseDuration.toFixed(2)}ms)`
-    );
-  }
-};
+// The <Profiler> that used to wrap <Routes> was removed along with its
+// onRender callback. It was development instrumentation sitting in the shipped
+// tree, wrapping every route in the app to log slow commits to a console that
+// `loggingBehavior: 'none'` silences on device. React DevTools' own profiler
+// does the same job, on demand, without shipping anything.
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
-  // General App Performance Monitoring
+  // General App Performance Monitoring.
+  //
+  // Development only. A PerformanceObserver on 'longtask' is itself a cost, and
+  // it fired a console.debug for every blocking task on the user's phone — in a
+  // release build where `loggingBehavior: 'none'` means nobody will ever read
+  // the output. The observer is never disconnected either, so it outlived every
+  // remount. `import.meta.env.DEV` is a compile-time constant, so in the
+  // production bundle this whole block is dropped by the minifier.
   useEffect(() => {
+    if (!import.meta.env.DEV) return;
     if (typeof window !== 'undefined' && 'performance' in window) {
       // 1. Initial Page Load Metric
       window.addEventListener('load', () => {
@@ -183,6 +181,7 @@ export default function App() {
           }
         });
         observer.observe({ entryTypes: ['longtask'] });
+        return () => observer.disconnect();
       } catch (e) {
         // Fallback for browsers that don't support 'longtask'
       }
@@ -213,65 +212,9 @@ export default function App() {
     };
   }, []);
 
-  // Progressive Multi-Phase Background Preloading for Navigation Routes
-  // Phase 0 (Immediate): Home & Layout are statically imported (bundled) and render instantly.
-  // Phase 1 (Direct Navigation - 1.5s delay on Idle): Quran, AdhkarHub, Tasbih, PrayerTimes, DuasHub.
-  // Phase 2 (Deeper Sub-pages - 4.5s delay on Idle): SurahDetail, Library, AudioLibraryHub, HadithAndSupplications, Settings.
-  useEffect(() => {
-    let phase1Timer: NodeJS.Timeout;
-    let phase2Timer: NodeJS.Timeout;
-
-    const runPreloadPhase1 = () => {
-      const phase1Components = [Quran, AdhkarHub, Adhkar, Tasbih, PrayerTimes, DuasHub];
-      phase1Components.forEach((cmp, index) => {
-        setTimeout(() => {
-          try {
-            (cmp as any)?.preload?.();
-          } catch (e) {
-            // Silently swallow preload errors
-          }
-        }, index * 100);
-      });
-    };
-
-    const runPreloadPhase2 = () => {
-      const phase2Components = [
-        SurahDetail,
-        Library,
-        AudioLibraryHub,
-        Settings,
-        NamesOfAllah,
-        Prophet,
-        Khatma
-      ];
-      phase2Components.forEach((cmp, index) => {
-        setTimeout(() => {
-          try {
-            (cmp as any)?.preload?.();
-          } catch (e) {
-            // Silently swallow preload errors
-          }
-        }, index * 100);
-      });
-    };
-
-    if (typeof window !== 'undefined') {
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(() => {
-          phase1Timer = setTimeout(runPreloadPhase1, 500);
-          phase2Timer = setTimeout(runPreloadPhase2, 2500);
-        }, { timeout: 2000 });
-      } else {
-        phase1Timer = setTimeout(runPreloadPhase1, 500);
-        phase2Timer = setTimeout(runPreloadPhase2, 2000);
-      }
-    }
-
-    return () => {
-      clearTimeout(phase1Timer);
-      clearTimeout(phase2Timer);
-    };
-  }, []);
+  // Route chunks load on navigation or explicit link intent in Layout/Library.
+  // Importing every deep screen on startup competes with the first scroll,
+  // even when the imports were originally scheduled in an idle callback.
 
   const isWebVersion = (window as any).isWebVersion || false;
 
@@ -300,11 +243,9 @@ export default function App() {
                       "max-w-full md:max-w-4xl lg:max-w-5xl xl:max-w-6xl md:h-[98vh] md:max-h-[960px] md:rounded-3xl md:border md:border-slate-200/80 dark:md:border-slate-800/80 md:shadow-2xl",
                       isWebVersion && "md:max-w-none md:h-full md:max-h-none md:rounded-none md:border-0 md:shadow-none"
                     )}
-                    style={{ transform: 'translateZ(0)' }}
                   >
                     
                     <Suspense fallback={<MemoizedLoadingFallback />}>
-                      <Profiler id="AppRoutes" onRender={onRenderCallback}>
                         <Routes>
                           <Route path="/" element={<Layout />}>
                         <Route index element={<Home />} />
@@ -370,7 +311,6 @@ export default function App() {
                           <Route path="*" element={<Home />} />
                         </Route>
                       </Routes>
-                      </Profiler>
                     </Suspense>
                 </div>
               </div>

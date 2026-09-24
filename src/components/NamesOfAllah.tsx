@@ -33,6 +33,7 @@ import {  ChevronRight,
   ListFilter,
   CheckCircle2 , Star, RotateCcw } from 'lucide-react';
 import { useAppContext } from '../AppContext';
+import { useProgressiveList } from '../lib/useProgressiveList';
 
 // Types for Names of Allah Configuration
 export type LayoutMode = 'grid4' | 'grid2' | 'horizontal' | 'list' | 'focus';
@@ -572,6 +573,15 @@ const NamesOfAllahComponent: React.FC = () => {
     });
   }, [searchQuery, onlyFavorites, favoriteIds]);
 
+  /*
+    99 name cards in one commit. See useProgressiveList.
+
+    Applied to the three vertical layouts below, not to the horizontal
+    filmstrip: that one's auto-play steps an index through the whole list, so a
+    partially rendered strip would advance onto items that are not in the DOM.
+  */
+  const visibleNameCount = useProgressiveList(filteredNames.length);
+
   // Auto-play slideshow logic for Horizontal Mode
   useEffect(() => {
     if (isAutoPlaying && layout === 'horizontal' && filteredNames.length > 0) {
@@ -711,7 +721,7 @@ const NamesOfAllahComponent: React.FC = () => {
           </div>
 
           {/* Right: Quick Action Controls Capsule */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="fit-narrow flex items-center gap-1.5 sm:gap-2 shrink-0">
             
             {/* Quick Favorites Filter Toggle */}
             <button
@@ -1130,7 +1140,7 @@ const NamesOfAllahComponent: React.FC = () => {
       {/* ========================================================================= */}
       {layout === 'grid4' && (
         <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 px-1" style={{ perspective: '1200px' }}>
-          {filteredNames.map((item, index) => (
+          {filteredNames.slice(0, visibleNameCount).map((item, index) => (
             <Grid4NameCard
               key={item.id}
               item={item}
@@ -1152,7 +1162,7 @@ const NamesOfAllahComponent: React.FC = () => {
       {/* ========================================================================= */}
       {layout === 'grid2' && (
         <div className="grid grid-cols-2 gap-2.5 px-1">
-          {filteredNames.map((item, index) => (
+          {filteredNames.slice(0, visibleNameCount).map((item, index) => (
             <Grid2NameCard
               key={item.id}
               item={item}
@@ -1173,7 +1183,7 @@ const NamesOfAllahComponent: React.FC = () => {
       {/* ========================================================================= */}
       {layout === 'list' && (
         <div className="space-y-2 px-1">
-          {filteredNames.map((item, index) => (
+          {filteredNames.slice(0, visibleNameCount).map((item, index) => (
             <ListNameCard
               key={item.id}
               item={item}

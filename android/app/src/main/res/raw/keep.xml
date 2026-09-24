@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Resources the shrinker cannot see a reference to.
+
+    `shrinkResources` is enabled for release builds, and it decides what to keep
+    by looking for static references in code and XML. These two are named only as
+    plain strings at runtime — `smallIcon: 'ic_stat_notify'` and
+    `sound: 'beep.wav'` in capacitor.config.ts, which Capacitor reads out of
+    assets/capacitor.config.json and resolves by name. The shrinker sees no
+    reference at all and strips them.
+
+    That already happened once: a release APK built without this file contained
+    no ic_stat_notify, so every notification fell back to a blank/blob status-bar
+    icon. Nothing failed at build time — the resource was simply gone.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_notify,@raw/beep" />

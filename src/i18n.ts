@@ -3,42 +3,96 @@ import { useEffect, useCallback } from 'react';
 import { initReactI18next, useTranslation as useI18NextTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES } from './i18n/languages';
 
+/*
+  Arabic is the only locale bundled with the app.
+
+  The other nine used to be static imports here, which put all ten — about
+  948 KB of JSON, of which 840 KB can never be used by any one person — into the
+  entry chunk, to be downloaded and parsed on the main thread at every single
+  launch before anything could be drawn. That was close to half the entry chunk
+  and a straight tax on how fast the app feels to open.
+
+  Arabic stays static because it is the app's own language and the fallback for
+  every missing key: it has to be present the moment the first screen renders,
+  and it is the locale nearly every user will actually read. The rest are
+  fetched the first time someone selects them, then cached by i18next for the
+  life of the session.
+*/
 import ar from './i18n/locales/ar.json';
-import en from './i18n/locales/en.json';
-import fr from './i18n/locales/fr.json';
-import ur from './i18n/locales/ur.json';
-import id from './i18n/locales/id.json';
-import tr from './i18n/locales/tr.json';
-import bn from './i18n/locales/bn.json';
-import ms from './i18n/locales/ms.json';
-import de from './i18n/locales/de.json';
-import es from './i18n/locales/es.json';
 
-export const translations = {
-  ar,
-  en,
-  fr,
-  ur,
-  id,
-  tr,
-  bn,
-  ms,
-  de,
-  es,
+/**
+ * A locale file: a flat map of key to translated string.
+ *
+ * Deliberately NOT `typeof ar`. The translations are not all complete — fr, for
+ * one, is three keys short of Arabic — and claiming otherwise would only push
+ * the gap out to a runtime `undefined`. `t` already falls back to Arabic for a
+ * missing key, so an incomplete locale is a supported state, not an error.
+ */
+type LocaleBundle = Record<string, string>;
+
+/** Locales that are code-split. Vite turns each of these into its own chunk. */
+const LAZY_LOCALES: Record<string, () => Promise<{ default: LocaleBundle }>> = {
+  en: () => import('./i18n/locales/en.json'),
+  fr: () => import('./i18n/locales/fr.json'),
+  ur: () => import('./i18n/locales/ur.json'),
+  id: () => import('./i18n/locales/id.json'),
+  tr: () => import('./i18n/locales/tr.json'),
+  bn: () => import('./i18n/locales/bn.json'),
+  ms: () => import('./i18n/locales/ms.json'),
+  de: () => import('./i18n/locales/de.json'),
+  es: () => import('./i18n/locales/es.json'),
 };
 
-export const resources = {
+/**
+ * Dictionaries loaded so far, always including Arabic.
+ *
+ * `useTranslation`'s `t` reads this directly before consulting i18next, so it
+ * has to grow as locales arrive — not just i18next's own store.
+ */
+export const translations: Record<string, LocaleBundle> = { ar };
+
+export const resources: Record<string, { translation: LocaleBundle }> = {
   ar: { translation: ar },
-  en: { translation: en },
-  fr: { translation: fr },
-  ur: { translation: ur },
-  id: { translation: id },
-  tr: { translation: tr },
-  bn: { translation: bn },
-  ms: { translation: ms },
-  de: { translation: de },
-  es: { translation: es },
 };
+
+/** In-flight loads, so ten components asking at once cause one fetch. */
+const localeLoads = new Map<string, Promise<void>>();
+
+/**
+ * Makes a locale available to i18next, fetching it if this is the first ask.
+ *
+ * Always resolves — a locale that cannot be fetched leaves the app on its
+ * Arabic fallback, which is a degraded translation rather than a broken screen.
+ * Call this before `i18n.changeLanguage`, or use `changeAppLanguage` below.
+ */
+export function loadLanguage(lng: string): Promise<void> {
+  if (!lng || lng === 'ar' || translations[lng]) return Promise.resolve();
+
+  const load = LAZY_LOCALES[lng];
+  if (!load) return Promise.resolve();
+
+  let pending = localeLoads.get(lng);
+  if (!pending) {
+    pending = load()
+      .then((mod) => {
+        translations[lng] = mod.default;
+        resources[lng] = { translation: mod.default };
+        i18n.addResourceBundle(lng, 'translation', mod.default, true, true);
+      })
+      .catch((err) => {
+        console.warn(`[i18n] Could not load the "${lng}" locale; staying on Arabic.`, err);
+        localeLoads.delete(lng);
+      });
+    localeLoads.set(lng, pending);
+  }
+  return pending;
+}
+
+/** Loads the locale, then switches to it. The only safe way to change language. */
+export async function changeAppLanguage(lng: string): Promise<void> {
+  await loadLanguage(lng);
+  await i18n.changeLanguage(lng);
+}
 
 export const RTL_LANGUAGES = SUPPORTED_LANGUAGES.filter(l => l.dir === 'rtl').map(l => l.id);
 
@@ -82,7 +136,9 @@ i18n.on('languageChanged', (lng) => {
   updateDocumentDirection(lng);
 });
 
-export type LanguageCode = keyof typeof translations;
+// Spelled out rather than derived from `translations`, which is now a growing
+// runtime map and would widen this to `string`.
+export type LanguageCode = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'bn' | 'ms' | 'de' | 'es';
 export type TranslationKey = keyof typeof ar;
 
 /**

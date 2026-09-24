@@ -81,6 +81,26 @@ export const MUSHAF_EDITIONS = {
 
 const CACHE_NAME_PREFIX = 'mushaf-cache-v3-';
 const memoryUrlCache = new Map<string, string>();
+/**
+ * Page URLs kept in memory. Each cached page is a blob holding a full page
+ * image, so an unbounded map grew with every page turned until the WebView ran
+ * out of memory on long reading sessions. The pager only shows a few pages at
+ * a time; the oldest entries are dropped (and their blobs freed) past this.
+ */
+const MEMORY_URL_CACHE_LIMIT = 48;
+
+const rememberPageUrl = (key: string, url: string) => {
+  memoryUrlCache.delete(key);
+  memoryUrlCache.set(key, url);
+  while (memoryUrlCache.size > MEMORY_URL_CACHE_LIMIT) {
+    const [oldestKey, oldestUrl] = memoryUrlCache.entries().next().value as [string, string];
+    memoryUrlCache.delete(oldestKey);
+    if (oldestUrl.startsWith('blob:')) {
+      // Give any <img> still decoding the old page a moment before freeing it.
+      setTimeout(() => URL.revokeObjectURL(oldestUrl), 10000);
+    }
+  }
+};
 
 export const mushafService = {
   getCacheName: (editionId: string) => `${CACHE_NAME_PREFIX}${editionId}`,
@@ -302,8 +322,10 @@ export const mushafService = {
 
   getPageUrl: async (editionId: string, pageNum: number, attemptIndex: number = 0) => {
     const memKey = `${editionId}_${pageNum}_${attemptIndex}`;
-    if (memoryUrlCache.has(memKey)) {
-      return memoryUrlCache.get(memKey)!;
+    const remembered = memoryUrlCache.get(memKey);
+    if (remembered) {
+      rememberPageUrl(memKey, remembered); // mark as recently used
+      return remembered;
     }
 
     // Soft prefetch surrounding pages non-blockingly
@@ -336,7 +358,7 @@ export const mushafService = {
         const blob = await cachedResponse.blob();
         if (blob.size > 0) {
           const blobUrl = URL.createObjectURL(blob);
-          memoryUrlCache.set(memKey, blobUrl);
+          rememberPageUrl(memKey, blobUrl);
           return blobUrl;
         }
       } catch (e) {
@@ -350,7 +372,7 @@ export const mushafService = {
       const urls = edition.getUrls(pageNum);
       const url = urls[attemptIndex % urls.length];
       
-      memoryUrlCache.set(memKey, url);
+      rememberPageUrl(memKey, url);
 
       // Cache asynchronously in background for future offline continuity without blocking current page view
       (async () => {

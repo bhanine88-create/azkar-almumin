@@ -60,7 +60,7 @@ export const ContactUs: React.FC = () => {
 
   // Auto detect system info
   const systemInfo = {
-    appVersion: '1.0.0 (أذكار المؤمن)',
+    appVersion: `${__APP_VERSION__} (أذكار المؤمن)`,
     platform: typeof window !== 'undefined' ? window.navigator.platform : 'Unknown',
     userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'Unknown',
     language: settings.appLanguage,
@@ -521,7 +521,7 @@ ${includeSystemInfo ? `\n--- معلومات الجهاز والبيئة ---\nا�
         {/* App Meta Details */}
         <div className="text-center text-[10px] text-slate-400 space-y-1 pt-2">
           <p>{t('app_rights_all_muslims', 'تطبيق أذكار المؤمن • جميع الحقوق محفوظة لجميع المسلمين')}</p>
-          <p className="dir-ltr font-mono text-[9px] text-slate-400/80">Version 1.0.0 • Build {systemInfo.platform}</p>
+          <p className="dir-ltr font-mono text-[9px] text-slate-400/80">Version {__APP_VERSION__} • Build {systemInfo.platform}</p>
         </div>
 
       </div>

@@ -68,6 +68,7 @@ import { SURAH_START_PAGES } from "../utils/quranUtils";
 import { Highlighter } from "lucide-react";
 import { PageTafsir } from "./PageTafsir";
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { setAudioSource } from "../lib/audioBlobUrls";
 
 interface Ayah {
   number: number;
@@ -1806,7 +1807,7 @@ export const SurahDetail: React.FC = () => {
           }
 
           if (fullSurahAudioRef.current.src !== playUrl) {
-            fullSurahAudioRef.current.src = playUrl;
+            setAudioSource(fullSurahAudioRef.current, playUrl);
           }
 
           try {
@@ -2021,7 +2022,7 @@ export const SurahDetail: React.FC = () => {
             console.warn("Error getting cached ayah audio:", err);
           }
 
-          audioRef.current.src = playUrl;
+          setAudioSource(audioRef.current, playUrl);
           audioRef.current.load();
           audioRef.current.playbackRate = playbackRate;
           await audioRef.current.play();
@@ -2362,7 +2363,7 @@ export const SurahDetail: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="fit-narrow flex items-center gap-2 shrink-0">
               {/* Modern Page & Juz' Badge (Moved near settings/audio) */}
               <div className="flex items-center bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-400/20 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl shadow-sm select-none mr-2">
                 <div className="flex items-center gap-1.5">

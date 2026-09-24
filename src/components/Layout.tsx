@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {  Home,  Fingerprint, Settings, Award, User, X, CheckCircle2, Crown, Trophy, Calendar, CreditCard, Sun, Moon,  ChevronRight, BellRing,  HandHeart, Code, Clock, LayoutGrid, Book, Sunrise, Menu, BookOpenText, Compass, Headphones, Users, Target, Scroll, Download, LifeBuoy, Palette, Check, Scale, Facebook, Instagram, Twitter, Send, Globe, BarChart3, Eye, EyeOff, GripVertical, Droplets , Sparkles, Heart, BookOpen, Shield } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform, Reorder } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useDragControls, Reorder, type PanInfo } from 'motion/react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import { useAppContext } from '../AppContext';
 import { cn, getLevelRank, triggerSafeNotification, triggerHaptic } from '../lib/utils';
 import { useTranslation } from '../i18n';
 import { AppIcon } from './ui/AppIcon';
 import { PageSkeletonFallback } from './ui/PageSkeletonFallback';
-import { preloadLibraryRoutes } from '../lib/preloadLibrary';
 import { AppInfoModal } from './AppInfoModal';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
@@ -56,12 +57,59 @@ export const Layout: React.FC = () => {
       const timer = setTimeout(() => {
         setIsSidebarSettingsOpen(false);
       }, 400); // Wait for exit animation to complete
-      
-
-
-  return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
     }
   }, [isDrawerOpen]);
+
+  // Drawer follows the finger: its x drives the backdrop, and a flick or a
+  // drag past a third of its width closes it (towards the edge it came from).
+  // Mirrors the .main-menu-container widths in index.css (w-72 / tablet / desktop).
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 360;
+  const drawerWidth = viewportWidth >= 1024 ? Math.min(420, viewportWidth * 0.8)
+    : viewportWidth >= 768 ? Math.min(380, viewportWidth * 0.8)
+    : Math.min(288, viewportWidth * 0.85);
+  const drawerHiddenX = isRtl ? drawerWidth + 24 : -(drawerWidth + 24);
+  const drawerX = useMotionValue(drawerHiddenX);
+  const drawerBackdropOpacity = useTransform(drawerX, isRtl ? [0, drawerWidth] : [-drawerWidth, 0], isRtl ? [1, 0] : [0, 1]);
+
+  const openDrawer = () => {
+    if (settings.hapticTasbihEnabled !== false) triggerHaptic('light');
+    setIsDrawerOpen(true);
+  };
+
+  const drawerDraggedRef = React.useRef(false);
+
+  const handleDrawerDragEnd = (_: unknown, { offset, velocity }: PanInfo) => {
+    const towardsEdge = isRtl ? 1 : -1;
+    if (offset.x * towardsEdge > drawerWidth / 3 || velocity.x * towardsEdge > 450) {
+      setIsDrawerOpen(false);
+    }
+  };
+
+  // Close the drawer whenever the route changes, however the change was made.
+  useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [location.pathname]);
+
+  // Android hardware / gesture Back closes the drawer instead of navigating the
+  // page underneath it. The listener exists only while the drawer is open, so
+  // Capacitor's default Back behaviour is untouched the rest of the time.
+  useEffect(() => {
+    if (!isDrawerOpen || !Capacitor.isNativePlatform()) return;
+    let removed = false;
+    let handle: { remove: () => Promise<void> } | undefined;
+    CapacitorApp.addListener('backButton', () => {
+      if (isSidebarSettingsOpen) setIsSidebarSettingsOpen(false);
+      else setIsDrawerOpen(false);
+    }).then((h) => {
+      if (removed) h.remove();
+      else handle = h;
+    }).catch(() => {});
+    return () => {
+      removed = true;
+      handle?.remove();
+    };
+  }, [isDrawerOpen, isSidebarSettingsOpen]);
 
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -196,18 +244,6 @@ export const Layout: React.FC = () => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
     
-    // Aggressive Pre-fetching for most visited pages (Quran and Adhkar) to ensure instant loading
-    setTimeout(() => {
-      preloadRoute('/quran');
-      preloadRoute('/quran/1'); // Preloads SurahDetail chunk
-      preloadRoute('/adhkar');
-      preloadRoute('/adhkar/morning'); // Preloads Adhkar detail chunk
-      preloadRoute('/tasbih');
-      preloadRoute('/library');
-    }, 100);
-
-    // Preload library routes automatically when navigating anywhere near library or home
-    preloadLibraryRoutes();
   }, [location.pathname, location.search]);
 
   const [randomDhikr, setRandomDhikr] = useState<string | null>(null);
@@ -576,7 +612,7 @@ export const Layout: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 md:px-8 w-full flex justify-between items-center">
             <div className="flex items-center gap-2 sm:gap-2.5 z-10 flex-1 min-w-0 py-0.5">
               <button 
-                onClick={() => setIsDrawerOpen(true)}
+                onClick={openDrawer}
                 className={cn(
                   "w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all relative group overflow-hidden border shrink-0 cursor-pointer",
                   (settings.visualTheme === 'aurora' || settings.visualTheme === 'emerald' || settings.visualTheme === 'amber' || settings.visualTheme === 'lavender') 
@@ -1168,24 +1204,50 @@ export const Layout: React.FC = () => {
       {/* Sidebar Drawer Menu - القائمة الرئيسية */}
       <AnimatePresence>
         {isDrawerOpen && (
-          <div className="fixed inset-0 z-50 flex shadow-2xl justify-start">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+          <div className="fixed inset-0 z-50 flex shadow-2xl justify-start overscroll-none">
+            {/* Backdrop — its dimming tracks the drawer's position, so it fades
+                in step with the finger while dragging. No backdrop blur: a
+                full-screen blur re-rasterised every frame of the slide is what
+                made the menu stutter on mid-range phones. */}
+            <motion.div
+              initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={() => setIsDrawerOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-40"
-            />
-            
+              className="absolute inset-0 z-40"
+            >
+              <motion.div style={{ opacity: drawerBackdropOpacity }} className="absolute inset-0 bg-slate-950/60" />
+            </motion.div>
+
             {/* Drawer Container */}
             <motion.div
-              initial={{ x: isRtl ? '100%' : '-100%' }}
+              initial={{ x: drawerHiddenX }}
               animate={{ x: 0 }}
-              exit={{ x: isRtl ? '100%' : '-100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              exit={{ x: drawerHiddenX }}
+              transition={{ type: "spring", stiffness: 420, damping: 40, mass: 0.9 }}
+              style={{ x: drawerX, touchAction: 'pan-y', willChange: 'transform' }}
+              drag={isSidebarSettingsOpen ? false : 'x'}
+              dragDirectionLock
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={isRtl ? { left: 0.04, right: 1 } : { left: 1, right: 0.04 }}
+              dragMomentum={false}
+              dragTransition={{ bounceStiffness: 500, bounceDamping: 40 }}
+              onDragStart={() => { drawerDraggedRef.current = true; }}
+              onDragEnd={handleDrawerDragEnd}
+              onClickCapture={(e) => {
+                // A drag that ends over a link must not also open that link.
+                if (drawerDraggedRef.current) {
+                  drawerDraggedRef.current = false;
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }}
+              onPointerDown={() => { drawerDraggedRef.current = false; }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="القائمة الرئيسية"
               className={cn(
-                "relative w-72 max-w-[85vw] h-full shadow-2xl z-50 flex flex-col overflow-hidden main-menu-container",
+                "relative w-72 max-w-[85vw] h-full shadow-2xl z-50 flex flex-col overflow-hidden main-menu-container select-none",
                 currentSidebarTheme.bg,
                 currentSidebarTheme.border,
                 isRtl ? "border-l" : "border-r"
@@ -1200,7 +1262,7 @@ export const Layout: React.FC = () => {
               {/* Drawer Header */}
               <div 
                 className={cn(
-                  "p-4 border-b flex items-center justify-between text-white relative z-10 backdrop-blur-md",
+                  "p-4 border-b flex items-center justify-between text-white relative z-10 shrink-0",
                   currentSidebarTheme.border,
                   settings.sidebarTheme === 'glassy' ? "bg-white/5" : "bg-black/10"
                 )}
@@ -1253,7 +1315,8 @@ export const Layout: React.FC = () => {
                     initial={{ opacity: 0, x: isRtl ? 20 : -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: isRtl ? 20 : -20 }}
-                    className="flex-1 overflow-y-auto px-4 py-4 space-y-6 relative z-10"
+                    transition={{ duration: 0.16, ease: 'easeOut' }}
+                    className="flex-1 min-h-0 overflow-y-auto overscroll-contain momentum-scroll px-4 py-4 space-y-6 relative z-10"
                     style={{ fontFamily: "'Tajawal', sans-serif" }}
                   >
                     <div>
@@ -1427,50 +1490,15 @@ export const Layout: React.FC = () => {
                         onReorder={updateHomeWidgets} 
                         className="space-y-1.5"
                       >
-                        {(homeWidgets || []).map((widget: any) => {
-                          const Icon = widgetIconMap[widget.id] || Sparkles;
-                          return (
-                            <Reorder.Item 
-                              key={widget.id} 
-                              value={widget}
-                              className={cn(
-                                "flex items-center justify-between p-2.5 rounded-xl border transition-colors select-none",
-                                widget.isVisible 
-                                  ? "bg-white/10 border-white/10" 
-                                  : "bg-white/5 border-dashed border-white/5 opacity-60"
-                              )}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/70">
-                                  <GripVertical size={16} />
-                                </div>
-                                <div className={cn(
-                                  "w-7 h-7 rounded-lg flex items-center justify-center",
-                                  widget.isVisible ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-white/30"
-                                )}>
-                                  <Icon size={14} />
-                                </div>
-                                <span className={cn("font-bold text-[11px]", widget.isVisible ? "text-white" : "text-white/50")}>
-                                  {widget.name}
-                                </span>
-                              </div>
-                              
-                              <button 
-                                onClick={() => {
-                                  updateHomeWidgets(homeWidgets.map((w: any) => w.id === widget.id ? { ...w, isVisible: !w.isVisible } : w));
-                                }}
-                                className={cn(
-                                  "p-1.5 rounded-full transition-colors cursor-pointer",
-                                  widget.isVisible 
-                                    ? "text-emerald-400 hover:bg-emerald-500/20" 
-                                    : "text-white/30 hover:bg-white/10"
-                                )}
-                              >
-                                {widget.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
-                              </button>
-                            </Reorder.Item>
-                          );
-                        })}
+                        {(homeWidgets || []).map((widget: any) => (
+                          <WidgetReorderRow
+                            key={widget.id}
+                            widget={widget}
+                            onToggle={() => {
+                              updateHomeWidgets(homeWidgets.map((w: any) => w.id === widget.id ? { ...w, isVisible: !w.isVisible } : w));
+                            }}
+                          />
+                        ))}
                       </Reorder.Group>
                     </div>
 
@@ -1487,8 +1515,11 @@ export const Layout: React.FC = () => {
                     initial={{ opacity: 0, x: isRtl ? -20 : 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: isRtl ? -20 : 20 }}
-                    className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5 overscroll-contain hide-scrollbar relative z-10 flex flex-col"
-                    style={{ fontFamily: "'Tajawal', sans-serif" }}
+                    transition={{ duration: 0.16, ease: 'easeOut' }}
+                    className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-1.5 overscroll-contain momentum-scroll hide-scrollbar relative z-10 flex flex-col"
+                    // touch-action does not inherit across a scroll container, so the
+                    // list needs its own pan-y or the browser claims sideways drags.
+                    style={{ fontFamily: "'Tajawal', sans-serif", touchAction: 'pan-y' }}
                   >
                     {/* User Profile Summary */}
                     <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex items-center gap-3">
@@ -1614,7 +1645,7 @@ export const Layout: React.FC = () => {
               </AnimatePresence>
 
               {/* Drawer Footer & Social Media Buttons */}
-              <div className="p-3.5 border-t border-white/10 bg-black/20 backdrop-blur-md relative z-10 space-y-3 shrink-0">
+              <div className="p-3.5 border-t border-white/10 bg-black/25 relative z-10 space-y-3 shrink-0">
                 {/* Social Section Title */}
                 <div className="flex items-center justify-between px-1">
                   <span className="text-[10.5px] font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -1703,35 +1734,30 @@ export const Layout: React.FC = () => {
         <main 
           ref={mainRef}
           className={cn(
-          "flex-1 overflow-x-hidden relative z-0 hide-scrollbar momentum-scroll overscroll-contain scroll-pt-20 min-h-0",
+          "flex-1 min-w-0 overflow-x-hidden relative z-0 hide-scrollbar momentum-scroll scroll-pt-20 min-h-0",
+          (location.pathname === '/' || location.pathname === '/library') && 'stable-list-scroll',
           isFullHeightPage ? "overflow-y-hidden flex flex-col h-full" : "overflow-y-auto",
-          isWidePage ? "p-0 w-full max-w-none" : "px-4 md:px-8 mx-auto w-full max-w-2xl md:max-w-4xl lg:max-w-5xl pt-3 md:pt-8 pb-10"
+          isWidePage ? "p-0 w-full max-w-none" : "px-4 md:px-8 mx-auto w-full max-w-2xl md:max-w-4xl lg:max-w-5xl pt-3 md:pt-8 pb-10",
+          location.pathname === '/library' && 'pt-0 md:pt-0'
         )}>
           <div className={cn(
             "grid grid-cols-1 grid-rows-1 w-full relative",
             isFullHeightPage ? "h-full flex-1 items-stretch" : "min-h-full items-start"
           )}>
+            {/* Route content keeps its natural height inside the single main scroller. */}
             <React.Suspense fallback={<PageSkeletonFallback />}>
-              <AnimatePresence mode="popLayout">
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, y: 20, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
-                  transition={{ 
-                    duration: 0.35, 
-                    ease: [0.22, 1, 0.36, 1] 
-                  }}
-                  className={cn(
-                    "w-full flex flex-col col-start-1 row-start-1 gpu-layer",
-                    isFullHeightPage ? "h-full min-h-0" : "min-h-full"
-                  )}
-                >
-                  <SectionErrorBoundary>
-                    <Outlet />
-                  </SectionErrorBoundary>
-                </motion.div>
-              </AnimatePresence>
+              <div
+                key={location.pathname}
+                className={cn(
+                  "w-full min-w-0 flex flex-col col-start-1 row-start-1",
+                  location.pathname !== '/' && location.pathname !== '/library' && "page-enter",
+                  isFullHeightPage ? "h-full min-h-0" : "min-h-full"
+                )}
+              >
+                <SectionErrorBoundary>
+                  <Outlet />
+                </SectionErrorBoundary>
+              </div>
             </React.Suspense>
           </div>
         </main>
@@ -1751,7 +1777,7 @@ export const Layout: React.FC = () => {
             settings.visualTheme === 'lavender' ? "bg-violet-950/40 backdrop-blur-md border-t border-violet-500/20" :
             "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800"
           )}>
-            <div className="max-w-2xl md:max-w-4xl mx-auto px-4 md:px-8 pt-1.5 flex justify-between items-center w-full">
+            <div className="max-w-2xl md:max-w-4xl mx-auto px-1 min-[360px]:px-3 sm:px-4 md:px-8 pt-1.5 flex justify-between items-center w-full">
               <NavItem to="/" icon={<Home size={22} />} label={t('home')} onPreload={() => preloadRoute('/')} onClick={() => {
               const destIndex = swipeableTabs.indexOf('/');
               if (currentIndex !== -1 && destIndex !== -1 && destIndex !== currentIndex) {
@@ -1822,6 +1848,60 @@ export const Layout: React.FC = () => {
   );
 };
 
+/**
+ * One row of the "customise home" list. Only the grip starts a reorder, so a
+ * finger on the rest of the row scrolls the settings panel as expected.
+ */
+const WidgetReorderRow: React.FC<{ widget: any; onToggle: () => void }> = ({ widget, onToggle }) => {
+  const dragControls = useDragControls();
+  const Icon = widgetIconMap[widget.id] || Sparkles;
+  return (
+    <Reorder.Item
+      value={widget}
+      dragListener={false}
+      dragControls={dragControls}
+      whileDrag={{ scale: 1.03, boxShadow: '0 10px 24px -8px rgba(0,0,0,0.5)', zIndex: 10 }}
+      className={cn(
+        "relative flex items-center justify-between p-2.5 rounded-xl border transition-colors select-none",
+        widget.isVisible
+          ? "bg-white/10 border-white/10"
+          : "bg-white/5 border-dashed border-white/5 opacity-60"
+      )}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          onPointerDown={(e) => { e.preventDefault(); dragControls.start(e); }}
+          className="-m-2 p-2 cursor-grab active:cursor-grabbing text-white/40 hover:text-white/70"
+          style={{ touchAction: 'none' }}
+        >
+          <GripVertical size={16} />
+        </div>
+        <div className={cn(
+          "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+          widget.isVisible ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-white/30"
+        )}>
+          <Icon size={14} />
+        </div>
+        <span className={cn("font-bold text-[11px] truncate", widget.isVisible ? "text-white" : "text-white/50")}>
+          {widget.name}
+        </span>
+      </div>
+
+      <button
+        onClick={onToggle}
+        className={cn(
+          "p-1.5 rounded-full transition-colors cursor-pointer shrink-0",
+          widget.isVisible
+            ? "text-emerald-400 hover:bg-emerald-500/20"
+            : "text-white/30 hover:bg-white/10"
+        )}
+      >
+        {widget.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+      </button>
+    </Reorder.Item>
+  );
+};
+
 const NavItem: React.FC<{ to: string; icon: React.ReactNode; label: string; onClick?: () => void; onPreload?: () => void }> = ({ to, icon, label, onClick, onPreload }) => {
   const { settings } = useAppContext();
   
@@ -1842,7 +1922,9 @@ const NavItem: React.FC<{ to: string; icon: React.ReactNode; label: string; onCl
       onTouchStart={onPreload}
       className={({ isActive }) =>
         cn(
-          "flex flex-col items-center gap-0.5 transition-all duration-200 relative py-1 px-3 rounded-2xl active:scale-95",
+          // Six tabs share the width: on a 320px phone fixed px-3 pushed the
+          // last tab off-screen, so each tab takes an equal, shrinkable share.
+          "flex-1 min-w-0 max-w-[88px] flex flex-col items-center gap-0.5 transition-all duration-200 relative py-1 px-0.5 min-[360px]:px-1.5 sm:px-3 rounded-2xl active:scale-95",
           isActive ? "scale-105" : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
         )
       }
@@ -1856,7 +1938,7 @@ const NavItem: React.FC<{ to: string; icon: React.ReactNode; label: string; onCl
       {({ isActive }) => (
         <>
           {icon}
-          <span className="text-[9px] font-black uppercase tracking-tight">{label}</span>
+          <span className="text-[9px] font-black uppercase tracking-tight max-w-full truncate">{label}</span>
           {/* Active Indicator Dot */}
           {isActive && (
             <motion.div 

@@ -2,7 +2,8 @@ import { BackButton } from './ui/BackButton';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Coordinates, CalculationMethod, PrayerTimes as AdhanTimes, Madhab } from 'adhan';
-import cityTimezones from 'city-timezones';
+// `city-timezones` is imported dynamically inside fetchTimes — see the comment
+// there. It is 1.4 MB and only one rarely-taken branch needs it.
 import { Sun, 
   Moon, 
   Sunrise, 
@@ -402,7 +403,17 @@ export const PrayerTimes: React.FC = () => {
       const hasCoords = !!currentLat && !!currentLng;
 
       if (!hasCoords && !currUseGPS) {
-        // Find city coords using city-timezones
+        // Find city coords using city-timezones.
+        //
+        // Loaded on demand, not imported at the top of the file. The package is
+        // a 1.4 MB table of every city on earth, and this is the only thing in
+        // the app that reads it — reached only when someone has typed a city by
+        // hand and has no stored coordinates yet. As a static import it rode
+        // along with the PrayerTimes chunk, which App.tsx preloads a second and
+        // a half into every launch, so the whole table was fetched and parsed on
+        // the main thread exactly while the user was trying to scroll the home
+        // screen. `fetchTimes` is already async, so awaiting it here is free.
+        const { default: cityTimezones } = await import('city-timezones');
         const cityData = cityTimezones.lookupViaCity(c);
         const matched = cityData.find(d => 
           d.country.toLowerCase().includes(co.toLowerCase()) || 
@@ -1319,7 +1330,7 @@ export const PrayerTimes: React.FC = () => {
                   className="space-y-4"
                 >
                   {/* Daily Prayer list with Premium audio toggles and complete configurations */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                     {PRAYER_KEYS.map((key) => {
                       const { ar, icon } = PRAYER_NAMES[key];
                       const isCurrent = timeRemaining?.currentPrayerKey === key;
@@ -1334,7 +1345,7 @@ export const PrayerTimes: React.FC = () => {
                           key={key} 
                           whileHover={{ scale: 1.01 }} 
                           className={cn(
-                            "group p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden flex items-center justify-between gap-3 shadow-sm",
+                            "group p-3 min-[400px]:p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden flex items-center justify-between gap-2 min-[400px]:gap-3 shadow-sm",
                             isCurrent 
                               ? "bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border-emerald-500/40 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/10" 
                               : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800/60"
@@ -1343,7 +1354,7 @@ export const PrayerTimes: React.FC = () => {
                           <div className="absolute top-0 right-0 w-24 h-full bg-emerald-500/[0.01] pointer-events-none group-hover:bg-emerald-500/[0.03] transition-colors" />
 
                           {/* Left Column: Actions (Checkbox & Instant Play sound / Alarm status) */}
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5 min-[400px]:gap-3 shrink-0">
                             {/* Done Worship Tracker Checkbox */}
                             <button
                               onClick={() => handleMarkAsDone(ar)}
@@ -1399,12 +1410,12 @@ export const PrayerTimes: React.FC = () => {
                                   <span className="w-0.5 h-3.5 bg-white animate-bounce" style={{ animationDelay: '0.3s' }} />
                                   <span className="w-0.5 h-2.5 bg-white animate-bounce" style={{ animationDelay: '0.5s' }} />
                                 </span>
-                              ) : "اختبار"}
+                              ) : <span className="hidden min-[400px]:inline">اختبار</span>}
                             </button>
                           </div>
 
                           {/* Center & Right portion: Prayer times label */}
-                          <div className="flex items-center gap-3 text-right">
+                          <div className="flex items-center gap-2 min-[400px]:gap-3 text-right min-w-0">
                             {/* Alarm/Timings state */}
                             <div>
                               <div className="flex items-center gap-1.5 justify-end">
@@ -1426,7 +1437,7 @@ export const PrayerTimes: React.FC = () => {
                             {/* Large Calligraphic Clock Number & Icon */}
                             <div className="flex items-center gap-3">
                               <span className={cn(
-                                "text-2xl sm:text-3xl font-black font-mono tracking-tighter",
+                                "text-xl min-[400px]:text-2xl sm:text-3xl font-black font-mono tracking-tighter shrink-0",
                                 isCurrent ? "text-emerald-600 dark:text-emerald-400" : "text-slate-800 dark:text-slate-100"
                               )} dir="ltr">
                                 {data?.timings?.[key]?.split(' ')[0] || '--:--'}

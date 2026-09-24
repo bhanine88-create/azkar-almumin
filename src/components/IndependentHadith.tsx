@@ -543,7 +543,8 @@ export const IndependentHadith: React.FC = () => {
         )} />
       </div>
 
-      <div className="relative z-10 space-y-4 px-3 sm:px-5 md:px-6 max-w-5xl mx-auto">
+      {/* Phones: header and cards share one hairline, even 3px margin to the screen edges. */}
+      <div className="relative z-10 space-y-4 px-[3px] sm:px-5 md:px-6 max-w-5xl mx-auto">
         {/* Sticky Header Container - Title and Category Tabs remain fixed when scrolling */}
         <div className="sticky top-0 z-40 pt-1 sm:pt-2 pb-1 bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl transition-all duration-300">
           <div 
@@ -1338,7 +1339,8 @@ export const IndependentHadith: React.FC = () => {
                 className={cn(
                   "w-full transition-all duration-300 transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform",
                   snapScrolling && "hadith-snap-card snap-start snap-always scroll-mt-3 sm:scroll-mt-4",
-                  isFocus ? "max-w-lg mx-auto w-[92%] sm:w-[88%]" : "h-full flex flex-col w-[96%] sm:w-[94%] md:w-full mx-auto"
+                  // Same width as the section header above, so the page edges line up.
+                  isFocus ? "w-full" : "h-full flex flex-col w-full"
                 )}
                 style={snapScrolling ? { scrollSnapAlign: 'start', scrollSnapStop: 'always' } : undefined}
               >
@@ -1728,7 +1730,7 @@ export const IndependentHadith: React.FC = () => {
                               }
                             }
                           }}
-                          className="w-full max-w-lg mx-auto transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
+                          className="w-full transform-gpu [backface-visibility:hidden] [transform:translateZ(0)] will-change-transform cursor-grab active:cursor-grabbing touch-pan-y select-none"
                         >
                           {renderHadithCard(items[focusIndex], focusIndex, true)}
                         </motion.div>
@@ -1737,7 +1739,7 @@ export const IndependentHadith: React.FC = () => {
 
                     {/* Focus Mode Navigation & Quick Jump */}
                     <div className="w-full flex flex-col items-center gap-3 mt-4" dir="rtl" data-html2canvas-ignore>
-                      <div className="flex items-center justify-between w-full max-w-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
+                      <div className="flex items-center justify-between w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
                         {/* Previous button */}
                         <button
                           type="button"

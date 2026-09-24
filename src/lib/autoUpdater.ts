@@ -1,217 +1,240 @@
 import { Capacitor } from '@capacitor/core';
 import { registerSW } from 'virtual:pwa-register';
 
-const LIVE_APP_URL = 'https://ais-pre-6lmcwdbxwli4qmb6fr6hbn-194075133835.europe-west3.run.app';
+/**
+ * Update pipeline for the web / PWA build.
+ *
+ * Caching model is cache-first, network-fallback: Workbox precaches the whole
+ * app shell at install time, so every later launch is served from disk and the
+ * app opens instantly with no network at all. Freshness is handled out of band
+ * — we poll `/version.json` and ask the service worker to re-check — and a new
+ * build is swapped in only at a moment where a reload will not interrupt the
+ * user.
+ *
+ * On native builds this module deliberately does almost nothing. The assets
+ * there are already local files inside the APK, so a service worker adds no
+ * speed, and worse: it would keep serving its own precached copies from the
+ * `https://localhost` cache after `otaUpdater` swaps the served directory,
+ * silently pinning the app to the old build. Native freshness is owned by
+ * `src/lib/otaUpdater.ts` alone.
+ */
 
-// Store client session initial build time
-let currentBuildTime: number | null = null;
-let updateSWHandler: ((reloadPage?: boolean) => Promise<void>) | null = null;
-let swRegistration: ServiceWorkerRegistration | null = null;
-let isRefreshing = false;
+const VERSION_URL = '/version.json';
 
-// Detect if running inside preview iframe
-const isInsideIframe = typeof window !== 'undefined' && window.self !== window.top;
+/** How often to ask whether a new deployment exists. */
+const CHECK_INTERVAL_MS = 15 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 8000;
+
+/** Build stamp compiled into the running bundle (injected by Vite). */
+const BUILD_TIME = Number(__APP_BUILD_TIME__) || 0;
+export const APP_VERSION = __APP_VERSION__;
+
+const isNative = Capacitor.isNativePlatform();
 const isDevMode = import.meta.env.DEV;
+/** AI Studio and similar previews run the app inside an iframe. */
+const isInsideIframe = typeof window !== 'undefined' && window.self !== window.top;
 
-export async function checkServerVersion(): Promise<{ hasUpdate: boolean; version?: string; serverBuildTime?: number }> {
-  try {
-    const isLocalAPK = typeof window !== 'undefined' && Capacitor.isNativePlatform() && (window.location.hostname === 'localhost' || window.location.protocol === 'file:');
-    let fetchUrl = `/api/app-version?t=${Date.now()}`;
-    if (isLocalAPK) {
-       fetchUrl = `${LIVE_APP_URL}/api/app-version?t=${Date.now()}`;
-    }
-    const res = await fetch(fetchUrl, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    });
-    if (!res.ok) return { hasUpdate: false };
-    const data = await res.json();
-    const serverBuild = Number(data.buildTime) || 0;
+let updateSW: ((reloadPage?: boolean) => Promise<void>) | null = null;
+let swRegistration: ServiceWorkerRegistration | null = null;
+let updateReady = false;
+let isReloading = false;
 
-    if (isLocalAPK) {
-        return { hasUpdate: true, version: data.version, serverBuildTime: serverBuild };
-    }
-
-    if (currentBuildTime === null) {
-      currentBuildTime = serverBuild;
-      return { hasUpdate: false, version: data.version, serverBuildTime: serverBuild };
-    }
-
-    if (serverBuild > currentBuildTime) {
-      console.log(`[AutoUpdater] New deployment detected on server (${serverBuild} > ${currentBuildTime}).`);
-      return { hasUpdate: true, version: data.version, serverBuildTime: serverBuild };
-    }
-
-    return { hasUpdate: false, version: data.version, serverBuildTime: serverBuild };
-  } catch (err) {
-    return { hasUpdate: false };
-  }
+export interface VersionInfo {
+  version: string;
+  buildTime: number;
 }
 
-export async function triggerImmediateUpdate(): Promise<void> {
-  if (isRefreshing) return;
-  isRefreshing = true;
+function withTimeout(ms: number): { signal: AbortSignal; done: () => void } {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return { signal: controller.signal, done: () => clearTimeout(timer) };
+}
 
-  console.log('[AutoUpdater] Applying instant update...');
+/** True when a reload right now would visibly interrupt the user. */
+function isBusy(): boolean {
+  if (document.visibilityState !== 'visible') return false;
 
-  if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
-    const isLocalAPK = window.location.hostname === 'localhost' || window.location.protocol === 'file:';
-    if (isLocalAPK) {
-        localStorage.setItem('use_live_update', 'true');
-        window.location.href = LIVE_APP_URL;
-        return;
+  // Never cut off Quran recitation, a lecture or an adhan mid-playback.
+  const media = Array.from(document.querySelectorAll('audio, video'));
+  if (media.some((el) => !(el as HTMLMediaElement).paused)) return true;
+
+  // Don't yank the page out from under someone who is typing.
+  const active = document.activeElement;
+  if (active) {
+    const tag = active.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (active as HTMLElement).isContentEditable) {
+      return true;
     }
   }
 
-  // Unregister existing workers to force fresh installation if needed
-  if ('serviceWorker' in navigator) {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const reg of registrations) {
-        await reg.update();
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
+  return false;
+}
 
-  // If we have updateSW handler, execute it
-  if (updateSWHandler) {
-    try {
-      await updateSWHandler(true);
-    } catch (e) {
-      console.warn('[AutoUpdater] updateSW failed, falling back to reload', e);
-    }
-  }
+function applyUpdate() {
+  if (isReloading) return;
+  isReloading = true;
 
-  // Small delay to ensure caches flush, then reload
-  setTimeout(() => {
+  if (updateSW) {
+    // Activates the waiting worker and reloads once it has taken control.
+    updateSW(true).catch(() => window.location.reload());
+  } else {
     window.location.reload();
-  }, 150);
+  }
 }
 
-export function initAutoUpdater() {
-  if (typeof window === 'undefined') return () => {};
+/**
+ * Reloads into the new build at the first moment it won't be disruptive:
+ * right away if the app is idle, otherwise the next time it regains focus.
+ */
+function applyUpdateWhenIdle() {
+  updateReady = true;
 
-  // Clean up legacy image caches immediately so new official icons appear without delay
-  if ('caches' in window) {
-    caches.keys().then((keys) => {
-      keys.forEach((key) => {
-        if (
-          key.includes('static-images-cache-v4') ||
-          key.includes('static-images-cache-v3') ||
-          key.includes('static-images-cache-v2') ||
-          key.includes('static-images-cache-v1') ||
-          key.includes('athkar-mumin-v4') ||
-          key.includes('athkar-mumin-v3') ||
-          key.includes('static-code-cache-v3') ||
-          key.includes('static-code-cache-v4')
-        ) {
-          console.log('[AutoUpdater] Purging legacy cache:', key);
-          caches.delete(key);
-        }
-      });
-    }).catch(() => {});
+  if (!isBusy()) {
+    applyUpdate();
+    return;
   }
 
-  // In development mode or inside iframe preview, unregister all SWs to avoid intercepting on-demand Vite modules
-  if (isDevMode || isInsideIframe) {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (const reg of registrations) {
-          console.log('[AutoUpdater] Unregistering service worker in dev/iframe mode:', reg.scope);
-          reg.unregister();
-        }
-      }).catch(() => {});
-    }
-    return () => {};
-  }
-
-  // Handle service worker controller change (instant activation when new worker claims clients in production)
-  if ('serviceWorker' in navigator) {
-    let initialController = navigator.serviceWorker.controller;
-    
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (initialController && !isRefreshing) {
-        isRefreshing = true;
-        console.log('[AutoUpdater] Controller changed. Reloading immediately for instant update.');
-        window.location.reload();
-      } else if (!initialController) {
-        initialController = navigator.serviceWorker.controller;
-        console.log('[AutoUpdater] Initial SW claimed client. No reload needed.');
-      }
-    });
-
-    try {
-      updateSWHandler = registerSW({
-        immediate: true,
-        onNeedRefresh() {
-          console.log('[AutoUpdater] SW onNeedRefresh fired - updating now...');
-          if (updateSWHandler) {
-            updateSWHandler(true);
-          } else {
-            window.location.reload();
-          }
-        },
-        onOfflineReady() {
-          console.log('[AutoUpdater] App is ready for offline usage.');
-        },
-        onRegistered(registration) {
-          swRegistration = registration || null;
-          if (registration) {
-            // Check for update immediately on registration
-            registration.update().catch(() => {});
-          }
-        },
-        onRegisterError(error) {
-          console.warn('[AutoUpdater] SW register error:', error);
-        }
-      });
-    } catch (e) {
-      console.warn('[AutoUpdater] Failed to register SW:', e);
-    }
-  }
-
-  // Initial server version check
-  checkServerVersion();
-
-  // Periodic heartbeat: check every 30 seconds for new server deployments or SW updates
-  const intervalId = setInterval(async () => {
-    if (document.visibilityState === 'visible') {
-      if (swRegistration) {
-        swRegistration.update().catch(() => {});
-      }
-      
-      const status = await checkServerVersion();
-      if (status.hasUpdate) {
-        triggerImmediateUpdate();
-      }
-    }
-  }, 30000);
-
-  // Check whenever user switches back to the tab, focuses, or reconnects online
-  const handleVisibilityOrFocus = async () => {
-    if (document.visibilityState === 'visible') {
-      if (swRegistration) {
-        swRegistration.update().catch(() => {});
-      }
-      const status = await checkServerVersion();
-      if (status.hasUpdate) {
-        triggerImmediateUpdate();
-      }
+  const retry = () => {
+    if (!updateReady || isReloading) return;
+    if (!isBusy()) {
+      document.removeEventListener('visibilitychange', retry);
+      applyUpdate();
     }
   };
 
-  document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-  window.addEventListener('focus', handleVisibilityOrFocus);
-  window.addEventListener('online', handleVisibilityOrFocus);
+  document.addEventListener('visibilitychange', retry);
+  const poll = setInterval(() => {
+    if (isReloading) {
+      clearInterval(poll);
+      return;
+    }
+    retry();
+  }, 20_000);
+}
+
+/** Reads the deployed build stamp. Returns null when offline or unavailable. */
+export async function fetchDeployedVersion(): Promise<VersionInfo | null> {
+  const { signal, done } = withTimeout(FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${VERSION_URL}?t=${Date.now()}`, {
+      cache: 'no-store',
+      signal,
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const buildTime = Number(data?.buildTime);
+    if (!Number.isFinite(buildTime) || buildTime <= 0) return null;
+    return { version: String(data.version ?? ''), buildTime };
+  } catch {
+    return null;
+  } finally {
+    done();
+  }
+}
+
+/** True when Netlify is serving a build newer than the one running. */
+export async function hasNewerDeployment(): Promise<boolean> {
+  const deployed = await fetchDeployedVersion();
+  return !!deployed && BUILD_TIME > 0 && deployed.buildTime > BUILD_TIME;
+}
+
+export function isUpdateReady(): boolean {
+  return updateReady;
+}
+
+/**
+ * Applies a waiting update right now. Used by the explicit "check for updates"
+ * button, where the user has asked for the interruption.
+ */
+export function applyUpdateNow() {
+  applyUpdate();
+}
+
+/** Lets a settings screen force the check instead of waiting for the poll. */
+export async function checkForUpdateNow(): Promise<boolean> {
+  if (swRegistration) {
+    await swRegistration.update().catch(() => {});
+  }
+  return hasNewerDeployment();
+}
+
+/** Removes any service worker and cache left behind by an earlier build. */
+async function purgeServiceWorkers(reason: string) {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for (const reg of registrations) {
+      console.info(`[AutoUpdater] Unregistering service worker (${reason}):`, reg.scope);
+      await reg.unregister();
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+export function initAutoUpdater(): () => void {
+  if (typeof window === 'undefined') return () => {};
+
+  // A service worker here would fight the OTA updater for control of
+  // https://localhost, so make sure none survives from an older build.
+  if (isNative) {
+    void purgeServiceWorkers('native build serves local assets directly');
+    return () => {};
+  }
+
+  // A worker would intercept Vite's on-demand module requests in dev, and in an
+  // iframe preview it caches a URL the user never visits again.
+  if (isDevMode || isInsideIframe) {
+    void purgeServiceWorkers('dev / iframe preview');
+    return () => {};
+  }
+
+  if ('serviceWorker' in navigator) {
+    try {
+      updateSW = registerSW({
+        immediate: true,
+        onNeedRefresh() {
+          applyUpdateWhenIdle();
+        },
+        onOfflineReady() {
+          console.info('[AutoUpdater] App shell cached — offline launches are ready.');
+        },
+        onRegisteredSW(_url, registration) {
+          swRegistration = registration || null;
+        },
+        onRegisterError(error) {
+          console.warn('[AutoUpdater] Service worker registration failed:', error);
+        },
+      });
+    } catch (err) {
+      console.warn('[AutoUpdater] Could not register the service worker:', err);
+    }
+  }
+
+  const poll = async () => {
+    if (document.visibilityState !== 'visible' || isReloading) return;
+
+    if (swRegistration) {
+      await swRegistration.update().catch(() => {});
+    }
+
+    // `version.json` catches the case where Netlify has a new deploy but the
+    // browser has not yet noticed a byte-level change in sw.js.
+    if (await hasNewerDeployment()) {
+      applyUpdateWhenIdle();
+    }
+  };
+
+  const intervalId = setInterval(poll, CHECK_INTERVAL_MS);
+  const onFocusOrOnline = () => void poll();
+
+  document.addEventListener('visibilitychange', onFocusOrOnline);
+  window.addEventListener('online', onFocusOrOnline);
 
   return () => {
     clearInterval(intervalId);
-    document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-    window.removeEventListener('focus', handleVisibilityOrFocus);
-    window.removeEventListener('online', handleVisibilityOrFocus);
+    document.removeEventListener('visibilitychange', onFocusOrOnline);
+    window.removeEventListener('online', onFocusOrOnline);
   };
 }

@@ -255,14 +255,14 @@ export const HeartFeelingsWidget: React.FC = () => {
                   type="button"
                   id="mood-btn-tired"
                   onClick={() => handleSelectFeeling('tired')}
-                  className={`rounded-full py-2 sm:py-2.5 px-3 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
+                  className={`rounded-full py-2 sm:py-2.5 px-2 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
                     selectedFeelingId === 'tired'
                       ? 'bg-white text-orange-950 border-white shadow-xl ring-2 ring-white/80 scale-105'
                       : 'bg-white/15 hover:bg-white/25 border-white/40 text-white'
                   }`}
                 >
                   <Moon className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[2.5]" />
-                  <span className="truncate">{t('feeling_tired', 'متعب')}</span>
+                  <span className="whitespace-nowrap">{t('feeling_tired', 'متعب')}</span>
                 </button>
 
                 {/* 2. متفائل */}
@@ -270,14 +270,14 @@ export const HeartFeelingsWidget: React.FC = () => {
                   type="button"
                   id="mood-btn-optimistic"
                   onClick={() => handleSelectFeeling('optimistic')}
-                  className={`rounded-full py-2 sm:py-2.5 px-3 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
+                  className={`rounded-full py-2 sm:py-2.5 px-2 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
                     selectedFeelingId === 'optimistic'
                       ? 'bg-white text-orange-950 border-white shadow-xl ring-2 ring-white/80 scale-105'
                       : 'bg-white/15 hover:bg-white/25 border-white/40 text-white'
                   }`}
                 >
                   <Sun className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[2.5]" />
-                  <span className="truncate">{t('feeling_optimistic', 'متفائل')}</span>
+                  <span className="whitespace-nowrap">{t('feeling_optimistic', 'متفائل')}</span>
                 </button>
 
                 {/* 3. قلق */}
@@ -285,14 +285,14 @@ export const HeartFeelingsWidget: React.FC = () => {
                   type="button"
                   id="mood-btn-anxious"
                   onClick={() => handleSelectFeeling('anxious')}
-                  className={`rounded-full py-2 sm:py-2.5 px-3 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
+                  className={`rounded-full py-2 sm:py-2.5 px-2 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
                     selectedFeelingId === 'anxious'
                       ? 'bg-white text-orange-950 border-white shadow-xl ring-2 ring-white/80 scale-105'
                       : 'bg-white/15 hover:bg-white/25 border-white/40 text-white'
                   }`}
                 >
                   <Zap className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[2.5]" />
-                  <span className="truncate">{t('feeling_anxious', 'قلق')}</span>
+                  <span className="whitespace-nowrap">{t('feeling_anxious', 'قلق')}</span>
                 </button>
               </div>
 
@@ -303,14 +303,14 @@ export const HeartFeelingsWidget: React.FC = () => {
                   type="button"
                   id="mood-btn-calm"
                   onClick={() => handleSelectFeeling('calm')}
-                  className={`rounded-full py-2 sm:py-2.5 px-3 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
+                  className={`rounded-full py-2 sm:py-2.5 px-2 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
                     selectedFeelingId === 'calm'
                       ? 'bg-white text-orange-950 border-white shadow-xl ring-2 ring-white/80 scale-105'
                       : 'bg-white/15 hover:bg-white/25 border-white/40 text-white'
                   }`}
                 >
                   <Smile className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[2.5]" />
-                  <span className="truncate">{t('feeling_calm', 'هادئ')}</span>
+                  <span className="whitespace-nowrap">{t('feeling_calm', 'هادئ')}</span>
                 </button>
 
                 {/* 5. حزين */}
@@ -318,14 +318,14 @@ export const HeartFeelingsWidget: React.FC = () => {
                   type="button"
                   id="mood-btn-sad"
                   onClick={() => handleSelectFeeling('sad')}
-                  className={`rounded-full py-2 sm:py-2.5 px-3 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
+                  className={`rounded-full py-2 sm:py-2.5 px-2 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
                     selectedFeelingId === 'sad'
                       ? 'bg-white text-orange-950 border-white shadow-xl ring-2 ring-white/80 scale-105'
                       : 'bg-white/15 hover:bg-white/25 border-white/40 text-white'
                   }`}
                 >
                   <Frown className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[2.5]" />
-                  <span className="truncate">{t('feeling_sad', 'حزين')}</span>
+                  <span className="whitespace-nowrap">{t('feeling_sad', 'حزين')}</span>
                 </button>
 
                 {/* 6. محتار */}
@@ -333,14 +333,14 @@ export const HeartFeelingsWidget: React.FC = () => {
                   type="button"
                   id="mood-btn-confused"
                   onClick={() => handleSelectFeeling('confused')}
-                  className={`rounded-full py-2 sm:py-2.5 px-3 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
+                  className={`rounded-full py-2 sm:py-2.5 px-2 sm:px-4 text-sm sm:text-base font-black flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-sm shadow-md transition-all active:scale-95 cursor-pointer border-2 ${
                     selectedFeelingId === 'confused'
                       ? 'bg-white text-orange-950 border-white shadow-xl ring-2 ring-white/80 scale-105'
                       : 'bg-white/15 hover:bg-white/25 border-white/40 text-white'
                   }`}
                 >
                   <HelpCircle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[2.5]" />
-                  <span className="truncate">{t('feeling_confused', 'محتار')}</span>
+                  <span className="whitespace-nowrap">{t('feeling_confused', 'محتار')}</span>
                 </button>
               </div>
             </div>

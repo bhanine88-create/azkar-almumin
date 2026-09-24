@@ -1,8 +1,7 @@
 /**
- * Utility to preload all Library and Audio Library route chunks in the background.
+ * Utilities to preload a selected library route or the audio library's related screens.
  * Prevents white screen flashes and loading delays when users enter library or audio sections.
  */
-let isLibraryPreloaded = false;
 let isAudioPreloaded = false;
 
 export function preloadAudioLibraryRoutes() {
@@ -28,35 +27,29 @@ export function preloadAudioLibraryRoutes() {
   }
 }
 
-export function preloadLibraryRoutes() {
-  if (isLibraryPreloaded || typeof window === 'undefined') return;
-  isLibraryPreloaded = true;
+const libraryRouteLoaders: Record<string, () => Promise<unknown>> = {
+  '/aqeedah': () => import('../components/AqeedahHub'),
+  '/audio-library': () => import('../components/AudioLibraryHub'),
+  '/names': () => import('../components/NamesOfAllah'),
+  '/sunnah-hadith/daily': () => import('../components/IndependentHadith'),
+  '/hadith-qudsi': () => import('../components/HadithQudsi'),
+  '/inspiration': () => import('../components/Inspirations'),
+  '/scholar-sayings': () => import('../components/ScholarSayings'),
+  '/insights': () => import('../components/BelieverInsights'),
+  '/sunnah-hadith/fadael': () => import('../components/IndependentHadith'),
+  '/prophet': () => import('../components/Prophet'),
+  '/istighfar': () => import('../components/Istighfar'),
+  '/quiz': () => import('../components/IslamicQuiz'),
+  '/stories': () => import('../components/IslamicStoriesList'),
+  '/tasbih': () => import('../components/Tasbih'),
+  '/fasting-tracker': () => import('../components/FastingTracker'),
+  '/font-studio': () => import('../components/IslamicFontStudio'),
+};
 
-  // Idle preloading using requestIdleCallback or setTimeout
-  const triggerPreload = () => {
-    import('../components/IndependentHadith').catch(() => {});
-    import('../components/AqeedahHub').catch(() => {});
-    import('../components/HadithQudsi').catch(() => {});
-    import('../components/Inspirations').catch(() => {});
-    import('../components/ScholarSayings').catch(() => {});
-    import('../components/BelieverInsights').catch(() => {});
-    import('../components/Prophet').catch(() => {});
-    import('../components/Istighfar').catch(() => {});
-    import('../components/IslamicQuiz').catch(() => {});
-    import('../components/IslamicStoriesList').catch(() => {});
-    import('../components/IslamicStoryDetail').catch(() => {});
-    import('../components/Tasbih').catch(() => {});
-    import('../components/NamesOfAllah').catch(() => {});
-    import('../components/SadaqahJariyah').catch(() => {});
-    
-    // Also preload audio routes
-    preloadAudioLibraryRoutes();
-  };
-
-  if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(triggerPreload, { timeout: 2000 });
-  } else {
-    setTimeout(triggerPreload, 200);
-  }
+// Called on mouse hover/keyboard focus, never on touch-start: a vertical swipe
+// over a card should not queue dozens of modules for parsing during the fling.
+export function preloadLibraryRoute(route: string) {
+  const loadRoute = libraryRouteLoaders[route];
+  if (typeof window !== 'undefined' && loadRoute) void loadRoute().catch(() => {});
 }
 

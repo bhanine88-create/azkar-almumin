@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { safeLocalStorageSetItem, safeLocalStorageGetItem,  } from '../utils/storage';
+import { safeLocalStorageSetItem, safeLocalStorageGetItem, STORAGE_KEYS, readFirstStored, safeJsonParse } from '../utils/storage';
 
 interface AdhkarCountsContextType {
   counts: Record<string, number>;
@@ -12,8 +12,7 @@ const AdhkarCountsContext = createContext<AdhkarCountsContextType | undefined>(u
 
 export const AdhkarCountsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [counts, setCounts] = useState<Record<string, number>>(() => {
-    const saved = safeLocalStorageGetItem('believer_adhkar_counts_v23') || safeLocalStorageGetItem('believer_adhkar_counts_v22') || safeLocalStorageGetItem('believer_adhkar_counts_v21') || safeLocalStorageGetItem('believer_adhkar_counts_v20') || safeLocalStorageGetItem('believer_adhkar_counts_v6') || safeLocalStorageGetItem('believer_adhkar_counts_v5');
-    return saved ? JSON.parse(saved) : {};
+    return safeJsonParse<Record<string, number>>(readFirstStored(STORAGE_KEYS.counts), {});
   });
 
   useEffect(() => {

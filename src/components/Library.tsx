@@ -1,12 +1,11 @@
 import { BackButton } from './ui/BackButton';
-import React, { useEffect, useMemo, useCallback } from 'react';
-import { motion } from 'motion/react';
+import React, { useMemo, useCallback } from 'react';
 import { BookOpen, Lightbulb, Droplets, MessageCircle, Star, History, Scroll, Sparkles, Activity, Quote, Fingerprint, Crown, Moon, Headphones, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 import { cn } from '../lib/utils';
 import { useSmartNavigation } from '../lib/navigation';
-import { preloadLibraryRoutes } from '../lib/preloadLibrary';
+import { preloadLibraryRoute } from '../lib/preloadLibrary';
 
 interface LibraryItem {
   to: string;
@@ -20,7 +19,6 @@ interface LibraryItem {
 
 interface LibraryCardProps {
   item: LibraryItem;
-  isRtl: boolean;
   onNavigate: (to: string) => void;
 }
 
@@ -28,71 +26,54 @@ const LibraryCard = React.memo<LibraryCardProps>(({ item, onNavigate }) => {
   const handleClick = useCallback(() => {
     onNavigate(item.to);
   }, [item.to, onNavigate]);
+  const handlePreload = useCallback(() => {
+    preloadLibraryRoute(item.to);
+  }, [item.to]);
 
   return (
-    <div className="col-span-1">
-      <motion.button
-        variants={{
-          hidden: { opacity: 0, y: 20, scale: 0.95 },
-          show: { 
-            opacity: 1, 
-            y: 0, 
-            scale: 1,
-            transition: {
-              type: "spring",
-              stiffness: 260,
-              damping: 24
-            }
-          }
-        }}
-        whileHover={{ 
-          y: -5, 
-          scale: 1.025,
-          transition: { duration: 0.2, ease: "easeOut" }
-        }}
-        whileTap={{ scale: 0.97 }}
-        onMouseEnter={preloadLibraryRoutes}
-        onTouchStart={preloadLibraryRoutes}
+      <button
+        type="button"
+        onMouseEnter={handlePreload}
+        onFocus={handlePreload}
         onClick={handleClick}
         className={cn(
-          "relative group flex flex-col justify-between items-center w-full h-[142px] sm:h-[152px] p-3 sm:p-3.5 overflow-hidden rounded-2xl sm:rounded-3xl transition-all duration-300 text-center outline-none cursor-pointer",
+          "navigation-card relative group flex flex-col justify-between items-center min-w-0 w-full h-full min-h-[158px] sm:min-h-[168px] p-3 sm:p-3.5 rounded-2xl sm:rounded-3xl transition-colors text-center cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#feb10b]",
           "border border-emerald-500/60 dark:border-emerald-400/50",
           "hover:border-[#feb10b] dark:hover:border-[#feb10b]",
           "bg-gradient-to-br from-[#063b28] via-[#04281b] to-[#021810]",
-          "shadow-xl shadow-emerald-950/50 dark:shadow-[0_8px_30px_rgba(0,0,0,0.85)] hover:shadow-2xl hover:shadow-emerald-950/70"
+          "shadow-md shadow-emerald-950/30"
         )}
       >
         {/* Subtle Ambient Islamic Arabesque Pattern without color-washing overlay */}
-        <div className="absolute inset-0 opacity-20 bg-[url('/images/arabesque.png')] pointer-events-none" />
+        <div aria-hidden="true" className="absolute inset-0 rounded-[inherit] opacity-20 bg-[url('/images/arabesque.png')] pointer-events-none" />
         
-        {/* Warm Golden Corner Glow */}
-        <div className="absolute -top-10 -right-10 w-28 h-28 bg-[#feb10b]/20 rounded-full blur-2xl group-hover:scale-125 group-hover:bg-[#feb10b]/35 transition-all duration-500 pointer-events-none" />
+        {/* A painted gradient keeps the warm glow without a blurred compositing layer per card. */}
+        <div aria-hidden="true" className="absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_at_top_right,rgba(254,177,11,0.18),transparent_65%)] pointer-events-none" />
         
         {/* Card Foreground Content */}
-        <div className="relative z-10 flex flex-col items-center justify-between w-full h-full">
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-between gap-3 min-w-0 w-full">
           {/* Icon in High-Contrast Dark Capsule with Golden Glowing Border */}
-          <div className="flex-1 flex items-center justify-center w-full pt-0.5">
-            <div className="w-12 h-12 rounded-2xl bg-black/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center border border-[#feb10b]/60 dark:border-[#feb10b]/70 shadow-lg group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-[#feb10b]/25 group-hover:border-[#feb10b] transition-all duration-300 shrink-0">
+          <div aria-hidden="true" className="flex items-center justify-center w-full pt-0.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#061d14] flex items-center justify-center border border-[#feb10b]/60 dark:border-[#feb10b]/70 group-hover:border-[#feb10b] transition-colors shrink-0">
               {React.cloneElement(item.icon as React.ReactElement<any>, { 
                 size: 24, 
-                className: "text-[#feb10b] filter drop-shadow-[0_2px_8px_rgba(254,177,11,0.8)] group-hover:scale-110 group-hover:brightness-125 transition-all duration-300" 
+                className: "text-[#feb10b]"
               })}
             </div>
           </div>
 
           {/* Title and Subtitle with Maximum Contrast and Legibility */}
           <div className="min-w-0 w-full shrink-0 flex flex-col justify-center items-center pb-0.5">
-            <h3 className="font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] group-hover:text-[#feb10b] transition-colors text-xs sm:text-[13.5px] leading-tight line-clamp-1 px-1 mb-1 tracking-tight text-center">
+            <h3 className="font-black text-white group-hover:text-[#feb10b] transition-colors text-xs sm:text-[13.5px] leading-relaxed break-words w-full px-1 mb-1 tracking-tight text-center">
               {item.title}
             </h3>
-            <p className="text-emerald-100 dark:text-emerald-100 font-extrabold text-[10px] sm:text-[10.5px] leading-tight line-clamp-1 px-1 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] opacity-90 mb-1.5">
+            <p className="text-emerald-100 font-extrabold text-[10px] sm:text-[10.5px] leading-relaxed line-clamp-2 break-words w-full px-1 text-center mb-1.5">
               {item.subtitle}
             </p>
-            <div className="w-5 h-0.5 bg-[#feb10b] shadow-[0_0_8px_rgba(254,177,11,1)] rounded-full group-hover:w-9 group-hover:bg-[#fec84b] transition-all duration-300" />
+            <div aria-hidden="true" className="w-5 h-0.5 bg-[#feb10b] rounded-full" />
           </div>
         </div>
-      </motion.button>
-    </div>
+      </button>
   );
 });
 
@@ -102,11 +83,6 @@ const Library: React.FC = () => {
   const { settings } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   const { navigate } = useSmartNavigation();
-
-  // Preload all library routes as soon as Library screen mounts
-  useEffect(() => {
-    preloadLibraryRoutes();
-  }, []);
 
   const handleNavigate = useCallback((to: string) => {
     navigate(to);
@@ -244,27 +220,15 @@ const Library: React.FC = () => {
   ], [t]);
 
   return (
-    <motion.div 
-      initial="hidden"
-      animate="show"
-      variants={{
-        hidden: { opacity: 0 },
-        show: {
-          opacity: 1,
-          transition: {
-            staggerChildren: 0.05,
-            delayChildren: 0.02
-          }
-        }
-      }}
+    <div
       dir={isRtl ? "rtl" : "ltr"}
-      className="flex flex-col gap-5 py-6 px-0 -mx-3 sm:mx-0 sm:px-4 pb-12"
+      className="flex flex-col gap-5 min-w-0 pt-0 px-0 -mx-3 sm:mx-0 sm:px-4 pb-12"
     >
-      <div className="flex items-center justify-between mb-2 sticky top-0 z-30 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xl py-4 px-4 border-b border-white/20 dark:border-slate-800/20">
-        <div className={cn("flex items-center gap-4", isRtl ? "flex-row" : "flex-row-reverse")}>
+      <div className="flex shrink-0 items-center justify-between mb-2 sticky top-0 z-30 bg-white dark:bg-slate-950 py-4 px-4 border-b border-slate-100 dark:border-slate-800">
+        <div className={cn("flex min-w-0 items-center gap-4", isRtl ? "flex-row" : "flex-row-reverse")}>
           <BackButton />
           <div className={isRtl ? "text-right" : "text-left"}>
-            <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight mb-1">
+            <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight leading-relaxed mb-1">
               {t('library')}
             </h2>
             <p className="text-sm font-bold text-teal-600 dark:text-teal-400 opacity-80">
@@ -275,18 +239,17 @@ const Library: React.FC = () => {
       </div>
 
       <div 
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10 px-1"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 auto-rows-fr gap-3 sm:gap-4 relative z-10 min-w-0 px-1"
       >
         {libraryItems.map((item) => (
           <LibraryCard
             key={item.to}
             item={item}
-            isRtl={isRtl}
             onNavigate={handleNavigate}
           />
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

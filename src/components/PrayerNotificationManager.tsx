@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Bell, X, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { cn, triggerSafeNotification } from '../lib/utils';
 import { NOTIFICATION_SOUNDS } from '../constants';
-import { INITIAL_HABITS } from './BelieverInsights';
+import { INITIAL_HABITS } from '../data/habitsData';
 import { useAdhkarCounts } from '../context/AdhkarCountsContext';
+import { PermissionsExplainerModal } from './PermissionsExplainerModal';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 import { 
   syncAllLocalNotifications, 
@@ -16,6 +17,12 @@ import {
   checkLocalNotificationPermissions,
   requestLocalNotificationPermissions
 } from '../services/localNotificationService';
+
+/**
+ * Marks that the permissions explainer has been shown once on this install.
+ * Versioned, so a future change to what the app asks for can show it again.
+ */
+const PERMISSIONS_INTRO_KEY = 'believer_permissions_intro_v1';
 
 const PRAYER_NAMES: Record<string, string> = {
   Fajr: 'الفجر',
@@ -38,9 +45,15 @@ export const PrayerNotificationManager: React.FC = () => {
     details?: string;
   } | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
+  const [showPermissionsIntro, setShowPermissionsIntro] = useState(false);
   const lastNotifiedRef = useRef<Record<string, string>>({});
   const lastRandomTimestampRef = useRef<number>(Date.now());
   const mountTimeRef = useRef<number>(Date.now());
+
+  // Lets the permission effect below run once and still schedule with current
+  // settings, instead of re-running — and re-requesting — on every settings write.
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   // 1. Initialize Capacitor notification channels and deep link navigation on mount
   useEffect(() => {
@@ -70,45 +83,98 @@ export const PrayerNotificationManager: React.FC = () => {
     }
   }, [updateSettings]);
 
-  // 3. Verification mechanism for required notification permissions on every app entry & focus
+  /*
+    3. Notification permission on first launch, and a re-check on every app entry.
+
+    The user's report was that no permission dialog appears when the app is first
+    opened. Three things in this effect were responsible:
+
+      a) The guard only matched `display === 'prompt'`. Capacitor also reports
+         'prompt-with-rationale' — the state Android moves to the moment a
+         dialog is dismissed once — which was read as "nothing left to ask", so
+         the app went permanently silent after a single stray tap.
+
+      b) The dependency array was `[settings]`. Every settings write tore the
+         effect down and rebuilt it, so at launch — where effect 2 below writes
+         the notification defaults — several permission requests raced each
+         other into Capacitor's single pending-call slot and the dialog could be
+         dropped outright. It now runs once and reads `settingsRef` for current
+         values. `requestLocalNotificationPermissions` also collapses concurrent
+         callers, so the remaining paths cannot race either.
+
+      c) Nothing ever told the user what the permissions were for. The app
+         already ships PermissionsExplainerModal for precisely this, but it was
+         only reachable from Settings and the Terms page. It now leads the
+         first-run flow, and the system dialog follows when it is dismissed.
+
+    The short delay before the first-run prompt is deliberate: firing the system
+    dialog during mount puts it behind the splash screen, where it is either
+    missed or dismissed blind.
+  */
   useEffect(() => {
-    const verifyAndCheckPermissions = async () => {
+    let cancelled = false;
+
+    const runPermissionFlow = async (mayPrompt: boolean) => {
       try {
         await initializeNotificationChannels();
         let perm = await checkLocalNotificationPermissions();
+        if (cancelled) return;
 
-        // If permission status is prompt or default, automatically request permission to keep notifications active
-        if (perm.display === 'prompt' || (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default')) {
+        const canStillAsk = perm.display === 'prompt' || perm.display === 'prompt-with-rationale';
+
+        if (canStillAsk && mayPrompt) {
+          // Explain once per install, then let the modal trigger the real request.
+          if (!safeLocalStorageGetItem(PERMISSIONS_INTRO_KEY)) {
+            setShowPermissionsIntro(true);
+            return;
+          }
           perm = await requestLocalNotificationPermissions();
+          if (cancelled) return;
         }
 
-        // If granted, immediately re-sync local OS notifications to guarantee background scheduling
-        if (perm.display === 'granted' || (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted')) {
-          await syncAllLocalNotifications(settings);
+        if (perm.display === 'granted') {
+          await syncAllLocalNotifications(settingsRef.current);
         }
       } catch (err) {
         console.warn('[PrayerNotificationManager] Permission verification failed on app entry:', err);
       }
     };
 
-    // Run permission check on app entry / component mount
-    verifyAndCheckPermissions();
+    const firstRunTimer = setTimeout(() => runPermissionFlow(true), 1600);
 
-    // Re-verify permissions and re-sync whenever user enters/returns to the app
+    // Returning to the app re-checks and re-syncs, but never re-prompts: the
+    // user either answered the dialog or chose not to, and nagging on every
+    // resume is both hostile and, once Android has recorded a denial, useless.
     const handleAppEntryFocus = () => {
       if (document.visibilityState === 'visible') {
-        verifyAndCheckPermissions();
+        runPermissionFlow(false);
       }
     };
 
-    window.addEventListener('visibilitychange', handleAppEntryFocus);
+    document.addEventListener('visibilitychange', handleAppEntryFocus);
     window.addEventListener('focus', handleAppEntryFocus);
 
     return () => {
-      window.removeEventListener('visibilitychange', handleAppEntryFocus);
+      cancelled = true;
+      clearTimeout(firstRunTimer);
+      document.removeEventListener('visibilitychange', handleAppEntryFocus);
       window.removeEventListener('focus', handleAppEntryFocus);
     };
-  }, [settings]);
+  }, []);
+
+  /** Dismissing the explainer is what actually asks Android for the permission. */
+  const handlePermissionsIntroClose = React.useCallback(async () => {
+    safeLocalStorageSetItem(PERMISSIONS_INTRO_KEY, 'true');
+    setShowPermissionsIntro(false);
+    try {
+      const perm = await requestLocalNotificationPermissions();
+      if (perm.display === 'granted') {
+        await syncAllLocalNotifications(settingsRef.current);
+      }
+    } catch (err) {
+      console.warn('[PrayerNotificationManager] Permission request after explainer failed:', err);
+    }
+  }, []);
 
   // 4. Automatically sync OS background local notifications for upcoming 7 days
   useEffect(() => {
@@ -721,6 +787,16 @@ export const PrayerNotificationManager: React.FC = () => {
   };
 
   return (
+    <>
+    {/*
+      Shown once, shortly after the first launch, immediately before the system
+      permission dialog. Closing it is what issues the real request — see
+      handlePermissionsIntroClose.
+    */}
+    <PermissionsExplainerModal
+      isOpen={showPermissionsIntro}
+      onClose={handlePermissionsIntroClose}
+    />
     <AnimatePresence>
       {activeNotification && (
         <motion.div
@@ -782,6 +858,7 @@ export const PrayerNotificationManager: React.FC = () => {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 };
 

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@drawable/window_splash</item>
+        <item name="android:statusBarColor">#052418</item>
+        <item name="android:navigationBarColor">#052418</item>
+    </style>
+
+    <!--
+        BridgeActivity switches to this theme in onCreate, so this is the
+        window the app actually runs in. Its background is the wordmark splash
+        rather than nothing. MainActivity adds the same branded drawable as an
+        opaque cover above the green WebView until a verified HTML frame draws.
+        This window background covers the earlier activity creation stage.
+    -->
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+        <item name="android:windowBackground">@drawable/window_splash</item>
+        <item name="android:statusBarColor">#052418</item>
+        <item name="android:navigationBarColor">#052418</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+
+
+    <!--
+        The launch theme, i.e. what the user actually sees for the first moment
+        of a cold start.
+
+        `android:background` alone is not enough on Android 12+. From API 31 the
+        system draws the splash itself, from windowSplashScreenBackground and
+        windowSplashScreenAnimatedIcon, and ignores the window background while
+        it is up. With neither declared the launch screen was the stock system
+        one — the bare launcher icon over a default backdrop — which is why the
+        designed opening screen never appeared on any modern phone.
+
+        These are the androidx.core.splashscreen attribute names. The
+        values-v31 override also supplies Android's platform attributes
+        explicitly. android:windowBackground stays for API 24-30, where it is
+        still the whole splash, and on 31+ it bridges the system splash to the
+        WebView's first frame.
+
+        Use a dedicated transparent wordmark instead of the adaptive launcher
+        icon. The latter paints its own lighter green tile inside the launch
+        background; the dedicated drawable keeps the brand artwork centered
+        without a visible square. Its ink fits inside Android's circular mask.
+    -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#052418</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/launch_wordmark</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="android:statusBarColor">#052418</item>
+        <item name="android:navigationBarColor">#052418</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <!--
+            Below Android 12 the starting window is drawn from windowBackground,
+            and this is the same drawable the activity window and (in effect)
+            the HTML boot splash use — so the launch is one image from the
+            first system frame to the first React paint, with no hand-off to
+            see. It replaces the Capacitor splash plugin's overlay, which is
+            switched off in capacitor.config.ts: that overlay centre-cropped
+            splash.png at a different scale and could only be dismissed from
+            JavaScript, which is what left a bare frame between it and the page.
+        -->
+        <item name="android:windowBackground">@drawable/window_splash</item>
+    </style>
+</resources>

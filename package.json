@@ -1,19 +1,29 @@
 {
   "name": "athkar-believer",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "node scripts/build.mjs && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:web": "node scripts/build.mjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "assets": "node scripts/generate-brand-assets.mjs && node scripts/generate-notification-sound.mjs && npx @capacitor/assets generate --android --iconBackgroundColor #083927 --splashBackgroundColor #052418 && node scripts/fix-adaptive-icons.mjs",
+    "sync:android": "node scripts/build.mjs && node scripts/sync-android.mjs",
+    "android:apk": "npm run sync:android && cd android && gradlew.bat assembleRelease",
+    "android:aab": "npm run sync:android && cd android && gradlew.bat bundleRelease",
+    "android:open": "npx cap open android",
+    "store:assets": "node scripts/capture-screenshots.mjs && node scripts/make-store-graphics.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
+    "@capacitor/app": "^8.1.1",
     "@capacitor/cli": "^8.4.1",
     "@capacitor/core": "^8.4.1",
+    "@capacitor/device": "^8.0.3",
+    "@capacitor/filesystem": "^8.1.3",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.4.1",
     "@capacitor/keyboard": "^8.0.5",
@@ -68,5 +78,8 @@
   },
   "overrides": {
     "node-domexception": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

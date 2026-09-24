@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backup and device-to-device transfer are both disabled.
+
+    The WebView's localStorage holds the Firebase refresh token for a signed-in
+    user, and app-private storage holds the downloaded over-the-air web bundle.
+    Copying either off the device — into a Google backup or onto a new phone —
+    would move a live credential and executable app code out of the sandbox for
+    no benefit: worship progress is already backed up deliberately, by the user,
+    through the in-app Firestore backup.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </device-transfer>
+</data-extraction-rules>

@@ -1,0 +1,99 @@
+#  أذكار المؤمن — Netlify deployment
+#
+#  Caching contract that makes the app open instantly and still update itself:
+#
+#    * Hashed build assets  -> immutable, cached for a year. A new build emits
+#                              new filenames, so this can never serve stale code.
+#    * index.html / sw.js   -> never cached. These are the only two files the
+#      version.json            browser must re-read to discover a new build; if
+#                              a CDN or browser pins them, updates stop working.
+#    * ota/*.zip            -> immutable per build (the filename carries the
+#                              build stamp) and CORS-readable, because the
+#                              installed APK downloads it cross-origin.
+
+[build]
+  command = "npm run build:web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA routing: every unknown path is handled by the client-side router.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), payment=(), usb=(), magnetometer=(self), geolocation=(self)"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+
+# Fingerprinted output from Vite. Safe to cache forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Serving a cached service worker would freeze the app on an old build.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/workbox-*.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# The freshness probe for both the PWA and the native OTA updater.
+[[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Content-Type = "application/json; charset=UTF-8"
+    Access-Control-Allow-Origin = "*"
+
+# Downloaded by the installed APK from the https://localhost WebView origin,
+# so it must be readable cross-origin.
+[[headers]]
+  for = "/ota/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+    Content-Type = "application/zip"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=UTF-8"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=UTF-8"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/.well-known/assetlinks.json"
+  [headers.values]
+    Content-Type = "application/json; charset=UTF-8"
+    Cache-Control = "public, max-age=3600"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/*.ttf"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

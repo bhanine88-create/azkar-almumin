@@ -433,39 +433,39 @@ export const Istighfar: React.FC = () => {
             <button
               onClick={() => setMainView('athkar')}
               className={cn(
-                "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[11px] min-[400px]:text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
                 mainView === 'athkar'
                   ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm scale-[1.01]"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               )}
             >
-              <Sparkles size={15} />
+              <Sparkles size={15} className="hidden min-[400px]:block shrink-0" />
               <span>صِيَغُ الِاسْتِغْفَارِ</span>
             </button>
 
             <button
               onClick={() => setMainView('salat_tawbah')}
               className={cn(
-                "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[11px] min-[400px]:text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
                 mainView === 'salat_tawbah'
                   ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-sm scale-[1.01]"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               )}
             >
-              <Moon size={15} />
+              <Moon size={15} className="hidden min-[400px]:block shrink-0" />
               <span>صَلَاةُ التَّوْبَةِ</span>
             </button>
 
             <button
               onClick={() => setMainView('virtues')}
               className={cn(
-                "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[11px] min-[400px]:text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
                 mainView === 'virtues'
                   ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-300 shadow-sm scale-[1.01]"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               )}
             >
-              <Heart size={15} />
+              <Heart size={15} className="hidden min-[400px]:block shrink-0" />
               <span>فَضَائِلُ التَّوْبَةِ</span>
             </button>
           </div>

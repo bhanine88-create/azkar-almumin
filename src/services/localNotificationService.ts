@@ -109,7 +109,26 @@ export async function checkLocalNotificationPermissions(): Promise<PermissionSta
 }
 
 /**
- * Requests permission to schedule and display local notifications
+ * The single in-flight permission request, if there is one.
+ *
+ * Android can only ever show one POST_NOTIFICATIONS dialog, and the request is
+ * reached from three independent places at launch: the manager's own entry
+ * check, the sync it kicks off, and the debounced sync that follows. Each one
+ * calls into Capacitor's `requestPermissionForAlias`, which launches an
+ * ActivityResultLauncher — launching it again while the first is still pending
+ * replaces the saved PluginCall, so the earlier caller's promise never settles
+ * and, on a first launch, the dialog can be dropped entirely. That is the bug
+ * the user sees as "no permission prompt appeared".
+ *
+ * Collapsing every concurrent caller onto one promise means the dialog is
+ * requested exactly once and everyone waiting gets the same answer.
+ */
+let inFlightPermissionRequest: Promise<PermissionStatus> | null = null;
+
+/**
+ * Requests permission to schedule and display local notifications.
+ *
+ * Safe to call from several places at once — see `inFlightPermissionRequest`.
  */
 export async function requestLocalNotificationPermissions(): Promise<PermissionStatus> {
   if (!isLocalNotificationsAvailable()) {
@@ -125,14 +144,23 @@ export async function requestLocalNotificationPermissions(): Promise<PermissionS
     return { display: 'denied' };
   }
 
-  try {
-    await initializeNotificationChannels();
-    const status = await LocalNotifications.requestPermissions();
-    return status;
-  } catch (err) {
-    console.warn('[LocalNotifications] requestPermissions error:', err);
-    return { display: 'denied' };
-  }
+  if (inFlightPermissionRequest) return inFlightPermissionRequest;
+
+  inFlightPermissionRequest = (async (): Promise<PermissionStatus> => {
+    try {
+      await initializeNotificationChannels();
+      return await LocalNotifications.requestPermissions();
+    } catch (err) {
+      console.warn('[LocalNotifications] requestPermissions error:', err);
+      return { display: 'denied' };
+    } finally {
+      // Cleared only once the dialog has actually resolved, so a later, separate
+      // attempt (the user re-enabling notifications in Settings) still works.
+      inFlightPermissionRequest = null;
+    }
+  })();
+
+  return inFlightPermissionRequest;
 }
 
 /**
@@ -209,12 +237,61 @@ function parseTimeToDate(timeStr: string, baseDate: Date): Date {
 }
 
 /**
+ * Whether Android will let this app set alarms to the exact minute.
+ *
+ * Always true below Android 12, where the restriction does not exist. Treated
+ * as false on any error: scheduling inexactly is a small loss, while wrongly
+ * assuming exact permission hands the user to a system settings screen.
+ */
+export async function hasExactAlarmPermission(): Promise<boolean> {
+  if (!isLocalNotificationsAvailable()) return false;
+  try {
+    const status = await LocalNotifications.checkExactNotificationSetting();
+    return status.exact_alarm === 'granted';
+  } catch (err) {
+    console.warn('[LocalNotifications] checkExactNotificationSetting failed:', err);
+    return false;
+  }
+}
+
+/**
+ * Opens Android's "Alarms & reminders" screen so the user can allow exact
+ * alarms, and reports whether they did.
+ *
+ * Only ever call this from something the user just tapped. Landing on this
+ * screen unannounced is exactly the behaviour `hasExactAlarmPermission` exists
+ * to prevent.
+ */
+export async function requestExactAlarmPermission(): Promise<boolean> {
+  if (!isLocalNotificationsAvailable()) return false;
+  try {
+    const status = await LocalNotifications.changeExactNotificationSetting();
+    return status.exact_alarm === 'granted';
+  } catch (err) {
+    console.warn('[LocalNotifications] changeExactNotificationSetting failed:', err);
+    return false;
+  }
+}
+
+/**
  * Synchronizes and schedules all upcoming local notifications for Prayers and Daily Adhkar
  * Schedules up to 7 days in advance so notifications fire reliably even when the device is offline,
  * app is in the background, or device enters Doze mode.
+ *
+ * By default this will NOT ask for the notification permission; if it is not
+ * already granted it simply schedules nothing and says so.
+ *
+ * That default matters. This function runs on a timer after launch and again
+ * whenever notification settings change, so when it asked on its own the system
+ * dialog fired on its own schedule — on a first launch it landed on top of the
+ * permissions explainer, before the user had read a word of it. Asking is now
+ * the caller's decision: `mayRequestPermission` belongs to the places where the
+ * user has just done something that implies it, such as switching a reminder on
+ * in Settings, or dismissing the explainer.
  */
 export async function syncAllLocalNotifications(
-  settings: AppSettings
+  settings: AppSettings,
+  options: { mayRequestPermission?: boolean } = {}
 ): Promise<{ success: boolean; scheduledCount: number; message?: string }> {
   if (!isLocalNotificationsAvailable()) {
     return { success: false, scheduledCount: 0, message: 'Capacitor LocalNotifications not available on this platform' };
@@ -226,11 +303,33 @@ export async function syncAllLocalNotifications(
     // Check permissions
     const perm = await LocalNotifications.checkPermissions();
     if (perm.display !== 'granted') {
-      const req = await LocalNotifications.requestPermissions();
+      if (!options.mayRequestPermission) {
+        return { success: false, scheduledCount: 0, message: 'Notification permissions not granted' };
+      }
+      const req = await requestLocalNotificationPermissions();
       if (req.display !== 'granted') {
         return { success: false, scheduledCount: 0, message: 'Notification permissions not granted' };
       }
     }
+
+    /**
+     * Whether this device will let us set alarms to the exact minute.
+     *
+     * This has to be asked before scheduling, not after. `isExactNotification`
+     * defaults to true in @capacitor/local-notifications, and on Android 12+ the
+     * plugin reacts to that by launching the system "Alarms & reminders" screen
+     * the first time anything is scheduled without the permission. Verified on
+     * an Android 16 emulator: seconds after the user allowed notifications, the
+     * app threw them out into a settings page they never asked for, with a
+     * toggle that is off by default and no explanation of what it was for.
+     *
+     * Passing the real state instead means the plugin never redirects. Prayer
+     * times are still scheduled to the exact minute when the permission is
+     * there, and fall back to Android's inexact-but-allowed-in-Doze alarms when
+     * it is not — a few minutes of drift rather than an ambush. Settings offers
+     * the permission deliberately, with the reason next to it.
+     */
+    const canUseExactAlarms = await hasExactAlarmPermission();
 
     // Cancel all previously scheduled notifications to avoid duplicates and outdated times
     const pending = await LocalNotifications.getPending();
@@ -492,8 +591,15 @@ export async function syncAllLocalNotifications(
 
     // Execute scheduling in batches if necessary
     if (notificationsToSchedule.length > 0) {
+      // Stamped here rather than at each of the seven push sites: it is one
+      // decision about this whole batch, and the plugin only inspects it at
+      // schedule time. See `canUseExactAlarms` above for why it must be the real
+      // permission state and never the default.
       await LocalNotifications.schedule({
-        notifications: notificationsToSchedule
+        notifications: notificationsToSchedule.map((n) => ({
+          ...n,
+          isExactNotification: canUseExactAlarms,
+        }))
       });
     }
 
@@ -575,6 +681,11 @@ export async function testLocalNotification(
           id: testId,
           title,
           body,
+          // Inexact on purpose. This is the "send me a test" button; it fires
+          // seconds from now and a little drift is invisible. Left at the
+          // default it would send someone who just wanted to preview a
+          // notification out to Android's alarms-permission screen instead.
+          isExactNotification: false,
           schedule: {
             at: triggerAt,
             allowWhileIdle: true

@@ -1,37 +1,48 @@
 rules_version = '2';
+
+// ===========================================================================
+//  أذكار المؤمن — Firestore security rules
+//
+//  Firestore evaluates every matching rule and grants access if ANY of them
+//  allows it. There is no fall-through and no precedence, so a
+//  `match /{document=**} { allow read, write: if false; }` block does not deny
+//  anything — it only looks like it does. An earlier version of this file
+//  opened with exactly that block; it has been removed so the real default,
+//  "anything not granted below is denied", is not disguised.
+//
+//  Threat model: the Firebase web API key ships inside the app and is public by
+//  design. Anyone can therefore sign in and call the API directly, so every
+//  write below is constrained by shape, size and ownership rather than by
+//  trusting the client.
+// ===========================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // --- Global Denial ---
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    // --- Helpers ---
+    // --- Identity ---------------------------------------------------------
+
     function isSignedIn() {
       return request.auth != null;
-    }
-    
-    function isEmailVerified() {
-      return isSignedIn() && request.auth.token.email_verified == true;
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
 
     function incoming() {
       return request.resource.data;
     }
-    
+
     function existing() {
       return resource.data;
     }
 
-    // --- Validation Helpers ---
+    function changedKeys() {
+      return incoming().diff(existing()).affectedKeys();
+    }
+
+    // --- Validation -------------------------------------------------------
+
     function isValidBackup(data) {
       return data.keys().hasAll(['data', 'createdAt', 'type']) &&
              data.keys().size() == 3 &&
@@ -43,122 +54,115 @@ service cloud.firestore {
     function isValidQuranProgress(data) {
       return data.keys().hasAll(['surahNumber', 'readAyahs', 'lastUpdated']) &&
              data.surahNumber is number &&
+             data.surahNumber >= 1 && data.surahNumber <= 114 &&
              data.readAyahs is list &&
+             // The longest surah has 286 ayat; anything beyond that is junk.
+             data.readAyahs.size() <= 300 &&
              data.lastUpdated == request.time &&
              (!data.keys().hasAny(['isCompleted']) || data.isCompleted is bool);
     }
 
     function isValidTasbeehGoal(data) {
       return data.keys().hasAll(['dhikrId', 'targetCount', 'currentCount', 'createdAt', 'lastUpdated']) &&
-             data.dhikrId is string &&
+             data.dhikrId is string && data.dhikrId.size() <= 128 &&
              data.targetCount is number &&
+             data.targetCount >= 0 && data.targetCount <= 1000000 &&
              data.currentCount is number &&
+             data.currentCount >= 0 && data.currentCount <= 1000000 &&
              (data.createdAt is timestamp || data.createdAt is string) &&
              data.lastUpdated == request.time &&
-             (!data.keys().hasAny(['titleAr']) || data.titleAr is string) &&
-             (!data.keys().hasAny(['titleEn']) || data.titleEn is string) &&
+             (!data.keys().hasAny(['titleAr']) || (data.titleAr is string && data.titleAr.size() <= 200)) &&
+             (!data.keys().hasAny(['titleEn']) || (data.titleEn is string && data.titleEn.size() <= 200)) &&
              (!data.keys().hasAny(['isCompleted']) || data.isCompleted is bool);
     }
 
-    function isValidPost(data) {
-      return data.keys().hasAll(['userId', 'userName', 'content', 'createdAt', 'type', 'likesCount']) &&
-             data.keys().size() <= 9 &&
-             data.userId == request.auth.uid &&
-             data.userName is string && data.userName.size() <= 100 &&
-             data.content is string && data.content.size() <= 2000 &&
-             data.createdAt == request.time &&
-             data.type in ['reflection', 'dhikr', 'dua_request', 'hadith', 'deed'] &&
-             data.likesCount == 0 &&
-             (!data.keys().hasAny(['sticker']) || data.sticker == null || data.sticker is string) &&
-             (!data.keys().hasAny(['userColor']) || data.userColor == null || data.userColor is string) &&
-             (!data.keys().hasAny(['imageData']) || data.imageData == null || data.imageData is string);
-    }
+    // --- Per-user data ----------------------------------------------------
+    // Scoped entirely to the signed-in owner. A user can only ever reach their
+    // own subtree, so the worst case is a user spending their own quota.
 
-    // --- Collection Routes ---
-    
-    // User Profile Document
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }
-    
-    // Quran Progress
+
     match /users/{userId}/quranProgress/{surahNumber} {
       allow read: if isOwner(userId);
       allow create, update: if isOwner(userId) && isValidQuranProgress(incoming());
       allow delete: if isOwner(userId);
     }
 
-    // Tasbeeh Goals
     match /users/{userId}/tasbeehGoals/{goalId} {
       allow read: if isOwner(userId);
       allow create: if isOwner(userId) && isValidTasbeehGoal(incoming());
       allow update: if isOwner(userId) && isValidTasbeehGoal(incoming()) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['currentCount', 'lastUpdated', 'isCompleted']) ||
-        incoming().diff(existing()).affectedKeys().hasOnly(['targetCount', 'lastUpdated', 'isCompleted'])
+        changedKeys().hasOnly(['currentCount', 'lastUpdated', 'isCompleted']) ||
+        changedKeys().hasOnly(['targetCount', 'lastUpdated', 'isCompleted'])
       );
       allow delete: if isOwner(userId);
     }
 
-    // Backups
     match /users/{userId}/backups/{backupId} {
       allow read: if isOwner(userId);
       allow create: if isOwner(userId) && isValidBackup(incoming());
       allow delete: if isOwner(userId);
     }
 
-    // Community Posts
-    match /community_posts/{postId} {
-      allow read: if true; // Publicly readable
-      allow create: if isSignedIn() && isValidPost(incoming()) && !exists(/databases/$(database)/documents/banned_users/$(request.auth.uid));
-      
-      // Update for likes - allowing incrementing likesCount if authenticated
-      allow update: if isSignedIn() && (
-        (incoming().diff(existing()).affectedKeys().hasOnly(['content']) && isOwner(existing().userId)) ||
-        (incoming().diff(existing()).affectedKeys().hasOnly(['likesCount']))
-      );
-      
-      allow delete: if isSignedIn() && isOwner(existing().userId);
-    }
+    // --- Global counters --------------------------------------------------
+    //
+    // The app increments exactly two lifetime counters, in AppContext.tsx
+    // (totalAdhkarRecited) and Khatma.tsx (totalKhatmas), both with
+    // increment(1) plus serverTimestamp().
+    //
+    // The previous rule was `allow create, update: if isSignedIn()` on
+    // /stats/{docId}, which let any account overwrite the global numbers with
+    // any value, or create unlimited junk documents in the collection. This
+    // pins it to the one document that exists and to a step of exactly +1, so
+    // the counters can only be advanced the way the app advances them.
+    //
+    // NOTE: create is denied, so stats/global must exist. Create it once in the
+    // Firebase console with { totalAdhkarRecited: 0, totalKhatmas: 0 }.
 
-    // Likes subcollection
-    match /community_posts/{postId}/likes/{userId} {
-      allow read, write: if isOwner(userId) && isValidId(postId);
-    }
-
-    // Global Stats - Read only for users, updated by system/server (or carefully by client)
-    match /stats/{docId} {
+    match /stats/global {
       allow read: if true;
-      // In a real app, updates would be cloud functions. 
-      // For this prototype, we'll allow incrementing by users.
-      allow create, update: if isSignedIn();
+      allow update: if isSignedIn() &&
+        changedKeys().hasOnly(['totalAdhkarRecited', 'totalKhatmas', 'lastUpdated']) &&
+        changedKeys().hasAny(['totalAdhkarRecited', 'totalKhatmas']) &&
+        incoming().lastUpdated == request.time &&
+        (
+          !changedKeys().hasAny(['totalAdhkarRecited']) ||
+          incoming().totalAdhkarRecited == existing().totalAdhkarRecited + 1
+        ) &&
+        (
+          !changedKeys().hasAny(['totalKhatmas']) ||
+          incoming().totalKhatmas == existing().totalKhatmas + 1
+        );
+      allow create, delete: if false;
     }
 
-    // Reports
-    match /reports/{reportId} {
-      allow create: if isSignedIn() && 
-                    incoming().keys().hasAll(['postId', 'reportedBy', 'createdAt', 'status']) &&
-                    incoming().reportedBy == request.auth.uid &&
-                    incoming().status == 'pending' &&
-                    incoming().createdAt == request.time;
-    }
-
-    // Banned Users
-    match /banned_users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if false; // Only admins/backend can ban users
-    }
-
-    // Daily Polls
-    match /daily_polls/{pollId} {
-      allow read: if true;
-      allow create, update: if isSignedIn();
-    }
-    
-    // Community Suggestions
-    match /community_suggestions/{suggestionId} {
-      allow read: if true;
-      allow create, update: if isSignedIn();
-      allow delete: if false;
-    }
+    // ---------------------------------------------------------------------
+    //  Removed collections
+    //
+    //  community_posts (+ its likes subcollection), daily_polls,
+    //  community_suggestions, reports and banned_users all had rules here, and
+    //  several of them were writable by any signed-in account:
+    //
+    //    - daily_polls and community_suggestions allowed `create, update: if
+    //      isSignedIn()` with no owner check, so any account could rewrite or
+    //      destroy another user's document.
+    //    - community_posts allowed an update that touched only `likesCount`
+    //      with no bound on the new value, so any account could set any post's
+    //      like count to any number.
+    //    - community_posts allowed the author to replace `content` with no
+    //      length limit, unlike create which caps it at 2000 characters.
+    //
+    //  None of these collections is read or written anywhere in src/ — the
+    //  community feed was never shipped. Rather than leave writable attack
+    //  surface for a feature that does not exist, the rules are gone, which
+    //  means Firestore denies them by default.
+    //
+    //  If the community feature is built later, do not restore the old rules.
+    //  Likes belong in the per-user `likes` subcollection with the aggregate
+    //  maintained by a Cloud Function or a distributed counter, since a
+    //  client-writable counter cannot be made abuse-proof in rules alone.
+    // ---------------------------------------------------------------------
   }
 }

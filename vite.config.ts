@@ -4,20 +4,42 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import pkg from './package.json' with { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+/**
+ * Build stamp shared by every consumer of "is there a newer build?":
+ *   - compiled into the bundle as __APP_BUILD_TIME__
+ *   - written into dist/version.json by scripts/build.mjs
+ *
+ * scripts/build.mjs sets APP_BUILD_TIME so both agree exactly. A bare
+ * `vite build` still works; it just stamps the moment it ran.
+ */
+const BUILD_TIME = Number(process.env.APP_BUILD_TIME) || Date.now();
+const APP_VERSION = process.env.APP_VERSION || pkg.version;
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     base: '/',
+    define: {
+      __APP_BUILD_TIME__: JSON.stringify(BUILD_TIME),
+      __APP_VERSION__: JSON.stringify(APP_VERSION),
+    },
     plugins: [
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
-        injectRegister: 'inline',
+        // 'prompt' (not 'autoUpdate') because src/lib/autoUpdater.ts decides
+        // *when* to swap builds — it holds the reload back while Quran audio is
+        // playing or a field is focused, instead of cutting the user off.
+        registerType: 'prompt',
+        // Registration happens once, from our own code. The injected inline
+        // snippet would also register on native, where a service worker must
+        // never take over the origin the OTA updater serves from.
+        injectRegister: null,
         includeAssets: [
           'favicon.ico',
           'favicon.svg',
@@ -207,21 +229,37 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          cacheId: 'athkar-mumin-v5',
-          maximumFileSizeToCacheInBytes: 6000000,
+          cacheId: 'athkar-mumin-v6',
+          maximumFileSizeToCacheInBytes: 8000000,
+          // Everything the app shell needs is precached at install time.
+          // Workbox serves precached URLs from the cache without touching the
+          // network, which is what makes a cold, offline launch instant.
           globPatterns: [
             '**/*.{js,css,html,ico,png,jpg,jpeg,svg,webp,woff,woff2,ttf,json,webmanifest}'
           ],
+          // The OTA bundle is only ever fetched by the native updater with
+          // `cache: 'no-store'`; precaching it would double the install size.
+          globIgnores: ['**/ota/**', 'version.json'],
           navigateFallback: '/index.html',
+          navigateFallbackDenylist: [/^\/api\//, /^\/version\.json$/, /^\/ota\//],
           cleanupOutdatedCaches: true,
-          clientsClaim: true,
-          skipWaiting: true,
+          // A new worker waits instead of seizing control, so a page never ends
+          // up running old chunks against a new precache manifest. autoUpdater
+          // sends SKIP_WAITING at a safe moment.
+          clientsClaim: false,
+          skipWaiting: false,
           runtimeCaching: [
+            {
+              // The freshness probe itself must never be served from a cache,
+              // or the app could never learn that a new build exists.
+              urlPattern: /\/version\.json(?:\?.*)?$/i,
+              handler: 'NetworkOnly'
+            },
             {
               urlPattern: /\.(?:mp3|wav|m4a|aac)(?:\?.*)?$/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'audio-cache-v5',
+                cacheName: 'audio-cache-v6',
                 expiration: {
                   maxEntries: 120,
                   maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
@@ -236,7 +274,7 @@ export default defineConfig(({ mode }) => {
               urlPattern: /^https:\/\/(?:cdn\.islamic\.network|everyayah\.com)\/.*(?:\.(?:mp3|wav|m4a))$/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'quran-audio-external-cache-v5',
+                cacheName: 'quran-audio-external-cache-v6',
                 expiration: {
                   maxEntries: 150,
                   maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
@@ -248,13 +286,29 @@ export default defineConfig(({ mode }) => {
               }
             },
             {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif|ico)(?:\?.*)?$/i,
-              handler: 'StaleWhileRevalidate',
+              // Hashed build assets are immutable, so a cache hit is always
+              // correct and no revalidation request is worth making.
+              urlPattern: /\.(?:js|css)(?:\?.*)?$/i,
+              handler: 'CacheFirst',
               options: {
-                cacheName: 'static-images-cache-v5',
+                cacheName: 'static-code-cache-v6',
                 expiration: {
                   maxEntries: 200,
-                  maxAgeSeconds: 60 * 60 * 24 * 60 // 60 days
+                  maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif|ico)(?:\?.*)?$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'static-images-cache-v6',
+                expiration: {
+                  maxEntries: 300,
+                  maxAgeSeconds: 60 * 60 * 24 * 180 // 180 days
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -265,7 +319,7 @@ export default defineConfig(({ mode }) => {
               urlPattern: /\.(?:woff|woff2|ttf|otf|eot)(?:\?.*)?$/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'static-fonts-cache-v5',
+                cacheName: 'static-fonts-cache-v6',
                 expiration: {
                   maxEntries: 50,
                   maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
@@ -276,40 +330,12 @@ export default defineConfig(({ mode }) => {
               }
             },
             {
-              urlPattern: /\.(?:js|css)(?:\?.*)?$/i,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'static-code-cache-v5',
-                expiration: {
-                  maxEntries: 150,
-                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'google-fonts-cache-v5',
+                cacheName: 'google-fonts-cache-v6',
                 expiration: {
-                  maxEntries: 15,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'gstatic-fonts-cache-v5',
-                expiration: {
-                  maxEntries: 20,
+                  maxEntries: 30,
                   maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
                 },
                 cacheableResponse: {
@@ -321,7 +347,7 @@ export default defineConfig(({ mode }) => {
               urlPattern: /^https:\/\/fonts\.cdnfonts\.com\/.*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'cdn-fonts-cache-v5',
+                cacheName: 'cdn-fonts-cache-v6',
                 expiration: {
                   maxEntries: 15,
                   maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
@@ -332,27 +358,13 @@ export default defineConfig(({ mode }) => {
               }
             },
             {
-              urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'jsdelivr-cache-v5',
-                expiration: {
-                  maxEntries: 120,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/cdn-icons-png\.flaticon\.com\/.*/i,
+              urlPattern: /^https:\/\/(?:cdn\.jsdelivr\.net|cdn-icons-png\.flaticon\.com)\/.*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'flaticon-cache-v5',
+                cacheName: 'cdn-assets-cache-v6',
                 expiration: {
-                  maxEntries: 20,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                  maxEntries: 120,
+                  maxAgeSeconds: 60 * 60 * 24 * 180 // 180 days
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -360,13 +372,15 @@ export default defineConfig(({ mode }) => {
               }
             },
             {
+              // Scripture text is stable, so serve the cached copy instantly
+              // and refresh it behind the user's back.
               urlPattern: /^https:\/\/(api\.quran\.com|api\.alquran\.cloud)\/.*/i,
               handler: 'StaleWhileRevalidate',
               options: {
-                cacheName: 'quran-api-cache-v5',
+                cacheName: 'quran-api-cache-v6',
                 expiration: {
-                  maxEntries: 150,
-                  maxAgeSeconds: 60 * 60 * 24 * 14 // 14 days
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -374,13 +388,16 @@ export default defineConfig(({ mode }) => {
               }
             },
             {
+              // Prayer times depend on today's date and the user's position, so
+              // prefer the network but fall back to cache quickly when offline.
               urlPattern: /^https:\/\/(api\.aladhan\.com|nominatim\.openstreetmap\.org|geocoding-api\.open-meteo\.com|freeipapi\.com|ipapi\.co|ipinfo\.io)\/.*/i,
-              handler: 'StaleWhileRevalidate',
+              handler: 'NetworkFirst',
               options: {
-                cacheName: 'location-prayer-api-cache-v5',
+                cacheName: 'location-prayer-api-cache-v6',
+                networkTimeoutSeconds: 4,
                 expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                  maxEntries: 60,
+                  maxAgeSeconds: 60 * 60 * 24 * 14 // 2 weeks
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -418,9 +435,13 @@ export default defineConfig(({ mode }) => {
               if (id.includes('adhan') || id.includes('moment-hijri') || id.includes('moment')) {
                 return 'vendor-prayer';
               }
-              if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) {
-                return 'vendor-charts';
-              }
+              // recharts and its d3 dependencies are deliberately NOT pinned to a
+              // named chunk. Every component that charts (UserDashboard,
+              // AdhkarStats, FastingTracker, ...) is behind a lazy route, and
+              // forcing them into one manual chunk made Rollup hoist that chunk
+              // into the entry's static imports — 431 KB of charting parsed at
+              // launch for a screen most users never open. Left alone, Rollup
+              // keeps it in the async graph where it belongs.
               if (id.includes('firebase')) {
                 return 'vendor-firebase';
               }
@@ -449,18 +470,13 @@ export default defineConfig(({ mode }) => {
                 return 'vendor-react';
               }
             }
-            if (id.includes('/src/data/') || id.includes('/data/')) {
-              if (id.includes('lectures')) return 'data-lectures';
-              if (id.includes('tafsir')) return 'data-tafsir';
-              if (id.includes('hadithCollection')) return 'data-hadith';
-              if (id.includes('duasData')) return 'data-duas';
-              if (id.includes('prophetBiographyData') || id.includes('ibnHishamData') || id.includes('ghazwatData')) return 'data-seerah';
-              if (id.includes('quizData')) return 'data-quiz';
-              if (id.includes('qudsiHadiths')) return 'data-qudsi';
-              if (id.includes('islamicStories')) return 'data-stories';
-              if (id.includes('heartFeelingsData')) return 'data-heart-feelings';
-              return 'data-misc';
-            }
+            // Data modules are intentionally left to Rollup.
+            //
+            // The previous rules grouped them by filename, with a `data-misc`
+            // catch-all. That made unrelated datasets share a chunk, so a single
+            // eagerly-imported constant dragged the whole 487 KB group into the
+            // launch path. Rollup groups modules by what actually reaches them,
+            // which is the property that keeps boot small.
           }
         }
       }

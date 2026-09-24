@@ -19,14 +19,17 @@ import { NOTIFICATION_SOUNDS } from '../constants';
 import { MushafDownloader } from './MushafDownloader';
 import { TafsirDownloader } from './TafsirDownloader';
 import { OfflineManager } from './OfflineManager';
-import { checkServerVersion, triggerImmediateUpdate } from '../lib/autoUpdater';
+import { applyUpdateNow, checkForUpdateNow } from '../lib/autoUpdater';
+import { checkForOtaUpdate, isOtaSupported } from '../lib/otaUpdater';
 import { 
   requestLocalNotificationPermissions, 
   checkLocalNotificationPermissions, 
   testLocalNotification, 
   syncAllLocalNotifications, 
   getPendingNotificationsSummary,
-  isLocalNotificationsAvailable 
+  isLocalNotificationsAvailable,
+  hasExactAlarmPermission,
+  requestExactAlarmPermission
 } from '../services/localNotificationService';
 
 import { useSmartNavigation } from '../lib/navigation';
@@ -90,22 +93,42 @@ export const Settings: React.FC = () => {
     nextScheduled?: any;
   } | null>(null);
 
+  /**
+   * Whether Android lets the app fire alarms at the exact minute.
+   *
+   * Surfaced here because the answer changes whether the adhan arrives on time
+   * or within Android's batching window, and because the permission lives on a
+   * system screen the user has to be sent to deliberately.
+   */
+  const [exactAlarmsAllowed, setExactAlarmsAllowed] = useState(true);
+
   const refreshLocalNotifStatus = React.useCallback(async () => {
     try {
       const perm = await checkLocalNotificationPermissions();
       setLocalNotifPerm(perm.display);
       const summary = await getPendingNotificationsSummary();
       setLocalNotifSummary(summary);
+      setExactAlarmsAllowed(await hasExactAlarmPermission());
     } catch {
       // ignore
     }
   }, []);
 
+  const handleEnableExactAlarms = async () => {
+    const granted = await requestExactAlarmPermission();
+    setExactAlarmsAllowed(granted);
+    if (granted) {
+      // Re-schedule so today's prayers move from inexact to exact alarms.
+      await syncAllLocalNotifications(settings, { mayRequestPermission: true });
+      await refreshLocalNotifStatus();
+    }
+  };
+
   const handleRequestLocalPerm = async () => {
     const res = await requestLocalNotificationPermissions();
     setLocalNotifPerm(res.display);
     if (res.display === 'granted') {
-      const syncRes = await syncAllLocalNotifications(settings);
+      const syncRes = await syncAllLocalNotifications(settings, { mayRequestPermission: true });
       setLocalNotifMsg(syncRes.message || 'تم تفعيل ومزامنة الإشعارات بنجاح');
       refreshLocalNotifStatus();
     }
@@ -114,7 +137,7 @@ export const Settings: React.FC = () => {
   const handleSyncLocalNotifs = async () => {
     setIsSyncingLocalNotif(true);
     try {
-      const res = await syncAllLocalNotifications(settings);
+      const res = await syncAllLocalNotifications(settings, { mayRequestPermission: true });
       setLocalNotifMsg(res.message || 'تمت المزامنة بنجاح');
       await refreshLocalNotifStatus();
     } catch (err: any) {
@@ -154,12 +177,23 @@ export const Settings: React.FC = () => {
     setIsCheckingUpdate(true);
     setUpdateStatusText(t('checking_updates', 'جاري فحص خوادم التحديثات...'));
     try {
-      const res = await checkServerVersion();
-      if (res.hasUpdate) {
+      if (isOtaSupported()) {
+        // Native build: download the new web layer and hand the WebView over
+        // to it. A successful install reloads the app on its own.
+        const installing = await checkForOtaUpdate(true);
+        if (installing) {
+          setUpdateStatusText(t('update_found', 'تم العثور على إصدار أحدث! جاري التثبيت الفوري...'));
+          return;
+        }
+        setUpdateStatusText(t('app_up_to_date', 'تطبيقك يعمل بأحدث إصدار فوري.'));
+        setTimeout(() => setUpdateStatusText(null), 3500);
+        return;
+      }
+
+      const hasUpdate = await checkForUpdateNow();
+      if (hasUpdate) {
         setUpdateStatusText(t('update_found', 'تم العثور على إصدار أحدث! جاري التثبيت الفوري...'));
-        setTimeout(() => {
-          triggerImmediateUpdate();
-        }, 600);
+        setTimeout(applyUpdateNow, 600);
       } else {
         setUpdateStatusText(t('app_up_to_date', 'تطبيقك يعمل بأحدث إصدار فوري.'));
         setTimeout(() => setUpdateStatusText(null), 3500);
@@ -1091,10 +1125,29 @@ export const Settings: React.FC = () => {
         <ThreeDCard color="bg-slate-800" shadow="shadow-slate-900/30" icon={<Bell size={18} />} label={t('setting_notifications', 'إعدادات التنبيهات العامة والإشعارات')}>
           <div className="space-y-4">
 
-        {/* Browser Permission Status Banner */}
+        {/* Notification permission status banner */}
         {(() => {
           const hasNotif = typeof window !== 'undefined' && 'Notification' in window;
-          const perm = hasNotif ? Notification.permission : 'denied';
+          const isNativeApp = isLocalNotificationsAvailable();
+
+          /*
+           * Inside the Android WebView the Web Notifications API always reports
+           * 'denied' — the WebView simply does not implement it, and there is no
+           * way for the user to grant it. Reading Notification.permission on
+           * native therefore made the app claim notifications were "blocked in
+           * the browser" and tell the user to open browser settings, while the
+           * real native permission was granted and reminders worked fine.
+           *
+           * On native the only meaningful source is the Capacitor permission
+           * (localNotifPerm); the web value is used only in a real browser.
+           */
+          const perm = isNativeApp
+            ? (localNotifPerm === 'prompt' ? 'default' : localNotifPerm)
+            : hasNotif
+              ? Notification.permission
+              : 'denied';
+
+          if (perm === 'unknown') return null;
 
           if (perm === 'granted') {
             return (
@@ -1124,14 +1177,20 @@ export const Settings: React.FC = () => {
                     <Bell size={20} className="animate-bounce" />
                   </div>
                   <div>
-                    <h5 className="text-xs sm:text-sm font-black text-amber-400">{t('notif_prompt_title', 'لم تُفعّل إشعارات المتصفح بعد')}</h5>
+                    <h5 className="text-xs sm:text-sm font-black text-amber-400">
+                      {isNativeApp
+                        ? t('notif_prompt_title_native', 'لم تُفعّل الإشعارات بعد')
+                        : t('notif_prompt_title', 'لم تُفعّل إشعارات المتصفح بعد')}
+                    </h5>
                     <p className="text-[11px] sm:text-xs text-amber-200/80 font-bold mt-0.5">{t('notif_prompt_desc', 'اضغط السماح لتفعيل الأذان والأذكار التلقائية')}</p>
                   </div>
                 </div>
                 <button
                   onClick={async () => {
                     await handleRequestLocalPerm();
-                    if (hasNotif) {
+                    // Only a real browser has a Web Notifications prompt to show;
+                    // calling it on native is a no-op that always reports denied.
+                    if (!isNativeApp && hasNotif) {
                       try {
                         await Notification.requestPermission();
                         updateSettings({ _triggerMorning: Date.now() });
@@ -1154,10 +1213,30 @@ export const Settings: React.FC = () => {
                     <Shield size={20} />
                   </div>
                   <div>
-                    <h5 className="text-xs sm:text-sm font-black text-rose-400">{t('notif_blocked_title', 'الإشعارات محظورة في المتصفح')}</h5>
-                    <p className="text-[11px] sm:text-xs text-rose-200/80 font-bold mt-0.5">{t('notif_blocked_desc', 'لتصلك التنبيهات: افتح إعدادات المتصفح/الموقع ➔ الإشعارات ➔ اختر (سماح)')}</p>
+                    <h5 className="text-xs sm:text-sm font-black text-rose-400">
+                      {isNativeApp
+                        ? t('notif_blocked_title_native', 'الإشعارات موقوفة من إعدادات النظام')
+                        : t('notif_blocked_title', 'الإشعارات محظورة في المتصفح')}
+                    </h5>
+                    <p className="text-[11px] sm:text-xs text-rose-200/80 font-bold mt-0.5">
+                      {isNativeApp
+                        ? t('notif_blocked_desc_native', 'لتصلك تنبيهات الصلاة: إعدادات الهاتف ➔ التطبيقات ➔ أذكار المؤمن ➔ الإشعارات ➔ تشغيل')
+                        : t('notif_blocked_desc', 'لتصلك التنبيهات: افتح إعدادات المتصفح/الموقع ➔ الإشعارات ➔ اختر (سماح)')}
+                    </p>
                   </div>
                 </div>
+                {isNativeApp && (
+                  <button
+                    onClick={async () => {
+                      // Works whenever the permission was not permanently denied;
+                      // otherwise only the system settings screen can re-enable it.
+                      await handleRequestLocalPerm();
+                    }}
+                    className="bg-rose-500 hover:bg-rose-600 text-white font-black text-xs px-3.5 py-1.5 rounded-xl self-end transition-all active:scale-95 shadow-md shadow-rose-500/20"
+                  >
+                    {t('notif_retry_permission', 'إعادة المحاولة 🔔')}
+                  </button>
+                )}
               </div>
             );
           }
@@ -1191,6 +1270,33 @@ export const Settings: React.FC = () => {
               </button>
             </div>
 
+            {/*
+              Exact-alarm permission, shown only when Android is withholding it.
+
+              Android 12+ keeps "Alarms & reminders" off by default, and without
+              it the system is free to batch our alarms — so the adhan can arrive
+              minutes after the actual prayer time. The app now schedules inexact
+              alarms rather than let the notification plugin redirect the user to
+              this system screen unannounced on first launch; this is where that
+              choice is handed back, with the reason attached.
+            */}
+            {isLocalNotificationsAvailable() && settings.notificationsEnabled && !exactAlarmsAllowed && (
+              <button
+                onClick={handleEnableExactAlarms}
+                className="w-full text-start bg-amber-500/10 p-3.5 rounded-xl border border-amber-400/30 active:scale-[0.99] transition-transform"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock size={14} className="text-amber-400 shrink-0" />
+                  <span className="text-xs sm:text-sm font-black text-amber-300">
+                    {t('exact_alarms_title', 'فعّل المنبهات الدقيقة ليصل الأذان في وقته')}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-amber-200/70 leading-relaxed">
+                  {t('exact_alarms_body', 'يمنع أندرويد التطبيقات من ضبط منبهات دقيقة ما لم تسمح بذلك، وقد يتأخر التنبيه دقائق. اضغط هنا لفتح إعداد «المنبهات والتذكيرات».')}
+                </p>
+              </button>
+            )}
+
             <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
               <div className="flex items-center gap-3">
                 <span className="text-xs sm:text-sm font-black text-white/90">{t('prayer_notifications', 'إشعارات الصلاة')}</span>
@@ -1205,7 +1311,7 @@ export const Settings: React.FC = () => {
                 onClick={async () => {
                   const newVal = !settings.prayerNotificationsEnabled;
                   updateSettings({ prayerNotificationsEnabled: newVal });
-                  await syncAllLocalNotifications({ ...settings, prayerNotificationsEnabled: newVal });
+                  await syncAllLocalNotifications({ ...settings, prayerNotificationsEnabled: newVal }, { mayRequestPermission: true });
                   refreshLocalNotifStatus();
                 }}
                 className={cn(
@@ -2934,7 +3040,13 @@ export const Settings: React.FC = () => {
                 <AppIcon size={14} iconSize={28} className="shadow-xl" />
                 <div>
                   <h4 className="text-xl font-black text-white tracking-tight">{t('app_name', 'أذكار المؤمن')}</h4>
-                  <p className="text-xs font-black text-teal-400 uppercase tracking-[0.2em]">{t('app_version', 'الإصدار 1.2.0')}</p>
+                  {/*
+                    The number comes from __APP_VERSION__, which vite.config.ts
+                    injects from package.json. It used to be typed into all ten
+                    locale files as "1.2.0" while the APK shipped as 1.0.0, so
+                    the app told the user a version it was not.
+                  */}
+                  <p className="text-xs font-black text-teal-400 uppercase tracking-[0.2em]">{t('app_version', { version: __APP_VERSION__ })}</p>
                 </div>
               </div>
               
@@ -3181,7 +3293,7 @@ export const Settings: React.FC = () => {
                 <span className="text-lg font-black tracking-wide drop-shadow-md">{t('app_name', 'أذكار المؤمن')}</span>
                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1.5 bg-black/40 px-2.5 py-0.5 rounded-full backdrop-blur-sm border border-white/5 shadow-sm flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.8)]" />
-                  {t('version_auto_update', 'الإصدار 1.2.0 • تحديث تلقائي فوري')}
+                  {t('version_auto_update', { version: __APP_VERSION__ })}
                 </span>
               </div>
               

@@ -1767,7 +1767,7 @@ export const Adhkar: React.FC = () => {
         )}
         style={{ backgroundColor: currentTheme.isLight ? `${currentTheme.rawBg}f2` : `${currentTheme.rawBg}f6` }}
       >
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <BackButton onClick={handleBackAttempt} />
           <div className="flex flex-col text-right">
             <h2 
@@ -1783,7 +1783,7 @@ export const Adhkar: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center shrink-0 bg-white dark:bg-slate-800 p-1 md:p-1.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm gap-1 transition-all hover:shadow-md">
+        <div className="fit-narrow flex items-center shrink-0 bg-white dark:bg-slate-800 p-1 md:p-1.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm gap-1 transition-all hover:shadow-md">
             <button 
               onClick={() => setIsSettingsOpen(true)}
               className="h-9 md:h-10 px-3 md:px-4 flex items-center justify-center gap-1.5 md:gap-2 rounded-full bg-[#006A4E] hover:bg-[#00523C] dark:bg-[#006A4E] dark:hover:bg-[#00523C] text-white shadow-[0_4px_15px_rgba(0,106,78,0.3)] hover:shadow-[0_6px_20px_rgba(0,106,78,0.4)] transition-all hover:-translate-y-0.5 active:translate-y-0 duration-200 active:scale-[0.95] group outline-none overflow-hidden relative"
