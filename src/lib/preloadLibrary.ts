@@ -53,3 +53,11 @@ export function preloadLibraryRoute(route: string) {
   if (typeof window !== 'undefined' && loadRoute) void loadRoute().catch(() => {});
 }
 
+export function preloadLibraryRoutes(route?: string) {
+  if (route) {
+    preloadLibraryRoute(route);
+  } else {
+    preloadAudioLibraryRoutes();
+  }
+}
+
