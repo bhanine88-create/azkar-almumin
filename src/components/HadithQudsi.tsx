@@ -127,6 +127,20 @@ export const HadithQudsi: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Introductory Identity Card toggle state (expanded / compact)
+  const [isIntroExpanded, setIsIntroExpanded] = useState<boolean>(() => {
+    const saved = safeLocalStorageGetItem('qudsi-intro-expanded');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  const toggleIntroExpanded = () => {
+    setIsIntroExpanded(prev => {
+      const next = !prev;
+      safeLocalStorageSetItem('qudsi-intro-expanded', String(next));
+      return next;
+    });
+  };
+
   // Copy feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -489,107 +503,236 @@ export const HadithQudsi: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-y-auto w-full mx-auto pb-16">
       
-      {/* Dynamic Header */}
-      <div className="sticky top-0 z-30 p-4 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800">
-        <div className="flex items-center justify-between gap-4 mb-3">
-          <div className="flex items-center gap-3">
-            <BackButton />
-            <div>
-              <div className="flex items-center gap-2">
-                <Crown size={20} className="text-amber-500 animate-pulse" />
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {t('home_qudsi_title')}
-                </h2>
+      {/* ========================================================================= */}
+      {/* الحاوية العلوية الثابتة تماماً مع التبويبات (Fully Sticky Header & Tabs Container) */}
+      {/* ========================================================================= */}
+      <div className="sticky top-0 z-40 p-2 sm:p-3.5 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-md space-y-2.5 transition-all">
+        
+        {/* ========================================================================= */}
+        {/* البطاقة التعريفية الشريفة الثابتة (The Fixed Identity Card for Hadith Qudsi) */}
+        {/* ========================================================================= */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-500/35 dark:border-amber-500/25 shadow-xl bg-gradient-to-br from-[#0c2b20] via-[#092219] to-[#040e0b] text-white p-3 sm:p-4 transition-all duration-300">
+          {/* Subtle Arabesque & Ambient Light Overlay */}
+          <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')]" />
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
+
+          {/* Top Control Bar inside Identity Card */}
+          <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-4 mb-2.5 flex-wrap">
+            {/* Back button & Royal badge */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <BackButton fallbackPath="/library" />
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[10px] sm:text-xs font-bold text-amber-300 backdrop-blur-md">
+                <Crown size={14} className="text-amber-400 animate-pulse shrink-0" />
+                <span className="truncate">كلام الله عز وجل بلفظ النبي ﷺ</span>
               </div>
-              <p className="text-[11px] font-bold text-teal-600 dark:text-teal-400 mt-0.5">
-                كلام الله عز وجل بلفظ النبي ﷺ الشريف مع الشرح الموسع والتفصيلي
+            </div>
+
+            {/* Quick Action Button Group */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* View Layout Toggle */}
+              <div className="flex items-center bg-black/30 p-0.5 sm:p-1 rounded-xl border border-white/15">
+                <button
+                  onClick={() => handleToggleViewLayoutMode('single_page')}
+                  className={cn(
+                    "px-2 sm:px-2.5 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1 cursor-pointer",
+                    viewLayoutMode === 'single_page'
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
+                      : "text-white/70 hover:text-white"
+                  )}
+                  title="عرض الأحاديث في صفحة موحدة متصلة"
+                >
+                  <FileText size={13} />
+                  <span className="hidden md:inline">صفحة موحدة</span>
+                </button>
+                <button
+                  onClick={() => handleToggleViewLayoutMode('cards')}
+                  className={cn(
+                    "px-2 sm:px-2.5 py-1 rounded-lg text-[11px] font-black transition-all flex items-center gap-1 cursor-pointer",
+                    viewLayoutMode === 'cards'
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
+                      : "text-white/70 hover:text-white"
+                  )}
+                  title="عرض الأحاديث على شكل بطاقات"
+                >
+                  <Layers size={13} />
+                  <span className="hidden md:inline">بطاقات</span>
+                </button>
+              </div>
+
+              {/* Stats button */}
+              <button
+                onClick={() => setShowStatsModal(true)}
+                className="px-2 sm:px-2.5 py-1.5 rounded-xl border border-emerald-400/30 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30 transition-all flex items-center gap-1 text-[11px] font-black cursor-pointer shadow-sm"
+                title="لوحة إحصائيات القراءة والتصفح"
+              >
+                <BarChart2 size={14} className="text-emerald-300" />
+                <span className="hidden lg:inline">الإحصائيات</span>
+                <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 rounded-md font-extrabold">
+                  {readPercentage}%
+                </span>
+              </button>
+
+              {/* Topic Index */}
+              <button
+                onClick={() => setShowIndexModal(true)}
+                className="px-2 sm:px-2.5 py-1.5 rounded-xl border border-amber-400/30 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 transition-all flex items-center gap-1 text-[11px] font-black cursor-pointer shadow-sm"
+                title="فهرس المواضيع"
+              >
+                <Grid size={14} />
+                <span className="hidden lg:inline">المواضيع</span>
+              </button>
+
+              {/* Favorites toggle */}
+              <button
+                onClick={() => setOnlyFavorites(!onlyFavorites)}
+                className={cn(
+                  "p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border transition-all flex items-center gap-1 text-[11px] font-bold cursor-pointer",
+                  onlyFavorites
+                    ? "bg-rose-500/30 border-rose-400/50 text-rose-200 shadow-sm"
+                    : "bg-white/10 border-white/15 text-white/80 hover:bg-white/20"
+                )}
+                title="المفضلة"
+              >
+                <Heart size={14} className={cn(onlyFavorites && "fill-rose-400 text-rose-400")} />
+                <span className="hidden sm:inline">({favorites.length})</span>
+              </button>
+
+              {/* Settings toggle */}
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className={cn(
+                  "p-1.5 sm:p-2 rounded-xl border transition-all flex items-center justify-center cursor-pointer",
+                  showSettings
+                    ? "bg-amber-500/30 border-amber-400/50 text-amber-300 shadow-sm"
+                    : "bg-white/10 border-white/15 text-white/80 hover:bg-white/20"
+                )}
+                title="تعديل الخط والحجم"
+              >
+                <Settings2 size={15} />
+              </button>
+
+              {/* Expand / Collapse Intro Details button */}
+              <button
+                onClick={toggleIntroExpanded}
+                className="px-2 py-1.5 rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 text-white/90 transition-all flex items-center gap-1 text-[10px] sm:text-[11px] font-bold cursor-pointer"
+                title={isIntroExpanded ? "طي النبذة التعريفية" : "عرض النبذة التعريفية والفوائد"}
+              >
+                <Info size={13} className="text-amber-400" />
+                <span className="hidden sm:inline">{isIntroExpanded ? "طي النبذة" : "النبذة التعريفية"}</span>
+                {isIntroExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Main Title & Brief Summary */}
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-2 pt-1 border-t border-white/10">
+            <div>
+              <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight drop-shadow-sm flex items-center gap-2">
+                <span>{t('home_qudsi_title')}</span>
+                <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  {QUDSI_HADITHS.length} حديثاً جليلاً
+                </span>
+              </h2>
+              <p className="text-[11px] sm:text-xs font-medium text-emerald-100/90 leading-relaxed mt-0.5">
+                ما رواه النبي ﷺ عن ربه عز وجل؛ فالمعنى موحىً به من الله واللفظ بلسان المصطفى ﷺ، حافلةٌ بالرحمة والرجاء والمغفرة.
               </p>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* View Mode Toggle Button Group */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              <button
-                onClick={() => handleToggleViewLayoutMode('single_page')}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer",
-                  viewLayoutMode === 'single_page'
-                    ? "bg-amber-500 text-white shadow-sm"
-                    : "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400"
-                )}
-                title="عرض الأحاديث في صفحة موحدة متصلة"
-              >
-                <FileText size={15} />
-                <span className="hidden sm:inline">صفحة موحدة</span>
-              </button>
-              <button
-                onClick={() => handleToggleViewLayoutMode('cards')}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer",
-                  viewLayoutMode === 'cards'
-                    ? "bg-amber-500 text-white shadow-sm"
-                    : "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400"
-                )}
-                title="عرض الأحاديث على شكل بطاقات"
-              >
-                <Layers size={15} />
-                <span className="hidden sm:inline">بطاقات</span>
-              </button>
-            </div>
-
-            {/* Statistics Dashboard Button */}
-            <button
-              onClick={() => setShowStatsModal(true)}
-              className="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 text-xs font-black cursor-pointer shadow-sm"
-              title="لوحة إحصائيات القراءة والتصفح"
-            >
-              <BarChart2 size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden sm:inline">لوحة الإحصائيات</span>
-              <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-md font-extrabold">
-                {readPercentage}%
+            {/* Quick Micro Badges */}
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
+                <CheckCircle2 size={12} className="text-emerald-400" />
+                <span>محققة ومخرجة</span>
               </span>
-            </button>
-
-            {/* Topic Index Button */}
-            <button
-              onClick={() => setShowIndexModal(true)}
-              className="p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-all flex items-center gap-1.5 text-xs font-black cursor-pointer shadow-sm"
-              title="فهرس المواضيع"
-            >
-              <Grid size={16} />
-              <span className="hidden sm:inline">فهرس المواضيع</span>
-            </button>
-
-            {/* Favorites filter toggle */}
-            <button
-              onClick={() => setOnlyFavorites(!onlyFavorites)}
-              className={cn(
-                "p-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer",
-                onlyFavorites
-                  ? "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400"
-                  : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100"
-              )}
-              title="المفضلة"
-            >
-              <Heart size={16} className={cn(onlyFavorites && "fill-rose-500")} />
-              <span className="hidden sm:inline">المفضلة ({favorites.length})</span>
-            </button>
-
-            {/* Settings button */}
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className={cn(
-                "p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer",
-                showSettings
-                  ? "bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400"
-                  : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
-              )}
-              title="تعديل الخط والحجم"
-            >
-              <Settings2 size={18} />
-            </button>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
+                <BookOpen size={12} className="text-amber-400" />
+                <span>شرح وفوائد موسعة</span>
+              </span>
+            </div>
           </div>
+
+          {/* Expandable Deep Identity Definition & Distinctions Drawer */}
+          <AnimatePresence>
+            {isIntroExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-3 mt-3 border-t border-white/15 space-y-2.5">
+                  {/* Definition and Meaning Box */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                      <div className="flex items-center gap-1.5 text-amber-300 font-black text-[11px]">
+                        <Crown size={13} />
+                        <span>ما هو الحديث القدسي؟</span>
+                      </div>
+                      <p className="text-[11px] text-white/85 leading-relaxed font-medium">
+                        هو الحديث الذي يُسنده النبي ﷺ إلى الله تبارك وتعالى قائلاً: «قال الله تعالى»، فالمعنى من الله تبارك وتعالى، واللفظ من رسول الله ﷺ، ولذلك نُسب إلى القدس طهارةً وتنزيهاً وإجلالاً.
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                      <div className="flex items-center gap-1.5 text-emerald-300 font-black text-[11px]">
+                        <Scale size={13} />
+                        <span>الفرق بينه وبين القرآن والحديث النبوي:</span>
+                      </div>
+                      <p className="text-[11px] text-white/85 leading-relaxed font-medium">
+                        القرآن الكريم معجز بلفظه ومعناه متعبد بتلاوته في الصلاة، أما الحديث القدسي فلا تصح به الصلاة، والحديث النبوي معناه وحي أو اجتهاد بلفظ النبي ﷺ دون إسناده إلى قول الله عز وجل.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 4 Identity Stats Pillars */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0">
+                        <BookOpen size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">مجموع الأحاديث</span>
+                        <span className="block text-xs font-black text-white">{QUDSI_HADITHS.length} حديثاً</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">المقروءة والمحفوظة</span>
+                        <span className="block text-xs font-black text-emerald-300">{readHadiths.length} من {QUDSI_HADITHS.length}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
+                        <Lightbulb size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">الشروح والفوائد</span>
+                        <span className="block text-xs font-black text-blue-200">تحليل وتفسير شامل</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center shrink-0">
+                        <Heart size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">قائمة المفضلة</span>
+                        <span className="block text-xs font-black text-rose-300">{favorites.length} حديثاً</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Font Customization Panel */}

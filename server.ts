@@ -10,7 +10,25 @@ dotenv.config();
 
 const __dirname = process.cwd();
 
+// Process-level crash prevention to ensure high availability under heavy load
+process.on("uncaughtException", (err: any) => {
+  console.error("[Server Process Safeguard - uncaughtException]:", err?.message || err);
+});
+process.on("unhandledRejection", (reason: any) => {
+  console.error("[Server Process Safeguard - unhandledRejection]:", reason?.message || reason);
+});
+
+// Bounded in-memory LRU cache to prevent memory leaks under millions of requests
+const MAX_ARCHIVE_CACHE_SIZE = 2500;
 const archiveMetadataCache = new Map<string, { server: string; dir: string }>();
+
+function setArchiveCache(key: string, value: { server: string; dir: string }) {
+  if (archiveMetadataCache.size >= MAX_ARCHIVE_CACHE_SIZE) {
+    const firstKey = archiveMetadataCache.keys().next().value;
+    if (firstKey) archiveMetadataCache.delete(firstKey);
+  }
+  archiveMetadataCache.set(key, value);
+}
 
 async function resolveArchiveOrgUrl(targetUrl: string): Promise<string> {
   const match = targetUrl.match(/https?:\/\/(?:www\.)?archive\.org\/download\/([^\/]+)\/(.+)/);
@@ -40,7 +58,7 @@ async function resolveArchiveOrgUrl(targetUrl: string): Promise<string> {
           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'accept': 'application/json'
         },
-        timeout: 1200
+        timeout: 1500
       };
       const req = https.get(metadataUrl, options, (res) => {
         if (res.statusCode !== 200) {
@@ -59,7 +77,7 @@ async function resolveArchiveOrgUrl(targetUrl: string): Promise<string> {
 
     const data = JSON.parse(response);
     if (data && data.server && data.dir) {
-      archiveMetadataCache.set(identifier, { server: data.server, dir: data.dir });
+      setArchiveCache(identifier, { server: data.server, dir: data.dir });
       let decodedFilename = filename;
       try {
         decodedFilename = decodeURIComponent(filename);
@@ -137,13 +155,14 @@ function sanitizeString(input: any, maxLength = 1000): string {
 }
 
 // In-memory rate limiting store to shield server resources from abuse
+const MAX_RATE_LIMIT_KEYS = 10000;
 const rateLimitStore = new Map<string, { timestamps: number[] }>();
 
 // Periodic memory clean-up for the rate limit store to guarantee stability and prevent OOM under millions of concurrent users
 setInterval(() => {
   const now = Date.now();
-  // Clean keys that have not seen active requests within a standard window (e.g., 5 minutes)
-  const maxAge = 5 * 60 * 1000;
+  // Clean keys that have not seen active requests within a standard window (e.g., 3 minutes)
+  const maxAge = 3 * 60 * 1000;
   for (const [key, value] of rateLimitStore.entries()) {
     const activeTimestamps = value.timestamps.filter(t => now - t < maxAge);
     if (activeTimestamps.length === 0) {
@@ -152,7 +171,18 @@ setInterval(() => {
       value.timestamps = activeTimestamps;
     }
   }
-}, 5 * 60 * 1000).unref();
+
+  // Hard safety guard: if keys exceed maximum threshold under sudden DDoS/high traffic, prune oldest
+  if (rateLimitStore.size > MAX_RATE_LIMIT_KEYS) {
+    const toPrune = rateLimitStore.size - (MAX_RATE_LIMIT_KEYS * 0.8);
+    let pruned = 0;
+    for (const key of rateLimitStore.keys()) {
+      rateLimitStore.delete(key);
+      pruned++;
+      if (pruned >= toPrune) break;
+    }
+  }
+}, 2 * 60 * 1000).unref();
 
 // Simple, performant in-memory rate limiter middleware
 function rateLimiter(limit: number, windowMs: number, apiName = "Global") {
@@ -163,6 +193,10 @@ function rateLimiter(limit: number, windowMs: number, apiName = "Global") {
     const now = Date.now();
 
     if (!rateLimitStore.has(key)) {
+      if (rateLimitStore.size >= MAX_RATE_LIMIT_KEYS) {
+        const firstKey = rateLimitStore.keys().next().value;
+        if (firstKey) rateLimitStore.delete(firstKey);
+      }
       rateLimitStore.set(key, { timestamps: [] });
     }
 
@@ -632,7 +666,8 @@ async function startServer() {
 
   // --- End of Daily Inspiration API Sources ---
 
-  // Simple in-memory server-side cache for Tafsir Razi to prevent redundant API calls
+  // Bounded in-memory server-side cache for Tafsir Razi (max 114 surahs)
+  const MAX_RAZI_CACHE_SIZE = 114;
   const raziTafsirCache = new Map<string, any>();
 
   // Tafsir Al-Razi (Mafatih al-Ghayb) Smart Generator Route
@@ -796,6 +831,10 @@ async function startServer() {
         }
       };
 
+      if (raziTafsirCache.size >= MAX_RAZI_CACHE_SIZE) {
+        const firstKey = raziTafsirCache.keys().next().value;
+        if (firstKey) raziTafsirCache.delete(firstKey);
+      }
       raziTafsirCache.set(cacheKey, finalResponse);
       res.json(finalResponse);
     } catch (error) {
@@ -976,6 +1015,10 @@ async function startServer() {
             proxyRes.pipe(res);
           });
 
+          activeRequest.setTimeout(25000, () => {
+            activeRequest.destroy(new Error('Upstream streaming timeout'));
+          });
+
           activeRequest.on('error', (e) => {
             console.error("Proxy client connection error:", e.message);
             if (!res.headersSent) {
@@ -1092,6 +1135,10 @@ async function startServer() {
           proxyRes.pipe(res);
         });
 
+        activeDownloadRequest.setTimeout(25000, () => {
+          activeDownloadRequest.destroy(new Error('Upstream download timeout'));
+        });
+
         activeDownloadRequest.on('error', (e) => {
           console.error("Proxy download connection error:", e.message);
           if (!res.headersSent) {
@@ -1177,6 +1224,10 @@ async function startServer() {
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://0.0.0.0:${PORT} (${isDev ? "development" : "production"})`);
   });
+
+  // Optimize HTTP Keep-Alive for cloud reverse proxies and load balancers under high traffic
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
 
   // Handle Cloud Run termination signals cleanly
   const shutdown = (signal: string) => {

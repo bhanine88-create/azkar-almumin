@@ -20,6 +20,7 @@ import { useSmartNavigation } from "../lib/navigation";
 import { useGlobalAudio } from '../context/GlobalAudioContext';
 import { useDownloadManager } from '../context/DownloadContext';
 import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
+import { useAppStability } from '../services/stabilityManager';
 
 interface Surah {
   number: number;
@@ -28,6 +29,11 @@ interface Surah {
 }
 
 export const QuranAudioReciter: React.FC = () => {
+  useAppStability({
+    componentName: 'QuranAudioReciter',
+    autoRecycleOnUnmount: true,
+  });
+
   const { reciterId } = useParams<{ reciterId: string }>();
   const { navigate } = useSmartNavigation();
   const { settings } = useAppContext();

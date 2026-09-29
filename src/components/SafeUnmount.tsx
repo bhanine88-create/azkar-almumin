@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { memoryManager } from '../services/memoryManager';
+import { stabilityManager } from '../services/stabilityManager';
 
 interface SafeUnmountProps {
   children: React.ReactNode;
@@ -9,27 +11,22 @@ interface SafeUnmountProps {
  * A specialized wrapper for heavy, content-dense components.
  * It ensures that when the user navigates away:
  * 1. The component is explicitly and immediately unmounted from the DOM.
- * 2. Heavy references (refs, event listeners, intervals) are cleared.
- * 3. Uses Suspense and transitions to prevent UI thread lag during navigation transitions.
+ * 2. Heavy references (refs, event listeners, intervals, blobs) are purged via MemoryManager.
+ * 3. Media elements (Audio/Video) are paused, unloaded, and detached to release OS audio buffers.
+ * 4. Canvas elements are deallocated to immediately free GPU texture memory.
  */
 export const SafeUnmount: React.FC<SafeUnmountProps> = ({ children, componentName = 'Component' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
-      // Aggressive cleanup on unmount
-      console.log(`[SafeUnmount] Initiating aggressive memory purging for: ${componentName}`);
-      
-      // 1. Clear any lingering audio elements created inside this container
+      // 1. Clear any lingering media elements created inside this container
       if (containerRef.current) {
         try {
-          const audios = containerRef.current.querySelectorAll('audio, video');
-          audios.forEach((media) => {
-            const m = media as HTMLMediaElement;
-            m.pause();
-            m.src = '';
-            m.load();
-            m.remove();
+          const mediaList = containerRef.current.querySelectorAll('audio, video');
+          mediaList.forEach((media) => {
+            memoryManager.detachMediaElement(media as HTMLMediaElement);
+            media.remove();
           });
         } catch (e) {
           console.warn('[SafeUnmount] Failed to purge media elements:', e);
@@ -39,12 +36,7 @@ export const SafeUnmount: React.FC<SafeUnmountProps> = ({ children, componentNam
         try {
           const canvases = containerRef.current.querySelectorAll('canvas');
           canvases.forEach((canvas) => {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-            canvas.width = 0;
-            canvas.height = 0;
+            memoryManager.deallocateCanvas(canvas);
             canvas.remove();
           });
         } catch (e) {
@@ -52,12 +44,16 @@ export const SafeUnmount: React.FC<SafeUnmountProps> = ({ children, componentNam
         }
       }
 
-      // 3. Suggest garbage collection
-      if (typeof window !== 'undefined') {
+      // 3. Purge all component-scoped registrations and Blob URLs
+      memoryManager.cleanupComponent(componentName);
+
+      // 4. Trigger scheduled stability and resource recycling cycle
+      stabilityManager.scheduleCleanup('idle');
+
+      // 5. Suggest garbage collection if supported
+      if (typeof window !== 'undefined' && 'gc' in window && typeof (window as any).gc === 'function') {
         try {
-          if ('gc' in window && typeof (window as any).gc === 'function') {
-            (window as any).gc();
-          }
+          (window as any).gc();
         } catch (e) {}
       }
     };
@@ -85,8 +81,8 @@ export function useMemoryCleanup(options?: {
   cleanupRef.current = options?.onCleanup;
 
   useEffect(() => {
+    const name = options?.componentName || 'GenericComponent';
     return () => {
-      console.log(`[useMemoryCleanup] Executing custom memory cleanup hook for ${options?.componentName || 'component'}`);
       if (cleanupRef.current) {
         try {
           cleanupRef.current();
@@ -94,6 +90,7 @@ export function useMemoryCleanup(options?: {
           console.error('[useMemoryCleanup] Custom cleanup failed:', err);
         }
       }
+      memoryManager.cleanupComponent(name);
     };
   }, [options?.componentName]);
 }

@@ -1,4 +1,5 @@
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { memoryManager } from "./memoryManager";
 
 export const MUSHAF_EDITIONS = {
   hafs: {
@@ -80,27 +81,44 @@ export const MUSHAF_EDITIONS = {
 };
 
 const CACHE_NAME_PREFIX = 'mushaf-cache-v3-';
+const MAX_MEMORY_PAGES = 16;
 const memoryUrlCache = new Map<string, string>();
-/**
- * Page URLs kept in memory. Each cached page is a blob holding a full page
- * image, so an unbounded map grew with every page turned until the WebView ran
- * out of memory on long reading sessions. The pager only shows a few pages at
- * a time; the oldest entries are dropped (and their blobs freed) past this.
- */
-const MEMORY_URL_CACHE_LIMIT = 48;
 
-const rememberPageUrl = (key: string, url: string) => {
-  memoryUrlCache.delete(key);
-  memoryUrlCache.set(key, url);
-  while (memoryUrlCache.size > MEMORY_URL_CACHE_LIMIT) {
-    const [oldestKey, oldestUrl] = memoryUrlCache.entries().next().value as [string, string];
-    memoryUrlCache.delete(oldestKey);
-    if (oldestUrl.startsWith('blob:')) {
-      // Give any <img> still decoding the old page a moment before freeing it.
-      setTimeout(() => URL.revokeObjectURL(oldestUrl), 10000);
+function setMemoryPageUrl(key: string, url: string) {
+  // If key already exists, delete it first so insertion moves it to the end (most recent)
+  if (memoryUrlCache.has(key)) {
+    const existing = memoryUrlCache.get(key);
+    if (existing && existing !== url && existing.startsWith('blob:')) {
+      memoryManager.revokeBlobUrl(existing);
+    }
+    memoryUrlCache.delete(key);
+  } else if (memoryUrlCache.size >= MAX_MEMORY_PAGES) {
+    // Evict oldest page to guarantee memory bounds under rapid swiping
+    const oldestKey = memoryUrlCache.keys().next().value;
+    if (oldestKey) {
+      const oldestUrl = memoryUrlCache.get(oldestKey);
+      if (oldestUrl && oldestUrl.startsWith('blob:')) {
+        memoryManager.revokeBlobUrl(oldestUrl);
+      }
+      memoryUrlCache.delete(oldestKey);
     }
   }
-};
+
+  if (url.startsWith('blob:')) {
+    memoryManager.registerBlobUrl(url, 'mushaf');
+  }
+  memoryUrlCache.set(key, url);
+}
+
+// Auto-cleanup hook when navigating away from Quran
+if (typeof window !== 'undefined') {
+  window.addEventListener('app_memory_cleaned', (e: any) => {
+    const toRoute = e?.detail?.toRoute;
+    if (toRoute && !toRoute.includes('/quran')) {
+      mushafService.clearMemoryCache();
+    }
+  });
+}
 
 export const mushafService = {
   getCacheName: (editionId: string) => `${CACHE_NAME_PREFIX}${editionId}`,
@@ -322,10 +340,8 @@ export const mushafService = {
 
   getPageUrl: async (editionId: string, pageNum: number, attemptIndex: number = 0) => {
     const memKey = `${editionId}_${pageNum}_${attemptIndex}`;
-    const remembered = memoryUrlCache.get(memKey);
-    if (remembered) {
-      rememberPageUrl(memKey, remembered); // mark as recently used
-      return remembered;
+    if (memoryUrlCache.has(memKey)) {
+      return memoryUrlCache.get(memKey)!;
     }
 
     // Soft prefetch surrounding pages non-blockingly
@@ -358,7 +374,7 @@ export const mushafService = {
         const blob = await cachedResponse.blob();
         if (blob.size > 0) {
           const blobUrl = URL.createObjectURL(blob);
-          rememberPageUrl(memKey, blobUrl);
+          setMemoryPageUrl(memKey, blobUrl);
           return blobUrl;
         }
       } catch (e) {
@@ -372,7 +388,7 @@ export const mushafService = {
       const urls = edition.getUrls(pageNum);
       const url = urls[attemptIndex % urls.length];
       
-      rememberPageUrl(memKey, url);
+      setMemoryPageUrl(memKey, url);
 
       // Cache asynchronously in background for future offline continuity without blocking current page view
       (async () => {
@@ -405,8 +421,40 @@ export const mushafService = {
     return null;
   },
 
-  // Helper to revoke URLs to prevent leaks
+  // Clears all in-memory page URLs and revokes Blob URLs to free RAM
+  clearMemoryCache: () => {
+    for (const [, url] of memoryUrlCache.entries()) {
+      if (url && url.startsWith('blob:')) {
+        memoryManager.revokeBlobUrl(url);
+      }
+    }
+    memoryUrlCache.clear();
+  },
+
+  // Prunes memory cache to a compact target size
+  pruneMemoryCache: (targetSize: number = 8) => {
+    while (memoryUrlCache.size > targetSize) {
+      const oldestKey = memoryUrlCache.keys().next().value;
+      if (!oldestKey) break;
+      const oldestUrl = memoryUrlCache.get(oldestKey);
+      if (oldestUrl && oldestUrl.startsWith('blob:')) {
+        memoryManager.revokeBlobUrl(oldestUrl);
+      }
+      memoryUrlCache.delete(oldestKey);
+    }
+  },
+
+  // Helper to revoke URLs and prune from memory map
   revokePageUrl: (url: string) => {
-    // Preserve memory URL cache for smooth, jump-free page display across re-renders
+    if (!url) return;
+    for (const [key, cachedUrl] of memoryUrlCache.entries()) {
+      if (cachedUrl === url) {
+        if (url.startsWith('blob:')) {
+          memoryManager.revokeBlobUrl(url);
+        }
+        memoryUrlCache.delete(key);
+        break;
+      }
+    }
   }
 };

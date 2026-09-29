@@ -8,6 +8,7 @@ import { BackButton } from './ui/BackButton';
 import { useSmartNavigation } from "../lib/navigation";
 import { useAppContext } from '../AppContext';
 import { useTranslation } from '../i18n';
+import { useAppStability } from '../services/stabilityManager';
 
 interface AdhkarItem {
   to: string;
@@ -232,6 +233,11 @@ const AdhkarItemCard = React.memo<{
 AdhkarItemCard.displayName = 'AdhkarItemCard';
 
 const AdhkarHub: React.FC = () => {
+  useAppStability({
+    componentName: 'AdhkarHub',
+    autoRecycleOnUnmount: true,
+  });
+
   const { navigate } = useSmartNavigation();
   const { settings, progress, toggleFavoriteUnified, updateSettings } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);

@@ -43,6 +43,7 @@ import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { CHALLENGES, ChallengeType } from '../challengesData';
 import { BackButton } from './ui/BackButton';
 import { cn } from '../lib/utils';
+import { useAppStability } from '../services/stabilityManager';
 import { useSmartNavigation } from "../lib/navigation";
 
 const CustomTooltip = React.memo(({ active, payload, label, isRTL, t, activeChartTab }: any) => {
@@ -101,6 +102,11 @@ const CustomTooltip = React.memo(({ active, payload, label, isRTL, t, activeChar
 });
 
 export const UserDashboard: React.FC = () => {
+  useAppStability({
+    componentName: 'UserDashboard',
+    autoRecycleOnUnmount: true,
+  });
+
   const { progress, settings } = useAppContext();
   const { progress: challengeProgress, points: challengePoints } = useChallengeTracker();
   const { navigate } = useSmartNavigation();

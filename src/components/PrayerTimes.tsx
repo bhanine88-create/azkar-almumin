@@ -39,6 +39,7 @@ import { useTranslation } from '../i18n';
 import { useSmartNavigation } from "../lib/navigation";
 import { NOTIFICATION_SOUNDS } from '../constants';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { useAppStability } from '../services/stabilityManager';
 
 const PRAYER_NAMES: Record<string, { ar: string; icon: React.ReactNode }> = {
   Fajr: { ar: 'الفجر', icon: <Sunrise size={20} /> },
@@ -79,6 +80,11 @@ const PRAYER_THEMES: Record<string, { id: string; name: string; bg: string; acce
 };
 
 export const PrayerTimes: React.FC = () => {
+  useAppStability({
+    componentName: 'PrayerTimes',
+    autoRecycleOnUnmount: true,
+  });
+
   const { navigate, goBack } = useSmartNavigation();
   const { settings, updateSettings, progress, addWorshipActivity, updateProgress } = useAppContext();
   const { t, currentLang } = useTranslation(settings.appLanguage);

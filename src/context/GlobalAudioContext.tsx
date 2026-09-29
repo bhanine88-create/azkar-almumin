@@ -4,8 +4,9 @@ import { SURAH_NAMES } from '../utils/quranUtils';
 import { audioCacheService } from '../services/audioCacheService';
 import { lectureCacheService } from '../services/lectureCacheService';
 import { getSurahAudioUrl } from '../services/quranAudioUrlService';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeJsonParse } from "../utils/storage";
-import { setAudioSource } from "../lib/audioBlobUrls";
+import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { memoryManager } from '../services/memoryManager';
+import { useAppStability, stabilityManager } from '../services/stabilityManager';
 
 export interface GlobalTrack {
   id: string; // e.g. "l-yaqoub-1" or "quran-1"
@@ -269,7 +270,18 @@ export function formatSecondsToTime(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export const saveTrackPlaybackPosition = (trackId: string, time: number, duration: number) => {
+let lastPositionSaveTime = 0;
+let lastSavedTrackId = '';
+
+export const saveTrackPlaybackPosition = (trackId: string, time: number, duration: number, immediate: boolean = false) => {
+  const now = Date.now();
+  // Throttle saves during active playback to at most once every 4 seconds unless immediate flag is true
+  if (!immediate && trackId === lastSavedTrackId && (now - lastPositionSaveTime < 4000)) {
+    return;
+  }
+  lastPositionSaveTime = now;
+  lastSavedTrackId = trackId;
+
   try {
     const saved = safeLocalStorageGetItem('believer_audio_positions');
     const positions = saved ? JSON.parse(saved) : {};
@@ -372,8 +384,14 @@ interface GlobalAudioContextType {
 const GlobalAudioContext = createContext<GlobalAudioContextType | undefined>(undefined);
 
 export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useAppStability({
+    componentName: 'GlobalAudioProvider',
+    autoRecycleOnUnmount: false,
+  });
+
   const [currentTrack, setCurrentTrack] = useState<GlobalTrack | null>(() => {
-    return safeJsonParse<GlobalTrack | null>(safeLocalStorageGetItem('believer_global_track'), null);
+    const saved = safeLocalStorageGetItem('believer_global_track');
+    return saved ? JSON.parse(saved) : null;
   });
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -383,6 +401,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [sleepTimer, _setSleepTimer] = useState<number | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeBlobUrlRef = useRef<string | null>(null);
   const sleepIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
@@ -763,30 +782,14 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     
     const audio = audioRef.current;
 
-    // `timeupdate` fires ~4x a second. Pushing each one into context state
-    // re-rendered every audio screen (and the full player's long lists) on each
-    // tick, and saving the position each time meant a JSON rewrite of
-    // localStorage plus a window event 4x a second. The clock only shows whole
-    // seconds, so state moves once a second and the position is saved every
-    // few seconds, and always on pause / seek.
-    let lastShownSecond = -1;
-    let lastSavedAt = 0;
-    const POSITION_SAVE_INTERVAL_MS = 5000;
-
-    const handleTimeUpdate = (event?: Event | { force: true }) => {
+    const handleTimeUpdate = () => {
       if (audio.duration) {
         const time = audio.currentTime;
-        const force = !!event && 'force' in event;
-        const second = Math.floor(time);
-        if (!force && second === lastShownSecond) return;
-        lastShownSecond = second;
         setCurrentTime(time);
         setProgress((time / audio.duration) * 100);
         
         // Smart Continuous Playback: Save current position in localStorage
-        const now = Date.now();
-        if (currentTrackRef.current && (force || now - lastSavedAt >= POSITION_SAVE_INTERVAL_MS)) {
-          lastSavedAt = now;
+        if (currentTrackRef.current) {
           saveTrackPlaybackPosition(currentTrackRef.current.id, time, audio.duration);
         }
         
@@ -811,7 +814,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setProgress(100);
       setCurrentTime(audio.duration || 0);
       if (currentTrackRef.current) {
-        saveTrackPlaybackPosition(currentTrackRef.current.id, 0, 0); // resets position on completion
+        saveTrackPlaybackPosition(currentTrackRef.current.id, 0, 0, true); // resets position on completion
       }
 
       // Check if automatic continuation is enabled
@@ -843,10 +846,10 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const handlePause = () => {
       setIsPlaying(false);
-      handleTimeUpdate({ force: true });
+      if (currentTrackRef.current && audio.currentTime && audio.duration) {
+        saveTrackPlaybackPosition(currentTrackRef.current.id, audio.currentTime, audio.duration, true);
+      }
     };
-
-    const handleSeeked = () => handleTimeUpdate({ force: true });
 
     const handlePlay = () => {
       setIsPlaying(true);
@@ -861,7 +864,6 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('pause', handlePause);
-    audio.addEventListener('seeked', handleSeeked);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('error', handleError);
 
@@ -878,7 +880,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (currentTrack) {
       resolvePlayableUrl(currentTrack).then(resolvedUrl => {
         if (audioRef.current === audio) {
-          setAudioSource(audio, resolvedUrl);
+          audio.src = resolvedUrl;
           audio.playbackRate = playbackRate;
           audio.load();
 
@@ -905,7 +907,6 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('seeked', handleSeeked);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('error', handleError);
       audio.pause();
@@ -990,12 +991,21 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (i > 0) {
           try {
             audioRef.current.pause();
-            setAudioSource(audioRef.current, '');
+            audioRef.current.src = '';
             audioRef.current.load();
           } catch (e) {}
         }
 
-        setAudioSource(audioRef.current, url);
+        if (activeBlobUrlRef.current && activeBlobUrlRef.current !== url) {
+          memoryManager.revokeBlobUrl(activeBlobUrlRef.current);
+          activeBlobUrlRef.current = null;
+        }
+        if (url && url.startsWith('blob:')) {
+          activeBlobUrlRef.current = url;
+          memoryManager.registerBlobUrl(url, 'global-audio');
+        }
+
+        audioRef.current.src = url;
         audioRef.current.load();
         audioRef.current.playbackRate = playbackRate;
 
@@ -1081,6 +1091,9 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
       audioRef.current.pause();
       setIsPlaying(false);
+      if (currentTrackRef.current && audioRef.current.currentTime && audioRef.current.duration) {
+        saveTrackPlaybackPosition(currentTrackRef.current.id, audioRef.current.currentTime, audioRef.current.duration, true);
+      }
     }
   };
 
@@ -1122,13 +1135,13 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
           if (i > 0) {
             try {
               audioRef.current.pause();
-              setAudioSource(audioRef.current, '');
+              audioRef.current.src = '';
               audioRef.current.load();
             } catch (e) {}
           }
 
           if (audioRef.current.src !== url) {
-            setAudioSource(audioRef.current, url);
+            audioRef.current.src = url;
             audioRef.current.load();
             audioRef.current.playbackRate = playbackRate;
           }
@@ -1205,6 +1218,10 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       audioRef.current.removeAttribute('src');
       audioRef.current.load();
     }
+    if (activeBlobUrlRef.current) {
+      memoryManager.revokeBlobUrl(activeBlobUrlRef.current);
+      activeBlobUrlRef.current = null;
+    }
     setIsPlaying(false);
     setCurrentTrack(null);
     setProgress(0);
@@ -1220,6 +1237,9 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setCurrentTime(time);
       if (audioRef.current.duration) {
         setProgress((time / audioRef.current.duration) * 100);
+      }
+      if (currentTrackRef.current && audioRef.current.duration) {
+        saveTrackPlaybackPosition(currentTrackRef.current.id, time, audioRef.current.duration, true);
       }
     }
   };

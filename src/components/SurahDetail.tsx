@@ -61,6 +61,8 @@ import { mushafService, MUSHAF_EDITIONS } from "../services/mushafService";
 import { tafsirService } from "../services/tafsirService";
 import { quranOfflineService } from "../services/quranOfflineService";
 import { audioCacheService } from "../services/audioCacheService";
+import { memoryManager } from "../services/memoryManager";
+import { useAppStability } from "../services/stabilityManager";
 import { SettingsModal, TafsirModal } from './quran/SurahSubComponents';
 import { quranVocabulary, tajweedRules } from "../data/quranInteractions";
 import { STATIC_SURAHS } from "../utils/staticQuranData";
@@ -515,6 +517,11 @@ const MushafPage = React.memo<{
 });
 
 export const SurahDetail: React.FC = () => {
+  useAppStability({
+    componentName: 'SurahDetail',
+    autoRecycleOnUnmount: true,
+  });
+
   const { number } = useParams<{ number: string }>();
   const { navigate, goBack } = useSmartNavigation();
   const location = useLocation();
@@ -1841,14 +1848,18 @@ export const SurahDetail: React.FC = () => {
   useEffect(() => {
     return () => {
       if (audioRef.current) {
-        audioRef.current.pause();
+        memoryManager.detachMediaElement(audioRef.current);
       }
       if (fullSurahAudioRef.current) {
-        fullSurahAudioRef.current.pause();
+        memoryManager.detachMediaElement(fullSurahAudioRef.current);
       }
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {}
       }
+      mushafService.pruneMemoryCache(6);
+      memoryManager.cleanupComponent("SurahDetail");
     };
   }, []);
 

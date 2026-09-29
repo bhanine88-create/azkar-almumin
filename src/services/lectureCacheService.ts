@@ -1,6 +1,6 @@
 import { freeUpLocalStorageSpace, formatBytes, AudioDownloadProgressDetails } from './audioCacheService';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
-import { createAudioBlobUrl } from "../lib/audioBlobUrls";
+import { memoryManager } from "./memoryManager";
 
 export const LECTURE_CACHE_NAME = 'lectures-offline-audio-v1';
 
@@ -164,7 +164,8 @@ export const lectureCacheService = {
       const response = await cache.match(url);
       if (response) {
         const blob = await response.blob();
-        return createAudioBlobUrl(blob);
+        const blobUrl = URL.createObjectURL(blob);
+        return memoryManager.registerBlobUrl(blobUrl, 'cached-lecture');
       }
       return null;
     } catch (e) {

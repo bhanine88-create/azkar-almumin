@@ -13,6 +13,8 @@ import { Dhikr } from '../types';
 import { useTranslation } from '../i18n';
 import { useSmartNavigation } from "../lib/navigation";
 import { getLocalizedDhikr } from '../i18n/dhikrTranslations';
+import { memoryManager } from '../services/memoryManager';
+import { useAppStability } from '../services/stabilityManager';
 
 
 const ADHKAR_THEMES: Record<string, any> = {
@@ -717,12 +719,23 @@ export const Adhkar: React.FC = () => {
   const { updateChallengeProgress, updateSpecificChallenge } = useChallengeTracker();
   const { t, isRtl } = useTranslation(settings.appLanguage);
 
+  useAppStability({
+    componentName: 'Adhkar',
+    autoRecycleOnUnmount: true,
+  });
+
   const [activeDhikrIdx, setActiveDhikrIdx] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'forward' | 'backward'>('forward');
 
   React.useEffect(() => {
     setActiveDhikrIdx(0);
   }, [category]);
+
+  React.useEffect(() => {
+    return () => {
+      memoryManager.cleanupComponent('Adhkar');
+    };
+  }, []);
   
   const categories = adhkarData.map(c => c.category);
   const currentIndex = categories.findIndex(c => c === category);

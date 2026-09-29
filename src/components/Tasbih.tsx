@@ -30,6 +30,7 @@ import { useSmartNavigation } from "../lib/navigation";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 import { playTasbihClickSound } from "../lib/sounds";
+import { useAppStability } from "../services/stabilityManager";
 
 const DIGITAL_THEMES: Record<
   string,
@@ -859,6 +860,11 @@ const DIGITAL_FONTS = [
 ];
 
 export const Tasbih: React.FC = () => {
+  const { reportActivity } = useAppStability({
+    componentName: 'Tasbih',
+    autoRecycleOnUnmount: true,
+  });
+
   const { navigate, goBack } = useSmartNavigation();
   const {
     progress,
@@ -883,11 +889,14 @@ export const Tasbih: React.FC = () => {
   });
 
   useEffect(() => {
-    try {
-      safeLocalStorageSetItem("believer_dhikr_counts", JSON.stringify(dhikrCounts));
-    } catch (e) {
-      // Ignore quota errors here
-    }
+    const handler = setTimeout(() => {
+      try {
+        safeLocalStorageSetItem("believer_dhikr_counts", JSON.stringify(dhikrCounts));
+      } catch (e) {
+        // Ignore quota errors here
+      }
+    }, 600);
+    return () => clearTimeout(handler);
   }, [dhikrCounts]);
   const [target, setTarget] = useState(100);
   const [showSettings, setShowSettings] = useState(false);
@@ -1131,6 +1140,7 @@ export const Tasbih: React.FC = () => {
   }, [lists, activeListId]);
 
   const handlePress = () => {
+    reportActivity(1);
     setSessionCount((prev) => prev + 1);
 
     const effectId = Date.now() + Math.random();

@@ -12,9 +12,14 @@ export interface IndexedDbSurahData {
   downloadedAt: number;
 }
 
+let dbInstance: IDBDatabase | null = null;
+
 function openDb(): Promise<IDBDatabase> {
+  if (dbInstance) {
+    return Promise.resolve(dbInstance);
+  }
   return new Promise((resolve, reject) => {
-    if (!window.indexedDB) {
+    if (typeof window === 'undefined' || !window.indexedDB) {
       reject(new Error('IndexedDB is not supported in this browser'));
       return;
     }
@@ -28,7 +33,17 @@ function openDb(): Promise<IDBDatabase> {
       }
     };
 
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      dbInstance = request.result;
+      dbInstance.onversionchange = () => {
+        dbInstance?.close();
+        dbInstance = null;
+      };
+      dbInstance.onclose = () => {
+        dbInstance = null;
+      };
+      resolve(dbInstance);
+    };
     request.onerror = () => reject(request.error);
   });
 }

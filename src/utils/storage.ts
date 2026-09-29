@@ -84,8 +84,38 @@ export const safeLocalStorageSetItem = (key: string, value: string | null): bool
             localStorage.removeItem(k);
           } catch (err) {}
         });
-        localStorage.setItem(key, value);
-        return true;
+
+        try {
+          localStorage.setItem(key, value);
+          return true;
+        } catch {
+          // Secondary purge: evict obsolete legacy version keys and secondary backups
+          const secondaryPurge = [
+            'believer_backup_v23_2',
+            'believer_backup_v22_2',
+            'believer_backup_v21_2',
+            'believer_backup_v5_2',
+            'believer_settings_v29',
+            'believer_settings_v28',
+            'believer_settings_v27',
+            'believer_settings_v23',
+            'believer_progress_v23',
+            'believer_progress_v22',
+            'believer_progress_v21',
+            'believer_progress_v20',
+            'believer_progress_v5',
+            'believer_adhkar_counts_v22',
+            'believer_adhkar_counts_v21',
+            'believer_adhkar_counts_v20',
+            'believer_adhkar_counts_v6',
+            'believer_adhkar_counts_v5'
+          ];
+          secondaryPurge.forEach(k => {
+            try { localStorage.removeItem(k); } catch (e) {}
+          });
+          localStorage.setItem(key, value);
+          return true;
+        }
       } catch (retryError: any) {
         console.error(`Failed to save key "${key}" even after cache purge. Falling back to memory.`);
         memoryStorage.set(key, value);

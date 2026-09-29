@@ -18,7 +18,7 @@ import { useTranslation } from '../i18n';
 import { quranOfflineService, DownloadedSurahInfo } from '../services/quranOfflineService';
 import { quranIndexedDbService } from '../services/quranIndexedDbService';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
-import { useProgressiveList } from '../lib/useProgressiveList';
+import { useAppStability } from '../services/stabilityManager';
 
 const QURAN_FONTS = [
   { id: 'Uthmanic Hafs', name: 'عثماني حفص' },
@@ -349,6 +349,11 @@ interface Surah {
 }
 
 export const Quran: React.FC = () => {
+  useAppStability({
+    componentName: 'Quran',
+    autoRecycleOnUnmount: true,
+  });
+
   const [surahs, setSurahs] = useState<Surah[]>(STATIC_SURAHS);
   const [loading, setLoading] = useState(false);
   const [downloadedSurahs, setDownloadedSurahs] = useState<Record<number, boolean>>({});
@@ -588,10 +593,6 @@ export const Quran: React.FC = () => {
     return nameMatch || engMatch || frMatch;
   });
 
-  // 114 surah cards at ~16 elements each is roughly 1,800 nodes in one commit —
-  // about a second of frozen screen on entry. See useProgressiveList.
-  const visibleSurahCount = useProgressiveList(filteredSurahs.length);
-
   const themeClasses = {
     light: 'bg-white text-slate-900',
     dark: 'bg-slate-900 text-slate-100',
@@ -614,11 +615,11 @@ export const Quran: React.FC = () => {
           theme === 'slate' ? 'bg-[#1e293b]/90' :
           'bg-[#1e293b]/90'
         )}>
-          <div className="flex items-center justify-between px-3 min-[360px]:px-4 gap-2 min-[360px]:gap-4 py-1">
-            <div className="flex items-center gap-2 min-[360px]:gap-3 shrink-0">
+          <div className="flex items-center justify-between px-4 gap-4 py-1">
+            <div className="flex items-center gap-3 shrink-0">
               <BackButton forceFallback={true} />
               <div className="shrink-0">
-                <h1 className="text-lg min-[360px]:text-xl md:text-2xl font-black tracking-tight flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-red-500 to-amber-500 animate-gradient whitespace-nowrap">
+                <h1 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-red-500 to-amber-500 animate-gradient whitespace-nowrap">
                   {t('surah_index')}
                   <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
                 </h1>
@@ -626,7 +627,7 @@ export const Quran: React.FC = () => {
               </div>
             </div>
 
-            <div className="fit-narrow flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2">
               <button 
                 onClick={() => navigate('/quran-audio')}
                 className={cn(
@@ -1223,26 +1224,13 @@ export const Quran: React.FC = () => {
 
             {(currentTab === 'surahs' || !!search) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 px-4 pb-12">
-                {filteredSurahs.slice(0, visibleSurahCount).map((surah) => (
+                {filteredSurahs.map((surah) => (
                 <motion.div 
                   key={surah.number}
                   onClick={() => navigate(`/quran/${surah.number}`)}
                   className={cn(
-                    // No backdrop-blur on this card, or on the number badge below.
-                    //
-                    // This list renders all 114 surahs at once, and on the default
-                    // 'glass' theme those two classes put 228 backdrop-filter
-                    // elements on screen in a single commit. Each one is its own
-                    // composited layer with a backdrop read-back — measured at
-                    // ~1.1s of frozen screen when opening this page, and the source
-                    // of "tile memory limits exceeded" in logcat.
-                    //
-                    // It bought nothing: what sits behind these cards is the flat
-                    // page background, and blurring a flat colour returns the same
-                    // flat colour. The translucency that gives the glass theme its
-                    // look is bg-white/20, which is untouched.
                     "group p-3.5 rounded-2xl transition-all relative overflow-hidden cursor-pointer scroll-mt-32 border",
-                    settings.visualTheme === 'glass' ? "bg-white/20 border-white/20 shadow-lg" :
+                    settings.visualTheme === 'glass' ? "bg-white/20 backdrop-blur-md border-white/20 shadow-lg" :
                     "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:border-teal-500/20"
                   )}
                 >
@@ -1255,7 +1243,7 @@ export const Quran: React.FC = () => {
                     <div 
                       className={cn(
   "w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-black transform transition-all duration-75 active:scale-[0.85] active:opacity-70 group-hover:rounded-2xl",
-                        settings.visualTheme === 'glass' ? "bg-white/30" :
+                        settings.visualTheme === 'glass' ? "bg-white/30 backdrop-blur-md" :
                         "bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700"
                       )}
                       style={{ color: settings.primaryColor.includes('gradient') ? settings.primaryColor.match(/#[a-fA-F0-9]{6}/)?.[0] || '#0d9488' : settings.primaryColor }}

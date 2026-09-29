@@ -53,6 +53,7 @@ import { useTranslation } from '../i18n';
 import { BackButton } from './ui/BackButton';
 import { cn } from '../lib/utils';
 import { useSmartNavigation } from '../lib/navigation';
+import { useAppStability } from '../services/stabilityManager';
 
 type TimeRange = '7d' | '14d' | '30d' | 'all';
 type FocusMode = 'all' | 'adhkar' | 'quran';
@@ -187,6 +188,11 @@ const CustomDashboardTooltip = React.memo(({ active, payload, label, isRtl }: an
 });
 
 export const AdhkarQuranVisualDashboard: React.FC = () => {
+  useAppStability({
+    componentName: 'AdhkarQuranVisualDashboard',
+    autoRecycleOnUnmount: true,
+  });
+
   const { progress, settings, markCategoryCompleted, addQuranLog } = useAppContext();
   const { isRtl } = useTranslation(settings.appLanguage);
   const { navigate } = useSmartNavigation();

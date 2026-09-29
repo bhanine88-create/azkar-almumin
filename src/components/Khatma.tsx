@@ -11,6 +11,7 @@ import { doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestoreError';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { useAppStability } from '../services/stabilityManager';
 
 interface KhatmaGoal {
   id: string;
@@ -22,6 +23,11 @@ interface KhatmaGoal {
 }
 
 export const Khatma: React.FC = () => {
+  useAppStability({
+    componentName: 'Khatma',
+    autoRecycleOnUnmount: true,
+  });
+
   const { navigate, goBack } = useSmartNavigation();
   const { settings } = useAppContext();
   const { t } = useTranslation(settings.appLanguage);

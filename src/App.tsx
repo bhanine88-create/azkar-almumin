@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect, Suspense, Profiler, useRef } from 'react';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppProvider } from './AppContext';
 import { GlobalAudioProvider } from './context/GlobalAudioContext';
@@ -12,6 +12,8 @@ import { AdhkarCountsProvider } from './context/AdhkarCountsContext';
 import { Activity, Loader2 } from 'lucide-react';
 import { lazyRetry } from './lib/lazyRetry';
 import { SafeUnmount } from './components/SafeUnmount';
+import { memoryManager } from './services/memoryManager';
+import { stabilityManager } from './services/stabilityManager';
 import { cn } from './lib/utils';
 import { auth } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -143,25 +145,44 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// The <Profiler> that used to wrap <Routes> was removed along with its
-// onRender callback. It was development instrumentation sitting in the shipped
-// tree, wrapping every route in the app to log slow commits to a console that
-// `loggingBehavior: 'none'` silences on device. React DevTools' own profiler
-// does the same job, on demand, without shipping anything.
+const onRenderCallback: React.ProfilerOnRenderCallback = (
+  id,
+  phase,
+  actualDuration,
+  baseDuration,
+  startTime,
+  commitTime
+) => {
+  // Log renders that take longer than 16ms (indicates a dropped frame at 60fps)
+  if (actualDuration > 16) {
+    console.debug(
+      `[Performance] Component: ${id} | Phase: ${phase} | Time: ${actualDuration.toFixed(2)}ms (Base: ${baseDuration.toFixed(2)}ms)`
+    );
+  }
+};
+
+const NavigationMemoryGovernor: React.FC = () => {
+  const location = useLocation();
+  const prevPathRef = useRef(location.pathname);
+
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      const fromPath = prevPathRef.current;
+      const toPath = location.pathname;
+      prevPathRef.current = toPath;
+      memoryManager.performNavigationCleanup(fromPath, toPath);
+      stabilityManager.scheduleCleanup('idle');
+    }
+  }, [location.pathname]);
+
+  return null;
+};
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
-  // General App Performance Monitoring.
-  //
-  // Development only. A PerformanceObserver on 'longtask' is itself a cost, and
-  // it fired a console.debug for every blocking task on the user's phone — in a
-  // release build where `loggingBehavior: 'none'` means nobody will ever read
-  // the output. The observer is never disconnected either, so it outlived every
-  // remount. `import.meta.env.DEV` is a compile-time constant, so in the
-  // production bundle this whole block is dropped by the minifier.
+  // General App Performance Monitoring
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
     if (typeof window !== 'undefined' && 'performance' in window) {
       // 1. Initial Page Load Metric
       window.addEventListener('load', () => {
@@ -181,7 +202,6 @@ export default function App() {
           }
         });
         observer.observe({ entryTypes: ['longtask'] });
-        return () => observer.disconnect();
       } catch (e) {
         // Fallback for browsers that don't support 'longtask'
       }
@@ -212,9 +232,65 @@ export default function App() {
     };
   }, []);
 
-  // Route chunks load on navigation or explicit link intent in Layout/Library.
-  // Importing every deep screen on startup competes with the first scroll,
-  // even when the imports were originally scheduled in an idle callback.
+  // Progressive Multi-Phase Background Preloading for Navigation Routes
+  // Phase 0 (Immediate): Home & Layout are statically imported (bundled) and render instantly.
+  // Phase 1 (Direct Navigation - 1.5s delay on Idle): Quran, AdhkarHub, Tasbih, PrayerTimes, DuasHub.
+  // Phase 2 (Deeper Sub-pages - 4.5s delay on Idle): SurahDetail, Library, AudioLibraryHub, HadithAndSupplications, Settings.
+  useEffect(() => {
+    let phase1Timer: NodeJS.Timeout;
+    let phase2Timer: NodeJS.Timeout;
+
+    const runPreloadPhase1 = () => {
+      const phase1Components = [Quran, AdhkarHub, Adhkar, Tasbih, PrayerTimes, DuasHub];
+      phase1Components.forEach((cmp, index) => {
+        setTimeout(() => {
+          try {
+            (cmp as any)?.preload?.();
+          } catch (e) {
+            // Silently swallow preload errors
+          }
+        }, index * 100);
+      });
+    };
+
+    const runPreloadPhase2 = () => {
+      const phase2Components = [
+        SurahDetail,
+        Library,
+        AudioLibraryHub,
+        Settings,
+        NamesOfAllah,
+        Prophet,
+        Khatma
+      ];
+      phase2Components.forEach((cmp, index) => {
+        setTimeout(() => {
+          try {
+            (cmp as any)?.preload?.();
+          } catch (e) {
+            // Silently swallow preload errors
+          }
+        }, index * 100);
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => {
+          phase1Timer = setTimeout(runPreloadPhase1, 500);
+          phase2Timer = setTimeout(runPreloadPhase2, 2500);
+        }, { timeout: 2000 });
+      } else {
+        phase1Timer = setTimeout(runPreloadPhase1, 500);
+        phase2Timer = setTimeout(runPreloadPhase2, 2000);
+      }
+    }
+
+    return () => {
+      clearTimeout(phase1Timer);
+      clearTimeout(phase2Timer);
+    };
+  }, []);
 
   const isWebVersion = (window as any).isWebVersion || false;
 
@@ -225,6 +301,7 @@ export default function App() {
           <AdhkarCountsProvider>
             <DownloadProvider>
               <HashRouter>
+                <NavigationMemoryGovernor />
                 <React.Suspense fallback={null}><PrayerNotificationManager /></React.Suspense>
                 <GlobalAudioProvider>
                 <div className={cn(
@@ -243,18 +320,20 @@ export default function App() {
                       "max-w-full md:max-w-4xl lg:max-w-5xl xl:max-w-6xl md:h-[98vh] md:max-h-[960px] md:rounded-3xl md:border md:border-slate-200/80 dark:md:border-slate-800/80 md:shadow-2xl",
                       isWebVersion && "md:max-w-none md:h-full md:max-h-none md:rounded-none md:border-0 md:shadow-none"
                     )}
+                    style={{ transform: 'translateZ(0)' }}
                   >
                     
                     <Suspense fallback={<MemoizedLoadingFallback />}>
+                      <Profiler id="AppRoutes" onRender={onRenderCallback}>
                         <Routes>
                           <Route path="/" element={<Layout />}>
                         <Route index element={<Home />} />
-                          <Route path="adhkar" element={<AdhkarHub />} />
+                          <Route path="adhkar" element={<SafeUnmount componentName="AdhkarHub"><AdhkarHub /></SafeUnmount>} />
                           <Route path="adhkar-stats" element={<AdhkarStats />} />
                           <Route path="duas" element={<DuasHub />} />
                           <Route path="duas/:type" element={<DuaList />} />
                           <Route path="adhkar/:category" element={<SafeUnmount componentName="Adhkar"><Adhkar /></SafeUnmount>} />
-                          <Route path="tasbih" element={<Tasbih />} />
+                          <Route path="tasbih" element={<SafeUnmount componentName="Tasbih"><Tasbih /></SafeUnmount>} />
                           <Route path="names" element={<NamesOfAllah />} />
                           <Route path="prophet" element={<Prophet />} />
                           <Route path="quiz" element={<IslamicQuiz />} />
@@ -262,13 +341,13 @@ export default function App() {
                           <Route path="prophet/:subId" element={<Prophet />} />
                           <Route path="hisn-al-muslim" element={<HisnAlMuslim />} />
                           <Route path="prayer-times" element={<SafeUnmount componentName="PrayerTimes"><PrayerTimes /></SafeUnmount>} />
-                          <Route path="khatma" element={<Khatma />} />
+                          <Route path="khatma" element={<SafeUnmount componentName="Khatma"><Khatma /></SafeUnmount>} />
                           <Route path="compass" element={<Compass />} />
                           <Route path="hijri-calendar" element={<HijriCalendar />} />
                           <Route path="inspiration" element={<Inspirations />} />
                           <Route path="insights" element={<BelieverInsights />} />
                           <Route path="quran-tracker" element={<QuranTrackerScreen />} />
-                          <Route path="quran" element={<Quran />} />
+                          <Route path="quran" element={<SafeUnmount componentName="Quran"><Quran /></SafeUnmount>} />
                           <Route path="quran/:number" element={<SafeUnmount componentName="SurahDetail"><SurahDetail /></SafeUnmount>} />
                           <Route path="audio-library" element={<SafeUnmount componentName="AudioLibraryHub"><AudioLibraryHub /></SafeUnmount>} />
                           <Route path="quran-audio" element={<SafeUnmount componentName="QuranAudioHub"><QuranAudioHub /></SafeUnmount>} />
@@ -281,13 +360,13 @@ export default function App() {
                           <Route path="ruqyah-audio" element={<SafeUnmount componentName="RuqyahAudioHub"><RuqyahAudioHub /></SafeUnmount>} />
                           <Route path="library" element={<Library />} />
                           <Route path="aqeedah" element={<SafeUnmount componentName="AqeedahHub"><AqeedahHub /></SafeUnmount>} />
-                          <Route path="hadith-qudsi" element={<HadithQudsi />} />
+                          <Route path="hadith-qudsi" element={<SafeUnmount componentName="HadithQudsi"><HadithQudsi /></SafeUnmount>} />
                           <Route path="auth" element={<AuthScreen />} />
                           <Route path="challenges" element={<ChallengesHub />} />
                           <Route path="dashboard" element={<SafeUnmount componentName="UserDashboard"><UserDashboard /></SafeUnmount>} />
-                          <Route path="adhkar-quran-dashboard" element={<AdhkarQuranVisualDashboard />} />
-                          <Route path="devotion-dashboard" element={<AdhkarQuranVisualDashboard />} />
-                          <Route path="visual-dashboard" element={<AdhkarQuranVisualDashboard />} />
+                          <Route path="adhkar-quran-dashboard" element={<SafeUnmount componentName="Dashboard"><AdhkarQuranVisualDashboard /></SafeUnmount>} />
+                          <Route path="devotion-dashboard" element={<SafeUnmount componentName="Dashboard"><AdhkarQuranVisualDashboard /></SafeUnmount>} />
+                          <Route path="visual-dashboard" element={<SafeUnmount componentName="Dashboard"><AdhkarQuranVisualDashboard /></SafeUnmount>} />
                           <Route path="spiritual-goals" element={<SpiritualGoals />} />
                           <Route path="spiritual-advisor" element={<SpiritualAdvisor />} />
                           <Route path="calendar-sync" element={<CalendarSync />} />
@@ -303,14 +382,15 @@ export default function App() {
                           <Route path="sunnah-hadith" element={<IndependentHadith />} />
                           <Route path="independent-hadith" element={<IndependentHadith />} />
                           <Route path="prophets-stories" element={<IslamicStoriesList />} />
-                          <Route path="adhkar-hub" element={<AdhkarHub />} />
-                          <Route path="worship-tracker" element={<AdhkarQuranVisualDashboard />} />
+                          <Route path="adhkar-hub" element={<SafeUnmount componentName="AdhkarHub"><AdhkarHub /></SafeUnmount>} />
+                          <Route path="worship-tracker" element={<SafeUnmount componentName="Dashboard"><AdhkarQuranVisualDashboard /></SafeUnmount>} />
                           <Route path="qibla" element={<Compass />} />
                           <Route path="sadaqah-jariyah" element={<SadaqahJariyah />} />
                           <Route path="heart-feelings" element={<HeartFeelingsPage />} />
                           <Route path="*" element={<Home />} />
                         </Route>
                       </Routes>
+                      </Profiler>
                     </Suspense>
                 </div>
               </div>

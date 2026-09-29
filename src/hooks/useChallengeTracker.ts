@@ -1,17 +1,35 @@
-import { useState, useCallback, useEffect } from 'react';
-import { CHALLENGES, UserChallengeProgress, ChallengeCategory, ChallengeType,  } from '../challengesData';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { CHALLENGES, UserChallengeProgress, ChallengeCategory, ChallengeType } from '../challengesData';
 import { useAppContext } from '../AppContext';
 import { evaluateAllBadges, VISUAL_BADGES, getBadgeStatus, VisualBadge } from '../services/badgeService';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeJsonParse } from "../utils/storage";
+import { safeLocalStorageGetItem, safeLocalStorageSetItem } from "../utils/storage";
+
+// In-memory module-level caches to avoid synchronous disk thrashing on rapid taps
+let memoryProgressCache: Record<string, UserChallengeProgress> | null = null;
+let saveDebounceTimer: any = null;
 
 export const useChallengeTracker = () => {
+  const instanceId = useRef(Math.random().toString(36).substring(7));
   const { progress: userProgress, addPoints: addLevelPoints } = useAppContext();
+
   const [progress, setProgressState] = useState<Record<string, UserChallengeProgress>>(() => {
-    return safeJsonParse<Record<string, UserChallengeProgress>>(safeLocalStorageGetItem('believer_challenges_progress_v2'), {});
+    if (memoryProgressCache) return memoryProgressCache;
+    try {
+      const saved = safeLocalStorageGetItem('believer_challenges_progress_v2');
+      memoryProgressCache = saved ? JSON.parse(saved) : {};
+      return memoryProgressCache || {};
+    } catch {
+      return {};
+    }
   });
 
   const [earnedBadges, setEarnedBadges] = useState<string[]>(() => {
-    return safeJsonParse<string[]>(safeLocalStorageGetItem('believer_earned_badges_v2'), []);
+    try {
+      const saved = safeLocalStorageGetItem('believer_earned_badges_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
   const getPoints = useCallback(() => {
@@ -43,8 +61,12 @@ export const useChallengeTracker = () => {
 
   const updateProgress = useCallback((challengeIds: string[], amount: number = 1) => {
     try {
-      const savedProgress = safeLocalStorageGetItem('believer_challenges_progress_v2');
-      let currentProgress = safeJsonParse<Record<string, UserChallengeProgress>>(savedProgress, {});
+      let currentProgress: Record<string, UserChallengeProgress> = memoryProgressCache 
+        ? { ...memoryProgressCache }
+        : (() => {
+            const saved = safeLocalStorageGetItem('believer_challenges_progress_v2');
+            return saved ? JSON.parse(saved) : {};
+          })();
       
       const now = new Date();
       const today = now.toISOString().split('T')[0];
@@ -106,20 +128,28 @@ export const useChallengeTracker = () => {
       });
       
       if (changed) {
-        safeLocalStorageSetItem('believer_challenges_progress_v2', JSON.stringify(currentProgress));
+        memoryProgressCache = currentProgress;
         setProgressState(currentProgress);
         
         if (newlyCompletedPoints > 0) {
           addLevelPoints(newlyCompletedPoints);
         }
         
+        // Debounce writing to localStorage to prevent UI stutter during intensive clicking
+        if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+        saveDebounceTimer = setTimeout(() => {
+          if (memoryProgressCache) {
+            safeLocalStorageSetItem('believer_challenges_progress_v2', JSON.stringify(memoryProgressCache));
+          }
+        }, 500);
+
         // Check for badges
         const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-        let badges = safeJsonParse<string[]>(savedBadges, []);
-        
+        let badges: string[] = savedBadges ? JSON.parse(savedBadges) : [];
         syncBadges(currentProgress, badges);
 
-        window.dispatchEvent(new CustomEvent('challenge-updated'));
+        // Dispatch update with sourceId so current instance skips redundant parsing
+        window.dispatchEvent(new CustomEvent('challenge-updated', { detail: { sourceId: instanceId.current } }));
       }
     } catch (error) {
       console.error('Failed to update challenge progress:', error);
@@ -138,17 +168,27 @@ export const useChallengeTracker = () => {
   // Synchronize on mount and when userProgress changes
   useEffect(() => {
     const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-    const badges = safeJsonParse<string[]>(savedBadges, []);
+    const badges: string[] = savedBadges ? JSON.parse(savedBadges) : [];
     syncBadges(progress, badges);
   }, [userProgress, syncBadges, progress]);
 
   useEffect(() => {
-    const handleUpdate = () => {
-      const saved = safeLocalStorageGetItem('believer_challenges_progress_v2');
-      if (saved) setProgressState(safeJsonParse(saved, {}));
-      
-      const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-      if (savedBadges) setEarnedBadges(safeJsonParse<string[]>(savedBadges, []));
+    const handleUpdate = (e: any) => {
+      // Ignore self-dispatched events to avoid redundant parse/render cycles
+      if (e?.detail?.sourceId === instanceId.current) return;
+      try {
+        const saved = safeLocalStorageGetItem('believer_challenges_progress_v2');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          memoryProgressCache = parsed;
+          setProgressState(parsed);
+        }
+        
+        const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
+        if (savedBadges) setEarnedBadges(JSON.parse(savedBadges));
+      } catch (err) {
+        // ignore
+      }
     };
 
     window.addEventListener('challenge-updated', handleUpdate);

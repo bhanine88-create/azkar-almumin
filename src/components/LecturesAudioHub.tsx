@@ -30,16 +30,21 @@ function useTrackPlaybackPositions() {
   });
 
   useEffect(() => {
+    let timer: any = null;
     const handleUpdate = () => {
-      try {
-        const saved = safeLocalStorageGetItem('believer_audio_positions');
-        setPositions(saved ? JSON.parse(saved) : {});
-      } catch (e) {}
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          const saved = safeLocalStorageGetItem('believer_audio_positions');
+          setPositions(saved ? JSON.parse(saved) : {});
+        } catch (e) {}
+      }, 300);
     };
 
     window.addEventListener('believer_audio_positions_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
+      if (timer) clearTimeout(timer);
       window.removeEventListener('believer_audio_positions_updated', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };
@@ -54,8 +59,14 @@ import { AudioSearchAutocomplete } from './AudioSearchAutocomplete';
 import { useLocation } from 'react-router-dom';
 import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { useAppStability } from '../services/stabilityManager';
 
 function LecturesAudioHubComponent() {
+  useAppStability({
+    componentName: 'LecturesAudioHub',
+    autoRecycleOnUnmount: true,
+  });
+
   const { navigate, goBack } = useSmartNavigation();
   const location = useLocation();
   const { settings, progress, toggleScholarFavorite, toggleLectureFavorite, updateSettings, toggleFavoriteUnified } = useAppContext();
