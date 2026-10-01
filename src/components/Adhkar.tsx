@@ -992,16 +992,19 @@ export const Adhkar: React.FC = () => {
     if (!currentCategory || !currentCategory.items || currentCategory.items.length === 0) {
       return { total: 0, completed: 0, percent: 0 };
     }
-    const total = currentCategory.items.length;
+    const targetItems = (category === 'prayer' && activePrayerStep !== 'all') 
+      ? filteredItems 
+      : currentCategory.items;
+    const total = targetItems.length;
     let completed = 0;
-    currentCategory.items.forEach(item => {
+    targetItems.forEach(item => {
       if ((counts[item.id] || 0) >= item.count) {
         completed += 1;
       }
     });
-    const percent = Math.round((completed / total) * 100);
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { total, completed, percent };
-  }, [currentCategory, counts]);
+  }, [currentCategory, category, activePrayerStep, filteredItems, counts]);
 
   const readingSpeedRate = React.useMemo(() => {
     if (settings.appLanguage === 'fr') {
@@ -1076,20 +1079,26 @@ export const Adhkar: React.FC = () => {
   React.useEffect(() => {
     if (!category || !currentCategory) return;
     
-    // 1. Initialize reward state when entering a category
-    if (initializedCategory.current !== category) {
-      const isAlreadyFinished = currentCategory.items.length > 0 && 
-        currentCategory.items.every(item => (counts[item.id] || 0) >= item.count);
+    const targetItems = (category === 'prayer' && activePrayerStep !== 'all') 
+      ? filteredItems 
+      : currentCategory.items;
+
+    const cacheKey = `${category}-${activePrayerStep}`;
+
+    // 1. Initialize reward state when entering a category or step
+    if (initializedCategory.current !== cacheKey) {
+      const isAlreadyFinished = targetItems.length > 0 && 
+        targetItems.every(item => (counts[item.id] || 0) >= item.count);
       
       hasRewarded.current = isAlreadyFinished;
-      initializedCategory.current = category;
+      initializedCategory.current = cacheKey;
       setShowReward(false);
       return;
     }
 
     // 2. Check for completion during active interaction
-    const allFinished = currentCategory.items.length > 0 && 
-      currentCategory.items.every(item => (counts[item.id] || 0) >= item.count);
+    const allFinished = targetItems.length > 0 && 
+      targetItems.every(item => (counts[item.id] || 0) >= item.count);
     
     if (allFinished && !hasRewarded.current) {
       hasRewarded.current = true;
@@ -1113,7 +1122,7 @@ export const Adhkar: React.FC = () => {
     } else if (!allFinished) {
       hasRewarded.current = false;
     }
-  }, [category, currentCategory, counts, markCategoryCompleted, updateSpecificChallenge, updateChallengeProgress, addPoints]);
+  }, [category, activePrayerStep, currentCategory, filteredItems, counts, markCategoryCompleted, updateSpecificChallenge, updateChallengeProgress, addPoints]);
 
   React.useEffect(() => {
     // Left intentionally empty as logic was moved to AdhkarHub handling
@@ -2498,22 +2507,36 @@ export const Adhkar: React.FC = () => {
                           setSlideDirection('forward');
                           setActiveDhikrIdx(activeIdx + 1);
                           triggerHaptic('light');
+                        } else if (catProgress.total > 0 && catProgress.completed === catProgress.total) {
+                          setShowReward(true);
+                          triggerHaptic('success');
                         }
                       }}
-                      disabled={activeIdx === filteredItems.length - 1}
+                      disabled={activeIdx === filteredItems.length - 1 && !(catProgress.total > 0 && catProgress.completed === catProgress.total)}
                       className={cn(
                         "px-5 py-3 text-sm font-black rounded-xl border flex items-center gap-2 transition-all duration-100 cursor-pointer shadow-md",
                         activeIdx === filteredItems.length - 1
-                          ? (currentTheme.isLight 
-                              ? "bg-slate-100/70 text-slate-400 border-slate-200/50 cursor-not-allowed shadow-none" 
-                              : "bg-slate-800/40 text-slate-600 border-white/5 cursor-not-allowed shadow-none")
+                          ? (catProgress.total > 0 && catProgress.completed === catProgress.total
+                              ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-400 shadow-amber-500/20 hover:scale-105 active:scale-95"
+                              : (currentTheme.isLight 
+                                  ? "bg-slate-100/70 text-slate-400 border-slate-200/50 cursor-not-allowed shadow-none" 
+                                  : "bg-slate-800/40 text-slate-600 border-white/5 cursor-not-allowed shadow-none"))
                           : (currentTheme.isLight
                               ? "bg-white text-teal-700 border-teal-500/30 hover:border-teal-600 hover:scale-[1.03] active:scale-95 hover:bg-teal-50/50"
                               : "bg-slate-800 text-teal-300 border-teal-500/40 hover:border-teal-400 hover:scale-[1.03] active:scale-95 hover:bg-slate-700")
                       )}
                     >
-                      <span className="font-black text-sm">التالي</span>
-                      <ChevronRight size={18} strokeWidth={3.5} className="rotate-180" />
+                      {activeIdx === filteredItems.length - 1 && catProgress.total > 0 && catProgress.completed === catProgress.total ? (
+                        <>
+                          <Sparkles size={17} className="text-amber-200 animate-bounce" />
+                          <span className="font-black text-sm">عرض التهنئة</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-black text-sm">التالي</span>
+                          <ChevronRight size={18} strokeWidth={3.5} className="rotate-180" />
+                        </>
+                      )}
                     </button>
                   </div>
 
@@ -2570,170 +2593,222 @@ export const Adhkar: React.FC = () => {
             );
           })
         )}
+        {/* Celebratory Completion Banner at the end of the adhkar */}
+        {catProgress.total > 0 && catProgress.completed === catProgress.total && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+              "w-full max-w-xl rounded-3xl p-5 mt-2 mb-4 border-2 shadow-xl text-center flex flex-col items-center gap-3.5 backdrop-blur-md transition-all select-none",
+              category === 'morning'
+                ? "bg-gradient-to-b from-amber-500/15 via-orange-500/10 to-amber-500/5 border-amber-500/40 text-amber-950 dark:text-amber-100"
+                : category === 'evening'
+                ? "bg-gradient-to-b from-indigo-500/15 via-blue-500/10 to-indigo-500/5 border-indigo-500/40 text-indigo-950 dark:text-indigo-100"
+                : "bg-gradient-to-b from-emerald-500/15 via-teal-500/10 to-emerald-500/5 border-emerald-500/40 text-emerald-950 dark:text-emerald-100"
+            )}
+          >
+            <div className="w-16 h-16 rounded-full bg-white/90 dark:bg-slate-900/90 shadow-lg flex items-center justify-center text-3xl border-2 border-amber-400/40 animate-bounce">
+              {category === 'morning' ? '☀️' : category === 'evening' ? '🌙' : '🏆'}
+            </div>
+            <div>
+              <h4 className="text-base sm:text-lg font-black leading-snug">
+                هنيئاً لك! أتممت {categoryTitle} كاملة بحمد الله
+              </h4>
+              <p className="text-xs opacity-85 mt-1 font-bold">
+                تقبل الله طاعتك وبارك في وقتك وجعلها حرزاً وحصناً منيعاً لك
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 w-full max-w-sm mt-1">
+              <button
+                type="button"
+                onClick={() => setShowReward(true)}
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+              >
+                <Sparkles size={16} />
+                <span>عرض بطاقة التهنئة والفضل</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(true)}
+                className="py-3 px-3.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                title="إعادة تعيين الأذكار"
+              >
+                <RotateCcw size={15} />
+                <span>إعادة البدء</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
       </div>
 
-      <AnimatePresence>
-        {showReward && (() => {
-          const isMorning = category === 'morning';
-          const isEvening = category === 'evening';
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showReward && (() => {
+            const isMorning = category === 'morning';
+            const isEvening = category === 'evening';
 
-          // 3D Color Configurations for a gorgeous celestial plaque
-          const cardStyles = isMorning
-            ? {
-                bg: "bg-gradient-to-b from-[#151c35] via-[#1b254a] to-[#0d1226] border-[4px] border-[#fbbf24]",
-                shadow: "shadow-[0_25px_60px_rgba(245,158,11,0.35),inset_0_4px_12px_rgba(255,255,255,0.15)]",
-                badgeBg: "from-[#fff3c4] via-[#f59e0b] to-[#78350f] border-[#ffed97]",
-                badgeGlow: "shadow-[0_0_25px_rgba(245,158,11,0.6)]",
-                accentText: "text-[#fbbf24]",
-                icon: "☀️",
-                title: "تقبل الله طاعتك صباحاً! 🌅",
-                buttonBg: "from-[#fcd34d] via-[#f59e0b] to-[#b45309]",
-                buttonBorder: "border-[#fef3c7]",
-                buttonShadow: "shadow-[0_5px_0_#92400e]",
-                pillBg: "bg-amber-500/10 border-amber-500/20 text-[#fde047]",
-              }
-            : isEvening
-            ? {
-                bg: "bg-gradient-to-b from-[#0c0f1e] via-[#121631] to-[#060812] border-[4px] border-[#60a5fa]",
-                shadow: "shadow-[0_25px_60px_rgba(37,99,235,0.35),inset_0_4px_12px_rgba(255,255,255,0.15)]",
-                badgeBg: "from-[#dbeafe] via-[#2563eb] to-[#1e3a8a] border-[#60a5fa]",
-                badgeGlow: "shadow-[0_0_25px_rgba(37,99,235,0.6)]",
-                accentText: "text-[#60a5fa]",
-                icon: "🌙",
-                title: "تقبل الله طاعتك مساءً! 🌌",
-                buttonBg: "from-[#93c5fd] via-[#2563eb] to-[#1e40af]",
-                buttonBorder: "border-[#eff6ff]",
-                buttonShadow: "shadow-[0_5px_0_#1e3a8a]",
-                pillBg: "bg-blue-500/10 border-blue-500/20 text-[#93c5fd]",
-              }
-            : {
-                bg: "bg-gradient-to-b from-[#0d1f16] via-[#112d1f] to-[#050e09] border-[4px] border-[#34d399]",
-                shadow: "shadow-[0_25px_60px_rgba(16,185,129,0.35),inset_0_4px_12px_rgba(255,255,255,0.15)]",
-                badgeBg: "from-[#d1fae5] via-[#059669] to-[#064e3b] border-[#34d399]",
-                badgeGlow: "shadow-[0_0_25px_rgba(16,185,129,0.6)]",
-                accentText: "text-[#34d399]",
-                icon: "⭐",
-                title: "تقبل الله طاعتك! ✨",
-                buttonBg: "from-[#6ee7b7] via-[#059669] to-[#065f46]",
-                buttonBorder: "border-[#ecfdf5]",
-                buttonShadow: "shadow-[0_5px_0_#064e3b]",
-                pillBg: "bg-emerald-500/10 border-emerald-500/20 text-[#6ee7b7]",
-              };
+            // 3D Color Configurations for a gorgeous celestial plaque
+            const cardStyles = isMorning
+              ? {
+                  bg: "bg-gradient-to-b from-[#151c35] via-[#1b254a] to-[#0d1226] border-[4px] border-[#fbbf24]",
+                  shadow: "shadow-[0_25px_60px_rgba(245,158,11,0.35),inset_0_4px_12px_rgba(255,255,255,0.15)]",
+                  badgeBg: "from-[#fff3c4] via-[#f59e0b] to-[#78350f] border-[#ffed97]",
+                  badgeGlow: "shadow-[0_0_25px_rgba(245,158,11,0.6)]",
+                  accentText: "text-[#fbbf24]",
+                  icon: "☀️",
+                  title: "تقبل الله طاعتك صباحاً! 🌅",
+                  buttonBg: "from-[#fcd34d] via-[#f59e0b] to-[#b45309]",
+                  buttonBorder: "border-[#fef3c7]",
+                  buttonShadow: "shadow-[0_5px_0_#92400e]",
+                  pillBg: "bg-amber-500/10 border-amber-500/20 text-[#fde047]",
+                }
+              : isEvening
+              ? {
+                  bg: "bg-gradient-to-b from-[#0c0f1e] via-[#121631] to-[#060812] border-[4px] border-[#60a5fa]",
+                  shadow: "shadow-[0_25px_60px_rgba(37,99,235,0.35),inset_0_4px_12px_rgba(255,255,255,0.15)]",
+                  badgeBg: "from-[#dbeafe] via-[#2563eb] to-[#1e3a8a] border-[#60a5fa]",
+                  badgeGlow: "shadow-[0_0_25px_rgba(37,99,235,0.6)]",
+                  accentText: "text-[#60a5fa]",
+                  icon: "🌙",
+                  title: "تقبل الله طاعتك مساءً! 🌌",
+                  buttonBg: "from-[#93c5fd] via-[#2563eb] to-[#1e40af]",
+                  buttonBorder: "border-[#eff6ff]",
+                  buttonShadow: "shadow-[0_5px_0_#1e3a8a]",
+                  pillBg: "bg-blue-500/10 border-blue-500/20 text-[#93c5fd]",
+                }
+              : {
+                  bg: "bg-gradient-to-b from-[#0d1f16] via-[#112d1f] to-[#050e09] border-[4px] border-[#34d399]",
+                  shadow: "shadow-[0_25px_60px_rgba(16,185,129,0.35),inset_0_4px_12px_rgba(255,255,255,0.15)]",
+                  badgeBg: "from-[#d1fae5] via-[#059669] to-[#064e3b] border-[#34d399]",
+                  badgeGlow: "shadow-[0_0_25px_rgba(16,185,129,0.6)]",
+                  accentText: "text-[#34d399]",
+                  icon: "⭐",
+                  title: "تقبل الله طاعتك! ✨",
+                  buttonBg: "from-[#6ee7b7] via-[#059669] to-[#065f46]",
+                  buttonBorder: "border-[#ecfdf5]",
+                  buttonShadow: "shadow-[0_5px_0_#064e3b]",
+                  pillBg: "bg-emerald-500/10 border-emerald-500/20 text-[#6ee7b7]",
+                };
 
-          if (typeof document === 'undefined') return null;
-          return createPortal(
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
-              dir="rtl"
-            >
+            return (
               <motion.div
-                initial={{ scale: 0.9, y: 30 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 30 }}
-                transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                className={cn(
-                  "rounded-[36px] p-6 max-w-[340px] sm:max-w-[350px] w-full text-center relative overflow-visible transition-all select-none border-[3.5px]",
-                  cardStyles.bg,
-                  cardStyles.shadow
-                )}
+                key="adhkar-reward-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setShowReward(false);
+                }}
+                className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+                dir="rtl"
               >
-                {/* 3D Sheen highlight sweep overlay */}
-                <div className="absolute top-1 left-4 w-48 h-40 bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.08] rounded-full blur-2xl pointer-events-none" />
-                
-                {/* Sparkles decoration */}
-                <div className="absolute -top-6 -left-4 text-yellow-300 animate-pulse pointer-events-none">
-                  <Sparkles size={24} className="opacity-90 animate-bounce" />
-                </div>
-                <div className="absolute -bottom-2 -right-2 text-sky-300 animate-pulse pointer-events-none">
-                  <Sparkles size={20} className="opacity-80" />
-                </div>
+                <motion.div
+                  key="adhkar-reward-modal"
+                  initial={{ scale: 0.9, y: 30, opacity: 0 }}
+                  animate={{ scale: 1, y: 0, opacity: 1 }}
+                  exit={{ scale: 0.9, y: 30, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                  className={cn(
+                    "rounded-[36px] p-6 max-w-[340px] sm:max-w-[350px] w-full text-center relative overflow-visible transition-all select-none border-[3.5px]",
+                    cardStyles.bg,
+                    cardStyles.shadow
+                  )}
+                >
+                  {/* 3D Sheen highlight sweep overlay */}
+                  <div className="absolute top-1 left-4 w-48 h-40 bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.08] rounded-full blur-2xl pointer-events-none" />
+                  
+                  {/* Sparkles decoration */}
+                  <div className="absolute -top-6 -left-4 text-yellow-300 animate-pulse pointer-events-none">
+                    <Sparkles size={24} className="opacity-90 animate-bounce" />
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 text-sky-300 animate-pulse pointer-events-none">
+                    <Sparkles size={20} className="opacity-80" />
+                  </div>
 
-                {/* Rotating Glowing 3D-Look Sphere Badge / Trophy */}
-                <div className="relative -mt-16 sm:-mt-20 mb-4 flex justify-center">
-                  <motion.div 
-                    animate={{ 
-                      y: [0, -6, 0],
-                      rotate: [0, 4, -4, 0]
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className={cn(
-                      "w-20 h-20 rounded-full bg-gradient-to-b border-[3.5px] flex items-center justify-center relative select-none z-10",
-                      cardStyles.badgeBg,
-                      cardStyles.badgeGlow
-                    )}
-                  >
-                    {/* Glass sheen overlay */}
-                    <div className="absolute inset-[1px] rounded-full bg-gradient-to-tr from-transparent via-white/35 to-transparent pointer-events-none" />
-                    <div className="absolute inset-[3px] rounded-full border border-white/20" />
-                    
-                    <span className="text-3xl drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)] select-none pointer-events-none">
-                      {cardStyles.icon}
-                    </span>
-                  </motion.div>
-                </div>
+                  {/* Rotating Glowing 3D-Look Sphere Badge / Trophy */}
+                  <div className="relative -mt-16 sm:-mt-20 mb-4 flex justify-center">
+                    <motion.div 
+                      animate={{ 
+                        y: [0, -6, 0],
+                        rotate: [0, 4, -4, 0]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      className={cn(
+                        "w-20 h-20 rounded-full bg-gradient-to-b border-[3.5px] flex items-center justify-center relative select-none z-10",
+                        cardStyles.badgeBg,
+                        cardStyles.badgeGlow
+                      )}
+                    >
+                      {/* Glass sheen overlay */}
+                      <div className="absolute inset-[1px] rounded-full bg-gradient-to-tr from-transparent via-white/35 to-transparent pointer-events-none" />
+                      <div className="absolute inset-[3px] rounded-full border border-white/20" />
+                      
+                      <span className="text-3xl drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)] select-none pointer-events-none">
+                        {cardStyles.icon}
+                      </span>
+                    </motion.div>
+                  </div>
 
-                {/* Core Title */}
-                <h3 className="text-xl font-black text-white/95 leading-tight mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  {cardStyles.title}
-                </h3>
-                
-                {/* Descriptive subheader */}
-                <p className="text-[13px] text-slate-300 leading-relaxed px-1 mb-4">
-                  {t('congrats_category_completed', { title: categoryTitle })}
-                </p>
+                  {/* Core Title */}
+                  <h3 className="text-xl font-black text-white/95 leading-tight mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                    {cardStyles.title}
+                  </h3>
+                  
+                  {/* Descriptive subheader */}
+                  <p className="text-[13px] text-slate-300 leading-relaxed px-1 mb-4">
+                    {t('congrats_category_completed', { title: categoryTitle })}
+                  </p>
 
-                {/* 3D Compact Stat Pills Row Grid */}
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  {/* Time Spent Pill */}
-                  <div className={cn("rounded-2xl border p-2.5 flex flex-col justify-center items-center gap-1 bg-white/5 backdrop-blur-sm shadow-[inset_0_2px_4px_rgba(255,255,255,0.04)]", cardStyles.pillBg)}>
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-70">الوقت المستغرق</span>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Timer size={12} className="opacity-85 animate-pulse" />
-                      <span className="text-[12px] font-bold tracking-wide font-mono leading-none text-white">{formatTime(secondsElapsed)}</span>
+                  {/* 3D Compact Stat Pills Row Grid */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {/* Time Spent Pill */}
+                    <div className={cn("rounded-2xl border p-2.5 flex flex-col justify-center items-center gap-1 bg-white/5 backdrop-blur-sm shadow-[inset_0_2px_4px_rgba(255,255,255,0.04)]", cardStyles.pillBg)}>
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-70">الوقت المستغرق</span>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Timer size={12} className="opacity-85 animate-pulse" />
+                        <span className="text-[12px] font-bold tracking-wide font-mono leading-none text-white">{formatTime(secondsElapsed)}</span>
+                      </div>
+                    </div>
+
+                    {/* Level / Reading Style Pill */}
+                    <div className={cn("rounded-2xl border p-2.5 flex flex-col justify-center items-center gap-1 bg-white/5 backdrop-blur-sm shadow-[inset_0_2px_4px_rgba(255,255,255,0.04)]", cardStyles.pillBg)}>
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-70">نمط الذكر والتدبر</span>
+                      <span className="text-[11px] font-black truncate max-w-full leading-none mt-1 text-white">{readingSpeedRate}</span>
                     </div>
                   </div>
 
-                  {/* Level / Reading Style Pill */}
-                  <div className={cn("rounded-2xl border p-2.5 flex flex-col justify-center items-center gap-1 bg-white/5 backdrop-blur-sm shadow-[inset_0_2px_4px_rgba(255,255,255,0.04)]", cardStyles.pillBg)}>
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-70">نمط الذكر والتدبر</span>
-                    <span className="text-[11px] font-black truncate max-w-full leading-none mt-1 text-white">{readingSpeedRate}</span>
+                  {/* Simple highly compact descriptions box */}
+                  <div className="bg-black/35 text-slate-300 border border-white/[0.03] rounded-2xl p-3 mb-5 text-[11px] leading-relaxed text-center shadow-inner font-bold font-sans">
+                    قضيت <span className="text-white font-black">{formatTimePhrase(secondsElapsed)}</span> في تسابيح الطهر وتحصين النفس واليقين بالله تعالى. ✨
                   </div>
-                </div>
 
-                {/* Simple highly compact descriptions box */}
-                <div className="bg-black/35 text-slate-300 border border-white/[0.03] rounded-2xl p-3 mb-5 text-[11px] leading-relaxed text-center shadow-inner font-bold font-sans">
-                  قضيت <span className="text-white font-black">{formatTimePhrase(secondsElapsed)}</span> في تسابيح الطهر وتحصين النفس واليقين بالله تعالى. ✨
-                </div>
-
-                {/* High-fidelity 3D Tactile Action Button */}
-                <div className="relative pt-1 font-bold">
-                  <button
-                    onClick={() => setShowReward(false)}
-                    className={cn(
-                      "w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white tracking-wide transition-all duration-75 flex items-center justify-center gap-2 border bg-gradient-to-b active:translate-y-1 active:scale-[0.98] select-none cursor-pointer",
-                      cardStyles.buttonBg,
-                      cardStyles.buttonBorder,
-                      cardStyles.buttonShadow,
-                      "active:shadow-[0_1px_0_rgba(0,0,0,0.2)]"
-                    )}
-                  >
-                    <span>الحمد لله رب العالمين</span>
-                    <CheckCircle2 size={16} className="stroke-[3]" />
-                  </button>
-                </div>
+                  {/* High-fidelity 3D Tactile Action Button */}
+                  <div className="relative pt-1 font-bold">
+                    <button
+                      onClick={() => setShowReward(false)}
+                      className={cn(
+                        "w-full py-3.5 px-6 rounded-2xl font-black text-sm text-white tracking-wide transition-all duration-75 flex items-center justify-center gap-2 border bg-gradient-to-b active:translate-y-1 active:scale-[0.98] select-none cursor-pointer",
+                        cardStyles.buttonBg,
+                        cardStyles.buttonBorder,
+                        cardStyles.buttonShadow,
+                        "active:shadow-[0_1px_0_rgba(0,0,0,0.2)]"
+                      )}
+                    >
+                      <span>الحمد لله رب العالمين</span>
+                      <CheckCircle2 size={16} className="stroke-[3]" />
+                    </button>
+                  </div>
+                </motion.div>
               </motion.div>
-            </motion.div>,
-            document.body
-          );
-        })()}
-      </AnimatePresence>
+            );
+          })()}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };

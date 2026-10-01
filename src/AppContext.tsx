@@ -577,40 +577,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Official Defaults Synchronization v29 (believer_settings_v29_official)
         const isUpgradingToOfficialV29 = !safeLocalStorageGetItem('believer_settings_v29_official');
         if (isUpgradingToOfficialV29) {
-          merged.adhkarViewMode = 'list';
-          merged.visualTheme = 'glass';
-          merged.sidebarTheme = 'glassy';
-          merged.notificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.morningAdhkarFollowupEnabled = true;
-          merged.eveningAdhkarFollowupEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.tasbihSoundEnabled = true;
-          merged.tasbihBeadStyle = 'emerald';
-          merged.hapticTasbihEnabled = true;
-          merged.audioAutoAdvance = true;
-          merged.audioPlaybackSpeed = 1;
-          merged.audioSleepTimerMinutes = 0;
-          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
-          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
-          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
-          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
-          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
-          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
-          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
-          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
-          merged.prayerNotificationSettings = {
-            Fajr: true,
-            Sunrise: false,
-            Dhuhr: true,
-            Asr: true,
-            Maghrib: true,
-            Isha: true
-          };
+          // Synchronize complete official defaults across all features, visual styling, sections, and notifications
+          Object.assign(merged, {
+            ...OFFICIAL_DEFAULT_SETTINGS,
+            // Strictly preserve user's customized reminders, custom random adhkar, and custom favorites if any exist
+            reminders: (Array.isArray(parsed.reminders) && parsed.reminders.length > 0) ? parsed.reminders : OFFICIAL_DEFAULT_SETTINGS.reminders,
+            customRandomAdhkar: (Array.isArray(parsed.customRandomAdhkar) && parsed.customRandomAdhkar.length > 0) ? parsed.customRandomAdhkar : OFFICIAL_DEFAULT_SETTINGS.customRandomAdhkar,
+            namesOfAllahFavoriteIds: Array.isArray(parsed.namesOfAllahFavoriteIds) ? parsed.namesOfAllahFavoriteIds : [],
+            userName: parsed.userName || OFFICIAL_DEFAULT_SETTINGS.userName,
+          });
+
+          // Ensure default reciter is set to official default
+          if (!safeLocalStorageGetItem('quran-reciter')) {
+            safeLocalStorageSetItem('quran-reciter', '7');
+          }
+
+          // Ensure default widgets configuration is in place
+          const existingWidgets = safeLocalStorageGetItem('home_widgets_config');
+          if (!existingWidgets) {
+            safeLocalStorageSetItem('home_widgets_config', JSON.stringify(defaultWidgets.map(w => ({ id: w.id, isVisible: w.isVisible }))));
+          }
+
           safeLocalStorageSetItem('believer_settings_v29_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v30_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v30', JSON.stringify(merged));
           safeLocalStorageSetItem('believer_settings_v29', JSON.stringify(merged));
           safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(merged));
           safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
@@ -620,40 +610,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Official Defaults Synchronization v30 (believer_settings_v30_official)
         const isUpgradingToOfficialV30 = !safeLocalStorageGetItem('believer_settings_v30_official');
         if (isUpgradingToOfficialV30) {
-          merged.adhkarViewMode = 'list';
-          merged.visualTheme = 'glass';
-          merged.sidebarTheme = 'glassy';
-          merged.notificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.morningAdhkarFollowupEnabled = true;
-          merged.eveningAdhkarFollowupEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.tasbihSoundEnabled = true;
-          merged.tasbihBeadStyle = 'emerald';
-          merged.hapticTasbihEnabled = true;
-          merged.audioAutoAdvance = true;
-          merged.audioPlaybackSpeed = 1;
-          merged.audioSleepTimerMinutes = 0;
-          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
-          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
-          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
-          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
-          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
-          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
-          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
-          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
-          merged.prayerNotificationSettings = {
-            Fajr: true,
-            Sunrise: false,
-            Dhuhr: true,
-            Asr: true,
-            Maghrib: true,
-            Isha: true
-          };
+          Object.assign(merged, {
+            ...OFFICIAL_DEFAULT_SETTINGS,
+            reminders: (Array.isArray(parsed.reminders) && parsed.reminders.length > 0) ? parsed.reminders : OFFICIAL_DEFAULT_SETTINGS.reminders,
+            customRandomAdhkar: (Array.isArray(parsed.customRandomAdhkar) && parsed.customRandomAdhkar.length > 0) ? parsed.customRandomAdhkar : OFFICIAL_DEFAULT_SETTINGS.customRandomAdhkar,
+            namesOfAllahFavoriteIds: Array.isArray(parsed.namesOfAllahFavoriteIds) ? parsed.namesOfAllahFavoriteIds : [],
+            userName: parsed.userName || OFFICIAL_DEFAULT_SETTINGS.userName,
+          });
+
+          if (!safeLocalStorageGetItem('quran-reciter')) {
+            safeLocalStorageSetItem('quran-reciter', '7');
+          }
+
+          const existingWidgets = safeLocalStorageGetItem('home_widgets_config');
+          if (!existingWidgets) {
+            safeLocalStorageSetItem('home_widgets_config', JSON.stringify(defaultWidgets.map(w => ({ id: w.id, isVisible: w.isVisible }))));
+          }
+
           safeLocalStorageSetItem('believer_settings_v30_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v29_official', 'true');
           safeLocalStorageSetItem('believer_settings_v30', JSON.stringify(merged));
           safeLocalStorageSetItem('believer_settings_v29', JSON.stringify(merged));
           safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(merged));

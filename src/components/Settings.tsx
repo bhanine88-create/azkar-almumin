@@ -1,5 +1,6 @@
 import { BackButton } from './ui/BackButton';
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {} from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sliders, Timer, Moon, Sun, FileText, Type, Palette, Bell, Shield, Info, ChevronRight, RefreshCw, Globe, Monitor, Languages, Share2, Code, User, ChevronDown, Mail, Heart, Sparkles, Plus, X, Calendar, Clock, Lightbulb, Send, CheckCircle2, SmilePlus, ArrowUpLeft, ArrowUp, ArrowUpRight, Maximize, ArrowDownLeft, ArrowDown, ArrowDownRight, MoveHorizontal, Layers, Maximize2, Zap, RotateCw, BookOpen, Volume2, ShieldCheck, Database, Activity, AlignRight, Download, Book, UserCircle, Gem, Fingerprint, Facebook, Twitter, Instagram, Star, Upload, LifeBuoy, Smartphone, UserX, KeyRound, Trash2, ExternalLink, Coffee } from 'lucide-react';
@@ -361,11 +362,15 @@ export const Settings: React.FC = () => {
     resetSettings();
     setReciter(7);
     setTheme('light');
+    if (setQuranFontFamily) setQuranFontFamily('Amiri');
+    if (setTafsirType) setTafsirType('ar.muyassar');
+    if (setTafsirTheme) setTafsirTheme('default');
+    if (setRecitation) setRecitation('uthmani');
     setIsResetOfficialModalOpen(false);
     setConfirmResetOfficial(false);
     setCleanupMessage('تمت استعادة كافة الميزات والمظهر والأقسام للضبط الرسمي الافتراضي للتطبيق بنجاح مع الحفاظ على كامل إنجازاتك وبياناتك.');
     setCleanupIsError(false);
-    setTimeout(() => setCleanupMessage(null), 5000);
+    setTimeout(() => setCleanupMessage(null), 6000);
   };
 
   const handleReset = () => {
@@ -522,6 +527,47 @@ export const Settings: React.FC = () => {
             })}
           </div>
         )}
+      </div>
+
+      {/* Status / Cleanup Message Banner */}
+      {cleanupMessage && (
+        <div className={`p-4 rounded-2xl text-xs sm:text-sm font-black text-center border shadow-lg my-3 flex items-center justify-center gap-2 ${cleanupIsError ? 'bg-red-500/15 text-red-300 border-red-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'}`}>
+          <CheckCircle2 size={18} className="shrink-0" />
+          <span>{cleanupMessage}</span>
+        </div>
+      )}
+
+      {/* Prominent Official Defaults Synchronization Banner */}
+      <div className="relative overflow-hidden p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 shadow-xl space-y-3.5 my-3 text-right" dir="rtl">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300" />
+        
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 shadow-inner text-emerald-300">
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+              <div className="font-black text-sm sm:text-base text-white flex items-center gap-2 flex-wrap">
+                <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  الضبط المعتمد v29
+                </span>
+              </div>
+              <div className="text-xs text-teal-200/80 font-medium mt-1 leading-relaxed">
+                {t('reset_official_settings_desc', 'يعيد ضبط كافة الأقسام والميزات والمظهر للوضع الرسمي الافتراضي بضغطة واحدة مع الحفاظ التام على إنجازاتك')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsResetOfficialModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.99] text-white font-black text-xs sm:text-sm shadow-lg shadow-teal-950/50 hover:-translate-y-0.5 active:translate-y-0 transition-all border border-emerald-400/40 cursor-pointer"
+        >
+          <RotateCw size={17} />
+          <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
+        </button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -3120,7 +3166,7 @@ export const Settings: React.FC = () => {
                   <div className="font-black text-sm sm:text-base text-white flex items-center gap-2 flex-wrap">
                     <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      v30 الرسمي
+                      v29 الرسمي المعتمد
                     </span>
                   </div>
                   <div className="text-xs text-teal-200/80 font-medium mt-1 leading-relaxed">
@@ -3169,83 +3215,6 @@ export const Settings: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Official Reset Confirmation Modal Dialog */}
-        <AnimatePresence>
-          {isResetOfficialModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="relative w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 shadow-2xl text-white overflow-hidden text-right"
-                dir="rtl"
-              >
-                <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-400 to-amber-400" />
-                
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center shadow-inner">
-                      <ShieldCheck size={26} className="text-teal-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-base sm:text-lg text-white">
-                        {t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}
-                      </h3>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        مزامنة الضبط الرسمي v30
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setIsResetOfficialModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="space-y-3.5 my-5 text-xs sm:text-sm text-slate-200/90 leading-relaxed">
-                  <div className="p-3.5 rounded-2xl bg-teal-950/40 border border-teal-500/20 space-y-2">
-                    <div className="font-black text-teal-300 flex items-center gap-1.5 text-xs sm:text-sm">
-                      <Sparkles size={16} />
-                      <span>ما الذي سيحدث عند الاستعادة؟</span>
-                    </div>
-                    <p className="text-slate-300 text-xs leading-relaxed">
-                      سيتم إعادة ضبط كافة خيارات المظهر، التنبيهات، وضع عرض الأذكار والقرآن للضبط الافتراضي المعتمد رسمياً للتطبيق.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
-                    <div className="font-black text-emerald-400 flex items-center gap-1.5 text-xs sm:text-sm">
-                      <ShieldCheck size={16} />
-                      <span>ضمان سلامة بياناتك وإنجازاتك 100%</span>
-                    </div>
-                    <p className="text-emerald-200/90 text-xs leading-relaxed">
-                      جميع نقاطك، إنجازاتك، ختمات القرآن، أذكارك المفضلة، وسجل العبادات آمنة تماماً ولن تمحى أو تتأثر بهذا الإجراء.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 mt-6">
-                  <button
-                    onClick={executeResetOfficial}
-                    className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/30"
-                  >
-                    <CheckCircle2 size={18} />
-                    <span>تأكيد الاستعادة الرسمية</span>
-                  </button>
-                  <button
-                    onClick={() => setIsResetOfficialModalOpen(false)}
-                    className="py-3.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs sm:text-sm transition-colors cursor-pointer"
-                  >
-                    إلغاء
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
 
         {/* Backup & Restore Card */}
         <ThreeDCard color="bg-slate-800" shadow="shadow-slate-900/30" icon={<Database size={18} className="text-teal-400" />} label={t('setting_backup')}>
@@ -3468,6 +3437,86 @@ export const Settings: React.FC = () => {
           </React.Fragment>
         )}
       </AnimatePresence>
+
+      {/* Official Reset Confirmation Modal Dialog (Rendered via Portal to document.body) */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isResetOfficialModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="relative w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 shadow-2xl text-white overflow-hidden text-right"
+                dir="rtl"
+              >
+                <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-400 to-amber-400" />
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center shadow-inner">
+                      <ShieldCheck size={26} className="text-teal-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-base sm:text-lg text-white">
+                        {t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}
+                      </h3>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        مزامنة الضبط الرسمي v29 المعتمد
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsResetOfficialModalOpen(false)}
+                    className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="space-y-3.5 my-5 text-xs sm:text-sm text-slate-200/90 leading-relaxed">
+                  <div className="p-3.5 rounded-2xl bg-teal-950/40 border border-teal-500/20 space-y-2">
+                    <div className="font-black text-teal-300 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <Sparkles size={16} />
+                      <span>ما الذي سيحدث عند الاستعادة؟</span>
+                    </div>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      سيتم إعادة ضبط كافة خيارات المظهر، الثيمات، التنبيهات، مواقيت الصلاة، مظهر المسبحة، وموضع عرض الأذكار والقرآن للوضع الرسمي الافتراضي المعتمد لتطبيق أذكار المؤمن.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
+                    <div className="font-black text-emerald-400 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <ShieldCheck size={16} />
+                      <span>ضمان سلامة بياناتك وإنجازاتك 100%</span>
+                    </div>
+                    <p className="text-emerald-200/90 text-xs leading-relaxed">
+                      جميع نقاطك، مستواك، شاراتك، أيام المواظبة (Streak)، أذكارك المضافة، ختمات القرآن، إشاراتك المرجعية، وسجل عبادتك آمنة تماماً ولن تمحى أو تتأثر بهذا الإجراء.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 mt-6">
+                  <button
+                    onClick={executeResetOfficial}
+                    className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/30"
+                  >
+                    <CheckCircle2 size={18} />
+                    <span>تأكيد الاستعادة الرسمية للضبط</span>
+                  </button>
+                  <button
+                    onClick={() => setIsResetOfficialModalOpen(false)}
+                    className="py-3.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs sm:text-sm transition-colors cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };
