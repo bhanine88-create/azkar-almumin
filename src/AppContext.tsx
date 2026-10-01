@@ -381,7 +381,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = safeLocalStorageGetItem('believer_settings_v30') || safeLocalStorageGetItem('believer_settings_v29') || safeLocalStorageGetItem('believer_settings_v28') || safeLocalStorageGetItem('believer_settings_v27') || safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20');
+    const saved = safeLocalStorageGetItem('believer_settings_v31') || safeLocalStorageGetItem('believer_settings_v30') || safeLocalStorageGetItem('believer_settings_v29') || safeLocalStorageGetItem('believer_settings_v28') || safeLocalStorageGetItem('believer_settings_v27') || safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20');
     const defaultSettings: AppSettings = OFFICIAL_DEFAULT_SETTINGS;
 
     if (saved) {
@@ -409,207 +409,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
 
         const merged = { ...defaultSettings, ...parsed };
-        
-        // Force modern essential defaults (perfect integration setup) if upgrading to v23
-        const isUpgradingToV24 = !safeLocalStorageGetItem('believer_settings_v24_upgraded');
-        if (isUpgradingToV24) {
-          merged.notificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.prayerNotificationSettings = { Fajr: true, Sunrise: false, Dhuhr: true, Asr: true, Maghrib: true, Isha: true };
-          safeLocalStorageSetItem('believer_settings_v24_upgraded', 'true');
-        }
 
-        const isUpgradingToV25 = !safeLocalStorageGetItem('believer_settings_v25_adhkar_list');
-        if (isUpgradingToV25) {
-          merged.adhkarViewMode = 'list';
-          safeLocalStorageSetItem('believer_settings_v25_adhkar_list', 'true');
-        }
-
-        const isUpgradingToV23 = !safeLocalStorageGetItem('believer_settings_v23_upgraded');
-        if (isUpgradingToV23) {
-          merged.notificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.visualTheme = 'glass';
-          merged.sidebarTheme = 'glassy';
-          merged.tasbihSoundEnabled = true;
-          merged.tasbihBeadStyle = 'emerald';
-          merged.theme = 'system';
-          merged.adhkarViewMode = 'list';
-          safeLocalStorageSetItem('believer_settings_v23_upgraded', 'true');
-        }
-
-        // Official App Baseline v26: Establish all new features and updates as official defaults
-        const isUpgradingToOfficialV26 = !safeLocalStorageGetItem('believer_settings_v26_official');
-        if (isUpgradingToOfficialV26) {
-          merged.adhkarViewMode = 'list';
-          merged.visualTheme = 'glass';
-          merged.sidebarTheme = 'glassy';
-          merged.tasbihSoundEnabled = true;
-          merged.tasbihBeadStyle = 'emerald';
-          merged.hapticTasbihEnabled = true;
-          merged.audioAutoAdvance = true;
-          merged.audioPlaybackSpeed = 1;
-          merged.audioSleepTimerMinutes = 0;
-          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
-          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
-          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
-          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
-          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
-          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
-          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
-          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
-          safeLocalStorageSetItem('believer_settings_v26_official', 'true');
-        }
-
-        // Official Defaults Synchronization v27 (believer_settings_v27_official)
-        const isUpgradingToOfficialV27 = !safeLocalStorageGetItem('believer_settings_v27_official');
-        if (isUpgradingToOfficialV27) {
-          merged.adhkarViewMode = 'list';
-          merged.visualTheme = 'glass';
-          merged.sidebarTheme = 'glassy';
-          merged.notificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.morningAdhkarFollowupEnabled = true;
-          merged.eveningAdhkarFollowupEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.tasbihSoundEnabled = true;
-          merged.tasbihBeadStyle = 'emerald';
-          merged.hapticTasbihEnabled = true;
-          merged.audioAutoAdvance = true;
-          merged.audioPlaybackSpeed = 1;
-          merged.audioSleepTimerMinutes = 0;
-          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
-          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
-          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
-          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
-          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
-          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
-          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
-          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
-          merged.prayerNotificationSettings = {
-            Fajr: true,
-            Sunrise: false,
-            Dhuhr: true,
-            Asr: true,
-            Maghrib: true,
-            Isha: true
-          };
-          safeLocalStorageSetItem('believer_settings_v27_official', 'true');
-          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(merged));
-        }
-
-        // Migration v27: Ensure all notifications and reminders are firmly enabled by default
-        const isUpgradingToNotifsEnabledV27 = !safeLocalStorageGetItem('believer_notifs_firm_enabled_v27');
-        if (isUpgradingToNotifsEnabledV27) {
-          merged.notificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.morningAdhkarFollowupEnabled = true;
-          merged.eveningAdhkarFollowupEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.prayerNotificationSettings = {
-            Fajr: true,
-            Sunrise: false,
-            Dhuhr: true,
-            Asr: true,
-            Maghrib: true,
-            Isha: true
-          };
-          safeLocalStorageSetItem('believer_notifs_firm_enabled_v27', 'true');
-        }
-
-        // Official Defaults Synchronization v28 (believer_settings_v28_official)
-        const isUpgradingToOfficialV28 = !safeLocalStorageGetItem('believer_settings_v28_official');
-        if (isUpgradingToOfficialV28) {
-          merged.adhkarViewMode = 'list';
-          merged.visualTheme = 'glass';
-          merged.sidebarTheme = 'glassy';
-          merged.notificationsEnabled = true;
-          merged.prayerNotificationsEnabled = true;
-          merged.morningNotificationsEnabled = true;
-          merged.eveningNotificationsEnabled = true;
-          merged.morningAdhkarFollowupEnabled = true;
-          merged.eveningAdhkarFollowupEnabled = true;
-          merged.sunnahReminderEnabled = true;
-          merged.randomAdhkarEnabled = true;
-          merged.tasbihSoundEnabled = true;
-          merged.tasbihBeadStyle = 'emerald';
-          merged.hapticTasbihEnabled = true;
-          merged.audioAutoAdvance = true;
-          merged.audioPlaybackSpeed = 1;
-          merged.audioSleepTimerMinutes = 0;
-          merged.namesOfAllahLayout = merged.namesOfAllahLayout || 'grid4';
-          merged.namesOfAllahFrame = merged.namesOfAllahFrame || 'rounded';
-          merged.namesOfAllahFontFamily = merged.namesOfAllahFontFamily || 'Amiri';
-          merged.namesOfAllahFontSize = merged.namesOfAllahFontSize || 'medium';
-          merged.namesOfAllahTheme = merged.namesOfAllahTheme || 'burgundy';
-          merged.namesOfAllahShowMeaning = merged.namesOfAllahShowMeaning !== false;
-          merged.namesOfAllahShowNumber = merged.namesOfAllahShowNumber !== false;
-          merged.namesOfAllahAutoPlaySpeed = merged.namesOfAllahAutoPlaySpeed || 4;
-          merged.prayerNotificationSettings = {
-            Fajr: true,
-            Sunrise: false,
-            Dhuhr: true,
-            Asr: true,
-            Maghrib: true,
-            Isha: true
-          };
-          safeLocalStorageSetItem('believer_settings_v28_official', 'true');
-          safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(merged));
-        }
-
-        // Official Defaults Synchronization v29 (believer_settings_v29_official)
-        const isUpgradingToOfficialV29 = !safeLocalStorageGetItem('believer_settings_v29_official');
-        if (isUpgradingToOfficialV29) {
-          // Synchronize complete official defaults across all features, visual styling, sections, and notifications
-          Object.assign(merged, {
-            ...OFFICIAL_DEFAULT_SETTINGS,
-            // Strictly preserve user's customized reminders, custom random adhkar, and custom favorites if any exist
-            reminders: (Array.isArray(parsed.reminders) && parsed.reminders.length > 0) ? parsed.reminders : OFFICIAL_DEFAULT_SETTINGS.reminders,
-            customRandomAdhkar: (Array.isArray(parsed.customRandomAdhkar) && parsed.customRandomAdhkar.length > 0) ? parsed.customRandomAdhkar : OFFICIAL_DEFAULT_SETTINGS.customRandomAdhkar,
-            namesOfAllahFavoriteIds: Array.isArray(parsed.namesOfAllahFavoriteIds) ? parsed.namesOfAllahFavoriteIds : [],
-            userName: parsed.userName || OFFICIAL_DEFAULT_SETTINGS.userName,
-          });
-
-          // Ensure default reciter is set to official default
-          if (!safeLocalStorageGetItem('quran-reciter')) {
-            safeLocalStorageSetItem('quran-reciter', '7');
-          }
-
-          // Ensure default widgets configuration is in place
-          const existingWidgets = safeLocalStorageGetItem('home_widgets_config');
-          if (!existingWidgets) {
-            safeLocalStorageSetItem('home_widgets_config', JSON.stringify(defaultWidgets.map(w => ({ id: w.id, isVisible: w.isVisible }))));
-          }
-
-          safeLocalStorageSetItem('believer_settings_v29_official', 'true');
-          safeLocalStorageSetItem('believer_settings_v30_official', 'true');
-          safeLocalStorageSetItem('believer_settings_v30', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v29', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(merged));
-        }
-
-        // Official Defaults Synchronization v30 (believer_settings_v30_official)
-        const isUpgradingToOfficialV30 = !safeLocalStorageGetItem('believer_settings_v30_official');
-        if (isUpgradingToOfficialV30) {
+        // Official Defaults Synchronization v31 (believer_settings_v31_official)
+        const isUpgradingToOfficialV31 = !safeLocalStorageGetItem('believer_settings_v31_official');
+        if (isUpgradingToOfficialV31) {
           Object.assign(merged, {
             ...OFFICIAL_DEFAULT_SETTINGS,
             reminders: (Array.isArray(parsed.reminders) && parsed.reminders.length > 0) ? parsed.reminders : OFFICIAL_DEFAULT_SETTINGS.reminders,
@@ -627,13 +430,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             safeLocalStorageSetItem('home_widgets_config', JSON.stringify(defaultWidgets.map(w => ({ id: w.id, isVisible: w.isVisible }))));
           }
 
-          safeLocalStorageSetItem('believer_settings_v30_official', 'true');
-          safeLocalStorageSetItem('believer_settings_v29_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v31_official', 'true');
+          safeLocalStorageSetItem('believer_settings_v31', JSON.stringify(merged));
           safeLocalStorageSetItem('believer_settings_v30', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v29', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v27', JSON.stringify(merged));
-          safeLocalStorageSetItem('believer_settings_v23', JSON.stringify(merged));
         }
 
         if (!merged.adhkarViewMode) {
