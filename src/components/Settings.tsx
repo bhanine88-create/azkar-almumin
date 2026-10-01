@@ -12,7 +12,7 @@ import { RateAndShareModal } from './RateAndShareModal';
 import { RECITERS } from '../reciters';
 import { useAppContext } from '../AppContext';
 import { useQuranSettings } from '../context/QuranSettingsContext';
-import { cn, checkInputSafety, sanitizeString, copyTextToClipboard, shareContent } from '../lib/utils';
+import { cn, checkInputSafety, sanitizeString, copyTextToClipboard, shareContent, triggerHaptic } from '../lib/utils';
 import { useTranslation } from '../i18n';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
 
@@ -536,39 +536,6 @@ export const Settings: React.FC = () => {
           <span>{cleanupMessage}</span>
         </div>
       )}
-
-      {/* Prominent Official Defaults Synchronization Banner */}
-      <div className="relative overflow-hidden p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 shadow-xl space-y-3.5 my-3 text-right" dir="rtl">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300" />
-        
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 shadow-inner text-emerald-300">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <div className="font-black text-sm sm:text-base text-white flex items-center gap-2 flex-wrap">
-                <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  الضبط المعتمد v29
-                </span>
-              </div>
-              <div className="text-xs text-teal-200/80 font-medium mt-1 leading-relaxed">
-                {t('reset_official_settings_desc', 'يعيد ضبط كافة الأقسام والميزات والمظهر للوضع الرسمي الافتراضي بضغطة واحدة مع الحفاظ التام على إنجازاتك')}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsResetOfficialModalOpen(true)}
-          className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.99] text-white font-black text-xs sm:text-sm shadow-lg shadow-teal-950/50 hover:-translate-y-0.5 active:translate-y-0 transition-all border border-emerald-400/40 cursor-pointer"
-        >
-          <RotateCw size={17} />
-          <span>{t('reset_official_settings_title', 'استعادة الضبط الرسمي والافتراضي للتطبيق')}</span>
-        </button>
-      </div>
 
       <AnimatePresence mode="wait">
         {activeTab === 'global' && (
@@ -1208,7 +1175,7 @@ export const Settings: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => updateSettings({ _triggerMorning: Date.now() })}
+                  onClick={() => { updateSettings({ _triggerMorning: Date.now() }); window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'morning' } })); triggerHaptic('success'); }}
                   className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs px-3 py-1.5 rounded-xl shrink-0 transition-all active:scale-95 shadow-sm"
                 >
                   {t('test_notification', 'تجربة إشعار')}
@@ -1670,7 +1637,7 @@ export const Settings: React.FC = () => {
                      <span className="text-xs sm:text-sm font-black text-white">{t('morning_adhkar_title', 'أذكار الصباح 🌅')}</span>
                    </div>
                    <button 
-                     onClick={() => updateSettings({ _triggerMorning: Date.now() })}
+                     onClick={() => { updateSettings({ _triggerMorning: Date.now() }); window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'morning' } })); triggerHaptic('success'); }}
                      className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-lg border border-amber-400/20 hover:bg-amber-400/20 transition-all active:scale-95"
                    >
                      {t('test_alarm', 'تجربة التنبيه')}
@@ -1699,7 +1666,21 @@ export const Settings: React.FC = () => {
                      <input 
                        type="time" 
                        value={settings.morningAdhkarTime}
-                       onChange={(e) => updateSettings({ morningAdhkarTime: e.target.value })}
+                       onChange={async (e) => {
+                        const val = e.target.value;
+                        updateSettings({ 
+                          morningAdhkarTime: val,
+                          morningNotificationsEnabled: true,
+                          notificationsEnabled: true
+                        });
+                        await syncAllLocalNotifications({ 
+                          ...settings, 
+                          morningAdhkarTime: val,
+                          morningNotificationsEnabled: true,
+                          notificationsEnabled: true
+                        });
+                        refreshLocalNotifStatus();
+                      }}
                        className="w-full bg-white/10 rounded-xl px-3 py-2 text-white text-xs sm:text-sm font-black border border-white/10 focus:outline-none text-center font-mono"
                      />
                    </div>
@@ -1754,7 +1735,7 @@ export const Settings: React.FC = () => {
                      <span className="text-xs sm:text-sm font-black text-white">{t('evening_adhkar_title', 'أذكار المساء 🌙')}</span>
                    </div>
                    <button 
-                     onClick={() => updateSettings({ _triggerEvening: Date.now() })}
+                     onClick={() => { updateSettings({ _triggerEvening: Date.now() }); window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'evening' } })); triggerHaptic('success'); }}
                      className="text-[10px] font-black text-indigo-400 bg-indigo-400/10 px-3 py-1.5 rounded-lg border border-indigo-400/20 hover:bg-indigo-400/20 transition-all active:scale-95"
                    >
                      {t('test_alarm', 'تجربة التنبيه')}
@@ -1784,7 +1765,21 @@ export const Settings: React.FC = () => {
                      <input 
                        type="time" 
                        value={settings.eveningAdhkarTime}
-                       onChange={(e) => updateSettings({ eveningAdhkarTime: e.target.value })}
+                       onChange={async (e) => {
+                          const val = e.target.value;
+                          updateSettings({ 
+                            eveningAdhkarTime: val,
+                            eveningNotificationsEnabled: true,
+                            notificationsEnabled: true
+                          });
+                          await syncAllLocalNotifications({ 
+                            ...settings, 
+                            eveningAdhkarTime: val,
+                            eveningNotificationsEnabled: true,
+                            notificationsEnabled: true
+                          });
+                          refreshLocalNotifStatus();
+                        }}
                        className="w-full bg-white/10 rounded-xl px-3 py-2 text-white text-xs sm:text-sm font-black border border-white/10 focus:outline-none text-center font-mono"
                      />
                    </div>

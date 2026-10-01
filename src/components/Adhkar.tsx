@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAdhkarCounts } from '../context/AdhkarCountsContext';
-import { ChevronRight, RotateCcw, CheckCircle2, Edit3, Plus, Trash2, ArrowUp, ArrowDown, X, Save, Info, BookOpen, Settings2, Type, Palette, SlidersHorizontal, ChevronDown, Search, Check, Sparkles, Droplets, Building, Bell, Milestone, Award, Heart, Scroll, Play, Pause, Clock, Timer, Hourglass, Pen, ListRestart, Share2, HardDrive } from 'lucide-react';
+import { ChevronRight, RotateCcw, CheckCircle2, Edit3, Plus, Trash2, ArrowUp, ArrowDown, X, Save, Info, BookOpen, Settings2, Type, Palette, SlidersHorizontal, ChevronDown, Search, Check, Sparkles, Droplets, Building, Bell, BellRing, Sun, Sunrise, Moon, Sunset, Volume2, Milestone, Award, Heart, Scroll, Play, Pause, Clock, Timer, Hourglass, Pen, ListRestart, Share2, HardDrive } from 'lucide-react';
+import { playNotificationChimeSound } from '../lib/sounds';
 import { useAppContext } from '../AppContext';
 import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { ChallengeCategory } from '../challengesData';
@@ -15,6 +16,7 @@ import { useSmartNavigation } from "../lib/navigation";
 import { getLocalizedDhikr } from '../i18n/dhikrTranslations';
 import { memoryManager } from '../services/memoryManager';
 import { useAppStability } from '../services/stabilityManager';
+import { syncAllLocalNotifications } from '../services/localNotificationService';
 
 
 const ADHKAR_THEMES: Record<string, any> = {
@@ -867,6 +869,116 @@ export const Adhkar: React.FC = () => {
   const hasRewarded = React.useRef(false);
   const initializedCategory = React.useRef<string | null>(null);
 
+  // --- Smart On-Screen Notifications & Milestones States ---
+  const [localScreenAlert, setLocalScreenAlert] = useState<{
+    title: string;
+    body: string;
+    time: string;
+    type: 'morning' | 'evening';
+  } | null>(null);
+
+  const [milestoneToast, setMilestoneToast] = useState<{
+    message: string;
+    percent: number;
+  } | null>(null);
+
+  const [timeSavedFeedback, setTimeSavedFeedback] = useState<string | null>(null);
+
+  const handleSetAdhkarTime = React.useCallback(async (newTime: string, isMorningCategory: boolean) => {
+    if (!newTime) return;
+    
+    // Request permission if browser hasn't prompted yet
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch (e) {}
+    }
+
+    if (isMorningCategory) {
+      updateSettings({
+        morningAdhkarTime: newTime,
+        morningNotificationsEnabled: true,
+        notificationsEnabled: true
+      });
+      await syncAllLocalNotifications({
+        ...settings,
+        morningAdhkarTime: newTime,
+        morningNotificationsEnabled: true,
+        notificationsEnabled: true
+      }, { mayRequestPermission: true });
+    } else {
+      updateSettings({
+        eveningAdhkarTime: newTime,
+        eveningNotificationsEnabled: true,
+        notificationsEnabled: true
+      });
+      await syncAllLocalNotifications({
+        ...settings,
+        eveningAdhkarTime: newTime,
+        eveningNotificationsEnabled: true,
+        notificationsEnabled: true
+      }, { mayRequestPermission: true });
+    }
+    playNotificationChimeSound();
+    triggerHaptic('success');
+    setTimeSavedFeedback(newTime);
+    setTimeout(() => {
+      setTimeSavedFeedback(null);
+    }, 4500);
+  }, [settings, updateSettings]);
+
+  const quarterReached = React.useRef(false);
+  const halfReached = React.useRef(false);
+  const threeQuarterReached = React.useRef(false);
+
+  React.useEffect(() => {
+    quarterReached.current = false;
+    halfReached.current = false;
+    threeQuarterReached.current = false;
+  }, [category]);
+
+  const handleTestScreenAlert = React.useCallback((type: 'morning' | 'evening') => {
+    playNotificationChimeSound();
+    triggerHaptic('success');
+    const isMorning = type === 'morning';
+    const alertData = {
+      title: isMorning ? 'تنبيه ورد أذكار الصباح 🌅' : 'تنبيه ورد أذكار المساء 🌙',
+      body: isMorning 
+        ? 'حان الآن موعد أذكار الصباح • ابدأ يومك بالحصن الحصين ورطب لسانك بذكر الله' 
+        : 'حان الآن موعد أذكار المساء • احفظ ليلتك بذكر الله وختام يومك بالطاعات والسكينة',
+      time: isMorning ? (settings.morningAdhkarTime || '06:00') : (settings.eveningAdhkarTime || '17:00'),
+      type
+    };
+    setLocalScreenAlert(alertData);
+    window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type } }));
+    setTimeout(() => {
+      setLocalScreenAlert(null);
+    }, 10000);
+  }, [settings.morningAdhkarTime, settings.eveningAdhkarTime]);
+
+  // Listen for global screen notification events (e.g. from Settings or other triggers)
+  React.useEffect(() => {
+    const handleGlobalTrigger = (e: any) => {
+      const type = e.detail?.type;
+      if (type === 'morning' || type === 'evening') {
+        playNotificationChimeSound();
+        triggerHaptic('success');
+        const isMorning = type === 'morning';
+        setLocalScreenAlert({
+          title: isMorning ? 'تنبيه ورد أذكار الصباح 🌅' : 'تنبيه ورد أذكار المساء 🌙',
+          body: isMorning 
+            ? 'حان الآن موعد أذكار الصباح • ابدأ يومك بالحصن الحصين ورطب لسانك بذكر الله' 
+            : 'حان الآن موعد أذكار المساء • احفظ ليلتك بذكر الله وختام يومك بالطاعات والسكينة',
+          time: isMorning ? (settings.morningAdhkarTime || '06:00') : (settings.eveningAdhkarTime || '17:00'),
+          type
+        });
+        setTimeout(() => setLocalScreenAlert(null), 10000);
+      }
+    };
+    window.addEventListener('trigger-screen-notification', handleGlobalTrigger);
+    return () => window.removeEventListener('trigger-screen-notification', handleGlobalTrigger);
+  }, [settings.morningAdhkarTime, settings.eveningAdhkarTime]);
+
   const handleBackAttempt = () => {
     // Check if category is not fully completed yet
     const isCategoryFullCompleted = catProgress.total > 0 && catProgress.completed === catProgress.total;
@@ -1005,6 +1117,31 @@ export const Adhkar: React.FC = () => {
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { total, completed, percent };
   }, [currentCategory, category, activePrayerStep, filteredItems, counts]);
+
+  // Real-time In-Screen Milestone Alert Notifications while reading
+  React.useEffect(() => {
+    if (catProgress.total <= 0) return;
+    const p = catProgress.percent;
+    if (p >= 75 && !threeQuarterReached.current && p < 100) {
+      threeQuarterReached.current = true;
+      setMilestoneToast({ message: 'أوشكت على التمام! 💫 أتممت 75% من الورد المبارك', percent: 75 });
+      triggerHaptic('light');
+      const timer = setTimeout(() => setMilestoneToast(null), 3500);
+      return () => clearTimeout(timer);
+    } else if (p >= 50 && !halfReached.current && p < 75) {
+      halfReached.current = true;
+      setMilestoneToast({ message: 'ما شاء الله! 🌟 أتممت نصف الورد المبارك (50%)', percent: 50 });
+      triggerHaptic('light');
+      const timer = setTimeout(() => setMilestoneToast(null), 3500);
+      return () => clearTimeout(timer);
+    } else if (p >= 25 && !quarterReached.current && p < 50) {
+      quarterReached.current = true;
+      setMilestoneToast({ message: 'بداية مباركة 🌿 أتممت ربع الورد (25%)', percent: 25 });
+      triggerHaptic('light');
+      const timer = setTimeout(() => setMilestoneToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [catProgress.percent, catProgress.total]);
 
   const readingSpeedRate = React.useMemo(() => {
     if (settings.appLanguage === 'fr') {
@@ -2223,6 +2360,215 @@ export const Adhkar: React.FC = () => {
         document.body
       )}
 
+      {/* Smart On-Screen Notification & Time Bar for Morning and Evening Adhkar */}
+      {(category === 'morning' || category === 'evening') && (() => {
+        const isMorning = category === 'morning';
+        const isNotifEnabled = isMorning 
+          ? settings.morningNotificationsEnabled 
+          : settings.eveningNotificationsEnabled;
+        const alertTime = isMorning 
+          ? (settings.morningAdhkarTime || '06:00') 
+          : (settings.eveningAdhkarTime || '17:00');
+        const followupTime = isMorning 
+          ? (settings.morningAdhkarEndTime || '10:00') 
+          : (settings.eveningAdhkarEndTime || '22:00');
+        const followupEnabled = isMorning 
+          ? settings.morningAdhkarFollowupEnabled 
+          : settings.eveningAdhkarFollowupEnabled;
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        const isCurrentlyInPreferredTime = isMorning 
+          ? (currentHour >= 5 && currentHour < 12) 
+          : (currentHour >= 16 && currentHour < 23);
+
+        return (
+          <div className="w-full flex flex-col gap-2.5 mb-2 animate-[fadeIn_0.4s_ease-out]">
+            <div className={cn(
+              "w-full rounded-3xl p-4 sm:p-5 border-2 shadow-xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden select-none",
+              isMorning
+                ? "bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-amber-600/5 border-amber-400/40 text-amber-950 dark:text-amber-100 shadow-amber-500/10"
+                : "bg-gradient-to-br from-indigo-500/15 via-purple-500/10 to-blue-600/5 border-indigo-400/40 text-indigo-950 dark:text-indigo-100 shadow-indigo-500/10"
+            )}>
+              {/* Background ambient radial glow */}
+              <div className={cn(
+                "absolute -top-12 -left-12 w-40 h-40 rounded-full blur-3xl pointer-events-none opacity-40",
+                isMorning ? "bg-amber-400" : "bg-indigo-400"
+              )} />
+
+              {/* Header: Title, Icon, Status and Toggle */}
+              <div className="flex items-center justify-between gap-3 relative z-10">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={cn(
+                    "w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0",
+                    isMorning 
+                      ? "bg-gradient-to-tr from-amber-500 to-orange-500 shadow-amber-500/30" 
+                      : "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-indigo-500/30"
+                  )}>
+                    {isMorning ? <Sunrise size={22} className="animate-pulse" /> : <Sunset size={22} className="animate-pulse" />}
+                  </div>
+
+                  <div className="flex flex-col text-right min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white truncate">
+                        {isMorning ? 'تنبيهات وإشعارات أذكار الصباح على الشاشة' : 'تنبيهات وإشعارات أذكار المساء على الشاشة'}
+                      </h3>
+                      <span className={cn(
+                        "text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 border",
+                        isNotifEnabled
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-slate-500/15 text-slate-500 dark:text-slate-400 border-slate-500/30"
+                      )}>
+                        <span className={cn("w-1.5 h-1.5 rounded-full", isNotifEnabled ? "bg-emerald-500 animate-ping" : "bg-slate-400")} />
+                        <span>{isNotifEnabled ? 'مفعّلة على الشاشة 🔔' : 'متوقفة 🔕'}</span>
+                      </span>
+                    </div>
+
+                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-1">
+                      {isMorning 
+                        ? 'يبدأ الوقت المستحب من بعد الفجر حتى الشروق ويمتد للزوال' 
+                        : 'يبدأ الوقت المستحب من بعد العصر حتى المغرب ويمتد لثلث الليل'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick Toggle on screen */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => {
+                      if (isMorning) {
+                        updateSettings({ morningNotificationsEnabled: !settings.morningNotificationsEnabled });
+                      } else {
+                        updateSettings({ eveningNotificationsEnabled: !settings.eveningNotificationsEnabled });
+                      }
+                      triggerHaptic('light');
+                    }}
+                    className={cn(
+                      "w-12 h-6 rounded-full transition-all relative p-1 cursor-pointer shadow-inner",
+                      isNotifEnabled 
+                        ? (isMorning ? "bg-amber-500" : "bg-indigo-600") 
+                        : "bg-slate-300 dark:bg-slate-700"
+                    )}
+                    title={isNotifEnabled ? "إيقاف التنبيه" : "تفعيل التنبيه"}
+                  >
+                    <motion.div 
+                      animate={{ x: isNotifEnabled ? (isRtl ? -24 : 24) : 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      className="w-4 h-4 bg-white rounded-full shadow-md"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Time Selection & Presets */}
+              <div className="mt-3.5 pt-3.5 border-t border-black/5 dark:border-white/10 flex flex-col gap-3 relative z-10">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  {/* Interactive Time Picker Input */}
+                  <div className="flex items-center gap-2.5 bg-white/90 dark:bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-amber-400/40 dark:border-amber-400/20 shadow-sm">
+                    <Clock size={16} className={isMorning ? "text-amber-500 animate-pulse" : "text-indigo-400 animate-pulse"} />
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-100">
+                      {isMorning ? 'تحديد وقت إظهار أذكار الصباح:' : 'تحديد وقت إظهار أذكار المساء:'}
+                    </span>
+                    <input 
+                      type="time" 
+                      value={alertTime}
+                      onChange={(e) => handleSetAdhkarTime(e.target.value, isMorning)}
+                      className="bg-amber-500/10 dark:bg-amber-400/10 text-slate-900 dark:text-white font-mono font-black text-xs sm:text-sm px-2.5 py-1 rounded-xl border border-amber-400/40 focus:outline-none text-center cursor-pointer hover:bg-amber-500/20 transition-all"
+                      title="اضغط هنا لتحديد وقت التنبيه بدقة"
+                    />
+                  </div>
+
+                  {/* Test Alert Button directly on screen */}
+                  <button
+                    type="button"
+                    onClick={() => handleTestScreenAlert(category as 'morning' | 'evening')}
+                    className={cn(
+                      "px-4 py-2 rounded-2xl font-black text-xs text-white flex items-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer",
+                      isMorning 
+                        ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/30" 
+                        : "bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 shadow-indigo-500/30"
+                    )}
+                  >
+                    <Bell size={14} className="animate-bounce" />
+                    <span>تجربة الإشعار والتنبيه على الشاشة الآن</span>
+                  </button>
+                </div>
+
+                {/* Quick Preset Buttons */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-black text-slate-600 dark:text-slate-300">أوقات مقترحة:</span>
+                  {(isMorning ? [
+                    { label: 'الفجر (05:15)', time: '05:15' },
+                    { label: '06:00 ص', time: '06:00' },
+                    { label: 'الشروق (06:45)', time: '06:45' },
+                    { label: '07:30 ص', time: '07:30' },
+                    { label: '08:30 ص', time: '08:30' }
+                  ] : [
+                    { label: 'العصر (16:30)', time: '16:30' },
+                    { label: '17:00 م', time: '17:00' },
+                    { label: 'المغرب (18:15)', time: '18:15' },
+                    { label: '19:30 م', time: '19:30' },
+                    { label: '21:00 م', time: '21:00' }
+                  ]).map((preset) => (
+                    <button
+                      key={preset.time}
+                      onClick={() => handleSetAdhkarTime(preset.time, isMorning)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer active:scale-95 border",
+                        alertTime === preset.time
+                          ? (isMorning ? "bg-amber-500 text-white border-amber-600 shadow-sm" : "bg-indigo-600 text-white border-indigo-700 shadow-sm")
+                          : "bg-white/70 dark:bg-slate-900/70 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-black/5 dark:border-white/10"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Instant Feedback Pill when time is set */}
+                <AnimatePresence>
+                  {timeSavedFeedback && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-black p-2.5 rounded-xl text-center flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                      <span>
+                        تم حفظ موعد إظهار أذكار {isMorning ? 'الصباح' : 'المساء'} بنجاح عند الساعة ({timeSavedFeedback}) والتنبيهات مفعّلة ونشطة الآن 🔔
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Current Active Status Indicator */}
+                <div className="flex items-center gap-2 flex-wrap text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1 rounded-xl border border-black/5 dark:border-white/5">
+                    <Clock size={11} className={isMorning ? "text-amber-500" : "text-indigo-400"} />
+                    <span>الموعد الحالي المحفوظ: <strong className="font-mono font-black">{alertTime}</strong></span>
+                  </div>
+
+                  {followupEnabled && (
+                    <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1 rounded-xl border border-black/5 dark:border-white/5">
+                      <BellRing size={11} className="text-teal-500" />
+                      <span>تذكير المتابعة: <strong className="font-mono font-black">{followupTime}</strong></span>
+                    </div>
+                  )}
+
+                  {isCurrentlyInPreferredTime && (
+                    <span className="px-2.5 py-1 rounded-xl bg-amber-400/20 text-amber-800 dark:text-amber-200 border border-amber-400/30 flex items-center gap-1 font-black animate-pulse">
+                      <Sparkles size={11} />
+                      <span>{isMorning ? 'أنت الآن في وقت الصباح المبارك ☀️' : 'أنت الآن في وقت المساء المبارك 🌙'}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {category === 'prayer' && (
         <div className="w-full flex flex-col gap-4 animate-[fadeIn_0.5s_ease-out] mb-1">
           {/* Pill navigation tab list */}
@@ -2806,6 +3152,148 @@ export const Adhkar: React.FC = () => {
               </motion.div>
             );
           })()}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Real-time In-Screen Reading Milestone Toast */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {milestoneToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 16, scale: 1 }}
+              exit={{ opacity: 0, y: -40, scale: 0.9 }}
+              transition={{ type: "spring", damping: 24, stiffness: 300 }}
+              className="fixed top-2 left-4 right-4 z-[9999999] max-w-sm mx-auto pointer-events-auto"
+              style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)' }}
+              dir={isRtl ? "rtl" : "ltr"}
+            >
+              <div className="bg-slate-900/98 backdrop-blur-xl border border-amber-400/50 text-white rounded-2xl px-4 py-3 shadow-[0_15px_40px_rgba(0,0,0,0.5)] flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                  <Sparkles size={18} className="animate-spin" />
+                </div>
+                <div className="flex-1 min-w-0 text-right">
+                  <p className="text-xs font-black text-white">{milestoneToast.message}</p>
+                  <div className="w-full bg-white/10 rounded-full h-1.5 mt-1.5 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${milestoneToast.percent}%` }}
+                      className="bg-gradient-to-r from-amber-400 to-yellow-300 h-full rounded-full transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Prominent Floating On-Screen Notification Banner for Morning & Evening Adhkar */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {localScreenAlert && (
+            <motion.div
+              initial={{ opacity: 0, y: -100, scale: 0.92 }}
+              animate={{ opacity: 1, y: 16, scale: 1 }}
+              exit={{ opacity: 0, y: -100, scale: 0.92 }}
+              transition={{ type: "spring", damping: 25, stiffness: 320 }}
+              className="fixed top-0 left-3 right-3 z-[9999999] max-w-md mx-auto pointer-events-auto"
+              style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 16px)' }}
+              dir="rtl"
+            >
+              <div className={cn(
+                "rounded-3xl p-4 shadow-2xl border-2 backdrop-blur-2xl flex flex-col gap-3.5 text-right select-none",
+                localScreenAlert.type === 'morning'
+                  ? "bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 border-amber-100 shadow-[0_25px_65px_rgba(245,158,11,0.55)] text-slate-950"
+                  : "bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-900 border-indigo-200/80 shadow-[0_25px_65px_rgba(99,102,241,0.55)] text-white"
+              )}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0 text-2xl",
+                      localScreenAlert.type === 'morning'
+                        ? "bg-white text-amber-600 shadow-amber-900/20"
+                        : "bg-white/20 text-white shadow-black/20"
+                    )}>
+                      {localScreenAlert.type === 'morning' ? '🌅' : '🌙'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className={cn(
+                          "font-black text-sm truncate",
+                          localScreenAlert.type === 'morning' ? "text-slate-950" : "text-white"
+                        )}>
+                          {localScreenAlert.title}
+                        </h4>
+                        <span className={cn(
+                          "text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 font-mono",
+                          localScreenAlert.type === 'morning' ? "bg-slate-950/15 text-slate-950" : "bg-black/20 text-white"
+                        )}>
+                          <Clock size={10} />
+                          <span>{localScreenAlert.time}</span>
+                        </span>
+                      </div>
+                      <p className={cn(
+                        "text-[11px] font-bold line-clamp-2 mt-1 leading-relaxed",
+                        localScreenAlert.type === 'morning' ? "text-slate-900/90" : "text-white/90"
+                      )}>
+                        {localScreenAlert.body}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setLocalScreenAlert(null)}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer",
+                      localScreenAlert.type === 'morning' 
+                        ? "bg-slate-950/10 hover:bg-slate-950/20 text-slate-950" 
+                        : "bg-white/10 hover:bg-white/20 text-white"
+                    )}
+                    title="إغلاق التنبيه"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                
+                <div className={cn(
+                  "flex items-center justify-end gap-2 pt-2 border-t",
+                  localScreenAlert.type === 'morning' ? "border-slate-950/10" : "border-white/10"
+                )}>
+                  <button
+                    onClick={() => {
+                      setLocalScreenAlert(null);
+                      triggerHaptic('light');
+                    }}
+                    className={cn(
+                      "text-xs font-black px-4 py-2 rounded-xl transition-all cursor-pointer",
+                      localScreenAlert.type === 'morning'
+                        ? "bg-slate-950/10 hover:bg-slate-950/20 text-slate-950"
+                        : "bg-white/10 hover:bg-white/20 text-white"
+                    )}
+                  >
+                    إغلاق التنبيه
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocalScreenAlert(null);
+                      triggerHaptic('success');
+                    }}
+                    className={cn(
+                      "text-xs font-black px-5 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition-all cursor-pointer active:scale-95",
+                      localScreenAlert.type === 'morning'
+                        ? "bg-slate-950 hover:bg-slate-900 text-white shadow-slate-950/20"
+                        : "bg-white hover:bg-white/90 text-slate-950 shadow-white/20"
+                    )}
+                  >
+                    <CheckCircle2 size={13} />
+                    <span>متابعة القراءة الآن</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>,
         document.body
       )}

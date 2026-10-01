@@ -422,13 +422,20 @@ export async function syncAllLocalNotifications(
         const morningTimeStr = settings.morningAdhkarTime || '06:00';
         const morningDate = parseTimeToDate(morningTimeStr, targetDay);
 
-        if (morningDate.getTime() > nowTime + 30000) {
+        let scheduledAt: Date | null = null;
+        if (morningDate.getTime() > nowTime + 2000) {
+          scheduledAt = morningDate;
+        } else if (dayOffset === 0 && morningDate.getTime() <= nowTime && morningDate.getTime() > nowTime - 60000) {
+          scheduledAt = new Date(Date.now() + 1000);
+        }
+
+        if (scheduledAt) {
           notificationsToSchedule.push({
             id: 1000 + dayOffset,
             title: 'أذكار الصباح 🌅',
             body: 'أصبحنا وأصبح الملك لله ﷻ • حصّن يومك بالأذكار المأثورة وانعم بالحفظ والتوفيق',
             schedule: {
-              at: morningDate,
+              at: scheduledAt,
               allowWhileIdle: true
             },
             channelId: CHANNELS.ADHKAR,
@@ -447,7 +454,7 @@ export async function syncAllLocalNotifications(
           const morningEndTimeStr = settings.morningAdhkarEndTime || '10:00';
           const morningEndDate = parseTimeToDate(morningEndTimeStr, targetDay);
 
-          if (morningEndDate.getTime() > nowTime + 30000) {
+          if (morningEndDate.getTime() > nowTime + 2000) {
             notificationsToSchedule.push({
               id: 1100 + dayOffset,
               title: 'تذكير مبارك 🌿: أذكار الصباح',
@@ -476,13 +483,20 @@ export async function syncAllLocalNotifications(
         const eveningTimeStr = settings.eveningAdhkarTime || '17:30';
         const eveningDate = parseTimeToDate(eveningTimeStr, targetDay);
 
-        if (eveningDate.getTime() > nowTime + 30000) {
+        let scheduledEveningAt: Date | null = null;
+        if (eveningDate.getTime() > nowTime + 2000) {
+          scheduledEveningAt = eveningDate;
+        } else if (dayOffset === 0 && eveningDate.getTime() <= nowTime && eveningDate.getTime() > nowTime - 60000) {
+          scheduledEveningAt = new Date(Date.now() + 1000);
+        }
+
+        if (scheduledEveningAt) {
           notificationsToSchedule.push({
             id: 1200 + dayOffset,
             title: 'أذكار المساء 🌙',
             body: 'أمسينا وأمسى الملك لله ﷻ • حصّن ليلتك بأذكار المساء والتعويذات النبوية',
             schedule: {
-              at: eveningDate,
+              at: scheduledEveningAt,
               allowWhileIdle: true
             },
             channelId: CHANNELS.ADHKAR,
@@ -501,7 +515,7 @@ export async function syncAllLocalNotifications(
           const eveningEndTimeStr = settings.eveningAdhkarEndTime || '21:30';
           const eveningEndDate = parseTimeToDate(eveningEndTimeStr, targetDay);
 
-          if (eveningEndDate.getTime() > nowTime + 30000) {
+          if (eveningEndDate.getTime() > nowTime + 2000) {
             notificationsToSchedule.push({
               id: 1300 + dayOffset,
               title: 'تذكير مبارك 🌙: أذكار المساء',
