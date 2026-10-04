@@ -147,6 +147,7 @@ export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
   adhkarWallpaperPattern: 'islamic',
   adhkarParticlesEnabled: true,
   adhkarViewMode: 'list',
+  adhkarHideCompleted: true,
   hadithViewMode: 'single',
   adhkarAutoAdvance: true,
   adhkarCategoryThemes: {
@@ -437,6 +438,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (!merged.adhkarViewMode) {
           merged.adhkarViewMode = 'list';
+        }
+
+        if (merged.adhkarHideCompleted === undefined) {
+          merged.adhkarHideCompleted = true;
         }
 
         if (!merged.primaryColor || typeof merged.primaryColor !== 'string') {

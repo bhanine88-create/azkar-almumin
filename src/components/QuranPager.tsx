@@ -150,7 +150,7 @@ export const QuranPager: React.FC<QuranPagerProps> = ({
       {/* Scrollable / Swipeable Pager Container with Native CSS Snap */}
       <div
         ref={scrollRef}
-        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
+        className="w-full h-full flex flex-nowrap gap-0 p-0 m-0 overflow-x-auto snap-x snap-mandatory hide-scrollbar"
         dir="rtl"
         style={{ 
           scrollSnapType: 'x mandatory',

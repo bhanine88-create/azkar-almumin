@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAdhkarCounts } from '../context/AdhkarCountsContext';
-import { ChevronRight, RotateCcw, CheckCircle2, Edit3, Plus, Trash2, ArrowUp, ArrowDown, X, Save, Info, BookOpen, Settings2, Type, Palette, SlidersHorizontal, ChevronDown, Search, Check, Sparkles, Droplets, Building, Bell, BellRing, Sun, Sunrise, Moon, Sunset, Volume2, Milestone, Award, Heart, Scroll, Play, Pause, Clock, Timer, Hourglass, Pen, ListRestart, Share2, HardDrive } from 'lucide-react';
+import { ChevronRight, RotateCcw, CheckCircle2, Edit3, Plus, Trash2, ArrowUp, ArrowDown, X, Save, Info, BookOpen, Settings2, Type, Palette, SlidersHorizontal, ChevronDown, Search, Check, Sparkles, Droplets, Building, Bell, BellRing, Sun, Sunrise, Moon, Sunset, Volume2, Milestone, Award, Heart, Scroll, Play, Pause, Clock, Timer, Hourglass, Pen, ListRestart, Share2, HardDrive, Eye, EyeOff, Filter } from 'lucide-react';
 import { playNotificationChimeSound } from '../lib/sounds';
 import { useAppContext } from '../AppContext';
 import { useChallengeTracker } from '../hooks/useChallengeTracker';
@@ -731,7 +731,7 @@ export const Adhkar: React.FC = () => {
 
   React.useEffect(() => {
     setActiveDhikrIdx(0);
-  }, [category]);
+  }, [category, settings.adhkarHideCompleted]);
 
   React.useEffect(() => {
     return () => {
@@ -825,7 +825,8 @@ export const Adhkar: React.FC = () => {
     return 'all'; // Standard fallback or user custom items
   }, []);
 
-  const filteredItems = React.useMemo(() => {
+  // Base items for the current category and prayer step (unfiltered by completion)
+  const stepItems = React.useMemo(() => {
     if (!currentCategory || !currentCategory.items) return [];
     if (category !== 'prayer' || activePrayerStep === 'all') return currentCategory.items;
     
@@ -834,6 +835,24 @@ export const Adhkar: React.FC = () => {
       return step === activePrayerStep;
     });
   }, [currentCategory, category, activePrayerStep, getItemPrayerStep]);
+
+  // Filter items: if adhkarHideCompleted is enabled in settings, hide cards whose countdown has finished
+  const displayedItems = React.useMemo(() => {
+    if (!stepItems || stepItems.length === 0) return [];
+    if (settings.adhkarHideCompleted) {
+      return stepItems.filter(item => (counts[item.id] || 0) < item.count);
+    }
+    return stepItems;
+  }, [stepItems, settings.adhkarHideCompleted, counts]);
+
+  // Backward compatibility alias for existing code
+  const filteredItems = displayedItems;
+
+  React.useEffect(() => {
+    if (filteredItems.length > 0 && activeDhikrIdx >= filteredItems.length) {
+      setActiveDhikrIdx(Math.max(0, filteredItems.length - 1));
+    }
+  }, [filteredItems.length, activeDhikrIdx]);
 
   const categoryTranslationKeys: Record<string, string> = {
     morning: 'morning_adhkar',
@@ -868,52 +887,6 @@ export const Adhkar: React.FC = () => {
   const [exitCardTiltY, setExitCardTiltY] = useState(-4);
   const hasRewarded = React.useRef(false);
   const initializedCategory = React.useRef<string | null>(null);
-
-  // --- Smart On-Screen Notifications & Milestones States ---
-  const [localScreenAlert, setLocalScreenAlert] = useState<{
-    title: string;
-    body: string;
-    time: string;
-    type: 'morning' | 'evening';
-  } | null>(null);
-
-  const [milestoneToast, setMilestoneToast] = useState<{
-    message: string;
-    percent: number;
-  } | null>(null);
-
-  const quarterReached = React.useRef(false);
-  const halfReached = React.useRef(false);
-  const threeQuarterReached = React.useRef(false);
-
-  React.useEffect(() => {
-    quarterReached.current = false;
-    halfReached.current = false;
-    threeQuarterReached.current = false;
-  }, [category]);
-
-  // Listen for global screen notification events (e.g. from Settings or other triggers)
-  React.useEffect(() => {
-    const handleGlobalTrigger = (e: any) => {
-      const type = e.detail?.type;
-      if (type === 'morning' || type === 'evening') {
-        playNotificationChimeSound();
-        triggerHaptic('success');
-        const isMorning = type === 'morning';
-        setLocalScreenAlert({
-          title: isMorning ? 'تنبيه ورد أذكار الصباح 🌅' : 'تنبيه ورد أذكار المساء 🌙',
-          body: isMorning 
-            ? 'حان الآن موعد أذكار الصباح • ابدأ يومك بالحصن الحصين ورطب لسانك بذكر الله' 
-            : 'حان الآن موعد أذكار المساء • احفظ ليلتك بذكر الله وختام يومك بالطاعات والسكينة',
-          time: isMorning ? (settings.morningAdhkarTime || '06:00') : (settings.eveningAdhkarTime || '17:00'),
-          type
-        });
-        setTimeout(() => setLocalScreenAlert(null), 10000);
-      }
-    };
-    window.addEventListener('trigger-screen-notification', handleGlobalTrigger);
-    return () => window.removeEventListener('trigger-screen-notification', handleGlobalTrigger);
-  }, [settings.morningAdhkarTime, settings.eveningAdhkarTime]);
 
   const handleBackAttempt = () => {
     // Check if category is not fully completed yet
@@ -965,21 +938,24 @@ export const Adhkar: React.FC = () => {
       settings.adhkarAutoAdvance !== false &&
       activeItem &&
       id === activeItem.id &&
-      newCount >= activeItem.count &&
-      activeDhikrIdx < filteredItems.length - 1
+      newCount >= activeItem.count
     ) {
-      setTimeout(() => {
-        setSlideDirection('forward');
-        setActiveDhikrIdx(prev => {
-          if (prev < filteredItems.length - 1) {
-            triggerHaptic('light');
-            return prev + 1;
-          }
-          return prev;
-        });
-      }, 350);
+      if (!settings.adhkarHideCompleted && activeDhikrIdx < filteredItems.length - 1) {
+        setTimeout(() => {
+          setSlideDirection('forward');
+          setActiveDhikrIdx(prev => {
+            if (prev < filteredItems.length - 1) {
+              triggerHaptic('light');
+              return prev + 1;
+            }
+            return prev;
+          });
+        }, 350);
+      } else if (settings.adhkarHideCompleted) {
+        triggerHaptic('success');
+      }
     }
-  }, [updateCount, hasActiveCountingStarted, filteredItems, activeDhikrIdx, settings.adhkarViewMode, settings.adhkarAutoAdvance]);
+  }, [updateCount, hasActiveCountingStarted, filteredItems, activeDhikrIdx, settings.adhkarViewMode, settings.adhkarAutoAdvance, settings.adhkarHideCompleted]);
 
   const formatTime = React.useCallback((totalSecs: number) => {
     const mins = Math.floor(totalSecs / 60);
@@ -1038,10 +1014,10 @@ export const Adhkar: React.FC = () => {
 
   const catProgress = React.useMemo(() => {
     if (!currentCategory || !currentCategory.items || currentCategory.items.length === 0) {
-      return { total: 0, completed: 0, percent: 0 };
+      return { total: 0, completed: 0, remaining: 0, percent: 0 };
     }
     const targetItems = (category === 'prayer' && activePrayerStep !== 'all') 
-      ? filteredItems 
+      ? stepItems 
       : currentCategory.items;
     const total = targetItems.length;
     let completed = 0;
@@ -1050,34 +1026,10 @@ export const Adhkar: React.FC = () => {
         completed += 1;
       }
     });
+    const remaining = Math.max(0, total - completed);
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-    return { total, completed, percent };
-  }, [currentCategory, category, activePrayerStep, filteredItems, counts]);
-
-  // Real-time In-Screen Milestone Alert Notifications while reading
-  React.useEffect(() => {
-    if (catProgress.total <= 0) return;
-    const p = catProgress.percent;
-    if (p >= 75 && !threeQuarterReached.current && p < 100) {
-      threeQuarterReached.current = true;
-      setMilestoneToast({ message: 'أوشكت على التمام! 💫 أتممت 75% من الورد المبارك', percent: 75 });
-      triggerHaptic('light');
-      const timer = setTimeout(() => setMilestoneToast(null), 3500);
-      return () => clearTimeout(timer);
-    } else if (p >= 50 && !halfReached.current && p < 75) {
-      halfReached.current = true;
-      setMilestoneToast({ message: 'ما شاء الله! 🌟 أتممت نصف الورد المبارك (50%)', percent: 50 });
-      triggerHaptic('light');
-      const timer = setTimeout(() => setMilestoneToast(null), 3500);
-      return () => clearTimeout(timer);
-    } else if (p >= 25 && !quarterReached.current && p < 50) {
-      quarterReached.current = true;
-      setMilestoneToast({ message: 'بداية مباركة 🌿 أتممت ربع الورد (25%)', percent: 25 });
-      triggerHaptic('light');
-      const timer = setTimeout(() => setMilestoneToast(null), 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [catProgress.percent, catProgress.total]);
+    return { total, completed, remaining, percent };
+  }, [currentCategory, category, activePrayerStep, stepItems, counts]);
 
   const readingSpeedRate = React.useMemo(() => {
     if (settings.appLanguage === 'fr') {
@@ -2207,6 +2159,31 @@ export const Adhkar: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Auto-Hide Dhikr Card on Countdown Finish (إخفاء بطاقة الذكر عند انتهاء العد) */}
+                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/80">
+                    <div className="flex flex-col gap-1 text-right max-w-[78%]">
+                      <span className="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                        <EyeOff size={14} className="text-teal-600 dark:text-teal-400" />
+                        إخفاء بطاقة الذكر عند انتهاء العد
+                      </span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal leading-relaxed">
+                        تختفي بطاقة الذكر تلقائياً بمجرد إتمام عداد تكراراته، لإبقاء بطاقات الأذكار التي لم تُقرأ بعد فقط
+                      </span>
+                    </div>
+                    <div className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.adhkarHideCompleted === true}
+                        onChange={(e) => updateSettings({ adhkarHideCompleted: e.target.checked })}
+                        className="sr-only peer"
+                        id="hide-completed-toggle-chk"
+                      />
+                      <label htmlFor="hide-completed-toggle-chk" className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-650 peer-checked:bg-teal-600 cursor-pointer"></label>
+                    </div>
+                  </div>
+                </div>
+
                 {/* 6. Aesthetic Wallpaper Pattern Selector */}
                 <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800/60">
                   <h4 className="text-xs font-black text-slate-400 dark:text-slate-550 uppercase flex items-center gap-1.5">
@@ -2294,6 +2271,22 @@ export const Adhkar: React.FC = () => {
         )}
         </AnimatePresence>,
         document.body
+      )}
+
+      {/* Subtle indicator when adhkarHideCompleted is enabled */}
+      {settings.adhkarHideCompleted && (
+        <div className="flex items-center justify-between text-[11px] font-bold px-3.5 py-1.5 rounded-xl bg-teal-500/10 text-teal-800 dark:text-teal-300 border border-teal-500/20 max-w-xl mx-auto w-full animate-[fadeIn_0.2s_ease-out]">
+          <div className="flex items-center gap-1.5">
+            <EyeOff size={13} className="text-teal-600 dark:text-teal-400" />
+            <span>إخفاء بطاقات الأذكار المكتملة نشط</span>
+          </div>
+          <button
+            onClick={() => updateSettings({ adhkarHideCompleted: false })}
+            className="text-[10px] font-black underline hover:text-teal-600 dark:hover:text-teal-200 cursor-pointer"
+          >
+            إظهار الكل
+          </button>
+        </div>
       )}
 
       {category === 'prayer' && (
@@ -2420,16 +2413,52 @@ export const Adhkar: React.FC = () => {
       {/* Cards List container */}
       <div className="flex flex-col items-center gap-3 pb-4 w-full">
         {filteredItems.length === 0 ? (
-          <div 
-            className="w-full py-12 text-center rounded-2xl border border-dashed flex flex-col items-center justify-center gap-2 animate-[fadeIn_0.4s_ease-out]"
-            style={{
-              backgroundColor: currentTheme.isLight ? 'rgba(255, 255, 255, 0.5)' : 'rgba(15, 23, 42, 0.4)',
-              borderColor: currentTheme.isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)'
-            }}
-          >
-            <Scroll size={32} className={currentTheme.isLight ? "text-slate-400" : "text-slate-500"} />
-            <p className={cn("text-xs font-black", currentTheme.isLight ? "text-slate-700" : "text-slate-200")}>لا توجد أذكار في هذا القسم حالياً.</p>
-          </div>
+          settings.adhkarHideCompleted && catProgress.total > 0 && catProgress.completed === catProgress.total ? (
+            <div 
+              className="w-full max-w-xl mx-auto py-10 px-6 text-center rounded-3xl border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-950/30 backdrop-blur-md flex flex-col items-center justify-center gap-3.5 shadow-lg animate-[fadeIn_0.3s_ease-out]"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner">
+                <CheckCircle2 size={36} strokeWidth={2.5} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base sm:text-lg font-black text-emerald-900 dark:text-emerald-200">
+                  ما شاء الله! أتممت جميع أذكار هذا الورد لليوم 🎉
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-bold max-w-md mx-auto leading-relaxed">
+                  اختفت جميع البطاقات لاكتمال عدادها. تقبل الله طاعتك ورزقك بركتها!
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => updateSettings({ adhkarHideCompleted: false })}
+                  className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-black text-xs hover:bg-slate-50 dark:hover:bg-slate-750 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Eye size={15} />
+                  <span>عرض جميع الأذكار</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowReward(true)}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles size={15} />
+                  <span>بطاقة التهنئة والفضل</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div 
+              className="w-full py-12 text-center rounded-2xl border border-dashed flex flex-col items-center justify-center gap-2 animate-[fadeIn_0.4s_ease-out]"
+              style={{
+                backgroundColor: currentTheme.isLight ? 'rgba(255, 255, 255, 0.5)' : 'rgba(15, 23, 42, 0.4)',
+                borderColor: currentTheme.isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)'
+              }}
+            >
+              <Scroll size={32} className={currentTheme.isLight ? "text-slate-400" : "text-slate-500"} />
+              <p className={cn("text-xs font-black", currentTheme.isLight ? "text-slate-700" : "text-slate-200")}>لا توجد أذكار في هذا القسم حالياً.</p>
+            </div>
+          )
         ) : settings.adhkarViewMode === 'single' ? (
           (() => {
             const activeIdx = Math.min(activeDhikrIdx, filteredItems.length - 1);
@@ -2879,148 +2908,6 @@ export const Adhkar: React.FC = () => {
               </motion.div>
             );
           })()}
-        </AnimatePresence>,
-        document.body
-      )}
-
-      {/* Real-time In-Screen Reading Milestone Toast */}
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {milestoneToast && (
-            <motion.div
-              initial={{ opacity: 0, y: -40, scale: 0.9 }}
-              animate={{ opacity: 1, y: 16, scale: 1 }}
-              exit={{ opacity: 0, y: -40, scale: 0.9 }}
-              transition={{ type: "spring", damping: 24, stiffness: 300 }}
-              className="fixed top-2 left-4 right-4 z-[9999999] max-w-sm mx-auto pointer-events-auto"
-              style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)' }}
-              dir={isRtl ? "rtl" : "ltr"}
-            >
-              <div className="bg-slate-900/98 backdrop-blur-xl border border-amber-400/50 text-white rounded-2xl px-4 py-3 shadow-[0_15px_40px_rgba(0,0,0,0.5)] flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
-                  <Sparkles size={18} className="animate-spin" />
-                </div>
-                <div className="flex-1 min-w-0 text-right">
-                  <p className="text-xs font-black text-white">{milestoneToast.message}</p>
-                  <div className="w-full bg-white/10 rounded-full h-1.5 mt-1.5 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${milestoneToast.percent}%` }}
-                      className="bg-gradient-to-r from-amber-400 to-yellow-300 h-full rounded-full transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-
-      {/* Prominent Floating On-Screen Notification Banner for Morning & Evening Adhkar */}
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {localScreenAlert && (
-            <motion.div
-              initial={{ opacity: 0, y: -100, scale: 0.92 }}
-              animate={{ opacity: 1, y: 16, scale: 1 }}
-              exit={{ opacity: 0, y: -100, scale: 0.92 }}
-              transition={{ type: "spring", damping: 25, stiffness: 320 }}
-              className="fixed top-0 left-3 right-3 z-[9999999] max-w-md mx-auto pointer-events-auto"
-              style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 16px)' }}
-              dir="rtl"
-            >
-              <div className={cn(
-                "rounded-3xl p-4 shadow-2xl border-2 backdrop-blur-2xl flex flex-col gap-3.5 text-right select-none",
-                localScreenAlert.type === 'morning'
-                  ? "bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 border-amber-100 shadow-[0_25px_65px_rgba(245,158,11,0.55)] text-slate-950"
-                  : "bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-900 border-indigo-200/80 shadow-[0_25px_65px_rgba(99,102,241,0.55)] text-white"
-              )}>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0 text-2xl",
-                      localScreenAlert.type === 'morning'
-                        ? "bg-white text-amber-600 shadow-amber-900/20"
-                        : "bg-white/20 text-white shadow-black/20"
-                    )}>
-                      {localScreenAlert.type === 'morning' ? '🌅' : '🌙'}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className={cn(
-                          "font-black text-sm truncate",
-                          localScreenAlert.type === 'morning' ? "text-slate-950" : "text-white"
-                        )}>
-                          {localScreenAlert.title}
-                        </h4>
-                        <span className={cn(
-                          "text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 font-mono",
-                          localScreenAlert.type === 'morning' ? "bg-slate-950/15 text-slate-950" : "bg-black/20 text-white"
-                        )}>
-                          <Clock size={10} />
-                          <span>{localScreenAlert.time}</span>
-                        </span>
-                      </div>
-                      <p className={cn(
-                        "text-[11px] font-bold line-clamp-2 mt-1 leading-relaxed",
-                        localScreenAlert.type === 'morning' ? "text-slate-900/90" : "text-white/90"
-                      )}>
-                        {localScreenAlert.body}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setLocalScreenAlert(null)}
-                    className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer",
-                      localScreenAlert.type === 'morning' 
-                        ? "bg-slate-950/10 hover:bg-slate-950/20 text-slate-950" 
-                        : "bg-white/10 hover:bg-white/20 text-white"
-                    )}
-                    title="إغلاق التنبيه"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-                
-                <div className={cn(
-                  "flex items-center justify-end gap-2 pt-2 border-t",
-                  localScreenAlert.type === 'morning' ? "border-slate-950/10" : "border-white/10"
-                )}>
-                  <button
-                    onClick={() => {
-                      setLocalScreenAlert(null);
-                      triggerHaptic('light');
-                    }}
-                    className={cn(
-                      "text-xs font-black px-4 py-2 rounded-xl transition-all cursor-pointer",
-                      localScreenAlert.type === 'morning'
-                        ? "bg-slate-950/10 hover:bg-slate-950/20 text-slate-950"
-                        : "bg-white/10 hover:bg-white/20 text-white"
-                    )}
-                  >
-                    إغلاق التنبيه
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLocalScreenAlert(null);
-                      triggerHaptic('success');
-                    }}
-                    className={cn(
-                      "text-xs font-black px-5 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition-all cursor-pointer active:scale-95",
-                      localScreenAlert.type === 'morning'
-                        ? "bg-slate-950 hover:bg-slate-900 text-white shadow-slate-950/20"
-                        : "bg-white hover:bg-white/90 text-slate-950 shadow-white/20"
-                    )}
-                  >
-                    <CheckCircle2 size={13} />
-                    <span>متابعة القراءة الآن</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
         </AnimatePresence>,
         document.body
       )}

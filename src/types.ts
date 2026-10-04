@@ -143,6 +143,7 @@ export interface AppSettings {
   adhkarWallpaperPattern?: 'none' | 'islamic' | 'grid' | 'dots';
   adhkarParticlesEnabled?: boolean;
   adhkarViewMode?: 'list' | 'single';
+  adhkarHideCompleted?: boolean;
   hadithViewMode?: 'list' | 'single';
   adhkarAutoAdvance?: boolean;
   visualTheme?: 'classic' | 'glass' | 'minimal' | 'aurora' | 'emerald' | 'amber' | 'clear' | 'lavender';
