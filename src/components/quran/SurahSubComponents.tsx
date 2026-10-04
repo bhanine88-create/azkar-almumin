@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Settings2, BookOpen, Volume2, BrainCircuit, Palette, AlignRight, Check,    Lightbulb,   Sparkles,  Play, Pause, Copy, Share2 } from 'lucide-react';
+import { X, Settings2, BookOpen, Volume2, BrainCircuit, Palette, AlignRight, Check, Lightbulb, Sparkles, Play, Pause, Copy, Share2, Maximize2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 // Memoized Settings Modal for Surah Detail
@@ -19,6 +19,8 @@ export const SettingsModal = React.memo(({
   setMushafDisplayMode,
   keepScreenAwake,
   setKeepScreenAwake,
+  mushafZoom = 105,
+  setMushafZoom,
 }: any) => {
   if (!isOpen) return null;
 
@@ -126,6 +128,60 @@ export const SettingsModal = React.memo(({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Page Height & Size Setting (الزيادة في حجم ارتفاع صفحات المصحف) */}
+              <div className="space-y-3 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Maximize2 size={15} />
+                    <span>حجم وارتفاع صفحة المصحف</span>
+                  </label>
+                  <span className="text-xs font-black text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-lg border border-teal-500/20">
+                    {mushafZoom}%
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { zoom: 100, label: "عادي 100%" },
+                    { zoom: 105, label: "مكبّر 105%" },
+                    { zoom: 110, label: "كبير 110%" },
+                    { zoom: 115, label: "أقصى 115%" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.zoom}
+                      onClick={() => setMushafZoom && setMushafZoom(preset.zoom)}
+                      className={cn(
+                        "py-2 px-1 rounded-xl text-[10px] font-black transition-all text-center border",
+                        mushafZoom === preset.zoom
+                          ? "bg-teal-500 text-white border-teal-600 shadow-sm"
+                          : "bg-white/70 dark:bg-slate-800/70 border-black/5 dark:border-white/5 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                {setMushafZoom && (
+                  <div className="flex items-center gap-3 pt-2">
+                    <span className="text-[10px] font-bold text-slate-400 shrink-0">95%</span>
+                    <input
+                      type="range"
+                      min={95}
+                      max={125}
+                      step={1}
+                      value={mushafZoom}
+                      onChange={(e) => setMushafZoom(Number(e.target.value))}
+                      className="flex-1 accent-teal-500 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer"
+                    />
+                    <span className="text-[10px] font-bold text-slate-400 shrink-0">125%</span>
+                  </div>
+                )}
+                <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold leading-relaxed">
+                  تحكم بمرونة في حجم ارتفاع صفحات المصحف وملء الشاشة للحصول على قراءة واضحة ومريحة للعينين.
+                </p>
               </div>
 
               <div className="space-y-3">

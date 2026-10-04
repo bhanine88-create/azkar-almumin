@@ -411,7 +411,7 @@ const MushafPage = React.memo<{
             className={cn(
               "relative group/mushaf-page select-none cursor-pointer flex items-center justify-center transition-all duration-150 active:scale-[0.995]",
               isVertical
-                ? "w-full max-w-[650px] mx-auto h-auto my-0 p-0"
+                ? "w-full max-w-[760px] sm:max-w-[800px] md:max-w-[840px] mx-auto h-auto my-0 p-0"
                 : cn(
                     "h-full max-h-full max-w-full my-0 p-0 transition-transform duration-200",
                     align === "left" 
@@ -2661,6 +2661,39 @@ export const SurahDetail: React.FC = () => {
                             </button>
                           ))}
                         </div>
+
+                        {/* Page Height & Size quick selector */}
+                        <div className="pt-1.5 border-t border-black/5 dark:border-white/5">
+                          <div className="flex items-center justify-between px-1 mb-1">
+                            <span className="text-[9px] font-black text-teal-600 dark:text-teal-400">
+                              حجم وارتفاع الصفحة:
+                            </span>
+                            <span className="text-[9px] font-black text-teal-600 dark:text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded">
+                              {mushafZoom}%
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-4 gap-1">
+                            {[
+                              { zoom: 100, label: "100%" },
+                              { zoom: 105, label: "105%" },
+                              { zoom: 110, label: "110%" },
+                              { zoom: 115, label: "115%" },
+                            ].map((item) => (
+                              <button
+                                key={item.zoom}
+                                onClick={() => setMushafZoom(item.zoom)}
+                                className={cn(
+                                  "py-1 px-1 rounded-lg text-[9px] font-black transition-all text-center",
+                                  mushafZoom === item.zoom
+                                    ? "bg-teal-500 text-white shadow-xs"
+                                    : "bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
+                                )}
+                              >
+                                {item.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                     <button
@@ -3470,10 +3503,9 @@ export const SurahDetail: React.FC = () => {
                   }
 
                   const isTajweed = mushafEdition === "tajweed";
-                  const heightOffset = focusMode || !showControls ? 6 : 42;
                   const cardStyle: React.CSSProperties = {
-                    maxHeight: `calc(100vh - ${heightOffset}px)`,
                     height: "100%",
+                    maxHeight: "100%",
                     width: "100%",
                     maxWidth: "100%",
                     objectFit: "contain",
@@ -3488,7 +3520,7 @@ export const SurahDetail: React.FC = () => {
                     >
                       {!focusMode && showControls && (
                         <div className={cn(
-                          "w-full flex items-center justify-between px-3 sm:px-5 py-1 text-xs font-black pointer-events-none select-none shrink-0 z-20 transition-colors duration-200 border-b border-black/5 dark:border-white/5",
+                          "w-full flex items-center justify-between px-3 sm:px-5 py-0.5 text-[11px] font-black pointer-events-none select-none shrink-0 z-20 transition-colors duration-200 border-b border-black/5 dark:border-white/5",
                           theme === "creamyNight" ? "text-[#e8dac1]" :
                           theme === "dark" ? "text-slate-200" :
                           theme === "slate" ? "text-slate-200" :
@@ -3498,15 +3530,15 @@ export const SurahDetail: React.FC = () => {
                           "text-slate-800 dark:text-slate-100"
                         )}>
                           <div className="flex items-center gap-1.5 sm:gap-2">
-                             <BookOpen size={14} className="text-teal-600 dark:text-teal-400 shrink-0 stroke-[2.5]" />
-                             <span className="font-black text-xs">{surah?.name}</span>
+                             <BookOpen size={13} className="text-teal-600 dark:text-teal-400 shrink-0 stroke-[2.5]" />
+                             <span className="font-black text-[11px]">{surah?.name}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                             <span className="font-black text-xs">
+                             <span className="font-black text-[11px]">
                                {isDoubleSpread ? `الصفحتان ${pageNum % 2 === 0 ? pageNum : (pageNum === 1 ? 1 : pageNum - 1)} - ${pageNum % 2 === 0 ? (pageNum + 1 <= 604 ? pageNum + 1 : 604) : pageNum}` : `الصفحة ${pageNum}`}
                              </span>
                              <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70 dark:bg-teal-400/70 shrink-0" />
-                             <span className="font-extrabold text-xs opacity-90">الجزء {ayahs?.[0]?.juz || '...'}</span>
+                             <span className="font-extrabold text-[11px] opacity-90">الجزء {ayahs?.[0]?.juz || '...'}</span>
                           </div>
                         </div>
                       )}
@@ -3625,7 +3657,7 @@ export const SurahDetail: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="w-full flex items-center justify-center py-0.5 shrink-0 z-20">
+                      <div className="w-full flex items-center justify-center py-0 shrink-0 z-20">
                         <PageTafsir pageNum={pageNum} theme={theme} compact={true} />
                       </div>
                     </div>

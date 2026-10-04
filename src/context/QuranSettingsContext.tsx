@@ -230,9 +230,13 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
   });
   const [mushafZoom, setMushafZoom] = useState(() => {
     try {
-      return Number(safeLocalStorageGetItem('quran-mushafZoom')) || 100;
+      const savedV2 = safeLocalStorageGetItem('quran-mushafZoom_v2');
+      if (savedV2) return Number(savedV2) || 105;
+      const saved = safeLocalStorageGetItem('quran-mushafZoom');
+      if (saved && Number(saved) > 100) return Number(saved);
+      return 105; // Slightly increased default height as requested
     } catch (e) {
-      return 100;
+      return 105;
     }
   });
   const [mushafEdition, setMushafEdition] = useState<'hafs' | 'warsh' | 'tajweed'>(() => {
@@ -343,7 +347,10 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
       reciter, setReciter: (v: number) => updateSetting('reciter', v, setReciter),
       autoPlay, setAutoPlay: (v: boolean) => updateSetting('autoPlay', v, setAutoPlay),
       secondaryTafsirType, setSecondaryTafsirType: (v: TafsirType | null) => updateSetting('secondaryTafsirType', v as any, setSecondaryTafsirType),
-      mushafZoom, setMushafZoom: (v: number) => updateSetting('mushafZoom', v, setMushafZoom),
+      mushafZoom, setMushafZoom: (v: number) => {
+        updateSetting('mushafZoom', v, setMushafZoom);
+        safeLocalStorageSetItem('quran-mushafZoom_v2', String(v));
+      },
       mushafEdition, setMushafEdition: (v: 'hafs' | 'warsh' | 'tajweed') => updateSetting('mushafEdition', v, setMushafEdition),
       mushafDisplayMode, setMushafDisplayMode: (v: 'auto' | 'single' | 'double') => updateSetting('mushafDisplayMode', v, setMushafDisplayMode),
       bookmark, setBookmark: (v: any) => updateSetting('bookmark', v, setBookmark),
