@@ -373,7 +373,7 @@ img {
   flex-direction: column !important;
   flex-wrap: nowrap !important;
   align-items: stretch !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   position: relative !important;
   overflow: hidden !important;
   gap: 0 !important;

@@ -366,7 +366,7 @@ const MushafPage = React.memo<{
     <div
       dir="ltr"
       className={cn(
-        "relative w-full flex items-center overflow-visible transition-colors duration-200 bg-transparent p-0 m-0",
+        "relative w-full flex items-start overflow-visible transition-colors duration-200 bg-transparent p-0 m-0",
         isVertical ? "h-auto min-h-0 py-0 justify-center" : "h-full max-h-full",
         !isVertical && (align === "left" ? "justify-start" : align === "right" ? "justify-end" : "justify-center")
       )}
@@ -415,7 +415,7 @@ const MushafPage = React.memo<{
           <div
             id={`mushaf-page-frame-${pageNum}`}
             className={cn(
-              "relative group/mushaf-page select-none cursor-pointer flex items-center justify-center transition-all duration-150 active:scale-[0.995]",
+              "relative group/mushaf-page select-none cursor-pointer flex items-start justify-center transition-all duration-150 active:scale-[0.995]",
               isVertical
                 ? "w-full max-w-[760px] sm:max-w-[800px] md:max-w-[840px] mx-auto h-auto my-0 p-0"
                 : cn(
@@ -3526,7 +3526,7 @@ export const SurahDetail: React.FC = () => {
                     >
                       {!focusMode && showControls && (
                         <div className={cn(
-                          "w-full flex items-center justify-between px-3 sm:px-5 py-0.5 text-[11px] font-black pointer-events-none select-none shrink-0 z-20 transition-colors duration-200 border-b border-black/5 dark:border-white/5",
+                          "w-full flex items-center justify-between px-3.5 sm:px-6 pt-2.5 pb-1.5 text-xs font-black select-none shrink-0 z-20 transition-colors duration-200 border-b border-black/[0.04] dark:border-white/[0.04]",
                           theme === "creamyNight" ? "text-[#e8dac1]" :
                           theme === "dark" ? "text-slate-200" :
                           theme === "slate" ? "text-slate-200" :
@@ -3535,16 +3535,20 @@ export const SurahDetail: React.FC = () => {
                           theme === "sand" ? "text-[#4a3b2c]" :
                           "text-slate-800 dark:text-slate-100"
                         )}>
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                             <BookOpen size={13} className="text-teal-600 dark:text-teal-400 shrink-0 stroke-[2.5]" />
-                             <span className="font-black text-[11px]">{surah?.name}</span>
-                          </div>
                           <div className="flex items-center gap-2">
-                             <span className="font-black text-[11px]">
+                             <BookOpen size={14} className="text-teal-600 dark:text-teal-400 shrink-0 stroke-[2.5]" />
+                             <span className="font-black text-xs sm:text-[13px] text-teal-800 dark:text-teal-200">{surah?.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                             <span className="font-black text-xs sm:text-[13px] bg-teal-500/10 text-teal-700 dark:text-teal-300 px-2.5 py-0.5 rounded-full border border-teal-500/20 shadow-xs">
                                {isDoubleSpread ? `الصفحتان ${pageNum % 2 === 0 ? toArabicNumerals(pageNum) : (pageNum === 1 ? '١' : toArabicNumerals(pageNum - 1))} - ${pageNum % 2 === 0 ? (pageNum + 1 <= 604 ? toArabicNumerals(pageNum + 1) : '٦٠٤') : toArabicNumerals(pageNum)}` : `الصفحة ${toArabicNumerals(pageNum)}`}
                              </span>
-                             <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70 dark:bg-teal-400/70 shrink-0" />
-                             <span className="font-extrabold text-[11px] opacity-90">الجزء {ayahs?.[0]?.juz ? toArabicNumerals(ayahs[0].juz) : '١'}</span>
+                             {ayahs?.[0]?.juz && (
+                               <>
+                                 <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70 dark:bg-teal-400/70 shrink-0" />
+                                 <span className="font-extrabold text-[11px] sm:text-xs opacity-90">الجزء {toArabicNumerals(ayahs[0].juz)}</span>
+                               </>
+                             )}
                           </div>
                         </div>
                       )}
@@ -3568,7 +3572,7 @@ export const SurahDetail: React.FC = () => {
                         return (
                           <div
                             className={cn(
-                              "mushaf-double-spread flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-row items-center justify-center transition-all duration-300 rounded-none border-none shadow-none gap-0",
+                              "mushaf-double-spread flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-row items-start justify-center transition-all duration-300 rounded-none border-none shadow-none gap-0",
                               settings.visualTheme === "glass"
                                 ? "bg-white/30 backdrop-blur-md"
                                 : theme === "creamyNight"
@@ -3589,7 +3593,7 @@ export const SurahDetail: React.FC = () => {
                             dir="rtl"
                           >
                             {/* Right Page (الصحيفة اليمنى) */}
-                            <div className="mushaf-page-container flex-1 h-full w-1/2 flex items-center justify-end p-0 m-0 relative overflow-hidden">
+                            <div className="mushaf-page-container flex-1 h-full w-1/2 flex items-start justify-end p-0 m-0 relative overflow-hidden">
                               <MushafPage 
                                 pageNum={rightPageNum} 
                                 recitation={recitation} 
@@ -3608,7 +3612,7 @@ export const SurahDetail: React.FC = () => {
 
                             {/* Left Page (الصحيفة اليسرى) */}
                             {leftPageNum <= 604 ? (
-                              <div className="mushaf-page-container flex-1 h-full w-1/2 flex items-center justify-start p-0 m-0 relative overflow-hidden">
+                              <div className="mushaf-page-container flex-1 h-full w-1/2 flex items-start justify-start p-0 m-0 relative overflow-hidden">
                                 <MushafPage 
                                   pageNum={leftPageNum} 
                                   recitation={recitation} 
@@ -3629,7 +3633,7 @@ export const SurahDetail: React.FC = () => {
                       })() : (
                         <div
                           className={cn(
-                            "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-col items-center justify-center transition-all duration-300 rounded-none border-none shadow-none",
+                            "flex-1 w-full relative overflow-hidden mx-0 p-0 flex flex-col items-center justify-start transition-all duration-300 rounded-none border-none shadow-none",
                             settings.visualTheme === "glass"
                               ? "bg-white/30 backdrop-blur-md"
                               : theme === "creamyNight"
@@ -3648,7 +3652,7 @@ export const SurahDetail: React.FC = () => {
                           )}
                           style={cardStyle}
                         >
-                          <div className="relative w-full h-full flex flex-1 items-center justify-center p-0 m-0 overflow-hidden">
+                          <div className="relative w-full h-full flex flex-1 items-start justify-center p-0 m-0 overflow-hidden">
                             <MushafPage 
                               pageNum={pageNum} 
                               recitation={recitation} 
