@@ -158,6 +158,12 @@ const TAFSIR_FONTS = [
   { id: "Noto Kufi Arabic", name: "كوفي ناعم" },
 ];
 
+// Helper to convert to Arabic numerals
+const toArabicNumerals = (num: number | string) => {
+  const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+  return String(num).replace(/[0-9]/g, (w) => arabicDigits[+w]);
+};
+
 const MushafPage = React.memo<{
   pageNum: number;
   recitation: string;
@@ -3535,10 +3541,10 @@ export const SurahDetail: React.FC = () => {
                           </div>
                           <div className="flex items-center gap-2">
                              <span className="font-black text-[11px]">
-                               {isDoubleSpread ? `الصفحتان ${pageNum % 2 === 0 ? pageNum : (pageNum === 1 ? 1 : pageNum - 1)} - ${pageNum % 2 === 0 ? (pageNum + 1 <= 604 ? pageNum + 1 : 604) : pageNum}` : `الصفحة ${pageNum}`}
+                               {isDoubleSpread ? `الصفحتان ${pageNum % 2 === 0 ? toArabicNumerals(pageNum) : (pageNum === 1 ? '١' : toArabicNumerals(pageNum - 1))} - ${pageNum % 2 === 0 ? (pageNum + 1 <= 604 ? toArabicNumerals(pageNum + 1) : '٦٠٤') : toArabicNumerals(pageNum)}` : `الصفحة ${toArabicNumerals(pageNum)}`}
                              </span>
                              <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70 dark:bg-teal-400/70 shrink-0" />
-                             <span className="font-extrabold text-[11px] opacity-90">الجزء {ayahs?.[0]?.juz || '...'}</span>
+                             <span className="font-extrabold text-[11px] opacity-90">الجزء {ayahs?.[0]?.juz ? toArabicNumerals(ayahs[0].juz) : '١'}</span>
                           </div>
                         </div>
                       )}
@@ -3689,8 +3695,42 @@ export const SurahDetail: React.FC = () => {
                   <div
                     key={`vertical-page-${pageNum}-${index}`}
                     data-index={index}
-                    className="quran-vertical-page w-full flex flex-col items-center shrink-0 relative z-10 py-0 -my-2 sm:-my-3 md:-my-4 px-0 mx-0 border-none"
+                    className="quran-vertical-page w-full flex flex-col items-center shrink-0 relative z-10 py-0 px-0 mx-0 border-none"
                   >
+                    {/* Header bar for vertical Quran page: Surah Title, Page Number, and Juz */}
+                    {!focusMode && showControls && (
+                      <div 
+                        className={cn(
+                          "w-full max-w-[760px] sm:max-w-[800px] md:max-w-[840px] mx-auto flex items-center justify-between px-3 sm:px-5 pt-3 pb-1.5 text-xs font-black select-none z-20 transition-colors duration-200 border-b border-black/[0.04] dark:border-white/[0.04] mt-1 mb-0.5",
+                          theme === "creamyNight" ? "text-[#e8dac1]" :
+                          theme === "dark" ? "text-slate-200" :
+                          theme === "slate" ? "text-slate-200" :
+                          theme === "sepia" ? "text-[#4a3625]" :
+                          theme === "parchment" ? "text-[#3c2f23]" :
+                          theme === "sand" ? "text-[#4a3b2c]" :
+                          "text-slate-800 dark:text-slate-100"
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <BookOpen size={14} className="text-teal-600 dark:text-teal-400 shrink-0 stroke-[2.5]" />
+                          <span className="font-black text-xs sm:text-[13px] text-teal-800 dark:text-teal-200">{surah?.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-xs sm:text-[13px] bg-teal-500/10 text-teal-700 dark:text-teal-300 px-2.5 py-0.5 rounded-full border border-teal-500/20 shadow-xs">
+                            الصفحة {toArabicNumerals(pageNum)}
+                          </span>
+                          {ayahs?.[0]?.juz && (
+                            <>
+                              <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70 dark:bg-teal-400/70 shrink-0" />
+                              <span className="font-extrabold text-[11px] sm:text-xs opacity-90">
+                                الجزء {toArabicNumerals(ayahs[0].juz)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="relative w-full h-auto flex items-center justify-center p-0 m-0">
                       <MushafPage 
                         pageNum={pageNum} 
