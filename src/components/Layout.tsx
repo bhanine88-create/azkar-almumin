@@ -91,25 +91,51 @@ export const Layout: React.FC = () => {
     setIsDrawerOpen(false);
   }, [location.pathname]);
 
-  // Android hardware / gesture Back closes the drawer instead of navigating the
-  // page underneath it. The listener exists only while the drawer is open, so
-  // Capacitor's default Back behaviour is untouched the rest of the time.
+  // Keep one native subscription while allowing it to read the latest route
+  // and overlay state. Re-subscribing on every navigation can miss Back events.
+  const androidBackRef = React.useRef<() => void>(() => {});
+  React.useLayoutEffect(() => {
+    androidBackRef.current = () => {
+      if (isLanguageModalOpen) return setIsLanguageModalOpen(false);
+      if (isAppInfoModalOpen) return setIsAppInfoModalOpen(false);
+      if (isAboutModalOpen) return setIsAboutModalOpen(false);
+      if (isSubscriptionModalOpen) return setIsSubscriptionModalOpen(false);
+      if (isUserModalOpen) return setIsUserModalOpen(false);
+      if (isDrawerOpen) {
+        if (isSidebarSettingsOpen) setIsSidebarSettingsOpen(false);
+        else setIsDrawerOpen(false);
+        return;
+      }
+
+      // Home is the exit boundary even if earlier sections remain in history.
+      if (location.pathname === '/') {
+        void CapacitorApp.exitApp().catch(error => console.error('Unable to exit app', error));
+      } else if (window.history.state?.idx > 0) {
+        navigate(-1);
+      } else {
+        // A directly opened section must still have a route back to home.
+        navigate('/', { replace: true });
+      }
+    };
+  }, [location.pathname, navigate, isDrawerOpen, isSidebarSettingsOpen,
+    isLanguageModalOpen, isAppInfoModalOpen, isAboutModalOpen,
+    isSubscriptionModalOpen, isUserModalOpen]);
+
   useEffect(() => {
-    if (!isDrawerOpen || !Capacitor.isNativePlatform()) return;
+    if (Capacitor.getPlatform() !== 'android') return;
     let removed = false;
     let handle: { remove: () => Promise<void> } | undefined;
     CapacitorApp.addListener('backButton', () => {
-      if (isSidebarSettingsOpen) setIsSidebarSettingsOpen(false);
-      else setIsDrawerOpen(false);
+      if (!removed) androidBackRef.current();
     }).then((h) => {
       if (removed) h.remove();
       else handle = h;
-    }).catch(() => {});
+    }).catch(error => console.error('Unable to register Android Back handler', error));
     return () => {
       removed = true;
       handle?.remove();
     };
-  }, [isDrawerOpen, isSidebarSettingsOpen]);
+  }, []);
 
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -231,7 +257,7 @@ export const Layout: React.FC = () => {
     location.pathname.startsWith("/aqeedah")
   );
 
-  const hideBottomNav = false;
+  const hideBottomNav = location.pathname !== '/';
 
   const hideMainHeader = location.pathname !== '/';
 
@@ -1733,6 +1759,11 @@ export const Layout: React.FC = () => {
         {/* Main Content */}
         <main 
           ref={mainRef}
+          // Reserve the safe inset on the constrained parent as well as on
+          // scrolling pages, so full-height readers keep their controls visible.
+          style={hideBottomNav ? {
+            paddingBottom: `calc(${isWidePage ? '1rem' : '2.5rem'} + var(--safe-area-bottom, 0px))`,
+          } : undefined}
           className={cn(
           "flex-1 min-w-0 overflow-x-hidden relative z-0 hide-scrollbar momentum-scroll scroll-pt-20 min-h-0",
           (location.pathname === '/' || location.pathname === '/library') && 'stable-list-scroll',
