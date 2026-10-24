@@ -301,12 +301,12 @@ export default function App() {
           <AdhkarCountsProvider>
             <DownloadProvider>
               <HashRouter>
-                <NavigationMemoryGovernor />
-                <React.Suspense fallback={null}><PrayerNotificationManager /></React.Suspense>
                 <GlobalAudioProvider>
-                <div className={cn(
-                  "w-full h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col md:items-center md:justify-center overflow-hidden relative"
-                )}>
+                  <NavigationMemoryGovernor />
+                  <React.Suspense fallback={null}><PrayerNotificationManager /></React.Suspense>
+                  <div className={cn(
+                    "w-full h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col md:items-center md:justify-center overflow-hidden relative"
+                  )}>
                   <div className="hidden md:block absolute inset-0 pointer-events-none z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950" />
                     <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] bg-[url('/images/arabesque.png')]" />

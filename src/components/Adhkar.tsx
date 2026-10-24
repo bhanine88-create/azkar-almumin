@@ -536,6 +536,7 @@ const DhikrCard = React.memo(({
   return (
     <motion.div
       ref={cardRef}
+      id={`dhikr-card-${idx}`}
       initial={settings.adhkarViewMode === 'single' ? false : { opacity: 0, y: 40 }}
       animate={settings.adhkarViewMode === 'single' ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
       transition={{ 
@@ -590,6 +591,48 @@ const DhikrCard = React.memo(({
           )}
         </div>
         <div className={cn("flex items-center gap-2", isSpecialTitle && "absolute left-4")}>
+          {/* Visual Progress Counter for this specific Dhikr */}
+          <div 
+            className={cn(
+              "h-8 px-2.5 rounded-full flex items-center gap-1.5 border text-xs font-mono font-black transition-all select-none shrink-0",
+              isFinished
+                ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-xs"
+                : count > 0
+                  ? "bg-amber-500/15 border-amber-500/30 text-amber-800 dark:text-amber-300"
+                  : theme.isLight
+                    ? "bg-black/[0.04] border-black/10 text-slate-600"
+                    : "bg-white/[0.06] border-white/10 text-slate-300"
+            )}
+            title={`تكرارات هذا الذكر اليوم: ${count} من ${item.count}`}
+          >
+            <div className="relative w-4 h-4 shrink-0 flex items-center justify-center">
+              <svg className="w-4 h-4 -rotate-90 transform" viewBox="0 0 20 20">
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="7"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  fill="transparent"
+                  className="opacity-20"
+                />
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="7"
+                  stroke={isFinished ? "#10b981" : "#006A4E"}
+                  strokeWidth="2.5"
+                  strokeDasharray={2 * Math.PI * 7}
+                  strokeDashoffset={2 * Math.PI * 7 - (Math.min(100, (count / item.count) * 100) / 100) * (2 * Math.PI * 7)}
+                  strokeLinecap="round"
+                  fill="transparent"
+                  className="transition-all duration-300"
+                />
+              </svg>
+            </div>
+            <span className="leading-none">{count}/{item.count}</span>
+          </div>
+
           <button
             onClick={async (e) => {
               e.stopPropagation();
@@ -1452,7 +1495,7 @@ export const Adhkar: React.FC = () => {
               </div>
               <div>
                 <span className="text-[10px] text-teal-200 block font-bold leading-tight">{t('total_adhkar')}</span>
-                <span className="text-lg font-black font-mono leading-none">{currentCategory.items.length} {settings.appLanguage === 'ar' ? 'ذِكر' : 'dhikr'}</span>
+                <span className="text-lg font-black font-mono leading-none">{currentCategory.items.length} {t('dhikr_count_unit', 'ذِكر')}</span>
               </div>
             </div>
           </div>
@@ -1579,7 +1622,7 @@ export const Adhkar: React.FC = () => {
                 <div className="space-y-1">
                   <span className="text-xs font-black text-slate-600 dark:text-slate-350 block">{t('dhikr_count_label')}</span>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                    {settings.appLanguage === 'ar' ? "اختر أحد التكرارات السريعة الموصى بها في السنة أو اكتب التكرار يدوياً" : settings.appLanguage === 'fr' ? "Choisissez une répétition rapide recommandée dans la Sunnah ou saisissez-la manuellement" : "Choose a quick repetition recommended in Sunnah or enter it manually"}
+                    {t('quick_repetition_instruction', 'اختر أحد التكرارات السريعة الموصى بها في السنة أو اكتب التكرار يدوياً')}
                   </p>
                   
                   {/* Quick Select Chips */}
@@ -1596,7 +1639,7 @@ export const Adhkar: React.FC = () => {
                             : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-teal-500"
                         )}
                       >
-                        {num} {settings.appLanguage === 'ar' ? (num >= 3 && num <= 10 ? 'مرات' : 'مرة') : (settings.appLanguage === 'fr' ? 'fois' : 'times')}
+                        {num} {num >= 3 && num <= 10 ? t('times_unit_plural', 'مرات') : t('times_unit', 'مرة')}
                       </button>
                     ))}
                   </div>
@@ -2288,6 +2331,7 @@ export const Adhkar: React.FC = () => {
           </button>
         </div>
       )}
+
 
       {category === 'prayer' && (
         <div className="w-full flex flex-col gap-4 animate-[fadeIn_0.5s_ease-out] mb-1">

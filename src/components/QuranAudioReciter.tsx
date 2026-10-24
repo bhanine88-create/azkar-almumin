@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChevronLeft, Play, Pause, Download, Volume2, ChevronRight, 
   RefreshCw, X, Check, Trash2, CloudDownload, Square, 
-  CheckCircle, Trash, SlidersHorizontal, Settings2, Zap, FastForward, PlayCircle, Mic2, FileDown, Loader2
+  CheckCircle, Trash, SlidersHorizontal, Settings2, Zap, FastForward, PlayCircle, Mic2, FileDown, Loader2, Heart
 } from 'lucide-react';
 import { RECITERS } from '../reciters';
 import { STATIC_SURAHS } from '../utils/staticQuranData';
@@ -36,7 +36,7 @@ export const QuranAudioReciter: React.FC = () => {
 
   const { reciterId } = useParams<{ reciterId: string }>();
   const { navigate } = useSmartNavigation();
-  const { settings } = useAppContext();
+  const { settings, progress: appProgress, toggleFavoriteUnified } = useAppContext();
   const { 
     playbackRate, setPlaybackRate,
     autoNextSurah, setAutoNextSurah,
@@ -625,6 +625,35 @@ export const QuranAudioReciter: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                {/* Favorite Surah Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const favId = `quran-${reciter?.id || 1}-${surah.number}`;
+                    toggleFavoriteUnified({
+                      id: favId,
+                      type: 'surah',
+                      title: `سورة ${surah.name}`,
+                      subtitle: reciter?.name || 'القارئ',
+                      route: `/quran-audio/${reciter?.id || 1}`
+                    });
+                  }}
+                  className={cn(
+                    "w-11 h-11 rounded-xl relative flex items-center justify-center transition-all border shadow-sm",
+                    (appProgress.favorites || []).some(f => f.id === `quran-${reciter?.id || 1}-${surah.number}`)
+                      ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50 text-rose-500 shadow-sm shadow-rose-500/10"
+                      : playingSurah === surah.number
+                        ? "bg-white/20 border-white/30 text-white hover:bg-white hover:text-rose-500 hover:border-white"
+                        : "bg-gradient-to-br from-[#218510]/10 to-[#1c6f0d]/5 dark:from-[#218510]/20 dark:to-[#1c6f0d]/10 border border-[#218510]/20 text-slate-400 dark:text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-200 hover:scale-105"
+                  )}
+                  title="إضافة/إزالة من المفضلة للوصول السريع"
+                >
+                  <Heart 
+                    size={18} 
+                    className={(appProgress.favorites || []).some(f => f.id === `quran-${reciter?.id || 1}-${surah.number}`) ? "fill-rose-500 text-rose-500" : ""} 
+                  />
+                </button>
+
                 <button
                   onClick={(e) => handleSaveToDevice(surah.number, surah.name, e)}
                   disabled={savingDeviceSurah[surah.number] === 'loading'}

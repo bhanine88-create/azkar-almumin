@@ -19,6 +19,8 @@ import {
   checkLocalNotificationPermissions,
   requestLocalNotificationPermissions
 } from '../services/localNotificationService';
+import { adhkarNotificationController } from '../services/adhkarNotificationController';
+import { useGlobalAudio } from '../context/GlobalAudioContext';
 
 /**
  * Marks that the permissions explainer has been shown once on this install.
@@ -39,6 +41,7 @@ export const PrayerNotificationManager: React.FC = () => {
   const navigate = useNavigate();
   const { settings, updateSettings, adhkarData, isCategoryCompleted } = useAppContext();
   const { isCategoryFinished } = useAdhkarCounts();
+  const { playAdhan, stopAdhan } = useGlobalAudio();
   const [activeNotification, setActiveNotification] = useState<{ 
     name: string; 
     time: string; 
@@ -90,33 +93,35 @@ export const PrayerNotificationManager: React.FC = () => {
     });
   }, [navigate]);
 
-  // 2. Guarantee Morning & Evening Adhkar notifications default state = true on first installation & initialization
+  // 2. Central Adhkar Notification Controller: Guarantee active defaults & silent startup verification
   useEffect(() => {
-    const initKey = 'believer_adhkar_notifs_initialized_v4';
-    const isInitDone = safeLocalStorageGetItem(initKey);
+    let cancelled = false;
 
-    const needsDefaultActivation = !isInitDone || 
-      settings.morningNotificationsEnabled === undefined || 
-      settings.eveningNotificationsEnabled === undefined ||
-      settings.notificationsEnabled === undefined;
+    const runCentralStartupVerification = async () => {
+      try {
+        await adhkarNotificationController.verifyAndResetAtStartup(settingsRef.current, {
+          isCategoryCompleted: (cat) => isCategoryCompleted(cat),
+          updateSettings: (newSet) => updateSettings(newSet)
+        });
 
-    if (needsDefaultActivation) {
-      updateSettings({
-        notificationsEnabled: true,
-        morningNotificationsEnabled: true,
-        eveningNotificationsEnabled: true,
-        prayerNotificationsEnabled: settings.prayerNotificationsEnabled ?? true,
-        morningAdhkarFollowupEnabled: settings.morningAdhkarFollowupEnabled ?? true,
-        eveningAdhkarFollowupEnabled: settings.eveningAdhkarFollowupEnabled ?? true,
-      });
-      safeLocalStorageSetItem(initKey, 'true');
-    }
-  }, [updateSettings, settings.morningNotificationsEnabled, settings.eveningNotificationsEnabled, settings.notificationsEnabled]);
+        if (cancelled) return;
+      } catch (err) {
+        console.debug('[PrayerNotificationManager] Central controller verification error:', err);
+      }
+    };
+
+    runCentralStartupVerification();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [updateSettings, isCategoryCompleted]);
 
   /*
     3. Silent permission verification on every app entry + explicit prompt on first install.
     - Checks required notification permissions silently on every mount, focus, pageshow, and visibilitychange.
     - If granted, silently keeps background notification alarms synchronized without popping any dialogs.
+    - Uses adhkarNotificationController to evaluate missed triggers on resume/pageshow.
     - On very first run, introduces the permissions explainer so the user can grant notifications seamlessly.
   */
   useEffect(() => {
@@ -135,6 +140,11 @@ export const PrayerNotificationManager: React.FC = () => {
         if (isGranted) {
           await syncAllLocalNotifications(settingsRef.current);
         }
+
+        // Silent verification & active background schedule sync on app resume
+        await adhkarNotificationController.verifyAndResetAtStartup(settingsRef.current, {
+          isCategoryCompleted: (cat) => isCategoryCompleted(cat)
+        });
       } catch (err) {
         // Silent fail-safe to ensure smooth experience without throwing
         console.debug('[PrayerNotificationManager] Silent permission check:', err);
@@ -186,7 +196,7 @@ export const PrayerNotificationManager: React.FC = () => {
       window.removeEventListener('focus', handleAppEntryResume);
       window.removeEventListener('pageshow', handleAppEntryResume);
     };
-  }, []);
+  }, [isCategoryCompleted]);
 
   /** Dismissing the explainer is what actually asks Android for the permission. */
   const handlePermissionsIntroClose = React.useCallback(async () => {
@@ -371,7 +381,8 @@ export const PrayerNotificationManager: React.FC = () => {
       const pD = localNow.getDate();
       
       const currentTimeStr = `${currentH.toString().padStart(2, '0')}:${currentM.toString().padStart(2, '0')}`;
-      const nowDateStr = `${pY}-${pM}-${pD} ${currentTimeStr}`;
+      const todayDateStr = `${pY}-${pM.toString().padStart(2, '0')}-${pD.toString().padStart(2, '0')}`;
+      const nowDateStr = `${todayDateStr} ${currentTimeStr}`;
       const nowTimeMinutes = currentH * 60 + currentM;
 
       const normalizeTime = (t?: string): string => {
@@ -385,11 +396,32 @@ export const PrayerNotificationManager: React.FC = () => {
 
       const shouldTriggerNow = (key: string, targetTime: string): boolean => {
         if (!targetTime) return false;
+        // 1. Startup grace period: prevent instant burst on app launch or mount
+        if (Date.now() - mountTimeRef.current < 2500) return false;
+
+        // 2. Strict exact minute match
         const normTarget = normalizeTime(targetTime);
         if (normTarget !== currentTimeStr) return false;
-        if (lastNotifiedRef.current[key] === nowDateStr) return false;
 
-        lastNotifiedRef.current[key] = nowDateStr;
+        // 3. Prevent duplicate firing on same day/minute
+        const isDailyOneOff = [
+          'Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha',
+          'morning-adhkar', 'morning-adhkar-followup',
+          'evening-adhkar', 'evening-adhkar-followup',
+          'sunnah-reminder'
+        ].includes(key);
+
+        const lockValue = isDailyOneOff ? todayDateStr : nowDateStr;
+        const storageLockKey = `believer_fired_${key}`;
+
+        if (lastNotifiedRef.current[key] === lockValue) return false;
+        if (safeLocalStorageGetItem(storageLockKey) === lockValue) {
+          lastNotifiedRef.current[key] = lockValue;
+          return false;
+        }
+
+        lastNotifiedRef.current[key] = lockValue;
+        safeLocalStorageSetItem(storageLockKey, lockValue);
         return true;
       };
 
@@ -410,66 +442,39 @@ export const PrayerNotificationManager: React.FC = () => {
       const isMorningFinished = isCategoryFinished('morning', morningItems);
       const isEveningFinished = isCategoryFinished('evening', eveningItems);
 
-      const parseMinutes = (t?: string): number => {
-        if (!t) return -1;
-        const norm = normalizeTime(t);
-        const [h, m] = norm.split(':').map(Number);
-        return (h || 0) * 60 + (m || 0);
-      };
-
-      // 2. Morning Adhkar Primary Notification & Followup
+      // 2. Morning Adhkar Primary Notification & Followup (Exact Time Only)
       if (settings.morningNotificationsEnabled) {
         const morningTarget = settings.morningAdhkarTime || '06:00';
-        const morningTargetMinutes = parseMinutes(morningTarget);
-        const parsedEnd = parseMinutes(settings.morningAdhkarEndTime);
-        const morningEndMinutes = parsedEnd > 0 
-          ? parsedEnd 
-          : Math.min(morningTargetMinutes + 240, 23 * 60 + 59);
 
         if (shouldTriggerNow('morning-adhkar', morningTarget)) {
           triggerMorningNotification();
         } else if (
+          settings.morningAdhkarFollowupEnabled && 
           !isCategoryCompleted('morning') && 
-          !isMorningFinished &&
-          morningTargetMinutes > 0 &&
-          nowTimeMinutes >= morningTargetMinutes && 
-          nowTimeMinutes <= morningEndMinutes &&
-          lastNotifiedRef.current['morning-session-alert'] !== `${pY}-${pM}-${pD}`
+          !isMorningFinished && 
+          shouldTriggerNow('morning-adhkar-followup', settings.morningAdhkarEndTime || '10:00')
         ) {
-          lastNotifiedRef.current['morning-session-alert'] = `${pY}-${pM}-${pD}`;
-          triggerMorningNotification();
-        } else if (settings.morningAdhkarFollowupEnabled && !isCategoryCompleted('morning') && !isMorningFinished && shouldTriggerNow('morning-adhkar-followup', settings.morningAdhkarEndTime || '10:00')) {
           triggerMorningFollowupNotification();
         }
       }
 
-      // 3. Evening Adhkar Primary Notification & Followup
+      // 3. Evening Adhkar Primary Notification & Followup (Exact Time Only)
       if (settings.eveningNotificationsEnabled) {
-        const eveningTarget = settings.eveningAdhkarTime || '17:00';
-        const eveningTargetMinutes = parseMinutes(eveningTarget);
-        const parsedEveningEnd = parseMinutes(settings.eveningAdhkarEndTime);
-        const eveningEndMinutes = parsedEveningEnd > 0 
-          ? parsedEveningEnd 
-          : Math.min(eveningTargetMinutes + 300, 23 * 60 + 59);
+        const eveningTarget = settings.eveningAdhkarTime || '17:30';
 
         if (shouldTriggerNow('evening-adhkar', eveningTarget)) {
           triggerEveningNotification();
         } else if (
+          settings.eveningAdhkarFollowupEnabled && 
           !isCategoryCompleted('evening') && 
-          !isEveningFinished &&
-          eveningTargetMinutes > 0 &&
-          nowTimeMinutes >= eveningTargetMinutes && 
-          nowTimeMinutes <= eveningEndMinutes &&
-          lastNotifiedRef.current['evening-session-alert'] !== `${pY}-${pM}-${pD}`
+          !isEveningFinished && 
+          shouldTriggerNow('evening-adhkar-followup', settings.eveningAdhkarEndTime || '22:00')
         ) {
-          lastNotifiedRef.current['evening-session-alert'] = `${pY}-${pM}-${pD}`;
-          triggerEveningNotification();
-        } else if (settings.eveningAdhkarFollowupEnabled && !isCategoryCompleted('evening') && !isEveningFinished && shouldTriggerNow('evening-adhkar-followup', settings.eveningAdhkarEndTime || '22:00')) {
           triggerEveningFollowupNotification();
         }
       }
 
-      // 6. Sunnah Reminder Notification
+      // 4. Sunnah Reminder Notification (Exact Time Only)
       if (settings.sunnahReminderEnabled) {
         if (shouldTriggerNow('sunnah-reminder', settings.sunnahReminderTime || '21:30')) {
           triggerSunnahReminderNotification();
@@ -591,6 +596,20 @@ export const PrayerNotificationManager: React.FC = () => {
     return () => window.removeEventListener('trigger-screen-notification', handleTriggerScreenNotif);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      stopAdhan();
+    };
+  }, [stopAdhan]);
+
+  const playAudioWithGestureFallback = (id: string, url: string) => {
+    try {
+      playAdhan(id, url);
+    } catch (e) {
+      console.error('Failed to initialize audio playback:', e);
+    }
+  };
+
   const triggerNotification = (key: string, time: string) => {
     setActiveNotification({ 
       name: `صلاة ${PRAYER_NAMES[key]}`, 
@@ -600,13 +619,7 @@ export const PrayerNotificationManager: React.FC = () => {
       details: 'اقرأ القرآن وتهيّأ للصلاة'
     });
     
-    try {
-      const audio = new Audio(getAudioUrl('prayer'));
-      audio.volume = 0.6;
-      audio.play().catch(e => console.log('Prayer audio play blocked:', e));
-    } catch (e) {
-      console.error('Failed to play prayer sound:', e);
-    }
+    playAudioWithGestureFallback(`prayer-${key}`, getAudioUrl('prayer'));
 
     try {
       triggerSafeNotification(`حان الآن موعد صلاة ${PRAYER_NAMES[key]}`, {
@@ -620,6 +633,7 @@ export const PrayerNotificationManager: React.FC = () => {
 
   const triggerMorningNotification = () => {
     const time = settings.morningAdhkarTime || '06:00';
+    adhkarNotificationController.markTriggerFired('morning-session-alert');
     setActiveNotification({ 
       name: 'أذكار الصباح 🌅', 
       time, 
@@ -631,9 +645,7 @@ export const PrayerNotificationManager: React.FC = () => {
     try {
       playNotificationChimeSound();
       triggerHaptic('success');
-      const audio = new Audio(getAudioUrl('morning'));
-      audio.volume = 0.6;
-      audio.play().catch(e => console.log('Morning audio play blocked:', e));
+      playAdhan('morning', getAudioUrl('morning'));
     } catch (e) {
       console.error('Failed to play morning sound:', e);
     }
@@ -649,6 +661,7 @@ export const PrayerNotificationManager: React.FC = () => {
   };
 
   const triggerMorningFollowupNotification = () => {
+    adhkarNotificationController.markTriggerFired('morning-adhkar-followup');
     setActiveNotification({ 
       name: 'تذكير: أذكار الصباح 🌿', 
       time: settings.morningAdhkarEndTime || '10:00', 
@@ -660,10 +673,10 @@ export const PrayerNotificationManager: React.FC = () => {
     try {
       playNotificationChimeSound();
       triggerHaptic('light');
-      const audio = new Audio(getAudioUrl('morning'));
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
-    } catch (e) {}
+      playAdhan('morning-followup', getAudioUrl('morning'));
+    } catch (e) {
+      console.error('Failed to play morning followup sound:', e);
+    }
 
     try {
       triggerSafeNotification('تذكير مبارك 🌿: أذكار الصباح', {
@@ -676,7 +689,8 @@ export const PrayerNotificationManager: React.FC = () => {
   };
 
   const triggerEveningNotification = () => {
-    const time = settings.eveningAdhkarTime || '17:00';
+    const time = settings.eveningAdhkarTime || '17:30';
+    adhkarNotificationController.markTriggerFired('evening-session-alert');
     setActiveNotification({ 
       name: 'أذكار المساء 🌙', 
       time, 
@@ -688,9 +702,7 @@ export const PrayerNotificationManager: React.FC = () => {
     try {
       playNotificationChimeSound();
       triggerHaptic('success');
-      const audio = new Audio(getAudioUrl('evening'));
-      audio.volume = 0.6;
-      audio.play().catch(e => console.log('Evening audio play blocked:', e));
+      playAdhan('evening', getAudioUrl('evening'));
     } catch (e) {
       console.error('Failed to play evening sound:', e);
     }
@@ -706,6 +718,7 @@ export const PrayerNotificationManager: React.FC = () => {
   };
 
   const triggerEveningFollowupNotification = () => {
+    adhkarNotificationController.markTriggerFired('evening-adhkar-followup');
     setActiveNotification({ 
       name: 'تذكير: أذكار المساء 🌙', 
       time: settings.eveningAdhkarEndTime || '22:00', 
@@ -717,10 +730,10 @@ export const PrayerNotificationManager: React.FC = () => {
     try {
       playNotificationChimeSound();
       triggerHaptic('light');
-      const audio = new Audio(getAudioUrl('evening'));
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
-    } catch (e) {}
+      playAdhan('evening-followup', getAudioUrl('evening'));
+    } catch (e) {
+      console.error('Failed to play evening followup sound:', e);
+    }
 
     try {
       triggerSafeNotification('تذكير مبارك 🌙: أذكار المساء', {
@@ -739,9 +752,7 @@ export const PrayerNotificationManager: React.FC = () => {
 
     // Play Sound if enabled
     try {
-      const audio = new Audio(getAudioUrl('random', settings.randomAdhkarSound));
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
+      playAdhan('random-dhikr', getAudioUrl('random', settings.randomAdhkarSound));
     } catch (e) {}
 
     // System Native Notification
@@ -787,9 +798,7 @@ export const PrayerNotificationManager: React.FC = () => {
       });
 
       try {
-        const audio = new Audio(getAudioUrl('custom'));
-        audio.volume = 0.6;
-        audio.play().catch(e => console.log('Sunnah audio play blocked:', e));
+        playAdhan('sunnah-reminder', getAudioUrl('custom'));
       } catch (e) {
         console.error('Failed to play sunnah sound:', e);
       }
@@ -810,9 +819,7 @@ export const PrayerNotificationManager: React.FC = () => {
       });
 
       try {
-        const audio = new Audio(getAudioUrl('custom'));
-        audio.volume = 0.6;
-        audio.play().catch(e => console.log('Sunnah audio play blocked:', e));
+        playAdhan('sunnah-reminder', getAudioUrl('custom'));
       } catch (e) {
         console.error('Failed to play sunnah sound:', e);
       }
@@ -838,9 +845,7 @@ export const PrayerNotificationManager: React.FC = () => {
     });
     
     try {
-      const audio = new Audio(getAudioUrl(reminder.type, reminder.soundId));
-      audio.volume = 0.5;
-      audio.play().catch(e => console.log('Custom audio play blocked:', e));
+      playAdhan(`custom-${reminder.id}`, getAudioUrl(reminder.type, reminder.soundId));
     } catch (e) {
       console.error('Failed to play custom sound:', e);
     }
@@ -927,9 +932,20 @@ export const PrayerNotificationManager: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => {
+                    const audioUrl = getAudioUrl(activeNotification.type || 'prayer');
+                    playAudioWithGestureFallback(`replay-${activeNotification.type || 'prayer'}`, audioUrl);
+                  }}
+                  className="p-2 rounded-xl bg-white/20 hover:bg-white/30 text-white font-black text-xs flex items-center justify-center transition-all active:scale-90 cursor-pointer"
+                  title="استماع/إعادة تشغيل الصوت"
+                >
+                  <Bell size={16} />
+                </button>
                 {activeNotification.route && (
                   <button
                     onClick={() => {
+                      stopAdhan();
                       const route = activeNotification.route!;
                       setActiveNotification(null);
                       navigate(route);
@@ -946,7 +962,10 @@ export const PrayerNotificationManager: React.FC = () => {
                   </button>
                 )}
                 <button 
-                  onClick={() => setActiveNotification(null)}
+                  onClick={() => {
+                    stopAdhan();
+                    setActiveNotification(null);
+                  }}
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer",
                     activeNotification.type === 'morning'

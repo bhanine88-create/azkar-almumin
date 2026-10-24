@@ -824,10 +824,17 @@ export const ADHKAR_DATA: AdhkarData[] = [
 ];
 
 export const NOTIFICATION_SOUNDS = [
-  { id: 'default', label: 'التنبيه الافتراضي', url: 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3' },
+  { id: 'default', label: 'أذان الحرم المكي الشريف (الافتراضي)', url: 'https://cdn.jsdelivr.net/gh/abodehq/Athan-MP3@master/Sounds/Athan%20Makkah.mp3' },
+  { id: 'makkah', label: 'أذان الحرم المكي الشريف', url: 'https://cdn.jsdelivr.net/gh/abodehq/Athan-MP3@master/Sounds/Athan%20Makkah.mp3' },
+  { id: 'madinah', label: 'أذان الحرم المدني الشريف (الشيخ حمد دغريري)', url: 'https://cdn.jsdelivr.net/gh/abodehq/Athan-MP3@master/Sounds/Athan%20Hamad%20Deghreri.mp3' },
+  { id: 'al_aqsa', label: 'أذان المسجد الأقصى المبارك', url: 'https://cdn.jsdelivr.net/gh/AalianKhan/adhans@master/adhan.mp3' },
+  { id: 'alafasy', label: 'أذان الشيخ مشاري العفاسي', url: 'https://cdn.jsdelivr.net/gh/abodehq/Athan-MP3@master/Sounds/Athan%20Mishary%20Alafasi.mp3' },
+  { id: 'fajr', label: 'أذان الفجر (الصلاة خير من النوم)', url: 'https://cdn.jsdelivr.net/gh/AalianKhan/adhans@master/adhan_fajr.mp3' },
+  { id: 'abdulbasit', label: 'أذان الشيخ عبد الباسط عبد الصمد', url: 'https://cdn.jsdelivr.net/gh/abodehq/Athan-MP3@master/Sounds/Athan%20Abed%20Albase6.mp3' },
   { id: 'soft-chime', label: 'رنة هادئة', url: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
   { id: 'elegant', label: 'رنة أنيقة', url: 'https://assets.mixkit.co/active_storage/sfx/2356/2356-preview.mp3' },
   { id: 'digital', label: 'تنبيه رقمي', url: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3' },
   { id: 'nature', label: 'صوت الطبيعة', url: 'https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3' },
   { id: 'modern', label: 'تنبيه عصري', url: 'https://assets.mixkit.co/active_storage/sfx/2361/2361-preview.mp3' }
 ];
+

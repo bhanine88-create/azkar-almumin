@@ -6,7 +6,7 @@ import {  BookOpen, Mic2, CloudDownload, Star,
   Radio, Podcast, SlidersHorizontal, PlayCircle, X, 
   FastForward, SkipForward, Timer,  Info, Search, Sparkles,
   ChevronLeft, ChevronRight, Music,  FolderHeart, Loader2,  ListMusic, FileCode, Smartphone, HardDrive,
-  ChevronDown, ChevronUp,  Pause, HelpCircle, RefreshCw, Volume2,  BookOpenCheck, ScrollText, HeartPulse, Disc3 , Trash2, ShieldCheck, Play, CheckCircle2 } from 'lucide-react';
+  ChevronDown, ChevronUp,  Pause, HelpCircle, RefreshCw, Volume2,  BookOpenCheck, ScrollText, HeartPulse, Disc3 , Trash2, ShieldCheck, Play, CheckCircle2, Heart } from 'lucide-react';
 import JSZip from 'jszip';
 import { cn } from '../lib/utils';
 import { useAppContext } from '../AppContext';
@@ -16,7 +16,9 @@ import { EmptyStatePlaceholder } from './EmptyStatePlaceholder';
 import { SCHOLARS } from '../data/lectures';
 import { RECITERS } from '../reciters';
 import { TAFSIR_SCHOLARS } from '../data/tafsir';
+import { RUQYAH_TRACKS } from './RuqyahAudioHub';
 import { SURAH_NAMES } from '../utils/quranUtils';
+import { getSurahAudioUrl } from '../services/quranAudioUrlService';
 import { lectureCacheService } from '../services/lectureCacheService';
 import { audioCacheService } from '../services/audioCacheService';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
@@ -338,12 +340,184 @@ function generateHTMLOfflineIndex(quranMeta: any[], lectureMeta: any[]) {
 
 export function AudioLibraryHub() {
   const navigate = useNavigate();
-  const { settings, progress, updateSettings } = useAppContext();
+  const { settings, progress, updateSettings, toggleFavoriteUnified, toggleLectureFavorite } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   const isDarkTheme = settings.theme === 'dark';
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [totalCacheSize, setTotalCacheSize] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Quick Access: Collect all favorited lessons, recitations, tafsir & ruqyah
+  const quickAudioFavorites = React.useMemo(() => {
+    const list: Array<{
+      id: string;
+      title: string;
+      subtitle: string;
+      type: 'surah' | 'lecture' | 'tafsir' | 'ruqyah';
+      route: string;
+      audioUrl?: string;
+      originalUrl?: string;
+      reciterId?: number;
+      surahNumber?: number;
+      scholarId?: string;
+    }> = [];
+
+    const seenIds = new Set<string>();
+
+    // 1. Unified favorites (surahs and lectures)
+    (progress.favorites || []).forEach(fav => {
+      if (fav.type === 'surah' || fav.type === 'lecture') {
+        seenIds.add(fav.id);
+        
+        let surahNum: number | undefined;
+        let reciterId: number | undefined;
+        let audioUrl: string | undefined;
+
+        if (fav.type === 'surah') {
+          const parts = fav.id.split('-');
+          if (parts.length >= 3) {
+            reciterId = Number(parts[1]);
+            surahNum = Number(parts[2]);
+            const r = RECITERS.find(rec => rec.id === reciterId);
+            if (r && surahNum) {
+              audioUrl = getSurahAudioUrl(r, surahNum);
+            }
+          }
+        }
+
+        list.push({
+          id: fav.id,
+          title: fav.title,
+          subtitle: fav.subtitle || '',
+          type: fav.type === 'surah' ? 'surah' : 'lecture',
+          route: fav.route,
+          audioUrl,
+          surahNumber: surahNum,
+          reciterId
+        });
+      }
+    });
+
+    // 2. Favorite lectures, tafsir, ruqyah from progress.favoriteLectures
+    (progress.favoriteLectures || []).forEach(favId => {
+      if (seenIds.has(favId)) return;
+
+      // Check SCHOLARS
+      for (const scholar of SCHOLARS) {
+        for (const series of scholar.series) {
+          const lec = series.lectures.find(l => l.id === favId);
+          if (lec) {
+            seenIds.add(favId);
+            list.push({
+              id: lec.id,
+              title: lec.title,
+              subtitle: scholar.name,
+              type: 'lecture',
+              route: '/lectures-audio',
+              audioUrl: lec.audioUrl,
+              originalUrl: lec.audioUrl,
+              scholarId: scholar.id
+            });
+            return;
+          }
+        }
+      }
+
+      // Check TAFSIR_SCHOLARS
+      for (const tScholar of TAFSIR_SCHOLARS) {
+        for (const surah of tScholar.surahs) {
+          const trk = surah.tracks.find(t => t.id === favId);
+          if (trk) {
+            seenIds.add(favId);
+            list.push({
+              id: trk.id,
+              title: trk.title,
+              subtitle: tScholar.name,
+              type: 'tafsir',
+              route: '/tafsir-audio',
+              audioUrl: trk.audioUrl,
+              originalUrl: trk.audioUrl,
+              scholarId: tScholar.id
+            });
+            return;
+          }
+        }
+      }
+
+      // Check RUQYAH_TRACKS
+      const ruqyah = RUQYAH_TRACKS.find(r => r.id === favId);
+      if (ruqyah) {
+        seenIds.add(favId);
+        list.push({
+          id: ruqyah.id,
+          title: ruqyah.title,
+          subtitle: ruqyah.reciterName,
+          type: 'ruqyah',
+          route: '/ruqyah-audio',
+          audioUrl: ruqyah.audioUrl,
+          originalUrl: ruqyah.audioUrl
+        });
+      }
+    });
+
+    return list;
+  }, [progress.favorites, progress.favoriteLectures]);
+
+  const handlePlayQuickFavorite = async (item: typeof quickAudioFavorites[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (currentTrack?.id === item.id) {
+      if (isPlaying) {
+        useGlobalAudio().pauseTrack();
+      } else {
+        useGlobalAudio().resumeTrack();
+      }
+      return;
+    }
+
+    if (item.type === 'surah' && item.surahNumber && item.reciterId) {
+      const reciter = RECITERS.find(r => r.id === item.reciterId);
+      const url = item.audioUrl || (reciter ? getSurahAudioUrl(reciter, item.surahNumber) : '');
+      let finalUrl = url;
+      try {
+        const cachedUrl = await audioCacheService.getCachedAudioUrlBySurah(item.reciterId, item.surahNumber)
+          || await audioCacheService.getCachedAudioUrl(url);
+        if (cachedUrl) finalUrl = cachedUrl;
+      } catch (err) {}
+
+      playTrack({
+        id: item.id,
+        title: item.title,
+        subtitle: item.subtitle,
+        audioUrl: finalUrl,
+        originalUrl: url,
+        type: 'quran',
+        reciterId: item.reciterId,
+        surahNumber: item.surahNumber
+      });
+      return;
+    }
+
+    if (item.audioUrl) {
+      let finalUrl = item.audioUrl;
+      try {
+        const cached = await lectureCacheService.getCachedAudioUrl(item.audioUrl);
+        if (cached) finalUrl = cached;
+      } catch (err) {}
+
+      playTrack({
+        id: item.id,
+        title: item.title,
+        subtitle: item.subtitle,
+        audioUrl: finalUrl,
+        originalUrl: item.originalUrl || item.audioUrl,
+        type: item.type === 'tafsir' ? 'tafsir' : 'lecture',
+        scholarId: item.scholarId
+      });
+    } else {
+      navigate(item.route);
+    }
+  };
 
   // Sate for custom export formats
   const [isExportingM3U, setIsExportingM3U] = useState(false);
@@ -733,7 +907,7 @@ export function AudioLibraryHub() {
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1">المساحة المستخدمة</p>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-1">{t('used_storage', 'المساحة المستخدمة')}</p>
                       <p className="text-xl font-black text-slate-900 dark:text-white">{formatSize(totalCacheSize)}</p>
                     </div>
                     <button
@@ -747,7 +921,7 @@ export function AudioLibraryHub() {
                       )}
                     >
                       <Trash2 size={14} />
-                      مسح
+                      {t('delete', 'مسح')}
                     </button>
                   </div>
                 </div>
@@ -767,9 +941,9 @@ export function AudioLibraryHub() {
             <BackButton forceFallback={true} fallbackPath="/" />
             <div className="flex flex-col">
               <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
-                 استمع
+                 {t('listen', 'استمع')}
               </h1>
-              <p className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400">{greetingMsg}، استمع لما ينفعك</p>
+              <p className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400">{greetingMsg}، {t('listen_what_benefits_you', 'استمع لما ينفعك')}</p>
             </div>
           </div>
           <motion.button 
@@ -787,7 +961,7 @@ export function AudioLibraryHub() {
           <AudioSearchAutocomplete
             searchQuery={searchQuery}
             onSearchChange={(q) => setSearchQuery(q)}
-            placeholder="ابحث بحرية عن أي شيخ، قارئ، أو محاضرة..."
+            placeholder={t('search_audio_placeholder', 'ابحث بحرية عن أي شيخ، قارئ، أو محاضرة...')}
             isDarkTheme={isDarkTheme}
             onSelectScholar={(scholarId) => navigate('/lectures-audio', { state: { scholarId } })}
             onSelectReciter={(reciterId) => navigate(`/quran-audio/${reciterId}`)}
@@ -812,7 +986,7 @@ export function AudioLibraryHub() {
               {filteredReciters.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-2 flex items-center justify-between">
-                    <span>القراء</span>
+                    <span>{t('reciters', 'القراء')}</span>
                     <span className="bg-slate-200 dark:bg-slate-700 text-[10px] px-2 py-0.5 rounded-full">{filteredReciters.length}</span>
                   </h3>
                   <div className="grid grid-cols-1 gap-2">
@@ -827,7 +1001,7 @@ export function AudioLibraryHub() {
                         </div>
                         <div className="flex-grow">
                           <p className="text-sm font-black text-slate-800 dark:text-white">{reciter.name}</p>
-                          <p className="text-[10px] text-slate-500 font-bold">رواية {reciter.style}</p>
+                          <p className="text-[10px] text-slate-500 font-bold">{t('narration_style', 'رواية {{style}}', { style: reciter.style })}</p>
                         </div>
                         <ChevronLeft size={16} className="text-slate-400 opacity-50 transition-transform group-hover:-translate-x-1" />
                       </button>
@@ -840,7 +1014,7 @@ export function AudioLibraryHub() {
               {filteredScholars.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-2 flex items-center justify-between">
-                    <span>المشايخ</span>
+                    <span>{t('scholars', 'المشايخ')}</span>
                     <span className="bg-slate-200 dark:bg-slate-700 text-[10px] px-2 py-0.5 rounded-full">{filteredScholars.length}</span>
                   </h3>
                   <div className="grid grid-cols-1 gap-2">
@@ -855,7 +1029,7 @@ export function AudioLibraryHub() {
                         </div>
                         <div className="flex-grow">
                           <p className="text-sm font-black text-slate-800 dark:text-white">{scholar.name}</p>
-                          <p className="text-[10px] text-slate-500 font-bold">{scholar.series.length} سلاسل صوتية</p>
+                          <p className="text-[10px] text-slate-500 font-bold">{t('audio_series_count', '{{count}} سلاسل صوتية', { count: scholar.series.length })}</p>
                         </div>
                         <ChevronLeft size={16} className="text-slate-400 opacity-50 transition-transform group-hover:-translate-x-1" />
                       </button>
@@ -868,7 +1042,7 @@ export function AudioLibraryHub() {
               {filteredLectures.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-2 flex items-center justify-between">
-                    <span>المحاضرات</span>
+                    <span>{t('lectures', 'المحاضرات')}</span>
                     <span className="bg-slate-200 dark:bg-slate-700 text-[10px] px-2 py-0.5 rounded-full">{filteredLectures.length}</span>
                   </h3>
                   <div className="grid grid-cols-1 gap-2">
@@ -894,14 +1068,14 @@ export function AudioLibraryHub() {
 
               {!hasResults && (
                 <EmptyStatePlaceholder
-                  title={`لا توجد نتائج بحث لـ "${searchQuery}"`}
+                  title={t('no_audio_search_results', 'لا توجد نتائج بحث لـ "{{query}}"', { query: searchQuery })}
                   variant="search"
                   action={
                     <button 
                       onClick={() => setSearchQuery('')}
                       className="text-fuchsia-600 dark:text-fuchsia-400 text-xs font-black mt-3 px-4 py-2 bg-fuchsia-50 dark:bg-fuchsia-900/20 rounded-xl transform transition-all duration-75 active:scale-[0.95] active:opacity-80"
                     >
-                      عرض المكتبة
+                      {t('browse_library', 'عرض المكتبة')}
                     </button>
                   }
                 />
@@ -912,8 +1086,91 @@ export function AudioLibraryHub() {
 
         {searchQuery === '' && (
           <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            
+            {/* Quick Access Audio Favorites Shelf */}
+            {quickAudioFavorites.length > 0 && (
+              <div className="space-y-3 px-1">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <Heart size={16} className="text-rose-500 fill-rose-500 animate-pulse" />
+                    <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                      {t('audio_favorites_quick_access', 'المفضلة الصوتية للوصول السريع')}
+                    </h2>
+                  </div>
+                  <span className="text-[10px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-full border border-rose-200/50 dark:border-rose-900/50">
+                    {quickAudioFavorites.length} {t('favorite_recording', 'تسجيل مفضل')}
+                  </span>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {quickAudioFavorites.map((item) => {
+                    const isCurrentPlayingThis = currentTrack?.id === item.id;
+                    return (
+                      <div
+                        key={`quick-fav-${item.id}`}
+                        onClick={() => navigate(item.route)}
+                        className={cn(
+                          "p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between group cursor-pointer shadow-sm",
+                          isCurrentPlayingThis
+                            ? "bg-rose-500/10 border-rose-500/30 text-slate-900 dark:text-white"
+                            : "bg-white dark:bg-slate-900/90 border-slate-100 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-800/60"
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 pr-1">
+                          <button
+                            type="button"
+                            onClick={(e) => handlePlayQuickFavorite(item, e)}
+                            className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform active:scale-90 shadow-sm",
+                              isCurrentPlayingThis
+                                ? "bg-rose-500 text-white shadow-rose-500/30"
+                                : "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 group-hover:bg-rose-500 group-hover:text-white"
+                            )}
+                            title={isCurrentPlayingThis && isPlaying ? t('pause', 'إيقاف مؤقت') : t('play_now', 'تشغيل الآن')}
+                          >
+                            {isCurrentPlayingThis && isPlaying ? (
+                              <Pause size={18} className="fill-current" />
+                            ) : (
+                              <Play size={18} className="fill-current ml-0.5" />
+                            )}
+                          </button>
+                          <div className="min-w-0">
+                            <h4 className="font-black text-xs text-slate-800 dark:text-white truncate">
+                              {item.title}
+                            </h4>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold truncate mt-0.5">
+                              {item.subtitle}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                            {item.type === 'surah' ? t('quran', 'تلاوة') : item.type === 'tafsir' ? t('tafsir', 'تفسير') : item.type === 'ruqyah' ? t('ruqyah', 'رقية') : t('lesson', 'درس')}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLectureFavorite(item.id);
+                              toggleFavoriteUnified({
+                                id: item.id,
+                                type: item.type === 'surah' ? 'surah' : 'lecture',
+                                title: item.title,
+                                route: item.route
+                              });
+                            }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                            title={t('remove_from_favorites', 'إزالة من المفضلة')}
+                          >
+                            <Heart size={14} className="fill-rose-500" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Main Sections */}
             <div className="space-y-4 px-1">
@@ -925,7 +1182,7 @@ export function AudioLibraryHub() {
                    </h2>
                  </div>
                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-200/40 dark:border-slate-800">
-                   4 أقسام صوتية
+                   {t('audio_sections_count', '4 أقسام صوتية')}
                  </span>
                </div>
                
@@ -935,7 +1192,7 @@ export function AudioLibraryHub() {
                      id: 'quran', 
                      title: t('audio_quran_title'), 
                      desc: 'تلاوات خاشعة ومصاحف كاملة بأصوات أشهر القراء في العالم الإسلامي مع تنزيل مباشر', 
-                     badgeText: '40+ قارئاً • مصحف كامل',
+                     badgeText: t('audio_reciters_count', '40+ قارئاً • مصحف كامل'),
                      icon: BookOpenCheck, 
                      path: '/quran-audio', 
                      colorFrom: 'from-emerald-950 via-emerald-900 to-teal-950', 
@@ -948,7 +1205,7 @@ export function AudioLibraryHub() {
                      id: 'lectures', 
                      title: t('lectures_lessons_title'), 
                      desc: 'سلاسل علمية ومواعظ إيمانية لكبار العلماء والمشايخ في التفسير والسيرة والرقائق', 
-                     badgeText: `${(progress.favoriteScholars || []).length > 0 ? `${(progress.favoriteScholars || []).length} مفضل • ` : ''}15+ شيخاً • سلاسل متكاملة`,
+                     badgeText: t('audio_scholars_count', '15+ شيخاً • سلاسل متكاملة'),
                      icon: Mic2, 
                      path: '/lectures-audio', 
                      colorFrom: 'from-slate-950 via-indigo-950 to-blue-950', 
@@ -961,7 +1218,7 @@ export function AudioLibraryHub() {
                      id: 'tafsir', 
                      title: t('audio_tafsir_title'), 
                      desc: 'شرح وتأملات خاشعة لآيات الذكر الحكيم وتفسير السور وغريب القرآن بأصوات العلماء', 
-                     badgeText: 'تفسير وتدبر • شروح السور',
+                     badgeText: t('tafsir_scholars_count', '10+ كبار علماء التفسير'),
                      icon: ScrollText, 
                      path: '/tafsir-audio', 
                      colorFrom: 'from-stone-950 via-amber-950 to-rose-950', 
@@ -974,7 +1231,7 @@ export function AudioLibraryHub() {
                      id: 'ruqyah', 
                      title: t('audio_ruqyah_title'), 
                      desc: 'رقية شرعية مطولة وشاملة للتحصين والعلاج وبث السكينة والطمأنينة في البيت والنفس', 
-                     badgeText: 'تحصين شامل • تلاوات شافية',
+                     badgeText: t('ruqyah_readers_count', '12+ تلاوة للرقية الشرعية'),
                      icon: ShieldCheck, 
                      path: '/ruqyah-audio', 
                      colorFrom: 'from-slate-950 via-purple-950 to-violet-950', 

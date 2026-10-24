@@ -27,6 +27,8 @@ import { USOOL_SITTAH_ITEMS, UsoolSittahCardItem } from '../data/usoolSittahCard
 import { AQEEDAH_ARTICLES, AqeedahArticle } from '../data/aqeedahData';
 import { ExternalAudioLinkModal } from './ExternalAudioLinkModal';
 import { cn, shareContent } from '../lib/utils';
+import { useTranslation } from '../i18n';
+import { useAppContext } from '../AppContext';
 
 interface UsoolSittahSectionProps {
   onSelectArticle: (article: AqeedahArticle) => void;
@@ -43,6 +45,8 @@ export const UsoolSittahSection: React.FC<UsoolSittahSectionProps> = ({
   showToast,
   initialSelectedId
 }) => {
+  const { settings } = useAppContext();
+  const { t, isRtl } = useTranslation(settings.appLanguage);
   const [selectedFilterNumber, setSelectedFilterNumber] = useState<number | 'all'>('all');
   const [displayMode, setDisplayMode] = useState<'all' | 'matn' | 'sharh'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,7 +106,7 @@ export const UsoolSittahSection: React.FC<UsoolSittahSectionProps> = ({
       });
     }
 
-    showToast(type === 'listen' ? 'جاري فتح رابط الاستماع في المتصفح الخارجي...' : 'جاري فتح رابط التحميل في المتصفح الخارجي...');
+    showToast(type === 'listen' ? t('opening_external_listen_toast', 'جاري فتح رابط الاستماع في المتصفح الخارجي...') : t('opening_external_download_toast', 'جاري فتح رابط التحميل في المتصفح الخارجي...'));
   };
 
   // Toggle card expansion
@@ -120,12 +124,12 @@ export const UsoolSittahSection: React.FC<UsoolSittahSectionProps> = ({
       allExpanded[item.id] = true;
     });
     setExpandedCardIds(allExpanded);
-    showToast('تم توسيع جميع البطاقات');
+    showToast(t('all_cards_expanded_toast', 'تم توسيع جميع البطاقات'));
   };
 
   const collapseAll = () => {
     setExpandedCardIds({});
-    showToast('تم طي جميع البطاقات');
+    showToast(t('all_cards_collapsed_toast', 'تم طي جميع البطاقات'));
   };
 
   // Copy full card content (Matn + Sharh)
@@ -251,10 +255,10 @@ ${item.matnOriginal}`;
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2.5 rounded-xl bg-[#feb10b] hover:bg-[#fec84b] text-[#042418] font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
-              title="فتح الشرح الصوتي في المتصفح الخارجي"
+              title={t('open_audio_commentary_link', 'فتح الشرح الصوتي في المتصفح الخارجي')}
             >
               <Headphones className="w-4 h-4" />
-              <span>استماع خارجي للشرح الصوتي (ابن باز)</span>
+              <span>{t('listen_audio_commentary_ibn_baz', 'استماع خارجي للشرح الصوتي (ابن باز)')}</span>
               <ExternalLink className="w-3.5 h-3.5 opacity-70" />
             </a>
 
@@ -263,13 +267,13 @@ ${item.matnOriginal}`;
                 onClick={expandAll}
                 className="flex-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-colors text-center"
               >
-                توسيع كل البطاقات
+                {t('expand_all_cards', 'توسيع كل البطاقات')}
               </button>
               <button
                 onClick={collapseAll}
                 className="flex-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-colors text-center"
               >
-                طي الكل
+                {t('collapse_all_cards', 'طي الكل')}
               </button>
             </div>
           </div>
@@ -280,13 +284,16 @@ ${item.matnOriginal}`;
       <div className="bg-white dark:bg-[#0b281c] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-emerald-500/20 shadow-sm space-y-4">
         {/* Search bar within principles */}
         <div className="relative">
-          <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-emerald-400/60" />
+          <Search className={cn("absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-emerald-400/60", isRtl ? "right-3.5" : "left-3.5")} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث داخل الأصول الستة وشرح الشيخ ابن باز (مثال: الإخلاص، الشرك، السمع والطاعة، العلم، الأولياء)..."
-            className="w-full pr-10 pl-10 py-2.5 rounded-xl bg-slate-50 dark:bg-[#071d14] border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-emerald-300/40 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#feb10b]"
+            placeholder={t('search_usool_sittah_placeholder', 'ابحث داخل الأصول الستة وشرح الشيخ ابن باز (مثال: الإخلاص، الشرك، السمع والطاعة، العلم، الأولياء)...')}
+            className={cn(
+              "w-full py-2.5 rounded-xl bg-slate-50 dark:bg-[#071d14] border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-emerald-300/40 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#feb10b]",
+              isRtl ? "pr-10 pl-10" : "pl-10 pr-10"
+            )}
           />
           {searchQuery && (
             <button
@@ -552,25 +559,25 @@ ${item.matnOriginal}`;
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                           <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-black/30 border border-emerald-200/60 dark:border-emerald-500/20">
                             <span className="text-[11px] font-black text-emerald-800 dark:text-[#feb10b] block mb-1.5">
-                              📖 الشاهد من القرآن الكريم:
+                              📖 {t('evidence_from_quran', 'الشاهد من القرآن الكريم:')}
                             </span>
                             <p className="font-amiri text-sm text-emerald-950 dark:text-emerald-100 font-bold leading-relaxed mb-1">
                               ﴿ {item.quranVerse.text} ﴾
                             </p>
                             <span className="text-[11px] text-slate-500 dark:text-emerald-300/60 font-medium">
-                              سورة {item.quranVerse.surah}
+                              {t('surah_label', 'سورة')} {item.quranVerse.surah}
                             </span>
                           </div>
 
                           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-emerald-500/20">
                             <span className="text-[11px] font-black text-[#0d4f37] dark:text-[#feb10b] block mb-1.5">
-                              📜 الشاهد من السنة النبوية:
+                              📜 {t('from_noble_sunnah', 'الشاهد من السنة النبوية:')}
                             </span>
                             <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-100 font-semibold leading-relaxed mb-1">
                               «{item.hadith.text}»
                             </p>
                             <span className="text-[11px] text-slate-500 dark:text-emerald-300/60 font-medium">
-                              راويه: {item.hadith.narrator} | {item.hadith.source}
+                              {t('narrated_by', 'راويه')}: {item.hadith.narrator} | {item.hadith.source}
                             </span>
                           </div>
                         </div>
@@ -579,7 +586,7 @@ ${item.matnOriginal}`;
                         <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0d4f37] to-[#042418] text-white border border-[#feb10b]/30 flex items-center gap-3">
                           <Compass className="w-5 h-5 text-[#feb10b] shrink-0" />
                           <div className="text-xs sm:text-sm leading-relaxed text-emerald-100">
-                            <strong className="text-[#feb10b] block mb-0.5">وقفة قلبية وتأمل:</strong>
+                            <strong className="text-[#feb10b] block mb-0.5">{t('spiritual_reflection', 'وقفة قلبية وتأمل:')}</strong>
                             {item.heartPause}
                           </div>
                         </div>
@@ -590,48 +597,50 @@ ${item.matnOriginal}`;
                             <Headphones className="w-4 h-4 text-[#feb10b] shrink-0" />
                             <div>
                               <span className="font-bold block">{item.audioLabel}</span>
-                              <span className="text-[10px] text-slate-500 dark:text-amber-300/70">فتح بروابط خارجية مباشرة بدون استهلاك لموارد التطبيق</span>
+                              <span className="text-[10px] text-slate-500 dark:text-amber-300/70">{t('external_links_direct_notice', 'فتح بروابط خارجية مباشرة بدون استهلاك لموارد التطبيق')}</span>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                            <a
-                              href={item.audioListenUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => {
-                                handleOpenExternalAudio(item.audioListenUrl, item.title, item.audioLabel, 'listen', e);
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] text-white font-bold text-xs flex items-center gap-1 shadow transition-colors cursor-pointer"
-                              title="فتح رابط الاستماع الخارجي"
-                            >
-                              <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
-                              <span>استماع خارجي</span>
-                              <ExternalLink className="w-3 h-3 opacity-70" />
-                            </a>
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto justify-end">
+                            <div className="grid grid-cols-2 gap-2.5 w-full sm:w-auto">
+                              <a
+                                href={item.audioListenUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => {
+                                  handleOpenExternalAudio(item.audioListenUrl, item.title, item.audioLabel, 'listen', e);
+                                }}
+                                className="w-full min-h-[42px] px-3.5 py-2.5 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] active:bg-[#05261a] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all duration-200 cursor-pointer active:scale-[0.98]"
+                                title={t('open_external_listen_link', 'فتح رابط الاستماع الخارجي')}
+                              >
+                                <Headphones className="w-4 h-4 text-[#feb10b] shrink-0" />
+                                <span className="truncate">{t('external_listen', 'استماع خارجي')}</span>
+                                <ExternalLink className="w-3 h-3 opacity-70 shrink-0" />
+                              </a>
 
-                            <a
-                              href={item.audioDownloadUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => {
-                                handleOpenExternalAudio(item.audioDownloadUrl, item.title, item.audioLabel, 'download', e);
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1 hover:border-[#feb10b] transition-colors cursor-pointer"
-                              title="فتح رابط تحميل الدرس الخارجي"
-                            >
-                              <Download className="w-3.5 h-3.5 text-emerald-500 dark:text-[#feb10b]" />
-                              <span>تحميل خارجي (MP3)</span>
-                              <ExternalLink className="w-3 h-3 opacity-70" />
-                            </a>
+                              <a
+                                href={item.audioDownloadUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => {
+                                  handleOpenExternalAudio(item.audioDownloadUrl, item.title, item.audioLabel, 'download', e);
+                                }}
+                                className="w-full min-h-[42px] px-3.5 py-2.5 rounded-xl bg-white dark:bg-emerald-950/70 border border-slate-300/80 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-100 font-bold text-xs flex items-center justify-center gap-2 hover:border-[#feb10b] dark:hover:border-[#feb10b] shadow-sm hover:shadow transition-all duration-200 cursor-pointer active:scale-[0.98]"
+                                title={t('open_external_download_link', 'فتح رابط تحميل الدرس الخارجي')}
+                              >
+                                <Download className="w-4 h-4 text-emerald-600 dark:text-[#feb10b] shrink-0" />
+                                <span className="truncate">{t('external_download', 'تحميل خارجي (MP3)')}</span>
+                                <ExternalLink className="w-3 h-3 opacity-70 shrink-0" />
+                              </a>
+                            </div>
 
                             {fullArticle && (
                               <button
                                 onClick={() => onSelectArticle(fullArticle)}
-                                className="px-3.5 py-1.5 rounded-xl bg-[#feb10b] hover:bg-[#fec84b] text-[#042418] font-black text-xs flex items-center gap-1 shadow-sm transition-transform active:scale-95"
+                                className="min-h-[42px] px-4 py-2.5 rounded-xl bg-[#feb10b] hover:bg-[#fec84b] text-[#042418] font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-transform active:scale-95 shrink-0"
                               >
                                 <BookOpen className="w-3.5 h-3.5" />
-                                <span>قراءة الشرح المفصل</span>
+                                <span>{t('read_full_explanation', 'قراءة الشرح المفصل')}</span>
                               </button>
                             )}
                           </div>
@@ -645,14 +654,14 @@ ${item.matnOriginal}`;
                 <div className="px-5 py-3 border-t border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-emerald-950/10 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1 text-slate-500 dark:text-emerald-300/60">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>{item.takeaways.length} فوائد مستفادة من هذا الأصل</span>
+                    <span>{item.takeaways.length} {t('takeaways_count_unit', 'فوائد مستفادة من هذا الأصل')}</span>
                   </div>
 
                   <button
                     onClick={() => toggleCard(item.id)}
                     className="text-[#0d4f37] dark:text-[#feb10b] font-bold flex items-center gap-1 hover:underline"
                   >
-                    <span>{isExpanded ? 'طي التفاصيل' : 'عرض الأدلة والشرح الموسع'}</span>
+                    <span>{isExpanded ? t('collapse_details', 'طي التفاصيل') : t('show_evidence_and_sharh', 'عرض الأدلة والشرح الموسع')}</span>
                     {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -666,10 +675,10 @@ ${item.matnOriginal}`;
       <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-emerald-900/10 via-amber-500/10 to-emerald-900/10 dark:from-[#0d4f37]/40 dark:via-[#083a28]/60 dark:to-[#042418] border border-[#feb10b]/30 text-center space-y-2">
         <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-[#feb10b]" />
-          <span>خلاصة الأصول الستة وقاعدة النجاة</span>
+          <span>{t('usool_sittah_summary_title', 'خلاصة الأصول الستة وقاعدة النجاة')}</span>
         </h4>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-emerald-200/90 max-w-2xl mx-auto leading-relaxed">
-          «من لزم هذه الأصول الستة مخلصاً لله متبعاً لسنة نبيه ﷺ، لزم الصراط المستقيم، وأَمِنَ من الشبهات المضلة، وكان من الفرقة الناجية والطائفة المنصورة بإذن الله تعالى».
+          {t('usool_sittah_summary_quote', '«من لزم هذه الأصول الستة مخلصاً لله متبعاً لسنة نبيه ﷺ، لزم الصراط المستقيم، وأَمِنَ من الشبهات المضلة، وكان من الفرقة الناجية والطائفة المنصورة بإذن الله تعالى».')}
         </p>
       </div>
 

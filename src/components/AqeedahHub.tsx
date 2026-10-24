@@ -175,9 +175,9 @@ export const AqeedahHub: React.FC = () => {
   const toggleBookmarkCurrentTab = useCallback(() => {
     const currentCategoryObj = AQEEDAH_CATEGORIES.find((c) => c.id === activeTab);
     const tabName = activeTab === 'all'
-      ? (settings.appLanguage === 'ar' ? 'الصفحة الرئيسية للعقيدة' : 'Aqeedah Hub')
+      ? t('creed_hub_home', 'الصفحة الرئيسية للعقيدة')
       : activeTab === 'favorites'
-      ? (settings.appLanguage === 'ar' ? 'المفضلة والمحفوظات' : 'Favorites')
+      ? t('favorites_and_bookmarks', 'المفضلة والمحفوظات')
       : (getLocalizedAqeedahCategory(activeTab, settings.appLanguage)?.shortTitle || currentCategoryObj?.shortTitle || activeTab);
 
     setBookmarkedTabs((prev) => {
@@ -186,12 +186,12 @@ export const AqeedahHub: React.FC = () => {
       safeLocalStorageSetItem('aqeedah_bookmarked_tabs', JSON.stringify(next));
       showToast(
         isBookmarked
-          ? (settings.appLanguage === 'ar' ? `تمت إزالة (${tabName}) من المفضلة` : `Removed (${tabName}) from bookmarks`)
-          : (settings.appLanguage === 'ar' ? `تم حفظ (${tabName}) في المفضلة للوصول السريع` : `Saved (${tabName}) to bookmarks`)
+          ? t('removed_category_from_bookmarks', `تمت إزالة (${tabName}) من المفضلة`, { name: tabName })
+          : t('saved_category_to_bookmarks', `تم حفظ (${tabName}) في المفضلة للوصول السريع`, { name: tabName })
       );
       return next;
     });
-  }, [activeTab, settings.appLanguage, showToast]);
+  }, [activeTab, settings.appLanguage, showToast, t]);
   const [externalAudioModal, setExternalAudioModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -605,7 +605,7 @@ export const AqeedahHub: React.FC = () => {
                     <span>{t('aqeedah_title', 'العقيدة الصحيحة')}</span>
                   </h1>
                   <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#feb10b]/15 text-[#feb10b] border border-[#feb10b]/30">
-                    {settings.appLanguage === 'ar' ? 'منهج أهل السنة والجماعة' : 'Ahlus-Sunnah wal-Jamaah'}
+                    {t('ahlus_sunnah_wal_jamaah', 'منهج أهل السنة والجماعة')}
                   </span>
                 </div>
                 <p className="text-xs text-emerald-800 dark:text-emerald-300/80 font-medium">
@@ -693,15 +693,13 @@ export const AqeedahHub: React.FC = () => {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black bg-[#feb10b]/20 text-[#feb10b] border border-[#feb10b]/40 mb-2.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{settings.appLanguage === 'ar' ? 'أصل الأصول وقاعدة كل عمل صالح' : 'The Principle of all Principles & Good Deeds'}</span>
+                <span>{t('sound_creed_principle_badge', 'أصل الأصول وقاعدة كل عمل صالح')}</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black mb-2 text-white">
-                {t('aqeedah_title', 'العقيدة الصحيحة')}: {settings.appLanguage === 'ar' ? 'أركان الإيمان وتحقيق التوحيد' : 'Pillars of Faith & Fulfilling Tawheed'}
+                {t('aqeedah_title', 'العقيدة الصحيحة')}: {t('pillars_of_faith_subtitle', 'أركان الإيمان وتحقيق التوحيد')}
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
-                {settings.appLanguage === 'ar'
-                  ? 'العقيدة هي الأساس الذي تبنى عليه صحة صلاتك وصيامك وعباداتك. تعرّف على أركان الإيمان الستة، كيف تحمي توحيدك من الشرك والبدع، وتتعبد بأسمائه الحسنى، وتثبت في زمن الفتن.'
-                  : 'Sound Creed is the foundation upon which your prayers, fasting, and acts of worship are accepted. Learn the 6 pillars of faith, preserving Tawheed, and worshipping Allah through His Divine Names.'}
+                {t('creed_hero_description', 'العقيدة هي الأساس الذي تبنى عليه صحة صلاتك وصيامك وعباداتك. تعرّف على أركان الإيمان الستة، كيف تحمي توحيدك من الشرك والبدع، وتتعبد بأسمائه الحسنى، وتثبت في زمن الفتن.')}
               </p>
             </div>
 
@@ -711,7 +709,7 @@ export const AqeedahHub: React.FC = () => {
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-sm border border-white/25 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
               >
                 <Scroll className="w-4 h-4 text-[#feb10b]" />
-                <span>{settings.appLanguage === 'ar' ? 'الأصول الستة لابن باز' : 'Six Foundations (Ibn Baz)'}</span>
+                <span>{t('six_foundations_ibn_baz', 'الأصول الستة لابن باز')}</span>
               </button>
               <button
                 onClick={() => {
@@ -721,7 +719,7 @@ export const AqeedahHub: React.FC = () => {
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#feb10b] hover:bg-[#fec84b] text-[#042418] font-black text-sm shadow-lg shadow-[#feb10b]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <BookOpen className="w-4 h-4" />
-                <span>{settings.appLanguage === 'ar' ? 'ابدأ التعلم الآن' : 'Start Learning Now'}</span>
+                <span>{t('start_learning_now', 'ابدأ التعلم الآن')}</span>
               </button>
             </div>
           </div>
@@ -757,14 +755,14 @@ export const AqeedahHub: React.FC = () => {
               <div>
                 <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <Layers className="w-5 h-5 text-[#feb10b]" />
-                  <span>{settings.appLanguage === 'ar' ? 'أقسام ومحاور العقيدة الصحيحة' : 'Creed Core Categories & Pillars'}</span>
+                  <span>{t('creed_categories_title', 'أقسام ومحاور العقيدة الصحيحة')}</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
-                  {settings.appLanguage === 'ar' ? 'اختر القسم للوصول السريع إلى الشروح والبطاقات والكتب المعتمدة' : 'Select a category to explore explanations, benefit cards, and authentic books'}
+                  {t('creed_categories_desc', 'اختر القسم للوصول السريع إلى الشروح والبطاقات والكتب المعتمدة')}
                 </p>
               </div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
-                {AQEEDAH_CATEGORIES.length} {settings.appLanguage === 'ar' ? 'أقسام رئيسية' : 'Categories'}
+                {AQEEDAH_CATEGORIES.length} {t('categories_unit', 'أقسام رئيسية')}
               </span>
             </div>
 
@@ -804,11 +802,11 @@ export const AqeedahHub: React.FC = () => {
 
                     <div className="relative z-10 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-[#0d4f37] dark:text-[#feb10b]">
                       <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                        <span>{settings.appLanguage === 'ar' ? 'تصفح المباحث' : 'Explore Topics'}</span>
+                        <span>{t('explore_topics', 'تصفح المباحث')}</span>
                         {isRtl ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                       </span>
                       <span className="text-[10px] text-slate-400 dark:text-emerald-300/60 font-medium">
-                        {categoryArticlesCount > 0 ? `${categoryArticlesCount} ${settings.appLanguage === 'ar' ? 'مبحث' : 'topics'}` : (settings.appLanguage === 'ar' ? 'شرح كافٍ' : 'Complete')}
+                        {categoryArticlesCount > 0 ? `${categoryArticlesCount} ${t('article_unit', 'مبحث')}` : t('complete_explanation_unit', 'شرح كافٍ')}
                       </span>
                     </div>
                   </motion.div>
@@ -827,10 +825,10 @@ export const AqeedahHub: React.FC = () => {
                 <div className="flex items-center justify-between mb-3.5">
                   <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <BookmarkCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#feb10b]" />
-                    <span>{settings.appLanguage === 'ar' ? 'الأبواب والصفحات المحفوظة' : 'Bookmarked Pages & Sections'}</span>
+                    <span>{t('bookmarked_pages_title', 'الأبواب والصفحات المحفوظة')}</span>
                   </h4>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-[#feb10b]">
-                    {bookmarkedTabs.length} {settings.appLanguage === 'ar' ? 'أبواب محفوظة' : 'Saved'}
+                    {bookmarkedTabs.length} {t('saved_sections_count', 'أبواب محفوظة')}
                   </span>
                 </div>
 
@@ -839,9 +837,9 @@ export const AqeedahHub: React.FC = () => {
                     const catObj = AQEEDAH_CATEGORIES.find((c) => c.id === tabId);
                     const locCat = catObj ? getLocalizedAqeedahCategory(catObj.id, settings.appLanguage) : null;
                     const tabTitle = tabId === 'all'
-                      ? (settings.appLanguage === 'ar' ? 'الصفحة الرئيسية للعقيدة' : 'Aqeedah Hub')
+                      ? t('creed_hub_home', 'الصفحة الرئيسية للعقيدة')
                       : (locCat?.title || catObj?.title || tabId);
-                    const tabSubtitle = locCat?.subtitle || catObj?.subtitle || (settings.appLanguage === 'ar' ? 'باب محفوظ للوصول السريع' : 'Saved category');
+                    const tabSubtitle = locCat?.subtitle || catObj?.subtitle || t('saved_category_desc', 'باب محفوظ للوصول السريع');
 
                     return (
                       <div
@@ -869,12 +867,12 @@ export const AqeedahHub: React.FC = () => {
                             setBookmarkedTabs((prev) => {
                               const next = prev.filter((t) => t !== tabId);
                               safeLocalStorageSetItem('aqeedah_bookmarked_tabs', JSON.stringify(next));
-                              showToast(settings.appLanguage === 'ar' ? `تمت إزالة (${tabTitle}) من المفضلة` : `Removed from bookmarks`);
+                              showToast(t('removed_category_from_bookmarks', `تمت إزالة (${tabTitle}) من المفضلة`, { name: tabTitle }));
                               return next;
                             });
                           }}
                           className="p-1.5 text-slate-400 hover:text-rose-500 dark:text-emerald-300/40 dark:hover:text-rose-400 transition-colors shrink-0"
-                          title={settings.appLanguage === 'ar' ? 'إزالة من المفضلة' : 'Remove bookmark'}
+                          title={t('remove_from_favorites', 'إزالة من المفضلة')}
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -908,7 +906,7 @@ export const AqeedahHub: React.FC = () => {
 
             {filteredArticles.length === 0 ? (
               <div className="p-8 text-center bg-white dark:bg-[#0b281c] rounded-2xl border border-dashed border-slate-300 dark:border-emerald-500/20 text-slate-500 dark:text-emerald-200/60">
-                {activeTab === 'favorites' ? (settings.appLanguage === 'ar' ? 'لم تقم بحفظ أي مقالة في المفضلة بعد.' : 'No saved articles in favorites yet.') : (settings.appLanguage === 'ar' ? 'لا توجد نتائج مطابقة لبحثك.' : 'No matching results found.')}
+                {activeTab === 'favorites' ? t('no_saved_articles_yet', 'لم تقم بحفظ أي مقالة في المفضلة بعد.') : t('no_results_match', 'لا توجد نتائج مطابقة لبحثك.')}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -928,7 +926,7 @@ export const AqeedahHub: React.FC = () => {
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2.5">
                           <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-[#feb10b]/15 text-emerald-800 dark:text-[#feb10b] border border-emerald-200 dark:border-[#feb10b]/30">
-                            {locArt.subCategoryTitle || (settings.appLanguage === 'ar' ? 'العقيدة' : 'Creed')}
+                            {locArt.subCategoryTitle || t('aqeedah', 'العقيدة')}
                           </span>
                           <div className="flex items-center gap-1.5">
                             {(() => {
@@ -955,7 +953,7 @@ export const AqeedahHub: React.FC = () => {
                             <button
                               onClick={(e) => toggleFavorite(article.id, e)}
                               className="p-1.5 text-slate-400 hover:text-rose-500 dark:text-emerald-300/50 dark:hover:text-[#feb10b] transition-colors"
-                              title={isFav ? (settings.appLanguage === 'ar' ? 'إزالة من المفضلة' : 'Remove') : (settings.appLanguage === 'ar' ? 'إضافة إلى المفضلة' : 'Save')}
+                              title={isFav ? t('remove_from_favorites', 'إزالة من المفضلة') : t('save_to_favorites', 'إضافة إلى المفضلة')}
                             >
                               <Bookmark className={cn('w-4 h-4', isFav && 'fill-rose-500 text-rose-500 dark:fill-[#feb10b] dark:text-[#feb10b]')} />
                             </button>
@@ -985,7 +983,7 @@ export const AqeedahHub: React.FC = () => {
                           {isRtl ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                         </span>
                         <span className="text-[11px] text-slate-400 dark:text-emerald-300/50">
-                          {locArt.keyTakeaways.length} {settings.appLanguage === 'ar' ? 'محاور رئيسية' : 'key topics'}
+                          {locArt.keyTakeaways.length} {t('key_topics_count', 'محاور رئيسية')}
                         </span>
                       </div>
                     </motion.div>
@@ -1004,17 +1002,17 @@ export const AqeedahHub: React.FC = () => {
                 <div>
                   <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <Scroll className="w-5 h-5 text-[#feb10b]" />
-                    <span>الأصول الستة للشيخ ابن باز (مع الشرح الميسر)</span>
+                    <span>{t('usool_sittah_title', 'الأصول الستة للشيخ ابن باز (مع الشرح الميسر)')}</span>
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
-                    بطاقات تفاعلية مميزة تجمع بين المتن الأصلي والشرح الميسر والأدلة
+                    {t('usool_sittah_desc', 'بطاقات تفاعلية مميزة تجمع بين المتن الأصلي والشرح الميسر والأدلة')}
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab('usool_sittah')}
                   className="text-xs font-bold text-[#0d4f37] dark:text-[#feb10b] flex items-center gap-1 hover:underline shrink-0"
                 >
-                  <span>عرض التبويب المخصص</span>
+                  <span>{t('view_custom_tab', 'عرض التبويب المخصص')}</span>
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1037,18 +1035,18 @@ export const AqeedahHub: React.FC = () => {
                   <Library className="w-5 h-5 text-[#feb10b]" />
                   <span>
                     {Boolean(TAB_SPECIFIC_BOOK_IDS[activeTab])
-                      ? (settings.appLanguage === 'ar' ? 'الكتاب المعتمد والخلاصة المنهجية' : 'Approved Book & Summary')
-                      : (settings.appLanguage === 'ar' ? 'مكتبة وخلاصات أمهات كتب العقيدة والتزكية' : 'Creed Books Library')}
+                      ? t('approved_book_summary_title', 'الكتاب المعتمد والخلاصة المنهجية')
+                      : t('creed_books_library_title', 'مكتبة وخلاصات أمهات كتب العقيدة والتزكية')}
                   </span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-1">
                   {Boolean(TAB_SPECIFIC_BOOK_IDS[activeTab])
-                    ? (settings.appLanguage === 'ar' ? 'المتن المعتمد مع الاستماع للدروس الصوتية والتحميل المباشر' : 'Verified text with audio lectures and direct download')
-                    : (settings.appLanguage === 'ar' ? 'خلاصات مركزة، بطاقات فوائد، ودليل التصفح لأهم كتب التوحيد وشروح العقيدة وأعمال القلوب' : 'Concentrated summaries, benefit cards, and audio/download links')}
+                    ? t('approved_book_summary_sub', 'المتن المعتمد مع الاستماع للدروس الصوتية والتحميل المباشر')
+                    : t('creed_books_library_sub', 'خلاصات مركزة، بطاقات فوائد، ودليل التصفح لأهم كتب التوحيد وشروح العقيدة وأعمال القلوب')}
                 </p>
               </div>
               <span className="self-start sm:self-auto text-xs font-bold px-3 py-1.5 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-900 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30">
-                {filteredBooks.length} {settings.appLanguage === 'ar' ? 'مؤلّف معتمد' : 'Verified book'}
+                {filteredBooks.length} {t('verified_book_unit', 'مؤلّف معتمد')}
               </span>
             </div>
 
@@ -1056,11 +1054,11 @@ export const AqeedahHub: React.FC = () => {
             {(activeTab === 'all' || activeTab === 'books_library') && (
               <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar">
                 {[
-                  { id: 'all', label: 'جميع الكتب' },
-                  { id: 'tawheed', label: 'متون التوحيد الأساسية' },
-                  { id: 'major_aqeedah', label: 'شروح العقيدة الكبرى' },
-                  { id: 'heart_purification', label: 'أعمال القلوب والتزكية' },
-                  { id: 'complementary_sciences', label: 'العلوم الشرعية المعينة' }
+                  { id: 'all', label: t('all_books_filter', 'جميع الكتب') },
+                  { id: 'tawheed', label: t('tawheed_core_texts', 'متون التوحيد الأساسية') },
+                  { id: 'major_aqeedah', label: t('major_creed_explanations', 'شروح العقيدة الكبرى') },
+                  { id: 'heart_purification', label: t('heart_purification_deeds', 'أعمال القلوب والتزكية') },
+                  { id: 'complementary_sciences', label: t('complementary_sciences', 'العلوم الشرعية المعينة') }
                 ].map((subCat) => (
                   <button
                     key={subCat.id}
@@ -1080,7 +1078,7 @@ export const AqeedahHub: React.FC = () => {
 
             {filteredBooks.length === 0 ? (
               <div className="p-8 text-center bg-white dark:bg-[#0b281c] rounded-2xl border border-dashed border-slate-300 dark:border-emerald-500/20 text-slate-500 dark:text-emerald-200/60">
-                لا توجد كتب مطابقة لبحثك في هذا القسم.
+                {t('no_matching_books', 'لا توجد كتب مطابقة لبحثك في هذا القسم.')}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1229,22 +1227,25 @@ export const AqeedahHub: React.FC = () => {
                             <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-500/30 text-xs text-emerald-900 dark:text-emerald-100 flex items-start gap-2">
                               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                               <div>
-                                <span className="font-black ml-1">تطبيق عملي من الكتاب:</span>
+                                <span className="font-black ml-1">{t('practical_application', 'تطبيق عملي من الكتاب')}:</span>
                                 <span>{book.actionableStep}</span>
                               </div>
                             </div>
 
                             {/* External Audio Bar */}
                             {(book.audioListenUrl || book.audioDownloadUrl) && (
-                              <div className="p-3.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 flex flex-wrap items-center justify-between gap-3 text-xs">
-                                <div className="flex items-center gap-2 text-slate-800 dark:text-amber-200">
+                              <div className="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                                <div className="flex items-center gap-2.5 text-slate-800 dark:text-amber-200">
                                   <Headphones className="w-4 h-4 text-[#feb10b] shrink-0" />
                                   <div>
-                                    <span className="font-bold block">{book.audioSourceLabel || 'تسجيلات وشروح صوتية موثوقة لكبار العلماء'}</span>
-                                    <span className="text-[10px] text-slate-500 dark:text-amber-300/70">فتح بروابط خارجية مباشرة بدون استهلاك لموارد التطبيق</span>
+                                    <span className="font-bold block text-slate-900 dark:text-amber-100">{book.audioSourceLabel || t('audio_lessons_and_explanations', 'تسجيلات وشروح صوتية موثوقة لكبار العلماء')}</span>
+                                    <span className="text-[10px] text-slate-500 dark:text-amber-300/70">{t('external_links_direct_notice', 'فتح بروابط خارجية مباشرة بدون استهلاك لموارد التطبيق')}</span>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className={cn(
+                                  "grid gap-2.5 sm:gap-3 w-full md:w-auto shrink-0",
+                                  book.audioListenUrl && book.audioDownloadUrl ? "grid-cols-2 min-w-[280px] sm:min-w-[320px]" : "grid-cols-1 min-w-[160px]"
+                                )}>
                                   {book.audioListenUrl && (
                                     <a
                                       href={book.audioListenUrl}
@@ -1253,12 +1254,12 @@ export const AqeedahHub: React.FC = () => {
                                       onClick={(e) => {
                                         handleOpenExternalAudio(book.audioListenUrl!, book.title, book.audioSourceLabel || book.title, 'listen', e);
                                       }}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0d4f37] hover:bg-[#083a28] text-white font-bold text-xs shadow transition-colors cursor-pointer"
-                                      title="فتح رابط الاستماع الخارجي"
+                                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] active:bg-[#05261a] text-white font-bold text-xs shadow-sm hover:shadow transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
+                                      title={t('open_external_listen_link', 'فتح رابط الاستماع الخارجي')}
                                     >
-                                      <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
-                                      <span>استماع خارجي</span>
-                                      <ExternalLink className="w-3 h-3 opacity-70" />
+                                      <Headphones className="w-4 h-4 text-[#feb10b] shrink-0" />
+                                      <span className="truncate">{t('external_listen', 'استماع خارجي')}</span>
+                                      <ExternalLink className="w-3 h-3 opacity-70 shrink-0" />
                                     </a>
                                   )}
                                   {book.audioDownloadUrl && (
@@ -1269,12 +1270,12 @@ export const AqeedahHub: React.FC = () => {
                                       onClick={(e) => {
                                         handleOpenExternalAudio(book.audioDownloadUrl!, book.title, book.audioSourceLabel || book.title, 'download', e);
                                       }}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-emerald-950 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-200 font-bold text-xs hover:border-[#feb10b] transition-colors cursor-pointer"
-                                      title="فتح رابط تحميل الدرس الخارجي"
+                                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-white dark:bg-emerald-950/70 border border-slate-300/80 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-100 font-bold text-xs hover:border-[#feb10b] dark:hover:border-[#feb10b] shadow-sm hover:shadow transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
+                                      title={t('open_external_download_link', 'فتح رابط تحميل الدرس الخارجي')}
                                     >
-                                      <Download className="w-3.5 h-3.5 text-[#feb10b]" />
-                                      <span>تحميل خارجي (MP3)</span>
-                                      <ExternalLink className="w-3 h-3 opacity-70" />
+                                      <Download className="w-4 h-4 text-emerald-600 dark:text-[#feb10b] shrink-0" />
+                                      <span className="truncate">{t('external_download', 'تحميل خارجي (MP3)')}</span>
+                                      <ExternalLink className="w-3 h-3 opacity-70 shrink-0" />
                                     </a>
                                   )}
                                 </div>
@@ -1290,7 +1291,7 @@ export const AqeedahHub: React.FC = () => {
                           onClick={() => setExpandedBookId(isExpanded ? null : book.id)}
                           className="text-xs font-bold text-[#0d4f37] dark:text-[#feb10b] hover:underline flex items-center gap-1"
                         >
-                          <span>{isExpanded ? 'طي التفاصيل' : 'قراءة خلاصة الكتاب والدرر'}</span>
+                          <span>{isExpanded ? t('collapse_details', 'طي التفاصيل') : t('read_book_summary', 'قراءة خلاصة الكتاب والدرر')}</span>
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>
 
@@ -1302,7 +1303,7 @@ export const AqeedahHub: React.FC = () => {
                             onClick={(e) => openExternalUrl(book.readOnlineUrl!, book.title, 'المكتبة الشاملة / المصدر الرقمي', 'read', e)}
                             className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
-                            <span>تصفح وقراءة</span>
+                            <span>{t('browse_and_read', 'تصفح وقراءة')}</span>
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
@@ -1359,17 +1360,17 @@ export const AqeedahHub: React.FC = () => {
                         <button
                           onClick={() => toggleFavorite(q.id)}
                           className="p-1.5 text-slate-400 hover:text-[#feb10b] dark:text-emerald-400/50 dark:hover:text-[#feb10b]"
-                          title={settings.appLanguage === 'ar' ? 'حفظ' : 'Save'}
+                          title={t('save', 'حفظ')}
                         >
                           <Bookmark className={cn('w-4 h-4', isFav && 'fill-[#feb10b] text-[#feb10b]')} />
                         </button>
                         <button
                           onClick={async () => {
                             await shareContent(locQ.scholar, `${locQ.scholar} (${locQ.era}):\n\n"${locQ.quote}"\n\n— ${locQ.source}`);
-                            showToast(settings.appLanguage === 'ar' ? 'تم نسخ ومشاركة القول' : 'Quote copied & shared');
+                            showToast(t('quote_copied_toast', 'تم نسخ ومشاركة القول'));
                           }}
                           className="p-1.5 text-slate-400 hover:text-[#feb10b] dark:text-emerald-400/50 dark:hover:text-[#feb10b]"
-                          title={settings.appLanguage === 'ar' ? 'مشاركة' : 'Share'}
+                          title={t('share', 'مشاركة')}
                         >
                           <Share2 className="w-4 h-4" />
                         </button>
@@ -1384,7 +1385,7 @@ export const AqeedahHub: React.FC = () => {
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-500 dark:text-emerald-300/60 z-10 relative">
-                      <span>{settings.appLanguage === 'ar' ? 'المصدر' : 'Source'}: {locQ.source}</span>
+                      <span>{t('source_label', 'المصدر')}: {locQ.source}</span>
                       <span className="text-emerald-800 dark:text-[#feb10b] font-medium">{locQ.theme}</span>
                     </div>
                   </motion.div>
@@ -1447,7 +1448,7 @@ export const AqeedahHub: React.FC = () => {
 
                       <div className="pt-2 border-t border-white/15 flex items-center justify-between text-[9.5px] text-emerald-200/70">
                         <span>{locCard.authorOrSource}</span>
-                        <span>{settings.appLanguage === 'ar' ? 'تطبيق أذكار المؤمن' : 'Athkar Believer App'}</span>
+                        <span>{t('app_name_full', 'تطبيق أذكار المؤمن')}</span>
                       </div>
                     </div>
 
@@ -1465,7 +1466,7 @@ export const AqeedahHub: React.FC = () => {
                       <button
                         onClick={async () => {
                           await shareContent(locCard.title, `﴿ ${locCard.title} ﴾\n\n${locCard.text}\n\n— ${locCard.authorOrSource}`);
-                          showToast(settings.appLanguage === 'ar' ? 'تم نسخ نص البطاقة' : 'Card text copied');
+                          showToast(t('card_text_copied_toast', 'تم نسخ نص البطاقة'));
                         }}
                         className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-black/40 dark:hover:bg-black/60 text-slate-700 dark:text-emerald-300 text-xs transition-colors"
                         title={t('copy_text', 'نسخ النص')}
@@ -1494,8 +1495,8 @@ export const AqeedahHub: React.FC = () => {
               whileTap={{ scale: 0.92 }}
               onClick={scrollToTop}
               className="pointer-events-auto flex flex-col items-center justify-center w-8 h-12 sm:w-9 sm:h-14 rounded-full bg-gradient-to-b from-[#0d4f37] to-[#083a28] hover:from-[#145d41] hover:to-[#0d4f37] text-white border border-[#feb10b]/50 shadow-xl shadow-emerald-950/30 backdrop-blur-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-[#feb10b]"
-              title={settings.appLanguage === 'ar' ? 'الانتقال لأعلى الصفحة' : 'Scroll to top'}
-              aria-label={settings.appLanguage === 'ar' ? 'الانتقال لأعلى الصفحة' : 'Scroll to top'}
+              title={t('scroll_to_top', 'الانتقال لأعلى الصفحة')}
+              aria-label={t('scroll_to_top', 'الانتقال لأعلى الصفحة')}
             >
               <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#feb10b] group-hover:-translate-y-1 transition-transform duration-200" />
             </motion.button>
@@ -1520,13 +1521,13 @@ export const AqeedahHub: React.FC = () => {
           )}
           title={
             isCurrentTabBookmarked
-              ? (settings.appLanguage === 'ar' ? 'إزالة هذه الصفحة من المفضلة' : 'Remove page from bookmarks')
-              : (settings.appLanguage === 'ar' ? 'حفظ هذه الصفحة في المفضلة' : 'Bookmark this page')
+              ? t('remove_page_from_bookmarks', 'إزالة هذه الصفحة من المفضلة')
+              : t('bookmark_this_page', 'حفظ هذه الصفحة في المفضلة')
           }
           aria-label={
             isCurrentTabBookmarked
-              ? (settings.appLanguage === 'ar' ? 'الصفحة محفوظة في المفضلة' : 'Bookmarked page')
-              : (settings.appLanguage === 'ar' ? 'حفظ الصفحة في المفضلة' : 'Bookmark this page')
+              ? t('page_bookmarked_title', 'الصفحة محفوظة في المفضلة')
+              : t('bookmark_this_page', 'حفظ الصفحة في المفضلة')
           }
         >
           {isCurrentTabBookmarked ? (
@@ -1536,8 +1537,8 @@ export const AqeedahHub: React.FC = () => {
           )}
           <span className="text-xs font-black hidden xs:inline">
             {isCurrentTabBookmarked
-              ? (settings.appLanguage === 'ar' ? 'الصفحة محفوظة' : 'Saved')
-              : (settings.appLanguage === 'ar' ? 'حفظ الصفحة' : 'Bookmark')}
+              ? t('page_saved', 'الصفحة محفوظة')
+              : t('bookmark_page_action', 'حفظ الصفحة')}
           </span>
         </motion.button>
 
@@ -1560,8 +1561,8 @@ export const AqeedahHub: React.FC = () => {
           <Heart className={cn("w-4 h-4 sm:w-5 sm:h-5", activeTab === 'favorites' ? "fill-current text-white dark:text-[#042418]" : "fill-rose-500 text-rose-500")} />
           <span className="text-xs font-black hidden xs:inline">
             {activeTab === 'favorites'
-              ? (settings.appLanguage === 'ar' ? 'عرض الكل' : 'View All')
-              : (settings.appLanguage === 'ar' ? 'المفضلة' : 'Favorites')}
+              ? t('view_all', 'عرض الكل')
+              : t('favorites', 'المفضلة')}
           </span>
           {(favorites.length > 0 || bookmarkedTabs.length > 0) && (
             <span
@@ -1608,7 +1609,7 @@ export const AqeedahHub: React.FC = () => {
                       <>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-black px-2.5 py-1 rounded-full bg-[#feb10b]/20 text-[#0d4f37] dark:text-[#feb10b] border border-[#feb10b]/40">
-                            {locSelArt.subCategoryTitle || (settings.appLanguage === 'ar' ? 'العقيدة الصحيحة' : 'Sound Creed')}
+                            {locSelArt.subCategoryTitle || t('sound_creed_title', 'العقيدة الصحيحة')}
                           </span>
                           <span className="text-xs text-slate-500 dark:text-emerald-300/60 font-medium">
                             {locSelArt.readTime}
@@ -1631,7 +1632,7 @@ export const AqeedahHub: React.FC = () => {
                                 title={`استماع خارجي: ${audioInfo.label}`}
                               >
                                 <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
-                                <span className="hidden sm:inline">{settings.appLanguage === 'ar' ? 'استماع خارجي' : 'Listen'}</span>
+                                <span className="hidden sm:inline">{t('external_listen', 'استماع خارجي')}</span>
                                 <ExternalLink className="w-3 h-3 opacity-60" />
                               </a>
                             );
@@ -1647,7 +1648,7 @@ export const AqeedahHub: React.FC = () => {
                                 safeLocalStorageSetItem('aqeedah_font_size', sizes[nextIdx]);
                               }}
                               className="px-2 py-1 text-xs font-bold hover:text-[#feb10b]"
-                              title={settings.appLanguage === 'ar' ? 'تصغير الخط' : 'Zoom out'}
+                              title={t('decrease_font', 'تصغير الخط')}
                             >
                               A-
                             </button>
@@ -1660,7 +1661,7 @@ export const AqeedahHub: React.FC = () => {
                                 safeLocalStorageSetItem('aqeedah_font_size', sizes[nextIdx]);
                               }}
                               className="px-2 py-1 text-xs font-bold hover:text-[#feb10b]"
-                              title={settings.appLanguage === 'ar' ? 'تكبير الخط' : 'Zoom in'}
+                              title={t('increase_font', 'تكبير الخط')}
                             >
                               A+
                             </button>
@@ -1684,7 +1685,7 @@ export const AqeedahHub: React.FC = () => {
                           <button
                             onClick={handleCloseArticle}
                             className="p-2 rounded-xl bg-slate-200 dark:bg-black/50 text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-black/80 transition-colors"
-                            title={settings.appLanguage === 'ar' ? 'إغلاق' : 'Close'}
+                            title={t('close', 'إغلاق')}
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -1714,7 +1715,7 @@ export const AqeedahHub: React.FC = () => {
                     <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20">
                       <h4 className="text-xs font-black text-[#0d4f37] dark:text-[#feb10b] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>{settings.appLanguage === 'ar' ? 'خلاصة المقال' : 'Key Summary'}</span>
+                        <span>{t('article_summary_title', 'خلاصة المقال')}</span>
                       </h4>
                       <p className={cn('text-slate-800 dark:text-emerald-100 font-medium', getFontSizeClass(readerFontSize))}>
                         {locSelArt.summary}
@@ -1728,7 +1729,7 @@ export const AqeedahHub: React.FC = () => {
                           ۞
                         </div>
                         <div className="text-[11px] font-bold text-amber-700 dark:text-[#feb10b] mb-2">
-                          {settings.appLanguage === 'ar' ? 'شاهد من القرآن العظيم' : 'Evidence from the Holy Quran'}
+                          {t('evidence_from_quran', 'شاهد من القرآن العظيم')}
                         </div>
                         <p className="font-amiri text-lg sm:text-2xl font-black text-emerald-950 dark:text-emerald-100 leading-loose mb-2 px-3">
                           ﴿ {selectedArticle.quranVerse.arabic} ﴾
@@ -1745,7 +1746,7 @@ export const AqeedahHub: React.FC = () => {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-bold text-[#0d4f37] dark:text-[#feb10b] flex items-center gap-1.5">
                             <Quote className="w-3.5 h-3.5" />
-                            <span>{settings.appLanguage === 'ar' ? 'من السنة النبوية الشريفة' : 'From the Noble Sunnah'}</span>
+                            <span>{t('from_noble_sunnah', 'من السنة النبوية الشريفة')}</span>
                           </span>
                           <span className="text-[10px] text-slate-500 dark:text-emerald-300/60 font-medium">
                             {selectedArticle.hadith.source}
@@ -1755,7 +1756,7 @@ export const AqeedahHub: React.FC = () => {
                           «{selectedArticle.hadith.text}»
                         </p>
                         <div className="text-xs text-slate-500 dark:text-emerald-300/70">
-                          {settings.appLanguage === 'ar' ? 'عن' : 'Narrated by'} {selectedArticle.hadith.narrator}
+                          {t('narrated_by', 'عن')} {selectedArticle.hadith.narrator}
                         </div>
                       </div>
                     )}
@@ -1764,7 +1765,7 @@ export const AqeedahHub: React.FC = () => {
                     <div className="p-4 rounded-2xl bg-white dark:bg-[#092b1e] border border-slate-200 dark:border-emerald-500/20">
                       <h4 className="text-sm font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-[#feb10b]" />
-                        <span>{settings.appLanguage === 'ar' ? 'الركائز والمحاور الأساسية' : 'Key Pillars & Points'}</span>
+                        <span>{t('key_pillars_and_points', 'الركائز والمحاور الأساسية')}</span>
                       </h4>
                       <ul className="space-y-2">
                         {locSelArt.keyTakeaways.map((point, idx) => (
@@ -1781,7 +1782,7 @@ export const AqeedahHub: React.FC = () => {
                     {/* Detailed Sections */}
                     <div className="space-y-5">
                       <h3 className="text-base font-black text-slate-900 dark:text-white border-b border-slate-200 dark:border-emerald-500/20 pb-2">
-                        {settings.appLanguage === 'ar' ? 'الشرح المفصل والأدلة الشرعية' : 'Detailed Explanation & Evidences'}
+                        {t('detailed_explanation_and_evidences', 'الشرح المفصل والأدلة الشرعية')}
                       </h3>
 
                       {locSelArt.detailedSections.map((sec, idx) => (
@@ -1813,7 +1814,7 @@ export const AqeedahHub: React.FC = () => {
                           {sec.practicalLifeExample && (
                             <div className="p-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-500/30 text-xs text-amber-950 dark:text-amber-200">
                               <span className="font-black text-amber-800 dark:text-[#feb10b] ml-1">
-                                💡 {settings.appLanguage === 'ar' ? 'كيف تعيش بها في واقعك:' : 'Practical Application:'}
+                                💡 {t('how_to_apply_in_life', 'كيف تعيش بها في واقعك')}:
                               </span>
                               <span>{sec.practicalLifeExample}</span>
                             </div>
@@ -1826,18 +1827,18 @@ export const AqeedahHub: React.FC = () => {
                     {(() => {
                       const audioInfo = getArticleAudioInfo(selectedArticle);
                       return (
-                        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-900/10 to-transparent dark:from-amber-950/30 dark:via-[#083a28] dark:to-black/30 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-900/10 to-transparent dark:from-amber-950/30 dark:via-[#083a28] dark:to-black/30 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 text-amber-700 dark:text-[#feb10b] font-black text-xs">
                               <Headphones className="w-4 h-4 text-[#feb10b]" />
-                              <span>{settings.appLanguage === 'ar' ? 'الشروحات والتسجيلات الصوتية المعتمدة (استماع وتحميل خارجي)' : 'Approved Audio Lessons'}</span>
+                              <span>{t('approved_audio_lessons', 'الشروحات والتسجيلات الصوتية المعتمدة (استماع وتحميل خارجي)')}</span>
                             </div>
                             <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-bold">
                               {audioInfo.label}
                             </p>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full md:w-auto md:min-w-[320px] shrink-0">
                             <a
                               href={audioInfo.listenUrl}
                               target="_blank"
@@ -1845,12 +1846,12 @@ export const AqeedahHub: React.FC = () => {
                               onClick={(e) => {
                                 handleOpenExternalAudio(audioInfo.listenUrl, locSelArt.title, audioInfo.label, 'listen', e);
                               }}
-                              className="px-3.5 py-2 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] text-white font-bold text-xs flex items-center gap-1.5 shadow transition-colors cursor-pointer"
-                              title="فتح رابط الاستماع الخارجي"
+                              className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-[#0d4f37] hover:bg-[#083a28] active:bg-[#05261a] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all duration-200 cursor-pointer active:scale-[0.98]"
+                              title={t('open_external_listen_link', 'فتح رابط الاستماع الخارجي')}
                             >
-                              <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
-                              <span>{settings.appLanguage === 'ar' ? 'استماع خارجي' : 'Listen'}</span>
-                              <ExternalLink className="w-3 h-3 opacity-70" />
+                              <Headphones className="w-4 h-4 text-[#feb10b]" />
+                              <span className="truncate">{t('external_listen', 'استماع خارجي')}</span>
+                              <ExternalLink className="w-3 h-3 opacity-70 shrink-0" />
                             </a>
                             <a
                               href={audioInfo.downloadUrl}
@@ -1859,12 +1860,12 @@ export const AqeedahHub: React.FC = () => {
                               onClick={(e) => {
                                 handleOpenExternalAudio(audioInfo.downloadUrl, locSelArt.title, audioInfo.label, 'download', e);
                               }}
-                              className="px-3.5 py-2 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1.5 hover:border-[#feb10b] transition-colors cursor-pointer"
-                              title="فتح رابط تحميل الدرس الخارجي"
+                              className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-white dark:bg-emerald-950/70 border border-slate-300/80 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-100 font-bold text-xs flex items-center justify-center gap-2 hover:border-[#feb10b] dark:hover:border-[#feb10b] shadow-sm hover:shadow transition-all duration-200 cursor-pointer active:scale-[0.98]"
+                              title={t('open_external_download_link', 'فتح رابط تحميل الدرس الخارجي')}
                             >
-                              <Download className="w-3.5 h-3.5 text-emerald-500 dark:text-[#feb10b]" />
-                              <span>{settings.appLanguage === 'ar' ? 'تحميل خارجي (MP3)' : 'Download (MP3)'}</span>
-                              <ExternalLink className="w-3 h-3 opacity-70" />
+                              <Download className="w-4 h-4 text-emerald-600 dark:text-[#feb10b] shrink-0" />
+                              <span className="truncate">{t('external_download', 'تحميل خارجي (MP3)')}</span>
+                              <ExternalLink className="w-3 h-3 opacity-70 shrink-0" />
                             </a>
                           </div>
                         </div>
@@ -1875,7 +1876,7 @@ export const AqeedahHub: React.FC = () => {
                     <div className="p-5 rounded-2xl bg-gradient-to-br from-[#0d4f37] to-[#042418] text-white border border-[#feb10b]/40 shadow-lg relative overflow-hidden">
                       <div className="flex items-center gap-2 text-[#feb10b] text-xs font-black mb-2">
                         <Heart className="w-4 h-4 fill-[#feb10b]" />
-                        <span>{settings.appLanguage === 'ar' ? 'وقفة قلبية وأثر الإيمان في الروح' : 'Spiritual & Heart Reflection'}</span>
+                        <span>{t('spiritual_reflection', 'وقفة قلبية وأثر الإيمان في الروح')}</span>
                       </div>
                       <p className="font-amiri text-base sm:text-lg font-bold text-white/95 leading-relaxed">
                         {locSelArt.heartReflection}
@@ -1891,14 +1892,14 @@ export const AqeedahHub: React.FC = () => {
                   <button
                     onClick={async () => {
                       const locSelArt = getLocalizedAqeedahArticle(selectedArticle, settings.appLanguage);
-                      const shareText = `﴿ ${locSelArt.title} ﴾\n${locSelArt.subtitle}\n\n${locSelArt.summary}\n\n— ${settings.appLanguage === 'ar' ? 'تطبيق أذكار المؤمن' : 'Athkar Believer App'}`;
+                      const shareText = `﴿ ${locSelArt.title} ﴾\n${locSelArt.subtitle}\n\n${locSelArt.summary}\n\n— ${t('app_name_full', 'تطبيق أذكار المؤمن')}`;
                       await shareContent(locSelArt.title, shareText);
-                      showToast(settings.appLanguage === 'ar' ? 'تم نسخ ومشاركة المقال' : 'Article shared');
+                      showToast(t('article_shared_toast', 'تم نسخ ومشاركة المقال'));
                     }}
                     className="px-4 py-2 rounded-xl bg-[#0d4f37] hover:bg-[#145d41] text-white text-xs font-black flex items-center gap-2 transition-all active:scale-95"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    <span>{settings.appLanguage === 'ar' ? 'مشاركة المقال' : 'Share Article'}</span>
+                    <span>{t('share_article', 'مشاركة المقال')}</span>
                   </button>
 
                   <button
@@ -1906,7 +1907,7 @@ export const AqeedahHub: React.FC = () => {
                       const locSelArt = getLocalizedAqeedahArticle(selectedArticle, settings.appLanguage);
                       const text = `${locSelArt.title}\n\n${locSelArt.summary}`;
                       navigator.clipboard.writeText(text);
-                      showToast(settings.appLanguage === 'ar' ? 'تم نسخ خلاصة المقال' : 'Summary copied');
+                      showToast(t('summary_copied_toast', 'تم نسخ خلاصة المقال'));
                     }}
                     className="p-2 rounded-xl bg-white dark:bg-black/40 text-slate-700 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20 hover:border-[#feb10b] transition-colors"
                     title={t('copy_text', 'نسخ النص')}
@@ -1919,7 +1920,7 @@ export const AqeedahHub: React.FC = () => {
                   onClick={handleCloseArticle}
                   className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-black/50 text-slate-700 dark:text-white text-xs font-bold hover:bg-slate-300 dark:hover:bg-black/80 transition-colors"
                 >
-                  إغلاق
+                  {t('close', 'إغلاق')}
                 </button>
               </div>
             </motion.div>

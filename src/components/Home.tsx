@@ -496,28 +496,41 @@ export const Home: React.FC = () => {
                 );
               case 'hijri_calendar':
                 return (
-                  <div key={widget.id} className="min-w-0 col-span-1">
-                    {/* Modern Section: Hijri Calendar - Architectural Style */}
+                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+                    {/* Modern Section: Hijri Calendar - Horizontal Architectural Banner Style */}
         <div
           className="px-1"
         >
           <button
-            onClick={() => navigate('/hijri-calendar')}
-            className={cn("navigation-card w-full relative block min-h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-700 via-teal-800 to-emerald-950 shadow-xl shadow-emerald-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
+            onClick={() => {
+              triggerHaptic('light');
+              navigate('/hijri-calendar');
+            }}
+            className={cn("navigation-card w-full relative block min-h-[90px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-800 via-teal-900 to-emerald-950 shadow-xl shadow-emerald-950/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
           >
             <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
 
-            <div className={cn("relative min-h-[110px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
-              <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Calendar size={18} className="text-emerald-200" />
-                  <h3 className="font-black text-xl drop-shadow-md">{t('hijri_calendar_card_title')}</h3>
+            <div className={cn("relative min-h-[90px] py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 sm:px-6 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
+              <div className={cn("min-w-0 flex items-center gap-3.5", isRtl ? "flex-row" : "flex-row-reverse")}>
+                <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-300 active:scale-[0.85] active:opacity-70">
+                  <Calendar size={24} className="text-emerald-200 drop-shadow-lg" />
                 </div>
-                <p className="text-[10px] text-emerald-100/70 font-bold uppercase tracking-widest">{t('hijri_calendar_card_desc')}</p>
+                <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <h3 className="font-black text-lg sm:text-xl drop-shadow-md text-white">{t('hijri_calendar_card_title')}</h3>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-[10px] font-bold text-emerald-100">
+                      {getHijriDate(today, settings.hijriOffset, currentLang)}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-100/75 font-medium">{t('hijri_calendar_card_desc')}</p>
+                </div>
               </div>
-              <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
-                <Calendar size={24} className="text-white drop-shadow-lg" />
+              <div className={cn("flex items-center gap-2 relative z-10 shrink-0", isRtl ? "flex-row" : "flex-row-reverse")}>
+                <span className="text-xs font-bold bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-emerald-100 group-hover:bg-white/20 transition-colors flex items-center gap-1.5">
+                  <span>{t('view_calendar_action') || (isRtl ? 'عرض التقويم الكامل' : 'View Calendar')}</span>
+                  <ChevronRight size={14} className={cn(!isRtl && "rotate-180")} />
+                </span>
               </div>
             </div>
           </button>

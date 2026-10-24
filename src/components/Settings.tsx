@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import {} from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sliders, Timer, Moon, Sun, FileText, Type, Palette, Bell, Shield, Info, ChevronRight, RefreshCw, Globe, Monitor, Languages, Share2, Code, User, ChevronDown, Mail, Heart, Sparkles, Plus, X, Calendar, Clock, Lightbulb, Send, CheckCircle2, SmilePlus, ArrowUpLeft, ArrowUp, ArrowUpRight, Maximize, ArrowDownLeft, ArrowDown, ArrowDownRight, MoveHorizontal, Layers, Maximize2, Zap, RotateCw, BookOpen, Volume2, ShieldCheck, Database, Activity, AlignRight, Download, Book, UserCircle, Gem, Fingerprint, Facebook, Twitter, Instagram, Star, Upload, LifeBuoy, Smartphone, UserX, KeyRound, Trash2, ExternalLink, Coffee } from 'lucide-react';
+import { Sliders, Timer, Moon, Sun, FileText, Type, Palette, Bell, Shield, Info, ChevronRight, RefreshCw, Globe, Monitor, Languages, Share2, Code, User, ChevronDown, Mail, Heart, Sparkles, Plus, X, Calendar, Clock, Lightbulb, Send, CheckCircle2, SmilePlus, ArrowUpLeft, ArrowUp, ArrowUpRight, Maximize, ArrowDownLeft, ArrowDown, ArrowDownRight, MoveHorizontal, Layers, Maximize2, Zap, RotateCw, BookOpen, Volume2, ShieldCheck, Database, Activity, AlignRight, Download, Book, UserCircle, Gem, Fingerprint, Facebook, Twitter, Instagram, Star, Upload, LifeBuoy, Smartphone, UserX, KeyRound, Trash2, ExternalLink, Coffee, Square } from 'lucide-react';
 import { BackupManager } from './BackupManager';
 import { AppIcon } from './ui/AppIcon';
 import { AccountDeletionModal } from './AccountDeletionModal';
@@ -38,10 +38,13 @@ import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear } from "../utils/storage";
 import { generateOfficialLogoCard, OFFICIAL_APP_URL } from '../utils/logoGenerator';
 
+import { useGlobalAudio } from '../context/GlobalAudioContext';
+
 export const Settings: React.FC = () => {
   const { progress, settings, updateSettings, resetAdhkar, cleanAdhkarData, resetSettings } = useAppContext();
   const { updateSpecificChallenge } = useChallengeTracker();
   const { t } = useTranslation(settings.appLanguage);
+  const { playAdhan, stopAdhan, stopCurrentAudio, activeAdhanId, isAdhanPlaying } = useGlobalAudio();
   const { 
     theme, setTheme,
     fontFamily: quranFontFamily,
@@ -78,6 +81,31 @@ export const Settings: React.FC = () => {
 
   // Store Compliance & App Store Modals
   const [showDeletionModal, setShowDeletionModal] = useState(false);
+
+  React.useEffect(() => {
+    return () => {
+      stopCurrentAudio();
+    };
+  }, [stopCurrentAudio]);
+
+  const playDirectSoundPreview = (urlOrSoundId: string) => {
+    stopCurrentAudio();
+    const found = NOTIFICATION_SOUNDS.find(s => s.id === urlOrSoundId || s.url === urlOrSoundId);
+    const soundId = found ? found.id : urlOrSoundId;
+    const resolvedUrl = (urlOrSoundId.startsWith('http://') || urlOrSoundId.startsWith('https://'))
+      ? urlOrSoundId
+      : (found?.url || NOTIFICATION_SOUNDS[0].url);
+
+    playAdhan(soundId, resolvedUrl);
+  };
+
+  const playCategorySoundPreview = (category: string) => {
+    let soundId = settings.prayerRingtone;
+    if (category === 'morning') soundId = settings.morningAdhkarRingtone;
+    if (category === 'evening') soundId = settings.eveningAdhkarRingtone;
+    if (category === 'custom') soundId = settings.customReminderRingtone;
+    playDirectSoundPreview(soundId || 'default');
+  };
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [showRateShareModal, setShowRateShareModal] = useState(false);
 
@@ -1454,19 +1482,89 @@ export const Settings: React.FC = () => {
           <div className={cn("space-y-4 transition-all", (!settings.notificationsEnabled || !settings.prayerNotificationsEnabled) && "opacity-40 pointer-events-none")}>
             
             {/* Prayer Sound Selection */}
-            <div className="space-y-2">
-              <label className="text-xs font-black text-white/70 block pr-1">{t('prayer_sound_label', 'صوت تنبيه الصلاة والأذان')}</label>
-              <select
-                value={settings.prayerRingtone || 'default'}
-                onChange={(e) => updateSettings({ prayerRingtone: e.target.value })}
-                className="w-full bg-slate-900/90 text-white text-xs sm:text-sm font-black p-3 rounded-xl border border-white/10 focus:outline-none"
-              >
-                {(NOTIFICATION_SOUNDS || []).map((sound) => (
-                  <option key={sound.id} value={sound.id} className="bg-slate-900 text-white font-bold">
-                    {t(`sound_${sound.id.replace(/-/g, '_')}`, sound.label)}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-white/70 block pr-1">{t('prayer_sound_label', 'صوت تنبيه الصلاة والأذان')}</label>
+                {isAdhanPlaying && (
+                  <button
+                    type="button"
+                    onClick={() => stopCurrentAudio()}
+                    className="text-[11px] text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1.5 transition-colors px-2.5 py-1 rounded-xl bg-rose-500/15 border border-rose-500/30 active:scale-95"
+                  >
+                    <Square size={10} className="fill-current" />
+                    <span>{t('stop_sound_btn', 'إيقاف الصوت')}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Interactive Visual Cards for Mu'adhin Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {(NOTIFICATION_SOUNDS || []).map((sound) => {
+                  const isSelected = (settings.prayerRingtone || 'default') === sound.id;
+                  const isThisPlaying = isAdhanPlaying && (
+                    activeAdhanId === sound.id ||
+                    (activeAdhanId === 'default' && sound.id === 'makkah') ||
+                    (activeAdhanId === 'makkah' && sound.id === 'default') ||
+                    activeAdhanId === sound.url
+                  );
+
+                  return (
+                    <button
+                      key={sound.id}
+                      type="button"
+                      onClick={() => {
+                        if (isThisPlaying) {
+                          stopCurrentAudio();
+                        } else {
+                          stopCurrentAudio();
+                          updateSettings({ prayerRingtone: sound.id });
+                          playDirectSoundPreview(sound.id);
+                        }
+                      }}
+                      className={cn(
+                        "relative p-3 rounded-xl border text-right transition-all flex items-center justify-between gap-2 overflow-hidden cursor-pointer",
+                        isThisPlaying
+                          ? "bg-emerald-500/20 border-emerald-400 text-white ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-500/20"
+                          : isSelected
+                            ? "bg-teal-500/20 border-teal-500 text-white shadow-md shadow-teal-500/10"
+                            : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-white/20"
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={cn(
+                          "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                          isThisPlaying
+                            ? "bg-emerald-500 text-white shadow-sm"
+                            : isSelected
+                              ? "bg-teal-500 text-white shadow-sm"
+                              : "bg-white/10 text-white/60"
+                        )}>
+                          {isThisPlaying ? (
+                            <Square size={11} className="fill-current animate-pulse" />
+                          ) : isSelected ? (
+                            <CheckCircle2 size={13} />
+                          ) : (
+                            <Volume2 size={13} />
+                          )}
+                        </div>
+                        <span className="text-xs font-black truncate">{t(`sound_${sound.id.replace(/-/g, '_')}`, sound.label)}</span>
+                      </div>
+
+                      {/* Active Playing Equalizer Indicator */}
+                      {isThisPlaying && (
+                        <div className="flex items-center gap-1.5 shrink-0 bg-emerald-500/30 text-emerald-300 px-2 py-1 rounded-lg border border-emerald-500/40">
+                          <span className="text-[9px] font-black">{t('playing_now_badge', 'يُرفع الآن')}</span>
+                          <div className="flex items-end gap-0.5 h-3">
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-bounce h-3 [animation-duration:600ms]" />
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-bounce h-1.5 [animation-duration:800ms] [animation-delay:150ms]" />
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-bounce h-2.5 [animation-duration:700ms] [animation-delay:300ms]" />
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2159,33 +2257,74 @@ export const Settings: React.FC = () => {
                    <p className="text-xs sm:text-sm font-black text-white/95">{category.label}</p>
                    <button 
                      onClick={() => {
+                       playCategorySoundPreview(category.id);
                        if (category.trigger === '_triggerReminderTest') {
                          updateSettings({ [category.trigger]: { label: t('sound_test', 'تجربة صوت'), id: 'test', time: '00:00', enabled: true, type: 'custom', days: [] } as any });
                        } else {
                          updateSettings({ [category.trigger]: Date.now() });
                        }
                      }}
-                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 duration-75 active:scale-[0.85] active:opacity-70 transition-all"
+                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 duration-75 active:scale-[0.85] active:opacity-70 transition-all cursor-pointer"
                    >
                      <Volume2 size={14} />
-                     <span className="text-[10px] font-black">{t('sound_test_btn', 'تجربة')}</span>
+                     <span className="text-[10px] font-black">{t('sound_test_btn', 'تجربة الصوت')}</span>
                    </button>
                  </div>
                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                   {(NOTIFICATION_SOUNDS || []).map((sound) => (
-                     <button
-                       key={sound.id}
-                       onClick={() => updateSettings({ [category.setting]: sound.id })}
-                       className={cn(
-                         "px-3.5 py-2.5 rounded-xl border text-xs font-black whitespace-nowrap transition-all",
-                         ((settings as any)[category.setting] || 'default') === sound.id 
-                           ? "bg-teal-500 text-white shadow-md shadow-teal-500/20 border-transparent scale-105" 
-                           : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
-                       )}
-                     >
-                       {t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}
-                     </button>
-                   ))}
+                   {(NOTIFICATION_SOUNDS || []).map((sound) => {
+                     const isThisPlaying = isAdhanPlaying && (
+                       activeAdhanId === sound.id ||
+                       (activeAdhanId === 'default' && sound.id === 'makkah') ||
+                       (activeAdhanId === 'makkah' && sound.id === 'default') ||
+                       activeAdhanId === sound.url
+                     );
+                     const isSelected = ((settings as any)[category.setting] || 'default') === sound.id;
+
+                     return (
+                       <button
+                         key={sound.id}
+                         type="button"
+                         onClick={() => {
+                           if (isThisPlaying) {
+                             stopCurrentAudio();
+                           } else {
+                             stopCurrentAudio();
+                             updateSettings({ [category.setting]: sound.id });
+                             playDirectSoundPreview(sound.id);
+                           }
+                         }}
+                         className={cn(
+                           "px-3.5 py-2.5 rounded-xl border text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-2",
+                           isThisPlaying
+                             ? "bg-emerald-500/25 border-emerald-400 text-emerald-200 ring-2 ring-emerald-400/50 shadow-md shadow-emerald-500/20 scale-105"
+                             : isSelected 
+                               ? "bg-teal-500 text-white shadow-md shadow-teal-500/20 border-transparent scale-105" 
+                                : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
+                         )}
+                       >
+                         {isThisPlaying ? (
+                           <div className="flex items-center gap-1.5">
+                             <Square size={10} className="fill-current text-emerald-300 animate-pulse" />
+                             <div className="flex items-end gap-0.5 h-3">
+                               <span className="w-0.5 bg-emerald-400 rounded-full animate-bounce h-3 [animation-duration:600ms]" />
+                               <span className="w-0.5 bg-emerald-400 rounded-full animate-bounce h-1.5 [animation-duration:800ms] [animation-delay:150ms]" />
+                               <span className="w-0.5 bg-emerald-400 rounded-full animate-bounce h-2.5 [animation-duration:700ms] [animation-delay:300ms]" />
+                             </div>
+                           </div>
+                         ) : isSelected ? (
+                           <CheckCircle2 size={12} className="text-white" />
+                         ) : (
+                           <Volume2 size={12} className="opacity-70" />
+                         )}
+                         <span>{t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}</span>
+                         {isThisPlaying && (
+                           <span className="text-[9px] bg-emerald-500/40 text-emerald-200 px-1.5 py-0.5 rounded-full font-bold">
+                             {t('playing_now_badge', 'يُرفع الآن')}
+                           </span>
+                         )}
+                       </button>
+                     );
+                   })}
                  </div>
               </div>
             ))}

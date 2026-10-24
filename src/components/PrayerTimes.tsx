@@ -31,7 +31,8 @@ import { Sun,
   Bell,
   BellOff,
   VolumeX,
-  Heart } from 'lucide-react';
+  Heart,
+  Square } from 'lucide-react';
 import { cn, getDayName, getHijriDate, getGregorianDate } from '../lib/utils';
 import { useAppContext } from '../AppContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -40,6 +41,7 @@ import { useSmartNavigation } from "../lib/navigation";
 import { NOTIFICATION_SOUNDS } from '../constants';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 import { useAppStability } from '../services/stabilityManager';
+import { useGlobalAudio } from '../context/GlobalAudioContext';
 
 const PRAYER_NAMES: Record<string, { ar: string; icon: React.ReactNode }> = {
   Fajr: { ar: 'الفجر', icon: <Sunrise size={20} /> },
@@ -88,6 +90,7 @@ export const PrayerTimes: React.FC = () => {
   const { navigate, goBack } = useSmartNavigation();
   const { settings, updateSettings, progress, addWorshipActivity, updateProgress } = useAppContext();
   const { t, currentLang } = useTranslation(settings.appLanguage);
+  const { activeAdhanId, isAdhanPlaying, toggleAdhan, stopAdhan, stopCurrentAudio, playAdhan } = useGlobalAudio();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -192,36 +195,26 @@ export const PrayerTimes: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Audio preview play state
-  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-
-  const handleTogglePlayAudio = (soundUrl: string, soundId: string) => {
-    if (playingAudioId === soundId) {
-      if (previewAudioRef.current) {
-        previewAudioRef.current.pause();
-        previewAudioRef.current = null;
-      }
-      setPlayingAudioId(null);
-    } else {
-      if (previewAudioRef.current) {
-        previewAudioRef.current.pause();
-      }
-      const audio = new Audio(soundUrl);
-      audio.play().catch(err => console.warn('Could not play audio preview:', err));
-      previewAudioRef.current = audio;
-      setPlayingAudioId(soundId);
-      audio.onended = () => setPlayingAudioId(null);
-    }
-  };
-
   useEffect(() => {
     return () => {
-      if (previewAudioRef.current) {
-        previewAudioRef.current.pause();
-      }
+      stopCurrentAudio();
     };
-  }, []);
+  }, [stopCurrentAudio]);
+
+  const getResolvedAudioUrl = (input?: string): string => {
+    const soundKey = (input && input !== 'default') ? input : (settings.prayerRingtone || 'default');
+    if (soundKey.startsWith('http://') || soundKey.startsWith('https://') || soundKey.startsWith('data:') || soundKey.startsWith('/')) {
+      return soundKey;
+    }
+    const found = NOTIFICATION_SOUNDS.find(s => s.id === soundKey);
+    return found ? found.url : NOTIFICATION_SOUNDS[0].url;
+  };
+
+  const handleTogglePlayAudio = (soundInput: string, soundId: string) => {
+    stopCurrentAudio();
+    const realUrl = getResolvedAudioUrl(soundInput);
+    toggleAdhan(soundId, realUrl);
+  };
 
   // Qibla direction live calculation helper
   const resolvedQiblaAngle = useMemo(() => {
@@ -1343,8 +1336,8 @@ export const PrayerTimes: React.FC = () => {
                       const isDone = completedPrayersToday.includes(ar);
                       const isAlertEnabled = settings.prayerNotificationSettings?.[key] ?? true;
                       
-                      // Sound file reference for standard preview
-                      const targetSoundUrl = (settings.prayerRingtone) || "https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav";
+                      // Sound file reference or sound key for preview
+                      const targetSoundUrl = settings.prayerRingtone || 'default';
 
                       return (
                         <motion.div 
@@ -1403,14 +1396,14 @@ export const PrayerTimes: React.FC = () => {
                               onClick={() => handleTogglePlayAudio(targetSoundUrl, key)}
                               className={cn(
                                 "p-2 rounded-xl border transition-all transform active:scale-95 flex items-center gap-1 text-[10px] font-black",
-                                playingAudioId === key
+                                activeAdhanId === key && isAdhanPlaying
                                   ? "bg-emerald-600 border-emerald-500 text-white animate-pulse"
                                   : "bg-slate-100 dark:bg-slate-800 border-indigo-200 dark:border-slate-700 text-teal-600 dark:text-teal-400 hover:bg-slate-200"
                               )}
                               title="استماع لتنبيه الأذان المقترح"
                             >
                               <Volume2 size={13} />
-                              {playingAudioId === key ? (
+                              {activeAdhanId === key && isAdhanPlaying ? (
                                 <span className="flex items-center gap-0.5">
                                   <span className="w-0.5 h-2 bg-white animate-bounce" style={{ animationDelay: '0.1s' }} />
                                   <span className="w-0.5 h-3.5 bg-white animate-bounce" style={{ animationDelay: '0.3s' }} />
@@ -2095,25 +2088,85 @@ export const PrayerTimes: React.FC = () => {
                 )}
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase text-slate-400">{t('reminder_sound')}</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {NOTIFICATION_SOUNDS.map((sound) => (
-                      <button 
-                        key={sound.id} 
-                        onClick={() => { 
-                          updateSettings({ prayerRingtone: sound.url }); 
-                          new Audio(sound.url).play().catch(() => {}); 
-                        }} 
-                        className={cn(
-                          "px-3 py-2.5 rounded-xl border text-[10px] font-bold transition-all text-center", 
-                          settings.prayerRingtone === sound.url 
-                            ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" 
-                            : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300"
-                        )}
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase text-slate-400">{t('reminder_sound', 'صوت تنبيه الصلاة والأذان')}</label>
+                    {isAdhanPlaying && (
+                      <button
+                        type="button"
+                        onClick={() => stopCurrentAudio()}
+                        className="text-[10px] text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1 transition-colors px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20"
                       >
-                        {t(`sound_${sound.id.replace(/-/g, '_')}`, sound.label)}
+                        <Square size={9} className="fill-current" />
+                        <span>{t('stop_sound_btn', 'إيقاف الصوت')}</span>
                       </button>
-                    ))}
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {NOTIFICATION_SOUNDS.map((sound) => {
+                      const isSelected = settings.prayerRingtone === sound.id || settings.prayerRingtone === sound.url;
+                      const isThisPlaying = isAdhanPlaying && (
+                        activeAdhanId === sound.id ||
+                        (activeAdhanId === 'default' && sound.id === 'makkah') ||
+                        (activeAdhanId === 'makkah' && sound.id === 'default') ||
+                        activeAdhanId === sound.url
+                      );
+
+                      return (
+                        <button 
+                          key={sound.id} 
+                          type="button"
+                          onClick={() => { 
+                            if (isThisPlaying) {
+                              stopCurrentAudio();
+                            } else {
+                              stopCurrentAudio();
+                              updateSettings({ prayerRingtone: sound.id }); 
+                              playAdhan(sound.id, sound.url); 
+                            }
+                          }} 
+                          className={cn(
+                            "relative px-3 py-2.5 rounded-xl border text-[11px] font-bold transition-all text-right flex items-center justify-between gap-2 overflow-hidden", 
+                            isThisPlaying
+                              ? "bg-emerald-500/15 border-emerald-500 text-emerald-800 dark:text-emerald-200 ring-2 ring-emerald-500/40 shadow-sm"
+                              : isSelected 
+                                ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" 
+                                : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                          )}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className={cn(
+                              "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                              isThisPlaying
+                                ? "bg-emerald-500 text-white shadow-sm"
+                                : isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-slate-100 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400"
+                            )}>
+                              {isThisPlaying ? (
+                                <Square size={10} className="fill-current animate-pulse" />
+                              ) : isSelected ? (
+                                <CheckCircle2 size={12} />
+                              ) : (
+                                <Volume2 size={12} />
+                              )}
+                            </div>
+                            <span className="truncate">{t(`sound_${sound.id.replace(/-/g, '_')}`, sound.label)}</span>
+                          </div>
+
+                          {/* Visual Active Indicator (Equalizer Sound Waves) */}
+                          {isThisPlaying && (
+                            <div className="flex items-center gap-1.5 shrink-0 bg-emerald-500/20 dark:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-lg border border-emerald-500/30">
+                              <span className="text-[9px] font-black">{t('playing_now_badge', 'يُرفع الآن')}</span>
+                              <div className="flex items-end gap-0.5 h-3">
+                                <span className="w-0.5 bg-emerald-500 rounded-full animate-bounce h-3 [animation-duration:600ms]" />
+                                <span className="w-0.5 bg-emerald-500 rounded-full animate-bounce h-1.5 [animation-duration:800ms] [animation-delay:150ms]" />
+                                <span className="w-0.5 bg-emerald-500 rounded-full animate-bounce h-2.5 [animation-duration:700ms] [animation-delay:300ms]" />
+                              </div>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

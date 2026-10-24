@@ -152,11 +152,23 @@ export function useTranslation(appLanguage?: string) {
 
   const t = useCallback((
     key: TranslationKey | string,
-    fallbackOrDefault?: string | Record<string, string | number>,
-    params?: Record<string, string | number>
+    fallbackOrParams?: string | Record<string, string | number>,
+    paramsOrFallback?: string | Record<string, string | number>
   ): string => {
-    const defaultValue = typeof fallbackOrDefault === 'string' ? fallbackOrDefault : undefined;
-    const actualParams = typeof fallbackOrDefault === 'object' ? fallbackOrDefault : params;
+    let defaultValue: string | undefined;
+    let actualParams: Record<string, string | number> | undefined;
+
+    if (typeof fallbackOrParams === 'string') {
+      defaultValue = fallbackOrParams;
+      if (typeof paramsOrFallback === 'object') actualParams = paramsOrFallback;
+    } else if (typeof fallbackOrParams === 'object') {
+      actualParams = fallbackOrParams;
+      if (typeof paramsOrFallback === 'string') defaultValue = paramsOrFallback;
+    } else if (typeof paramsOrFallback === 'string') {
+      defaultValue = paramsOrFallback;
+    } else if (typeof paramsOrFallback === 'object') {
+      actualParams = paramsOrFallback;
+    }
 
     // 1. Direct lookup in active language dictionary first for immediate and 100% accurate localization
     const directTranslation = (translations as any)[currentLang]?.[key];

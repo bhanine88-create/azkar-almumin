@@ -594,7 +594,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
           className="fixed bottom-20 right-4 z-40 flex items-center gap-2 group cursor-move transform-gpu transition-shadow duration-300"
           whileDrag={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}
         >
-          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-850 shadow-2xl rounded-full p-1.5 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+          <div className="bg-white/95 dark:bg-slate-900/98 backdrop-blur-xl border border-slate-200 dark:border-emerald-400/80 dark:ring-1 dark:ring-emerald-400/30 shadow-2xl dark:shadow-[0_4px_24px_rgba(0,0,0,0.95),0_0_20px_rgba(16,185,129,0.4)] rounded-full p-1.5 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
             <div className="absolute -top-1 left-4 right-4 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden pointer-events-none shadow-sm">
               <div 
                 className="h-full bg-emerald-500 transition-all duration-300"
@@ -605,7 +605,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
             <button
               id="mini-player-toggle"
               onClick={() => handlePlayPause(playingUrl)}
-              className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg outline-none transform transition-all duration-75 active:scale-[0.85] active:opacity-70"
+              className="w-10 h-10 bg-emerald-500 dark:bg-emerald-400 text-white dark:text-slate-950 font-black rounded-full flex items-center justify-center shadow-lg dark:shadow-[0_0_12px_rgba(52,211,153,0.6)] outline-none transform transition-all duration-75 active:scale-[0.85] active:opacity-70"
             >
               {isPlaying ? <Pause size={16} className="fill-current" /> : <Play size={16} className="fill-current ml-0.5" />}
             </button>

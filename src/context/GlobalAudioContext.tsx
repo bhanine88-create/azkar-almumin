@@ -379,6 +379,12 @@ interface GlobalAudioContextType {
   nextTrackCountdown: number | null;
   cancelNextTrackCountdown: () => void;
   skipNextTrackCountdown: () => void;
+  activeAdhanId: string | null;
+  isAdhanPlaying: boolean;
+  playAdhan: (adhanId: string, url: string, onEnd?: () => void) => void;
+  stopAdhan: () => void;
+  toggleAdhan: (adhanId: string, url: string) => void;
+  stopCurrentAudio: () => void;
 }
 
 const GlobalAudioContext = createContext<GlobalAudioContextType | undefined>(undefined);
@@ -423,6 +429,116 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       safeLocalStorageSetItem('believer_auto_play_next', val ? 'true' : 'false');
     } catch (e) {}
   };
+
+  // Central Adhan playback state
+  const [activeAdhanId, setActiveAdhanId] = useState<string | null>(null);
+  const [isAdhanPlaying, setIsAdhanPlaying] = useState<boolean>(false);
+  const adhanAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopAdhan = React.useCallback(() => {
+    if (adhanAudioRef.current) {
+      try {
+        adhanAudioRef.current.pause();
+        adhanAudioRef.current.currentTime = 0;
+        adhanAudioRef.current.onended = null;
+        adhanAudioRef.current.onerror = null;
+        adhanAudioRef.current.src = '';
+      } catch (err) {
+        console.warn('Error stopping adhan audio:', err);
+      }
+      adhanAudioRef.current = null;
+    }
+    setActiveAdhanId(null);
+    setIsAdhanPlaying(false);
+  }, []);
+
+  const stopCurrentAudio = React.useCallback(() => {
+    stopAdhan();
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [stopAdhan]);
+
+  const playAdhan = React.useCallback((adhanId: string, url: string, onEnd?: () => void) => {
+    // 1. Check if there is an active adhan playing and stop it immediately before starting the new one
+    stopAdhan();
+
+    // 2. Pause any playing background Quran or lecture track to prevent overlapping
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+
+    // 3. Set the new adhan identifier in central state
+    setActiveAdhanId(adhanId);
+    setIsAdhanPlaying(true);
+
+    try {
+      const audio = new Audio(url);
+      adhanAudioRef.current = audio;
+
+      const cleanup = () => {
+        if (adhanAudioRef.current === audio) {
+          adhanAudioRef.current = null;
+          setActiveAdhanId(null);
+          setIsAdhanPlaying(false);
+        }
+      };
+
+      audio.onended = () => {
+        cleanup();
+        if (onEnd) onEnd();
+      };
+
+      audio.onerror = () => {
+        console.warn('Adhan audio failed to load, trying fallback chime:', url);
+        cleanup();
+        try {
+          const fallback = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+          adhanAudioRef.current = fallback;
+          setActiveAdhanId(adhanId);
+          setIsAdhanPlaying(true);
+          fallback.onended = () => {
+            if (adhanAudioRef.current === fallback) {
+              adhanAudioRef.current = null;
+              setActiveAdhanId(null);
+              setIsAdhanPlaying(false);
+            }
+          };
+          fallback.play().catch(() => cleanup());
+        } catch {
+          cleanup();
+        }
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Adhan audio playback blocked or error:', err);
+          cleanup();
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to initialize adhan audio:', err);
+      stopAdhan();
+    }
+  }, [stopAdhan]);
+
+  const toggleAdhan = React.useCallback((adhanId: string, url: string) => {
+    if (activeAdhanId === adhanId && isAdhanPlaying) {
+      stopAdhan();
+    } else {
+      playAdhan(adhanId, url);
+    }
+  }, [activeAdhanId, isAdhanPlaying, playAdhan, stopAdhan]);
+
+  // Clean up Adhan audio on unmount
+  useEffect(() => {
+    return () => {
+      stopAdhan();
+    };
+  }, [stopAdhan]);
 
   const [nextTrackCountdown, setNextTrackCountdown] = useState<number | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -950,6 +1066,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [sleepTimer, isPlaying]);
 
   const playTrack = async (track: GlobalTrack) => {
+    stopAdhan();
     if (!audioRef.current) return;
     
     if (playPromiseRef.current) {
@@ -1270,10 +1387,17 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setAutoPlayNext,
       nextTrackCountdown,
       cancelNextTrackCountdown,
-      skipNextTrackCountdown
+      skipNextTrackCountdown,
+      activeAdhanId,
+      isAdhanPlaying,
+      playAdhan,
+      stopAdhan,
+      toggleAdhan,
+      stopCurrentAudio
   }), [
       currentTrack, isPlaying, progress, duration, currentTime, playbackRate, 
-      sleepTimer, autoPlayNext, nextTrackCountdown
+      sleepTimer, autoPlayNext, nextTrackCountdown,
+      activeAdhanId, isAdhanPlaying, playAdhan, stopAdhan, toggleAdhan, stopCurrentAudio
   ]);
 
   return (
@@ -1283,10 +1407,42 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
   );
 };
 
+const defaultAudioContext: GlobalAudioContextType = {
+  currentTrack: null,
+  isPlaying: false,
+  progress: 0,
+  duration: 0,
+  currentTime: 0,
+  playbackRate: 1,
+  sleepTimer: null,
+  playTrack: () => {},
+  pauseTrack: () => {},
+  resumeTrack: () => {},
+  stopTrack: () => {},
+  seek: () => {},
+  setPlaybackRate: () => {},
+  setSleepTimer: () => {},
+  playNextTrack: () => {},
+  playPrevTrack: () => {},
+  playSurahByNumber: () => {},
+  autoPlayNext: true,
+  setAutoPlayNext: () => {},
+  nextTrackCountdown: null,
+  cancelNextTrackCountdown: () => {},
+  skipNextTrackCountdown: () => {},
+  activeAdhanId: null,
+  isAdhanPlaying: false,
+  playAdhan: () => {},
+  stopAdhan: () => {},
+  toggleAdhan: () => {},
+  stopCurrentAudio: () => {}
+};
+
 export const useGlobalAudio = () => {
   const context = useContext(GlobalAudioContext);
   if (context === undefined) {
-    throw new Error('useGlobalAudio must be used within a GlobalAudioProvider');
+    console.warn('useGlobalAudio was used outside of GlobalAudioProvider. Returning safe fallback.');
+    return defaultAudioContext;
   }
   return context;
 };

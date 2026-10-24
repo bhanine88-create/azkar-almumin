@@ -11,6 +11,7 @@ import { safeLocalStorageSetItem, safeLocalStorageGetItem, safeLocalStorageRemov
 import { storageManager } from './services/storageManager';
 import i18n, { updateDocumentDirection } from './i18n';
 import { loadAllDownloadedFontsOnStartup } from './services/fontService';
+import { adhkarNotificationController } from './services/adhkarNotificationController';
 import { 
   updateDoc, 
   doc, 
@@ -447,12 +448,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!merged.primaryColor || typeof merged.primaryColor !== 'string') {
           merged.primaryColor = defaultSettings.primaryColor;
         }
-        return merged;
+        const { updatedSettings: controlledSettings } = adhkarNotificationController.ensureDefaultsActive(merged);
+        return controlledSettings;
       } catch (e) {
-        return defaultSettings;
+        const { updatedSettings: guaranteedDefaults } = adhkarNotificationController.ensureDefaultsActive(defaultSettings);
+        return guaranteedDefaults;
       }
     }
-    return defaultSettings;
+    const { updatedSettings: guaranteedDefaults } = adhkarNotificationController.ensureDefaultsActive(defaultSettings);
+    return guaranteedDefaults;
   });
 
   const [adhkarData, setAdhkarData] = useState<AdhkarData[]>(() => {
@@ -1559,14 +1563,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleDhikrFavorite = React.useCallback((dhikr: Dhikr) => {
     setAdhkarData(prev => {
-      const favoritesCat = prev.find(c => c.category === 'favorites');
-      if (!favoritesCat) return prev;
+      let favoritesCat = prev.find(c => c.category === 'favorites');
+      let currentPrev = [...prev];
+      if (!favoritesCat) {
+        favoritesCat = {
+          category: 'favorites',
+          title: 'أذكاري المفضلة',
+          items: []
+        };
+        currentPrev.push(favoritesCat);
+      }
 
-      const exists = favoritesCat.items.some(i => i.text === dhikr.text || i.id === dhikr.id);
+      const isSameItem = (i: Dhikr) => 
+        (Boolean(i.id && dhikr.id && i.id === dhikr.id)) ||
+        (Boolean(i.id && dhikr.id && (i.id.startsWith(`fv_${dhikr.id}_`) || dhikr.id.startsWith(`fv_${i.id}_`)))) ||
+        (Boolean(i.text && dhikr.text && i.text.trim() === dhikr.text.trim()));
+
+      const exists = favoritesCat.items.some(isSameItem);
       let updatedItems;
 
       if (exists) {
-        updatedItems = favoritesCat.items.filter(i => i.text !== dhikr.text && i.id !== dhikr.id);
+        updatedItems = favoritesCat.items.filter(i => !isSameItem(i));
       } else {
         const newDhikr = {
           ...dhikr,
@@ -1575,7 +1592,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatedItems = [...favoritesCat.items, newDhikr];
       }
 
-      const updated = prev.map(c => {
+      const updated = currentPrev.map(c => {
         if (c.category === 'favorites') {
           return { ...c, items: updatedItems };
         }

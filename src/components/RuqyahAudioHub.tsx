@@ -23,7 +23,7 @@ interface RuqyahTrack {
   description: string;
 }
 
-const RUQYAH_TRACKS: RuqyahTrack[] = [
+export const RUQYAH_TRACKS: RuqyahTrack[] = [
   {
     id: "ruqyah-ahmad-alajmy",
     title: "الرقية الشرعية بصوت القارئ أحمد العجمي",

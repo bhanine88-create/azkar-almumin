@@ -2,11 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
 import { 
   Play, Pause, Square, ChevronDown, Volume2, FastForward, Rewind, 
-  Timer, Moon, User, BookOpen, Check, SkipForward, SkipBack, Search, ListMusic, X, PlayCircle 
+  Timer, Moon, User, BookOpen, Check, SkipForward, SkipBack, Search, ListMusic, X, PlayCircle, Heart 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { RECITERS } from '../reciters';
 import { getSurahAudioUrl } from '../services/quranAudioUrlService';
 import { SURAH_NAMES as surahNames } from '../utils/quranUtils';
@@ -42,7 +43,9 @@ export const GlobalAudioBar: React.FC = () => {
     skipNextTrackCountdown
   } = useGlobalAudio();
 
-  const { settings } = useAppContext();
+  const { settings, progress: appProgress, toggleLectureFavorite, toggleFavoriteUnified } = useAppContext();
+  const { t, isRtl } = useTranslation(settings.appLanguage);
+  const [favoriteToast, setFavoriteToast] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showTimerMenu, setShowTimerMenu] = useState(false);
@@ -144,10 +147,8 @@ export const GlobalAudioBar: React.FC = () => {
     return () => window.removeEventListener('global_audio_error', handleError);
   }, []);
 
-  if (!currentTrack) return null;
-
   // Find active reciter metadata
-  const activeReciter = currentTrack.type === 'quran' && currentTrack.reciterId
+  const activeReciter = currentTrack?.type === 'quran' && currentTrack?.reciterId
     ? RECITERS.find(r => r.id === Number(currentTrack.reciterId))
     : null;
 
@@ -161,6 +162,84 @@ export const GlobalAudioBar: React.FC = () => {
   };
 
   const availableSurahNumbers = getAvailableSurahNumbers();
+
+  // Check if currently playing track is in favorites
+  const isCurrentFavorite = React.useMemo(() => {
+    if (!currentTrack) return false;
+
+    // 1. Check in unified favorites list
+    const inUnified = (appProgress.favorites || []).some(fav => 
+      fav.id === currentTrack.id || 
+      (fav.type === 'surah' && currentTrack.type === 'quran' && currentTrack.surahNumber && (
+        fav.id === `quran-${currentTrack.reciterId}-${currentTrack.surahNumber}` ||
+        fav.id === `quran-${currentTrack.surahNumber}` ||
+        fav.title.includes(currentTrack.title)
+      ))
+    );
+    if (inUnified) return true;
+
+    // 2. Check in favoriteLectures (for lectures, tafsir, ruqyah)
+    if (currentTrack.id && (appProgress.favoriteLectures || []).includes(currentTrack.id)) {
+      return true;
+    }
+
+    return false;
+  }, [currentTrack, appProgress.favorites, appProgress.favoriteLectures]);
+
+  const handleToggleFavorite = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!currentTrack) return;
+
+    if (settings.hapticTasbihEnabled !== false) {
+      Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {
+        if ("vibrate" in navigator) navigator.vibrate(35);
+      });
+    }
+
+    const willBeFavorite = !isCurrentFavorite;
+
+    if (currentTrack.type === 'quran') {
+      const reciterId = currentTrack.reciterId ? Number(currentTrack.reciterId) : (activeReciter ? activeReciter.id : 1);
+      const surahNum = currentTrack.surahNumber || 1;
+      const surahName = surahNames[surahNum - 1] || `${surahNum}`;
+      const itemFavId = `quran-${reciterId}-${surahNum}`;
+
+      toggleFavoriteUnified({
+        id: itemFavId,
+        type: 'surah',
+        title: currentTrack.title || `سورة ${surahName}`,
+        subtitle: currentTrack.subtitle || (activeReciter ? activeReciter.name : 'تلاوة قرآنية'),
+        route: `/quran-audio/${reciterId}`
+      });
+    } else if (currentTrack.type === 'lecture') {
+      toggleLectureFavorite(currentTrack.id);
+      toggleFavoriteUnified({
+        id: currentTrack.id,
+        type: 'lecture',
+        title: currentTrack.title,
+        subtitle: currentTrack.subtitle || (activeScholar ? activeScholar.name : 'محاضرة علمية'),
+        route: '/lectures-audio'
+      });
+    } else if (currentTrack.type === 'tafsir') {
+      toggleLectureFavorite(currentTrack.id);
+      toggleFavoriteUnified({
+        id: currentTrack.id,
+        type: 'lecture',
+        title: currentTrack.title,
+        subtitle: currentTrack.subtitle || (activeTafsirScholar ? activeTafsirScholar.name : 'تفسير صوتي'),
+        route: '/tafsir-audio'
+      });
+    }
+
+    setFavoriteToast(
+      willBeFavorite
+        ? 'تمت إضافة التسجيل إلى المفضلة للوصول السريع'
+        : 'تمت إزالة التسجيل من المفضلة'
+    );
+    setTimeout(() => {
+      setFavoriteToast(null);
+    }, 2600);
+  };
 
   const selectReciterAndPlay = async (newReciter: typeof RECITERS[0]) => {
     const surahNum = currentTrack?.surahNumber || 1;
@@ -256,6 +335,8 @@ export const GlobalAudioBar: React.FC = () => {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (Math.min(Math.max(progress, 0), 100) / 100) * circumference;
 
+  if (!currentTrack) return null;
+
   return (
     <>
       {/* 1. SELF-CONTAINED CSS STYLING FOR AUDIO ANIMATIONS */}
@@ -331,7 +412,7 @@ export const GlobalAudioBar: React.FC = () => {
             }
           }}
           className={cn(
-            "absolute bottom-24 left-4 pointer-events-auto cursor-grab select-none z-[45]",
+            "absolute bottom-24 left-4 pointer-events-auto cursor-grab select-none z-[45] filter drop-shadow-[0_6px_16px_rgba(0,0,0,0.35)] dark:drop-shadow-[0_8px_25px_rgba(0,0,0,0.9)]",
             isExpanded ? "pointer-events-none" : ""
           )}
           style={{ 
@@ -343,16 +424,19 @@ export const GlobalAudioBar: React.FC = () => {
         >
           <div className="relative w-16 h-16 flex items-center justify-center">
             
+            {/* Soft Ambient Shadow Base for strong background contrast */}
+            <div className="absolute inset-1 rounded-full bg-black/40 dark:bg-black/90 blur-md -z-20 pointer-events-none transition-opacity" />
+
             {/* Rippling Ambient Aura while playing */}
             {isPlaying && (
               <div 
                 className={cn(
-                  "absolute inset-[-6px] rounded-full blur-md -z-10",
+                  "absolute inset-[-6px] rounded-full blur-md -z-10 transition-all duration-500",
                   currentTrack.type === 'quran' 
-                    ? "bg-[#218510]/20" 
+                    ? "bg-emerald-500/35 dark:bg-emerald-400/50 shadow-[0_0_25px_rgba(52,211,153,0.7)]" 
                     : currentTrack.type === 'lecture'
-                      ? "bg-[#0b4ec2]/35 shadow-[0_0_15px_rgba(11,78,194,0.4)] animate-pulse"
-                      : "bg-[#2563eb]/20"
+                      ? "bg-sky-500/35 dark:bg-sky-400/50 shadow-[0_0_25px_rgba(56,189,248,0.7)] animate-pulse"
+                      : "bg-amber-500/35 dark:bg-amber-400/50 shadow-[0_0_25px_rgba(251,191,36,0.7)]"
                 )}
                 style={{
                   animationName: 'ambientGlow',
@@ -363,12 +447,37 @@ export const GlobalAudioBar: React.FC = () => {
               />
             )}
 
-            {/* Main Orb Center Body */}
-            <div className="absolute w-[48px] h-[48px] rounded-full bg-slate-950/95 dark:bg-slate-900/95 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.05)] border border-white/10 flex flex-col items-center justify-center overflow-hidden z-10">
-              
-              {/* Rotating Disk Avatar */}
+            {/* Ambient subtle glow when paused */}
+            {!isPlaying && (
               <div 
-                className="absolute inset-0 flex items-center justify-center opacity-40"
+                className={cn(
+                  "absolute inset-[-4px] rounded-full blur-sm -z-10 transition-all duration-300 opacity-70 dark:opacity-95",
+                  currentTrack.type === 'quran' 
+                    ? "bg-emerald-500/25 dark:bg-emerald-400/40 shadow-[0_0_18px_rgba(52,211,153,0.5)]" 
+                    : currentTrack.type === 'lecture'
+                      ? "bg-sky-500/25 dark:bg-sky-400/40 shadow-[0_0_18px_rgba(56,189,248,0.5)]"
+                      : "bg-amber-500/25 dark:bg-amber-400/40 shadow-[0_0_18px_rgba(251,191,36,0.5)]"
+                )}
+              />
+            )}
+
+            {/* Main Orb Center Body with enhanced dark-mode contrast & soft shadow */}
+            <div className={cn(
+              "absolute w-[48px] h-[48px] rounded-full backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden z-10 transition-all duration-300",
+              "bg-slate-900/95 dark:bg-slate-900/98 shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)]",
+              currentTrack.type === 'quran'
+                ? "border-2 border-emerald-500 dark:border-emerald-400 dark:ring-2 dark:ring-emerald-400/35 dark:ring-offset-2 dark:ring-offset-slate-950 dark:shadow-[0_4px_24px_rgba(0,0,0,0.95),0_0_22px_rgba(16,185,129,0.45),inset_0_1px_2px_rgba(255,255,255,0.25)]"
+                : currentTrack.type === 'lecture'
+                  ? "border-2 border-sky-500 dark:border-sky-400 dark:ring-2 dark:ring-sky-400/35 dark:ring-offset-2 dark:ring-offset-slate-950 dark:shadow-[0_4px_24px_rgba(0,0,0,0.95),0_0_22px_rgba(56,189,248,0.45),inset_0_1px_2px_rgba(255,255,255,0.25)]"
+                  : "border-2 border-amber-500 dark:border-amber-400 dark:ring-2 dark:ring-amber-400/35 dark:ring-offset-2 dark:ring-offset-slate-950 dark:shadow-[0_4px_24px_rgba(0,0,0,0.95),0_0_22px_rgba(251,191,36,0.45),inset_0_1px_2px_rgba(255,255,255,0.25)]"
+            )}>
+              
+              {/* Rotating Disk Avatar (Subtle watermark background when paused, spinning animated when playing) */}
+              <div 
+                className={cn(
+                  "absolute inset-0 flex items-center justify-center transition-opacity",
+                  isPlaying ? "opacity-45 dark:opacity-55" : "opacity-20 dark:opacity-25"
+                )}
                 style={isPlaying ? {
                   animationName: 'rotateDisk',
                   animationDuration: '12s',
@@ -377,70 +486,83 @@ export const GlobalAudioBar: React.FC = () => {
                 } : {}}
               >
                 {currentTrack.type === 'quran' ? (
-                  <BookOpen size={24} className="text-[#218510]" />
+                  <BookOpen size={22} className="text-emerald-500 dark:text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
                 ) : currentTrack.type === 'lecture' ? (
-                  <User size={24} className="text-[#3b82f6]" />
+                  <User size={22} className="text-sky-500 dark:text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
                 ) : (
-                  <User size={24} className="text-rose-600" />
+                  <User size={22} className="text-amber-500 dark:text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
                 )}
               </div>
 
-              {/* Equalizer Wave overlay inside */}
-              <div className="relative flex items-end justify-center gap-[2px] h-4 z-20 mt-1">
-                <span 
-                  className={cn(
-                    "w-[2px] rounded-full transition-all duration-300",
-                    currentTrack.type === 'quran' 
-                      ? "bg-[#218510]" 
+              {/* Equalizer Wave overlay inside (playing) or high-contrast Play indicator (paused) */}
+              {isPlaying ? (
+                <div className="relative flex items-end justify-center gap-[2.5px] h-4 z-20 mt-1">
+                  <span 
+                    className={cn(
+                      "w-[2.5px] rounded-full transition-all duration-300",
+                      currentTrack.type === 'quran' 
+                        ? "bg-emerald-400 dark:bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,1)]" 
+                        : currentTrack.type === 'lecture'
+                          ? "bg-sky-400 dark:bg-sky-300 shadow-[0_0_8px_rgba(56,189,248,1)]"
+                          : "bg-amber-400 dark:bg-amber-300 shadow-[0_0_8px_rgba(251,191,36,1)]",
+                      "h-3"
+                    )} 
+                    style={{
+                      animationName: 'soundWave',
+                      animationDuration: '0.8s',
+                      animationTimingFunction: 'ease-in-out',
+                      animationIterationCount: 'infinite'
+                    }} 
+                  />
+                  <span 
+                    className={cn(
+                      "w-[2.5px] rounded-full transition-all duration-300",
+                      currentTrack.type === 'quran' 
+                        ? "bg-emerald-400 dark:bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,1)]" 
+                        : currentTrack.type === 'lecture'
+                          ? "bg-sky-400 dark:bg-sky-300 shadow-[0_0_8px_rgba(56,189,248,1)]"
+                          : "bg-amber-400 dark:bg-amber-300 shadow-[0_0_8px_rgba(251,191,36,1)]",
+                      "h-4.5"
+                    )} 
+                    style={{
+                      animationName: 'soundWave',
+                      animationDuration: '0.5s',
+                      animationTimingFunction: 'ease-in-out',
+                      animationIterationCount: 'infinite',
+                      animationDelay: '0.15s'
+                    }} 
+                  />
+                  <span 
+                    className={cn(
+                      "w-[2.5px] rounded-full transition-all duration-300",
+                      currentTrack.type === 'quran' 
+                        ? "bg-emerald-400 dark:bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,1)]" 
+                        : currentTrack.type === 'lecture'
+                          ? "bg-sky-400 dark:bg-sky-300 shadow-[0_0_8px_rgba(56,189,248,1)]"
+                          : "bg-amber-400 dark:bg-amber-300 shadow-[0_0_8px_rgba(251,191,36,1)]",
+                      "h-2.5"
+                    )} 
+                    style={{
+                      animationName: 'soundWave',
+                      animationDuration: '0.7s',
+                      animationTimingFunction: 'ease-in-out',
+                      animationIterationCount: 'infinite',
+                      animationDelay: '0.3s'
+                    }} 
+                  />
+                </div>
+              ) : (
+                <div className="relative flex items-center justify-center z-20">
+                  <Play size={16} className={cn(
+                    "fill-current ml-0.5",
+                    currentTrack.type === 'quran'
+                      ? "text-emerald-400 dark:text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,1)]"
                       : currentTrack.type === 'lecture'
-                        ? "bg-[#3b82f6]"
-                        : "bg-rose-500",
-                    isPlaying ? "h-3" : "h-1"
-                  )} 
-                  style={isPlaying ? {
-                    animationName: 'soundWave',
-                    animationDuration: '0.8s',
-                    animationTimingFunction: 'ease-in-out',
-                    animationIterationCount: 'infinite'
-                  } : {}} 
-                />
-                <span 
-                  className={cn(
-                    "w-[2px] rounded-full transition-all duration-300",
-                    currentTrack.type === 'quran' 
-                      ? "bg-[#218510]" 
-                      : currentTrack.type === 'lecture'
-                        ? "bg-[#3b82f6]"
-                        : "bg-rose-500",
-                    isPlaying ? "h-4.5" : "h-1.5"
-                  )} 
-                  style={isPlaying ? {
-                    animationName: 'soundWave',
-                    animationDuration: '0.5s',
-                    animationTimingFunction: 'ease-in-out',
-                    animationIterationCount: 'infinite',
-                    animationDelay: '0.15s'
-                  } : {}} 
-                />
-                <span 
-                  className={cn(
-                    "w-[2px] rounded-full transition-all duration-300",
-                    currentTrack.type === 'quran' 
-                      ? "bg-[#218510]" 
-                      : currentTrack.type === 'lecture'
-                        ? "bg-[#3b82f6]"
-                        : "bg-rose-500",
-                    isPlaying ? "h-2.5" : "h-0.5"
-                  )} 
-                  style={isPlaying ? {
-                    animationName: 'soundWave',
-                    animationDuration: '0.7s',
-                    animationTimingFunction: 'ease-in-out',
-                    animationIterationCount: 'infinite',
-                    animationDelay: '0.3s'
-                  } : {}} 
-                />
-              </div>
+                        ? "text-sky-400 dark:text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,1)]"
+                        : "text-amber-400 dark:text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,1)]"
+                  )} />
+                </div>
+              )}
             </div>
 
             {/* SVG Circular Progress Rim */}
@@ -449,8 +571,8 @@ export const GlobalAudioBar: React.FC = () => {
                 cx="32"
                 cy="32"
                 r={radius}
-                className="stroke-white/10 fill-none"
-                strokeWidth="2"
+                className="stroke-slate-300/50 dark:stroke-slate-700/80 fill-none"
+                strokeWidth="2.5"
               />
               <circle
                 cx="32"
@@ -459,21 +581,34 @@ export const GlobalAudioBar: React.FC = () => {
                 className={cn(
                   "fill-none transition-all duration-150 ease-out",
                   currentTrack.type === 'quran' 
-                    ? "stroke-[#218510]" 
+                    ? "stroke-emerald-500 dark:stroke-emerald-300" 
                     : currentTrack.type === 'lecture'
-                      ? "stroke-[#0b4ec2]"
-                      : "stroke-rose-600"
+                      ? "stroke-sky-500 dark:stroke-sky-300"
+                      : "stroke-amber-500 dark:stroke-amber-300"
                 )}
-                strokeWidth="2.5"
+                strokeWidth="3"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
+                style={{
+                  filter: 'drop-shadow(0 0 6px currentColor)'
+                }}
               />
             </svg>
 
+            {/* Favorite Indicator Badge on floating orb */}
+            {isCurrentFavorite && (
+              <div 
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg z-30 pointer-events-none border-2 border-white dark:border-slate-850 animate-pulse"
+                title={t('favorites', 'مضاف إلى المفضلة')}
+              >
+                <Heart size={9} className="fill-current text-white" />
+              </div>
+            )}
+
             {/* Sleep Timer Mini HUD Badge (if active) */}
             {sleepTimer !== null && (
-              <div className="absolute top-[-14px] left-1/2 transform -translate-x-1/2 bg-indigo-600 border border-indigo-400/20 text-indigo-100 text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg z-30 pointer-events-none flex items-center gap-0.5">
+              <div className="absolute top-[-14px] left-1/2 transform -translate-x-1/2 bg-indigo-600 border border-indigo-400/40 text-indigo-100 text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-lg z-30 pointer-events-none flex items-center gap-0.5 dark:shadow-[0_0_10px_rgba(99,102,241,0.5)]">
                 <Moon size={8} />
                 <span>{sleepTimer}د</span>
               </div>
@@ -586,11 +721,29 @@ export const GlobalAudioBar: React.FC = () => {
               )}
             </AnimatePresence>
 
+            {/* Favorite Notification Toast */}
+            <AnimatePresence>
+              {favoriteToast && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  className="absolute top-20 left-4 right-4 z-50 flex items-center justify-center pointer-events-none"
+                >
+                  <div className="bg-slate-900/95 border border-rose-500/40 text-white text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 backdrop-blur-md">
+                    <Heart size={16} className="text-rose-500 fill-rose-500 shrink-0" />
+                    <span className="font-bold">{favoriteToast}</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Header Area with Tab Switcher */}
             <div className="flex items-center justify-between mb-2 border-b border-white/5 pb-4 shrink-0">
               <button
                 onClick={() => setIsExpanded(false)}
                 className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transform transition-all duration-75 active:scale-[0.85] active:opacity-70 focus:outline-none"
+                title="تصغير المشغل"
               >
                 <ChevronDown size={24} />
               </button>
@@ -620,15 +773,33 @@ export const GlobalAudioBar: React.FC = () => {
                 </button>
               </div>
 
-              <button
-                onClick={() => {
-                  stopTrack();
-                  setIsExpanded(false);
-                }}
-                className="w-10 h-10 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transform transition-all duration-75 active:scale-[0.85] active:opacity-70 focus:outline-none"
-              >
-                <Square size={16} fill="currentColor" />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Favorite Quick Action Button */}
+                <button
+                  type="button"
+                  onClick={handleToggleFavorite}
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center transform transition-all duration-75 active:scale-[0.85] active:opacity-70 focus:outline-none border transition-colors",
+                    isCurrentFavorite
+                      ? "bg-rose-500/20 border-rose-500/40 text-rose-400 shadow-sm shadow-rose-500/20"
+                      : "bg-white/5 border-white/5 hover:bg-white/10 text-slate-400 hover:text-white"
+                  )}
+                  title={isCurrentFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('save_to_favorites', 'إضافة إلى المفضلة')}
+                >
+                  <Heart size={18} className={isCurrentFavorite ? "fill-rose-500 text-rose-500" : ""} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    stopTrack();
+                    setIsExpanded(false);
+                  }}
+                  className="w-10 h-10 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center transform transition-all duration-75 active:scale-[0.85] active:opacity-70 focus:outline-none border border-red-500/20"
+                  title="إيقاف التشغيل"
+                >
+                  <Square size={16} fill="currentColor" />
+                </button>
+              </div>
             </div>
 
             {/* Tab: Surah List (Playlist) */}
@@ -811,9 +982,9 @@ export const GlobalAudioBar: React.FC = () => {
                                 </div>
                               </div>
 
-                              {isCurrentSurah && (
-                                <div className="flex items-center gap-1 shrink-0">
-                                  {isPlaying ? (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {isCurrentSurah && (
+                                  isPlaying ? (
                                     <div className="flex gap-0.5 items-end h-2 px-1">
                                       <div className="w-[1.5px] bg-[#218510] animate-[bounce_0.6s_ease-in-out_infinite]" style={{ height: '60%' }} />
                                       <div className="w-[1.5px] bg-[#218510] animate-[bounce_0.8s_ease-in-out_infinite]" style={{ height: '100%' }} />
@@ -821,9 +992,31 @@ export const GlobalAudioBar: React.FC = () => {
                                     </div>
                                   ) : (
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                                  )}
-                                </div>
-                              )}
+                                  )
+                                )}
+                                <span
+                                  role="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const recId = activeReciter?.id || 1;
+                                    const favId = `quran-${recId}-${surah.number}`;
+                                    toggleFavoriteUnified({
+                                      id: favId,
+                                      type: 'surah',
+                                      title: `سورة ${surah.name}`,
+                                      subtitle: activeReciter?.name || 'القارئ',
+                                      route: `/quran-audio/${recId}`
+                                    });
+                                  }}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-white/10 transition-colors"
+                                  title="إضافة/إزالة من المفضلة"
+                                >
+                                  <Heart 
+                                    size={14} 
+                                    className={(appProgress.favorites || []).some(f => f.id === `quran-${activeReciter?.id || 1}-${surah.number}`) ? "fill-rose-500 text-rose-500" : ""} 
+                                  />
+                                </span>
+                              </div>
                             </button>
                           );
                         })}
@@ -1021,9 +1214,9 @@ export const GlobalAudioBar: React.FC = () => {
                                 </div>
                               </div>
 
-                              {isCurrent && (
-                                <div className="flex items-center gap-1 shrink-0">
-                                  {isPlaying ? (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {isCurrent && (
+                                  isPlaying ? (
                                     <div className="flex gap-0.5 items-end h-2 px-1">
                                       <div className="w-[1.5px] bg-[#3b82f6] animate-[bounce_0.6s_ease-in-out_infinite]" style={{ height: '60%' }} />
                                       <div className="w-[1.5px] bg-[#3b82f6] animate-[bounce_0.8s_ease-in-out_infinite]" style={{ height: '100%' }} />
@@ -1031,9 +1224,30 @@ export const GlobalAudioBar: React.FC = () => {
                                     </div>
                                   ) : (
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                                  )}
-                                </div>
-                              )}
+                                  )
+                                )}
+                                <span
+                                  role="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleLectureFavorite(lecture.id);
+                                    toggleFavoriteUnified({
+                                      id: lecture.id,
+                                      type: 'lecture',
+                                      title: lecture.title,
+                                      subtitle: selectedScholarState?.name || 'محاضرة',
+                                      route: '/lectures-audio'
+                                    });
+                                  }}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-white/10 transition-colors"
+                                  title="إضافة/إزالة من المفضلة"
+                                >
+                                  <Heart 
+                                    size={14} 
+                                    className={(appProgress.favoriteLectures || []).includes(lecture.id) ? "fill-rose-500 text-rose-500" : ""} 
+                                  />
+                                </span>
+                              </div>
                             </button>
                           );
                         })}
@@ -1231,9 +1445,9 @@ export const GlobalAudioBar: React.FC = () => {
                                 </div>
                               </div>
 
-                              {isCurrent && (
-                                <div className="flex items-center gap-1 shrink-0">
-                                  {isPlaying ? (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {isCurrent && (
+                                  isPlaying ? (
                                     <div className="flex gap-0.5 items-end h-2 px-1">
                                       <div className="w-[1.5px] bg-rose-400 animate-[bounce_0.6s_ease-in-out_infinite]" style={{ height: '60%' }} />
                                       <div className="w-[1.5px] bg-rose-400 animate-[bounce_0.8s_ease-in-out_infinite]" style={{ height: '100%' }} />
@@ -1241,9 +1455,30 @@ export const GlobalAudioBar: React.FC = () => {
                                     </div>
                                   ) : (
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                                  )}
-                                </div>
-                              )}
+                                  )
+                                )}
+                                <span
+                                  role="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleLectureFavorite(track.id);
+                                    toggleFavoriteUnified({
+                                      id: track.id,
+                                      type: 'lecture',
+                                      title: track.title,
+                                      subtitle: selectedTafsirScholarState?.name || 'تفسير صوتي',
+                                      route: '/tafsir-audio'
+                                    });
+                                  }}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-white/10 transition-colors"
+                                  title="إضافة/إزالة من المفضلة"
+                                >
+                                  <Heart 
+                                    size={14} 
+                                    className={(appProgress.favoriteLectures || []).includes(track.id) ? "fill-rose-500 text-rose-500" : ""} 
+                                  />
+                                </span>
+                              </div>
                             </button>
                           );
                         })}
@@ -1317,6 +1552,28 @@ export const GlobalAudioBar: React.FC = () => {
                   <div className="text-center mt-6 w-full max-w-sm px-4 flex flex-col items-center">
                     <h3 className="text-xl font-bold text-white tracking-tight truncate leading-tight">{currentTrack.title}</h3>
                     <p className="text-slate-400 text-sm mt-1 truncate">{currentTrack.subtitle}</p>
+
+                    {/* Add to Favorites Button inside the Audio Player */}
+                    <button
+                      type="button"
+                      onClick={handleToggleFavorite}
+                      className={cn(
+                        "mt-3.5 inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-xs font-black transition-all duration-300 transform active:scale-95 shadow-lg border",
+                        isCurrentFavorite
+                          ? "bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-rose-500/20 hover:bg-rose-500/30"
+                          : "bg-white/10 text-slate-200 hover:text-white hover:bg-white/15 border-white/15 hover:border-white/25"
+                      )}
+                      title={isCurrentFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('save_to_favorites', 'إضافة إلى المفضلة')}
+                    >
+                      <Heart 
+                        size={17} 
+                        className={cn(
+                          "transition-all duration-300", 
+                          isCurrentFavorite ? "fill-rose-500 text-rose-500 scale-110 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" : "text-slate-300"
+                        )} 
+                      />
+                      <span>{isCurrentFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('save_to_favorites', 'إضافة إلى المفضلة')}</span>
+                    </button>
 
                     {/* Countdown indicator in expanded mode */}
                     {nextTrackCountdown !== null && (
