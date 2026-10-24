@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Sunrise, Sunset, Moon, Sun, Volume2, Landmark, Zap, Star, Utensils, Home, Shirt, Plane, Book, BookOpen, Quote, Heart, Wind, Stethoscope, CloudRain, Shield, Sparkles, MoonStar, Fingerprint, HandHeart, BarChart3, Settings2, LayoutGrid, List, Check, Type, EyeOff, X } from 'lucide-react';
+import { Sunrise, Sunset, Moon, Sun, Volume2, Landmark, Zap, Star, Utensils, Home, Shirt, Plane, Book, BookOpen, Quote, Heart, Wind, Stethoscope, CloudRain, Shield, Sparkles, MoonStar, Fingerprint, HandHeart, BarChart3, Settings2, LayoutGrid, List, Check, Type, EyeOff, X, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { BackButton } from './ui/BackButton';
 import { useSmartNavigation } from "../lib/navigation";
@@ -26,7 +26,13 @@ interface AdhkarSection {
   items: AdhkarItem[];
 }
 
-const PrayerJourneyBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: any }>(({ item, isRtl, t }) => (
+const PrayerJourneyBanner = React.memo<{ 
+  item: AdhkarItem; 
+  isRtl: boolean; 
+  isFavorite?: boolean; 
+  onToggleFavorite?: (item: AdhkarItem) => void; 
+  t: any 
+}>(({ item, isRtl, isFavorite, onToggleFavorite, t }) => (
   <Link
     to={item.to}
     className={cn(
@@ -39,6 +45,26 @@ const PrayerJourneyBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: an
     <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
     <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
     <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent" />
+
+    {/* Favorite Heart Button */}
+    {onToggleFavorite && (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleFavorite(item);
+        }}
+        className={cn(
+          "absolute top-3 left-3 z-20 p-2 rounded-xl transition-all duration-300 cursor-pointer",
+          "hover:bg-white/20 text-white/40 hover:text-rose-500 hover:scale-110",
+          isFavorite && "text-rose-500 fill-rose-500 animate-pulse bg-rose-500/20 border border-rose-500/30"
+        )}
+        title={isFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
+      >
+        <Heart size={16} className={isFavorite ? "fill-current" : ""} />
+      </button>
+    )}
 
     <div className="relative z-10 px-6 py-6 flex flex-col justify-between h-full gap-4">
       <div className={cn("flex items-start justify-between", isRtl ? "flex-row" : "flex-row-reverse")}>
@@ -91,7 +117,13 @@ const PrayerJourneyBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: an
 ));
 PrayerJourneyBanner.displayName = 'PrayerJourneyBanner';
 
-const DuasBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: any }>(({ item, isRtl, t }) => (
+const DuasBanner = React.memo<{ 
+  item: AdhkarItem; 
+  isRtl: boolean; 
+  isFavorite?: boolean; 
+  onToggleFavorite?: (item: AdhkarItem) => void; 
+  t: any 
+}>(({ item, isRtl, isFavorite, onToggleFavorite, t }) => (
   <Link
     to={item.to}
     className={cn(
@@ -104,6 +136,26 @@ const DuasBanner = React.memo<{ item: AdhkarItem; isRtl: boolean; t: any }>(({ i
     <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-teal-500/15 rounded-full blur-2xl pointer-events-none" />
     <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
     <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+
+    {/* Favorite Heart Button */}
+    {onToggleFavorite && (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleFavorite(item);
+        }}
+        className={cn(
+          "absolute top-3 left-3 z-20 p-2 rounded-xl transition-all duration-300 cursor-pointer",
+          "hover:bg-white/20 text-white/40 hover:text-rose-500 hover:scale-110",
+          isFavorite && "text-rose-500 fill-rose-500 animate-pulse bg-rose-500/20 border border-rose-500/30"
+        )}
+        title={isFavorite ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
+      >
+        <Heart size={16} className={isFavorite ? "fill-current" : ""} />
+      </button>
+    )}
 
     <div className="relative z-10 px-6 py-6 flex flex-col justify-between h-full gap-4">
       <div className={cn("flex items-start justify-between", isRtl ? "flex-row" : "flex-row-reverse")}>
@@ -239,9 +291,13 @@ const AdhkarHub: React.FC = () => {
   });
 
   const { navigate } = useSmartNavigation();
-  const { settings, progress, toggleFavoriteUnified, updateSettings } = useAppContext();
+  const { settings, progress, toggleFavoriteUnified, updateSettings, adhkarData, toggleDhikrFavorite } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const favoriteAdhkarItems = useMemo(() => {
+    return adhkarData?.find(c => c.category === 'favorites')?.items || [];
+  }, [adhkarData]);
 
   const sections: AdhkarSection[] = useMemo(() => [
     {
@@ -292,10 +348,19 @@ const AdhkarHub: React.FC = () => {
       title: t('my_favorites_section'),
       description: t('my_favorites_section_desc'),
       items: [
-        { to: "/adhkar/favorites", title: t('adhkar_favorites'), icon: <Heart size={20} />, color: "from-pink-600 to-rose-700", shadow: "shadow-lg shadow-pink-600/30" },
+        { 
+          to: "/adhkar/favorites", 
+          title: t('adhkar_favorites'), 
+          subtitle: favoriteAdhkarItems.length > 0 
+            ? `${favoriteAdhkarItems.length} ${favoriteAdhkarItems.length === 1 ? 'ذكر محفوظ' : 'أذكار محفوظة'}` 
+            : t('sub_favorites', 'ذخائرك المختارة المقربة'),
+          icon: <Heart size={20} className={favoriteAdhkarItems.length > 0 ? "fill-current text-rose-500" : ""} />, 
+          color: "from-pink-600 to-rose-700", 
+          shadow: "shadow-lg shadow-pink-600/30" 
+        },
       ]
     }
-  ], [t]);
+  ], [t, favoriteAdhkarItems.length]);
 
   const handleToggleFavorite = useCallback((item: AdhkarItem) => {
     toggleFavoriteUnified({
@@ -368,22 +433,28 @@ const AdhkarHub: React.FC = () => {
               )}>
                 {section.items.map((item, itemIdx) => {
                   if (item.to === "/adhkar/prayer") {
+                    const isFav = favoritesSet.has('adhkar_prayer');
                     return (
                       <PrayerJourneyBanner
                         key={itemIdx}
                         item={item}
                         isRtl={isRtl}
+                        isFavorite={isFav}
+                        onToggleFavorite={handleToggleFavorite}
                         t={t}
                       />
                     );
                   }
 
                   if (item.to === "/duas") {
+                    const isFav = favoritesSet.has('adhkar_duas');
                     return (
                       <DuasBanner
                         key={itemIdx}
                         item={item}
                         isRtl={isRtl}
+                        isFavorite={isFav}
+                        onToggleFavorite={handleToggleFavorite}
                         t={t}
                       />
                     );
@@ -405,6 +476,79 @@ const AdhkarHub: React.FC = () => {
                   );
                 })}
               </div>
+
+              {/* If this is My Favorites section, display quick cards of saved individual favorite adhkar */}
+              {section.items.some(i => i.to === "/adhkar/favorites") && (
+                <div className="mt-3.5 space-y-3">
+                  {favoriteAdhkarItems.length > 0 ? (
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                          <Heart size={14} className="text-rose-500 fill-rose-500" />
+                          <span>{t('quick_favorite_adhkar', 'الأذكار التي قمت بحفظها')}</span>
+                          <span className="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold px-2 py-0.5 rounded-full">
+                            {favoriteAdhkarItems.length}
+                          </span>
+                        </span>
+                        <Link
+                          to="/adhkar/favorites"
+                          className="text-[11px] font-black text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>{t('view_all', 'عرض الكل وقراءتها')}</span>
+                          <ChevronRight size={14} className={isRtl ? "rotate-180" : ""} />
+                        </Link>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {favoriteAdhkarItems.slice(0, 4).map((dhikr) => (
+                          <div
+                            key={dhikr.id}
+                            onClick={() => navigate('/adhkar/favorites')}
+                            className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-rose-400/50 dark:hover:border-rose-500/40 shadow-xs hover:shadow-md transition-all cursor-pointer flex items-start justify-between gap-3 group relative overflow-hidden"
+                          >
+                            <div className="flex-1 space-y-1.5 text-right min-w-0">
+                              <p className="font-adhkar text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-relaxed">
+                                {dhikr.text}
+                              </p>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold">
+                                <span className="bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 px-2 py-0.5 rounded-md font-mono">
+                                  {dhikr.count} {dhikr.count === 1 ? 'مرة' : 'مرات'}
+                                </span>
+                                {dhikr.description && (
+                                  <span className="truncate max-w-[180px] text-slate-400 dark:text-slate-500">
+                                    {dhikr.description}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDhikrFavorite(dhikr);
+                              }}
+                              className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0 cursor-pointer active:scale-90"
+                              title={t('remove_from_favorites', 'إزالة من المفضلة')}
+                            >
+                              <Heart size={16} className="fill-rose-500" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-900/30 flex items-center gap-3 text-right">
+                      <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                        <Heart size={18} className="fill-rose-500/20" />
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 font-bold leading-relaxed">
+                        {t('favorites_hub_hint', 'احفظ أذكارك المفضلة أو الأكثر تكراراً بالضغط على أيقونة القلب ❤️ في أي بطاقة ذكر أثناء القراءة لتظهر لك هنا.')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

@@ -93,11 +93,14 @@
         e.preventDefault();
       });
 
-      // Register SW for offline caching & performance (only in production)
+      // Register SW for offline caching & performance (only in production outside preview/iframes)
       if ('serviceWorker' in navigator) {
         var isDevEnv = window.location.hostname === 'localhost' || 
                        window.location.hostname === '127.0.0.1' || 
                        window.location.hostname.indexOf('ais-dev-') !== -1 ||
+                       window.location.hostname.indexOf('ais-pre-') !== -1 ||
+                       window.location.hostname.indexOf('.run.app') !== -1 ||
+                       (window.self !== window.top) ||
                        window.location.port === '3000' ||
                        window.location.port === '5173';
         if (isDevEnv) {
@@ -106,6 +109,11 @@
               registrations[i].unregister();
             }
           });
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (var i = 0; i < names.length; i++) caches.delete(names[i]);
+            });
+          }
         } else {
           window.addEventListener('load', function() {
             navigator.serviceWorker.register('/sw.js').then(function(reg) {

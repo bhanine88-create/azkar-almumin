@@ -418,10 +418,21 @@ const DhikrCard = React.memo(({
   className?: string,
   categoryTitle?: string
 }) => {
+  const { adhkarData, toggleDhikrFavorite } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   const [isShared, setIsShared] = useState(false);
   const isFinished = count >= item.count;
   const progressPercent = (count / item.count) * 100;
+
+  const isFavorite = React.useMemo(() => {
+    const favoritesCat = adhkarData?.find(c => c.category === 'favorites');
+    if (!favoritesCat) return false;
+    return favoritesCat.items.some(i => 
+      (Boolean(i.id && item.id && i.id === item.id)) ||
+      (Boolean(i.id && item.id && (i.id.startsWith(`fv_${item.id}_`) || item.id.startsWith(`fv_${i.id}_`)))) ||
+      (Boolean(i.text && item.text && i.text.trim() === item.text.trim()))
+    );
+  }, [adhkarData, item.id, item.text]);
 
   const cardRef = React.useRef<HTMLDivElement>(null);
 
@@ -591,47 +602,7 @@ const DhikrCard = React.memo(({
           )}
         </div>
         <div className={cn("flex items-center gap-2", isSpecialTitle && "absolute left-4")}>
-          {/* Visual Progress Counter for this specific Dhikr */}
-          <div 
-            className={cn(
-              "h-8 px-2.5 rounded-full flex items-center gap-1.5 border text-xs font-mono font-black transition-all select-none shrink-0",
-              isFinished
-                ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-xs"
-                : count > 0
-                  ? "bg-amber-500/15 border-amber-500/30 text-amber-800 dark:text-amber-300"
-                  : theme.isLight
-                    ? "bg-black/[0.04] border-black/10 text-slate-600"
-                    : "bg-white/[0.06] border-white/10 text-slate-300"
-            )}
-            title={`تكرارات هذا الذكر اليوم: ${count} من ${item.count}`}
-          >
-            <div className="relative w-4 h-4 shrink-0 flex items-center justify-center">
-              <svg className="w-4 h-4 -rotate-90 transform" viewBox="0 0 20 20">
-                <circle
-                  cx="10"
-                  cy="10"
-                  r="7"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  fill="transparent"
-                  className="opacity-20"
-                />
-                <circle
-                  cx="10"
-                  cy="10"
-                  r="7"
-                  stroke={isFinished ? "#10b981" : "#006A4E"}
-                  strokeWidth="2.5"
-                  strokeDasharray={2 * Math.PI * 7}
-                  strokeDashoffset={2 * Math.PI * 7 - (Math.min(100, (count / item.count) * 100) / 100) * (2 * Math.PI * 7)}
-                  strokeLinecap="round"
-                  fill="transparent"
-                  className="transition-all duration-300"
-                />
-              </svg>
-            </div>
-            <span className="leading-none">{count}/{item.count}</span>
-          </div>
+
 
           <button
             onClick={async (e) => {
@@ -665,6 +636,32 @@ const DhikrCard = React.memo(({
               <Share2 size={15} strokeWidth={2.5} className="shrink-0" />
             )}
           </button>
+
+          {/* Favorite Heart Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerHaptic('light');
+              toggleDhikrFavorite(item);
+            }}
+            className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer shrink-0 shadow-sm active:scale-[0.95]",
+              isFavorite
+                ? "bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 border-[2.5px] border-rose-600 dark:border-rose-400 text-white shadow-[0_2px_12px_rgba(244,63,94,0.4)]"
+                : "bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 border-[2.5px] border-rose-600 hover:border-rose-700 dark:border-rose-500 dark:hover:border-rose-400 text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+            )}
+            title={isFavorite ? (isRtl ? "إزالة من أذكاري المفضلة" : "Remove from favorites") : (isRtl ? "إضافة إلى أذكاري المفضلة" : "Add to favorites")}
+          >
+            <Heart 
+              size={15} 
+              strokeWidth={2.5}
+              className={cn(
+                "shrink-0 transition-transform duration-200",
+                isFavorite ? "fill-white text-white scale-105" : ""
+              )} 
+            />
+          </button>
+
           {isFinished && (
             <CheckCircle2 size={20} className="text-teal-500 drop-shadow-sm" />
           )}
@@ -1777,6 +1774,36 @@ export const Adhkar: React.FC = () => {
   }
 
   if (currentCategory.items.length === 0 && !isManageMode) {
+    if (category === 'favorites') {
+      return (
+        <div className="h-full flex flex-col items-center justify-center space-y-6 relative bg-slate-50 dark:bg-slate-900 px-4 text-center" dir={isRtl ? "rtl" : "ltr"}>
+          <div className={cn("absolute top-4 z-50", isRtl ? "right-4" : "left-4")}>
+            <BackButton forceFallback={true} />
+          </div>
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-20 h-20 bg-rose-50 dark:bg-rose-950/30 text-rose-500 rounded-3xl border border-rose-500/20 flex items-center justify-center shadow-xl shadow-rose-500/10"
+          >
+            <Heart size={38} className="fill-rose-500/20 stroke-[2.2]" />
+          </motion.div>
+          <div className="space-y-2 max-w-sm">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white">{categoryTitle}</h2>
+            <p className="text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-sm leading-relaxed">
+              {t('empty_favorites_desc', 'لم تقم بحفظ أي أذكار في المفضلة بعد. اضغط على أيقونة القلب ❤️ في أي ذكر أثناء قراءته لحفظه هنا والوصول إليه بسرعة.')}
+            </p>
+          </div>
+          <button 
+            onClick={() => navigate('/adhkar')}
+            className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 active:scale-95 transition-all text-white px-8 py-3.5 rounded-2xl font-black shadow-lg shadow-teal-500/25 flex items-center gap-2 cursor-pointer text-sm"
+          >
+            <BookOpen size={18} />
+            <span>{t('browse_adhkar', 'استعراض الأذكار')}</span>
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-6 relative bg-slate-50 dark:bg-slate-900" dir={isRtl ? "rtl" : "ltr"}>
         <div className={cn("absolute top-4 z-50", isRtl ? "right-4" : "left-4")}>

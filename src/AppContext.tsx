@@ -1562,6 +1562,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const toggleDhikrFavorite = React.useCallback((dhikr: Dhikr) => {
+    import('./lib/utils').then(({ triggerHaptic }) => triggerHaptic('light'));
     setAdhkarData(prev => {
       let favoritesCat = prev.find(c => c.category === 'favorites');
       let currentPrev = [...prev];

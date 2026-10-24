@@ -240,6 +240,11 @@ export default function App() {
     let phase1Timer: NodeJS.Timeout;
     let phase2Timer: NodeJS.Timeout;
 
+    // Skip aggressive background preloads in dev mode or iframe preview to keep the network free for active routes
+    if (import.meta.env.DEV || (typeof window !== 'undefined' && window.self !== window.top)) {
+      return;
+    }
+
     const runPreloadPhase1 = () => {
       const phase1Components = [Quran, AdhkarHub, Adhkar, Tasbih, PrayerTimes, DuasHub];
       phase1Components.forEach((cmp, index) => {
@@ -249,7 +254,7 @@ export default function App() {
           } catch (e) {
             // Silently swallow preload errors
           }
-        }, index * 100);
+        }, index * 200);
       });
     };
 
@@ -270,19 +275,19 @@ export default function App() {
           } catch (e) {
             // Silently swallow preload errors
           }
-        }, index * 100);
+        }, index * 200);
       });
     };
 
     if (typeof window !== 'undefined') {
       if ('requestIdleCallback' in window) {
         (window as any).requestIdleCallback(() => {
-          phase1Timer = setTimeout(runPreloadPhase1, 500);
-          phase2Timer = setTimeout(runPreloadPhase2, 2500);
-        }, { timeout: 2000 });
+          phase1Timer = setTimeout(runPreloadPhase1, 1500);
+          phase2Timer = setTimeout(runPreloadPhase2, 4500);
+        }, { timeout: 3000 });
       } else {
-        phase1Timer = setTimeout(runPreloadPhase1, 500);
-        phase2Timer = setTimeout(runPreloadPhase2, 2000);
+        phase1Timer = setTimeout(runPreloadPhase1, 1500);
+        phase2Timer = setTimeout(runPreloadPhase2, 4500);
       }
     }
 
