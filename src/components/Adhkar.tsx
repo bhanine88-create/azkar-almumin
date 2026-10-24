@@ -1390,7 +1390,7 @@ export const Adhkar: React.FC = () => {
 
                 {secondsElapsed > 0 && (
                   <p className="text-xs text-white/90 font-bold mt-1.5 leading-relaxed">
-                    {t('may_allah_accept', 'تقبل الله طاعتك!')} قضيت <span className={cn("font-black underline decoration-2 decoration-teal-400", themeHighlightColor)}>{formatTimePhrase(secondsElapsed)}</span> {t('in_this_blessed_ward', 'في هذا الورد المبارك. ✨')}
+                    {t('may_allah_accept', 'تقبل الله طاعتك! قضيت')} <span className={cn("font-black underline decoration-2 decoration-teal-400", themeHighlightColor)}>{formatTimePhrase(secondsElapsed)}</span> {t('in_this_blessed_ward', 'في هذا الورد المبارك. ✨')}
                   </p>
                 )}
               </div>

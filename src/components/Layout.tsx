@@ -1795,13 +1795,15 @@ export const Layout: React.FC = () => {
         </main>
         <GlobalAudioBar />
         <DownloadProgressWidget />
-        <AnimatePresence>
+        {/* Fades in on returning home but leaves at once: an exit animation kept
+            the bar's height in the layout for 200ms after a section had already
+            reserved its own bottom space, so the content jumped. */}
+        <>
           {!hideBottomNav && (
-            <motion.nav 
+            <motion.nav
               id="bottom-nav"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 24 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               style={{ paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))' }}
               className={cn(
@@ -1849,7 +1851,7 @@ export const Layout: React.FC = () => {
               </div>
             </motion.nav>
           )}
-        </AnimatePresence>
+        </>
       </div>
       <AppInfoModal isOpen={isAppInfoModalOpen} onClose={() => setIsAppInfoModalOpen(false)} />
       {/* Global Toast Notification */}
