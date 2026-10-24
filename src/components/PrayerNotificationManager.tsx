@@ -17,7 +17,10 @@ import {
   registerNotificationActionListener, 
   initializeNotificationChannels,
   checkLocalNotificationPermissions,
-  requestLocalNotificationPermissions
+  requestLocalNotificationPermissions,
+  hasExactAlarmPermission,
+  requestExactAlarmPermission,
+  isInQuietHours
 } from '../services/localNotificationService';
 import { adhkarNotificationController } from '../services/adhkarNotificationController';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
@@ -27,6 +30,12 @@ import { useGlobalAudio } from '../context/GlobalAudioContext';
  * Versioned, so a future change to what the app asks for can show it again.
  */
 const PERMISSIONS_INTRO_KEY = 'believer_permissions_intro_v1';
+
+/**
+ * Marks that the explainer has been shown for exact alarms. Separate, so users
+ * who saw the explainer before it covered exact alarms are shown it once more.
+ */
+const EXACT_ALARMS_INTRO_KEY = 'believer_exact_alarms_intro_v1';
 
 const PRAYER_NAMES: Record<string, string> = {
   Fajr: 'الفجر',
@@ -52,7 +61,7 @@ export const PrayerNotificationManager: React.FC = () => {
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
   const [showPermissionsIntro, setShowPermissionsIntro] = useState(false);
   const lastNotifiedRef = useRef<Record<string, string>>({});
-  const lastRandomTimestampRef = useRef<number>(Date.now());
+  const lastRandomSlotRef = useRef<string>('');
   const mountTimeRef = useRef<number>(Date.now());
   const prevMorningTimeRef = useRef<string>(settings.morningAdhkarTime);
   const prevEveningTimeRef = useRef<string>(settings.eveningAdhkarTime);
@@ -176,6 +185,15 @@ export const PrayerNotificationManager: React.FC = () => {
           if (res.display === 'granted') {
             await syncAllLocalNotifications(settingsRef.current);
           }
+        } else if (
+          perm.display === 'granted' &&
+          settingsRef.current.notificationsEnabled &&
+          !safeLocalStorageGetItem(EXACT_ALARMS_INTRO_KEY) &&
+          !(await hasExactAlarmPermission())
+        ) {
+          // Notifications are on but Android may hold them back by minutes:
+          // explain once, then the explainer's button opens the alarms screen.
+          if (!cancelled) setShowPermissionsIntro(true);
         }
       } catch (err) {
         console.warn('[PrayerNotificationManager] First-run permission prompt check error:', err);
@@ -205,10 +223,16 @@ export const PrayerNotificationManager: React.FC = () => {
   /** Dismissing the explainer is what actually asks Android for the permission. */
   const handlePermissionsIntroClose = React.useCallback(async () => {
     safeLocalStorageSetItem(PERMISSIONS_INTRO_KEY, 'true');
+    safeLocalStorageSetItem(EXACT_ALARMS_INTRO_KEY, 'true');
     setShowPermissionsIntro(false);
     try {
       const perm = await requestLocalNotificationPermissions();
       if (perm.display === 'granted') {
+        // Without exact alarms Android may deliver the adhan minutes late. The
+        // explainer the user just closed says this screen comes next.
+        if (!(await hasExactAlarmPermission())) {
+          await requestExactAlarmPermission();
+        }
         await syncAllLocalNotifications(settingsRef.current);
       }
     } catch (err) {
@@ -216,7 +240,7 @@ export const PrayerNotificationManager: React.FC = () => {
     }
   }, []);
 
-  // 4. Automatically sync OS background local notifications for upcoming 7 days
+  // 4. Automatically sync OS background local notifications for the days ahead
   useEffect(() => {
     const timer = setTimeout(() => {
       syncAllLocalNotifications(settings).catch(err => {
@@ -243,7 +267,14 @@ export const PrayerNotificationManager: React.FC = () => {
     settings.eveningAdhkarFollowupEnabled,
     settings.sunnahReminderEnabled,
     settings.sunnahReminderTime,
-    settings.reminders
+    settings.reminders,
+    settings.randomAdhkarEnabled,
+    settings.randomAdhkarInterval,
+    settings.randomAdhkarQuietHoursEnabled,
+    settings.randomAdhkarQuietStart,
+    settings.randomAdhkarQuietEnd,
+    settings.randomAdhkarNotificationType,
+    settings.customRandomAdhkar
   ]);
 
   const getAudioUrl = (type: string, soundId?: string) => {
@@ -264,21 +295,6 @@ export const PrayerNotificationManager: React.FC = () => {
     return sound.url;
   };
 
-  const isQuietHours = (nowH: number, nowM: number, startStr?: string, endStr?: string) => {
-    if (!startStr || !endStr) return false;
-    const [sH, sM] = startStr.split(':').map(Number);
-    const [eH, eM] = endStr.split(':').map(Number);
-    const nowTotal = nowH * 60 + nowM;
-    const startTotal = sH * 60 + sM;
-    const endTotal = eH * 60 + eM;
-
-    if (startTotal > endTotal) {
-      return nowTotal >= startTotal || nowTotal < endTotal;
-    } else if (startTotal < endTotal) {
-      return nowTotal >= startTotal && nowTotal < endTotal;
-    }
-    return false;
-  };
 
   useEffect(() => {
     const fetchTimes = async () => {
@@ -516,16 +532,20 @@ export const PrayerNotificationManager: React.FC = () => {
       });
 
       // 8. Random Athkar System Loop Check
+      // On the same clock slots as the native schedule (every N minutes from
+      // midnight), not N minutes after the app happened to open, so the banner
+      // and the system notification arrive on the same minute.
       if (settings.randomAdhkarEnabled && settings.customRandomAdhkar?.length) {
-        const intervalMs = (settings.randomAdhkarInterval || 30) * 60 * 1000;
-        const elapsed = Date.now() - lastRandomTimestampRef.current;
+        const intervalMinutes = Math.max(5, settings.randomAdhkarInterval || 30);
+        const slotKey = nowDateStr;
 
-        if (elapsed >= intervalMs) {
-          lastRandomTimestampRef.current = Date.now();
+        if (nowTimeMinutes % intervalMinutes === 0 && lastRandomSlotRef.current !== slotKey &&
+            Date.now() - mountTimeRef.current >= 2500) {
+          lastRandomSlotRef.current = slotKey;
 
           // Check Quiet Hours
           if (settings.randomAdhkarQuietHoursEnabled) {
-            const inQuiet = isQuietHours(currentH, currentM, settings.randomAdhkarQuietStart || '23:00', settings.randomAdhkarQuietEnd || '06:30');
+            const inQuiet = isInQuietHours(currentH, currentM, settings.randomAdhkarQuietStart || '23:00', settings.randomAdhkarQuietEnd || '06:30');
             if (inQuiet) {
               return; // Silently skip during quiet hours
             }

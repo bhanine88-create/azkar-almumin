@@ -329,7 +329,7 @@ export class AdhkarNotificationController {
    * 1. Guarantees Morning and Evening notifications defaults are active
    * 2. Detects day rollovers and wipes stale suppression markers
    * 3. Detects missed notification triggers in the active window and resets them
-   * 4. Silently verifies that OS LocalNotifications (Capacitor) are scheduled for the next 7 days
+   * 4. Silently verifies that OS LocalNotifications (Capacitor) are scheduled for the days ahead
    * 5. Returns a detailed verification result without throwing or alerting the user
    */
   public async verifyAndResetAtStartup(
@@ -420,7 +420,7 @@ export class AdhkarNotificationController {
             !hasEveningScheduled;
 
           if (needsReschedule && updatedSettings.notificationsEnabled) {
-            // Silently reschedule for next 7 days without popping permission prompt
+            // Silently reschedule without popping permission prompt
             const syncResult = await syncAllLocalNotifications(updatedSettings, { mayRequestPermission: false });
             if (syncResult.success) {
               osRescheduled = true;

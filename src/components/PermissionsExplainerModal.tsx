@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Bell, Volume2, HardDrive, ShieldCheck, X, CheckCircle } from 'lucide-react';
+import { MapPin, Bell, AlarmClock, Volume2, HardDrive, ShieldCheck, X, CheckCircle } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 
 interface PermissionsExplainerModalProps {
@@ -38,6 +38,20 @@ export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps>
       privacyNote: isRTL
         ? 'التنبيهات تعمل برمجياً على جهازك وخالية تماماً من الإعلانات الترويجية أو التتبع.'
         : 'All notifications are generated locally on your device without any ads or marketing tracking.'
+    },
+    {
+      // Requested right after notifications when the explainer closes. On newer
+      // Android this opens a system screen, so the user is told before it does.
+      id: 'exact-alarms',
+      icon: <AlarmClock size={22} className="text-rose-400" />,
+      title: isRTL ? 'المنبّهات الدقيقة (Alarms & reminders)' : 'Alarms & Reminders',
+      badge: isRTL ? 'في الوقت بالدقيقة' : 'On the exact minute',
+      purpose: isRTL
+        ? 'ليصل الأذان وأذكار الصباح والمساء والذكر في وقتها بالدقيقة حتى والتطبيق مغلق. إن لم يكن مفعّلاً سيفتح أندرويد شاشة «المنبّهات والتذكيرات»: فعّل الخيار ثم ارجع إلى التطبيق.'
+        : 'So the adhan, morning/evening adhkar and dhikr reminders arrive on the exact minute, even with the app closed. If it is off, Android opens the "Alarms & reminders" screen: switch it on, then return to the app.',
+      privacyNote: isRTL
+        ? 'يُستخدم لضبط مواعيد التنبيهات على جهازك فقط.'
+        : 'Used only to time notifications on your device.'
     },
     {
       id: 'audio',

@@ -6,7 +6,7 @@ import {
 } from '@capacitor/local-notifications';
 import { Coordinates, CalculationMethod, PrayerTimes as AdhanTimes, Madhab } from 'adhan';
 import { AppSettings } from '../types';
-import { safeLocalStorageGetItem } from '../utils/storage';
+import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
 
 export const PRAYER_NAMES_AR: Record<string, string> = {
   Fajr: 'الفجر',
@@ -23,8 +23,36 @@ const PRAYER_KEYS_ORDER = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
 export const CHANNELS = {
   PRAYER: 'prayer_times_channel',
   ADHKAR: 'adhkar_channel',
-  REMINDERS: 'reminders_channel'
+  REMINDERS: 'reminders_channel',
+  RANDOM: 'random_dhikr_channel'
 } as const;
+
+/**
+ * Notification id ranges. Each kind owns its own range, so scheduling further
+ * ahead can never push one kind's ids into another's.
+ *   1000-1499  morning / evening adhkar, their follow-ups, sunnah (base + day)
+ *   10000+     prayers (10000 + 10 * day + prayer index)
+ *   200000+    custom reminders (200000 + 100 * reminder + day)
+ *   300000+    random dhikr (300000 + slot)
+ * In-app alerts use 100-998 and the test button 9999.
+ */
+const ID_BASE = { PRAYER: 10000, CUSTOM: 200000, RANDOM: 300000 } as const;
+
+/**
+ * How many days ahead fixed-time notifications are scheduled. The schedule is
+ * renewed whenever the app is opened; this is how long it keeps firing if the
+ * app is not opened at all.
+ */
+const DAYS_TO_SCHEDULE = 14;
+
+/**
+ * Android caps an app at 500 pending alarms and every notification is one.
+ * Random dhikr gets whatever room the fixed notifications leave under this.
+ */
+const MAX_SCHEDULED = 400;
+
+/** Build, exact-alarm state and day of the last schedule that was written. */
+const SYNC_META_KEY = 'believer_notif_sync_v1';
 
 let channelsInitialized = false;
 let actionListenerRegistered = false;
@@ -85,6 +113,19 @@ export async function initializeNotificationChannels(): Promise<void> {
       vibration: true,
       lights: true,
       lightColor: '#F59E0B'
+    });
+
+    // 4. Random Dhikr Channel. Separate so it can be quietened in Android
+    // settings without touching the adhan.
+    await LocalNotifications.createChannel({
+      id: CHANNELS.RANDOM,
+      name: 'الذكر العشوائي / Random Dhikr',
+      description: 'تذكير بذكر الله على فترات منتظمة طوال اليوم',
+      importance: 3, // DEFAULT: sound, no heads-up
+      visibility: 1,
+      sound: 'beep.wav',
+      vibration: true,
+      lights: false
     });
 
     channelsInitialized = true;
@@ -244,6 +285,79 @@ function parseTimeToDate(timeStr: string, baseDate: Date): Date {
   return result;
 }
 
+/** Whether h:m falls in a quiet window such as 23:00-06:30 (may cross midnight). */
+export function isInQuietHours(h: number, m: number, startStr?: string, endStr?: string): boolean {
+  if (!startStr || !endStr) return false;
+  const [sH, sM] = startStr.split(':').map(Number);
+  const [eH, eM] = endStr.split(':').map(Number);
+  const now = h * 60 + m;
+  const start = sH * 60 + sM;
+  const end = eH * 60 + eM;
+  if (start > end) return now >= start || now < end;
+  if (start < end) return now >= start && now < end;
+  return false;
+}
+
+/**
+ * Random dhikr slots: every `randomAdhkarInterval` minutes counted from
+ * midnight, so they fall on the same clock minutes every day and match the
+ * in-app check. Skips quiet hours and anything not in the future.
+ */
+function randomDhikrSlots(settings: AppSettings, from: Date, days: number, limit: number): Date[] {
+  const interval = Math.max(5, settings.randomAdhkarInterval || 30);
+  const slots: Date[] = [];
+  const day = new Date(from);
+  day.setHours(0, 0, 0, 0);
+  for (let d = 0; d < days && slots.length < limit; d++) {
+    for (let minute = 0; minute < 24 * 60 && slots.length < limit; minute += interval) {
+      const at = new Date(day);
+      at.setDate(day.getDate() + d);
+      at.setHours(0, minute, 0, 0);
+      if (at.getTime() <= from.getTime() + 30000) continue;
+      if (settings.randomAdhkarQuietHoursEnabled && isInQuietHours(
+        at.getHours(), at.getMinutes(),
+        settings.randomAdhkarQuietStart || '23:00', settings.randomAdhkarQuietEnd || '06:30'
+      )) continue;
+      slots.push(at);
+    }
+  }
+  return slots;
+}
+
+/**
+ * The dhikr for a slot. Derived from the slot's time rather than Math.random,
+ * so rebuilding the plan gives the same text and an unchanged schedule is
+ * recognised as unchanged.
+ */
+function dhikrForSlot(list: string[], at: Date): string {
+  const slot = Math.floor(at.getTime() / 60000);
+  return list[(Math.imul(slot, 0x9E3779B1) >>> 0) % list.length];
+}
+
+const localDayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+const atMs = (at: unknown) => (at ? new Date(at as string | number | Date).getTime() : NaN);
+
+/**
+ * True when Android already holds exactly this plan: every planned notification
+ * is pending with the same time and text, and nothing else is pending ahead.
+ */
+function isPlanAlreadyScheduled(
+  plan: LocalNotificationSchema[],
+  pending: { id: number; title?: string; body?: string; schedule?: { at?: unknown } }[],
+  nowTime: number
+): boolean {
+  const pendingById = new Map(pending.map(p => [p.id, p]));
+  const planIds = new Set(plan.map(n => n.id));
+  const samePlan = plan.every(n => {
+    const p = pendingById.get(n.id);
+    return !!p && p.title === n.title && p.body === n.body &&
+      Math.abs(atMs(p.schedule?.at) - atMs(n.schedule?.at)) < 1000;
+  });
+  const nothingExtra = pending.every(p => planIds.has(p.id) || !(atMs(p.schedule?.at) > nowTime));
+  return samePlan && nothingExtra;
+}
+
 /**
  * Whether Android will let this app set alarms to the exact minute.
  *
@@ -283,7 +397,7 @@ export async function requestExactAlarmPermission(): Promise<boolean> {
 
 /**
  * Synchronizes and schedules all upcoming local notifications for Prayers and Daily Adhkar
- * Schedules up to 7 days in advance so notifications fire reliably even when the device is offline,
+ * Schedules DAYS_TO_SCHEDULE days in advance so notifications fire reliably even when the device is offline,
  * app is in the background, or device enters Doze mode.
  *
  * By default this will NOT ask for the notification permission; if it is not
@@ -297,9 +411,23 @@ export async function requestExactAlarmPermission(): Promise<boolean> {
  * user has just done something that implies it, such as switching a reminder on
  * in Settings, or dismissing the explainer.
  */
-export async function syncAllLocalNotifications(
+export function syncAllLocalNotifications(
   settings: AppSettings,
   options: { mayRequestPermission?: boolean } = {}
+): Promise<{ success: boolean; scheduledCount: number; message?: string }> {
+  // Launch, resume and settings changes can all ask at once. Run one at a time:
+  // the later call then finds its plan already in place instead of cancelling
+  // and rewriting hundreds of alarms a second time.
+  const run = syncQueue.then(() => syncAllLocalNotificationsNow(settings, options));
+  syncQueue = run.catch(() => undefined);
+  return run;
+}
+
+let syncQueue: Promise<unknown> = Promise.resolve();
+
+async function syncAllLocalNotificationsNow(
+  settings: AppSettings,
+  options: { mayRequestPermission?: boolean }
 ): Promise<{ success: boolean; scheduledCount: number; message?: string }> {
   if (!isLocalNotificationsAvailable()) {
     return { success: false, scheduledCount: 0, message: 'Capacitor LocalNotifications not available on this platform' };
@@ -339,16 +467,19 @@ export async function syncAllLocalNotifications(
      */
     const canUseExactAlarms = await hasExactAlarmPermission();
 
-    // Cancel all previously scheduled notifications to avoid duplicates and outdated times
     const pending = await LocalNotifications.getPending();
-    if (pending.notifications.length > 0) {
-      await LocalNotifications.cancel({
-        notifications: pending.notifications.map(n => ({ id: n.id }))
-      });
-    }
+    const cancelPending = async () => {
+      if (pending.notifications.length > 0) {
+        await LocalNotifications.cancel({
+          notifications: pending.notifications.map(n => ({ id: n.id }))
+        });
+      }
+    };
 
     // If master notifications disabled, we stop here (notifications are cleanly cancelled)
     if (!settings.notificationsEnabled) {
+      await cancelPending();
+      safeLocalStorageSetItem(SYNC_META_KEY, '');
       return { success: true, scheduledCount: 0, message: 'Notifications are disabled by user settings' };
     }
 
@@ -364,9 +495,7 @@ export async function syncAllLocalNotifications(
     const offsets = settings.prayerOffsets || {};
     const daylightSaving = !!settings.prayerDaylightSaving;
 
-    // Schedule for the next 7 days (day 0 = today, day 1 = tomorrow, ..., day 6)
-    const DAYS_TO_SCHEDULE = 7;
-
+    // Schedule DAYS_TO_SCHEDULE days ahead (day 0 = today, day 1 = tomorrow, ...)
     for (let dayOffset = 0; dayOffset < DAYS_TO_SCHEDULE; dayOffset++) {
       const targetDay = new Date(now);
       targetDay.setDate(targetDay.getDate() + dayOffset);
@@ -397,7 +526,7 @@ export async function syncAllLocalNotifications(
           // Only schedule if future (at least 30 seconds ahead)
           if (prayerDate && prayerDate.getTime() > nowTime + 30000) {
             const prayerNameAr = PRAYER_NAMES_AR[prayerKey] || prayerKey;
-            const notifId = 10000 + (dayOffset * 10) + pIdx;
+            const notifId = ID_BASE.PRAYER + (dayOffset * 10) + pIdx;
 
             const timeStr = `${prayerDate.getHours().toString().padStart(2, '0')}:${prayerDate.getMinutes().toString().padStart(2, '0')}`;
 
@@ -577,7 +706,7 @@ export async function syncAllLocalNotifications(
             const reminderDate = parseTimeToDate(reminder.time, targetDay);
             if (reminderDate.getTime() > nowTime + 30000) {
               notificationsToSchedule.push({
-                id: 2000 + (rIdx * 10) + dayOffset,
+                id: ID_BASE.CUSTOM + (rIdx * 100) + dayOffset,
                 title: reminder.label || 'تذكير مبارك 🔔',
                 body: 'موعد تذكيرك الإيماني المخصص في أذكار المؤمن',
                 schedule: {
@@ -599,19 +728,68 @@ export async function syncAllLocalNotifications(
       });
     }
 
-    // Execute scheduling in batches if necessary
-    if (notificationsToSchedule.length > 0) {
-      // Stamped here rather than at each of the seven push sites: it is one
-      // decision about this whole batch, and the plugin only inspects it at
-      // schedule time. See `canUseExactAlarms` above for why it must be the real
-      // permission state and never the default.
-      await LocalNotifications.schedule({
-        notifications: notificationsToSchedule.map((n) => ({
-          ...n,
-          isExactNotification: canUseExactAlarms,
-        }))
+    // ==========================================
+    // 6. RANDOM DHIKR
+    // ==========================================
+    // Scheduled in Android like everything else, so it keeps arriving on its
+    // clock slots while the app is closed (it used to run only inside the app,
+    // timed from whenever the app was opened). It takes the room the fixed
+    // notifications leave under MAX_SCHEDULED, nearest slots first.
+    if (notificationsToSchedule.length > MAX_SCHEDULED) {
+      // Many custom reminders can outgrow Android's alarm cap; keep the nearest.
+      notificationsToSchedule.sort((a, b) => atMs(a.schedule?.at) - atMs(b.schedule?.at));
+      notificationsToSchedule.length = MAX_SCHEDULED;
+    }
+
+    const randomList = settings.customRandomAdhkar || [];
+    const randomType = settings.randomAdhkarNotificationType || 'both';
+    if (settings.randomAdhkarEnabled && randomList.length > 0 && randomType !== 'banner') {
+      const room = MAX_SCHEDULED - notificationsToSchedule.length;
+      randomDhikrSlots(settings, now, DAYS_TO_SCHEDULE, room).forEach((at, slot) => {
+        notificationsToSchedule.push({
+          id: ID_BASE.RANDOM + slot,
+          title: 'ذكر الله 🌟',
+          body: dhikrForSlot(randomList, at),
+          schedule: {
+            at,
+            allowWhileIdle: true
+          },
+          channelId: CHANNELS.RANDOM,
+          sound: 'beep.wav',
+          autoCancel: true,
+          extra: {
+            route: '/',
+            type: 'random'
+          }
+        });
       });
     }
+
+    // Stamped here rather than at each push site: it is one decision about this
+    // whole batch, and the plugin only inspects it at schedule time. See
+    // `canUseExactAlarms` above for why it must be the real permission state
+    // and never the default.
+    const plan = notificationsToSchedule.map((n) => ({ ...n, isExactNotification: canUseExactAlarms }));
+
+    // This runs on every launch and every return to the app. Rewriting an
+    // unchanged plan is hundreds of alarms of work, and re-posting the same ids
+    // clears today's delivered notifications from the shade, so an identical
+    // plan is left alone. The build and day are part of the check: alarms do not
+    // survive every app update, and a daily rewrite extends the window.
+    const meta = JSON.stringify({ build: __APP_BUILD_TIME__, exact: canUseExactAlarms, day: localDayKey(now) });
+    if (safeLocalStorageGetItem(SYNC_META_KEY) === meta && isPlanAlreadyScheduled(plan, pending.notifications, nowTime)) {
+      return {
+        success: true,
+        scheduledCount: plan.length,
+        message: `الجدولة الحالية (${plan.length} إشعاراً) محدّثة بالفعل.`
+      };
+    }
+
+    await cancelPending();
+    if (plan.length > 0) {
+      await LocalNotifications.schedule({ notifications: plan });
+    }
+    safeLocalStorageSetItem(SYNC_META_KEY, meta);
 
     return {
       success: true,
@@ -770,7 +948,7 @@ export async function getPendingNotificationsSummary(): Promise<{
     let earliestTime = Infinity;
 
     list.forEach(item => {
-      if (item.id >= 10000) prayerCount++;
+      if (item.id >= ID_BASE.PRAYER && item.id < ID_BASE.CUSTOM) prayerCount++;
       else if (item.id >= 1000 && item.id < 2000) adhkarCount++;
       else remindersCount++;
 
