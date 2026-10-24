@@ -4,7 +4,8 @@ import { SURAH_NAMES } from '../utils/quranUtils';
 import { audioCacheService } from '../services/audioCacheService';
 import { lectureCacheService } from '../services/lectureCacheService';
 import { getSurahAudioUrl } from '../services/quranAudioUrlService';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeJsonParse } from "../utils/storage";
+import { setAudioSource } from "../lib/audioBlobUrls";
 import { memoryManager } from '../services/memoryManager';
 import { useAppStability, stabilityManager } from '../services/stabilityManager';
 
@@ -396,8 +397,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
   });
 
   const [currentTrack, setCurrentTrack] = useState<GlobalTrack | null>(() => {
-    const saved = safeLocalStorageGetItem('believer_global_track');
-    return saved ? JSON.parse(saved) : null;
+    return safeJsonParse<GlobalTrack | null>(safeLocalStorageGetItem('believer_global_track'), null);
   });
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -898,15 +898,32 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     
     const audio = audioRef.current;
 
-    const handleTimeUpdate = () => {
+    // `timeupdate` fires ~4x a second. Pushing each one into context state
+    // re-rendered every audio screen (and the full player's long lists) on each
+    // tick, and saving the position each time meant a JSON rewrite of
+    // localStorage plus a window event 4x a second. The clock only shows whole
+    // seconds, so state moves once a second and the position is saved every
+    // few seconds, and always on pause / seek.
+    let lastShownSecond = -1;
+    let lastSavedAt = 0;
+    const POSITION_SAVE_INTERVAL_MS = 5000;
+
+    const handleTimeUpdate = (event?: Event | { force: true }) => {
       if (audio.duration) {
         const time = audio.currentTime;
+        const force = !!event && 'force' in event;
+        const second = Math.floor(time);
+        if (!force && second === lastShownSecond) return;
+        lastShownSecond = second;
         setCurrentTime(time);
         setProgress((time / audio.duration) * 100);
         
         // Smart Continuous Playback: Save current position in localStorage
-        if (currentTrackRef.current) {
-          saveTrackPlaybackPosition(currentTrackRef.current.id, time, audio.duration);
+        const now = Date.now();
+        if (currentTrackRef.current && (force || now - lastSavedAt >= POSITION_SAVE_INTERVAL_MS)) {
+          lastSavedAt = now;
+          // Pause and seek save straight away rather than through the debounce.
+          saveTrackPlaybackPosition(currentTrackRef.current.id, time, audio.duration, force);
         }
         
         if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
@@ -962,10 +979,10 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const handlePause = () => {
       setIsPlaying(false);
-      if (currentTrackRef.current && audio.currentTime && audio.duration) {
-        saveTrackPlaybackPosition(currentTrackRef.current.id, audio.currentTime, audio.duration, true);
-      }
+      handleTimeUpdate({ force: true });
     };
+
+    const handleSeeked = () => handleTimeUpdate({ force: true });
 
     const handlePlay = () => {
       setIsPlaying(true);
@@ -980,6 +997,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('pause', handlePause);
+    audio.addEventListener('seeked', handleSeeked);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('error', handleError);
 
@@ -996,7 +1014,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (currentTrack) {
       resolvePlayableUrl(currentTrack).then(resolvedUrl => {
         if (audioRef.current === audio) {
-          audio.src = resolvedUrl;
+          setAudioSource(audio, resolvedUrl);
           audio.playbackRate = playbackRate;
           audio.load();
 
@@ -1023,6 +1041,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('seeked', handleSeeked);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('error', handleError);
       audio.pause();
@@ -1108,7 +1127,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (i > 0) {
           try {
             audioRef.current.pause();
-            audioRef.current.src = '';
+            setAudioSource(audioRef.current, '');
             audioRef.current.load();
           } catch (e) {}
         }
@@ -1122,7 +1141,7 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
           memoryManager.registerBlobUrl(url, 'global-audio');
         }
 
-        audioRef.current.src = url;
+        setAudioSource(audioRef.current, url);
         audioRef.current.load();
         audioRef.current.playbackRate = playbackRate;
 
@@ -1252,13 +1271,13 @@ export const GlobalAudioProvider: React.FC<{ children: React.ReactNode }> = ({ c
           if (i > 0) {
             try {
               audioRef.current.pause();
-              audioRef.current.src = '';
+              setAudioSource(audioRef.current, '');
               audioRef.current.load();
             } catch (e) {}
           }
 
           if (audioRef.current.src !== url) {
-            audioRef.current.src = url;
+            setAudioSource(audioRef.current, url);
             audioRef.current.load();
             audioRef.current.playbackRate = playbackRate;
           }

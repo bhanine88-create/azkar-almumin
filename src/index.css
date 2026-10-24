@@ -367,6 +367,7 @@ img {
   contain: strict;
   will-change: transform;
   margin: 0 !important;
+  /* Layout reserves the bottom safe area for every section. */
   padding: 0 !important;
   height: 100% !important;
   display: flex !important;
@@ -443,13 +444,6 @@ img {
   margin: 0 !important;
   padding: 0 !important;
   display: block !important;
-}
-
-/* Ensure bottom navigation remains fixed and never hides */
-body.reading-focus-mode #bottom-nav {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: translateY(0) !important;
 }
 
 .main-menu-container {

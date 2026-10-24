@@ -161,7 +161,7 @@ export const safeLocalStorageClear = (): void => {
  */
 export const STORAGE_KEYS = {
   progress: ['believer_progress_v24', 'believer_progress_v23', 'believer_progress_v22', 'believer_progress_v21', 'believer_progress_v20', 'believer_progress_v5'],
-  settings: ['believer_settings_v30', 'believer_settings_v29', 'believer_settings_v28', 'believer_settings_v27', 'believer_settings_v23', 'believer_settings_v22', 'believer_settings_v21', 'believer_settings_v20'],
+  settings: ['believer_settings_v31', 'believer_settings_v30', 'believer_settings_v29', 'believer_settings_v28', 'believer_settings_v27', 'believer_settings_v23', 'believer_settings_v22', 'believer_settings_v21', 'believer_settings_v20'],
   adhkar: ['believer_adhkar_v24', 'believer_adhkar_v23', 'believer_adhkar_v22', 'believer_adhkar_v21', 'believer_adhkar_v20', 'believer_adhkar_v6', 'believer_adhkar_v5'],
   counts: ['believer_adhkar_counts_v23', 'believer_adhkar_counts_v22', 'believer_adhkar_counts_v21', 'believer_adhkar_counts_v20', 'believer_adhkar_counts_v6', 'believer_adhkar_counts_v5'],
 } as const;

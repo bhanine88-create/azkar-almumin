@@ -24,7 +24,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'play-store', 'screenshots');
 
 const PACKAGE = 'com.azkar.almumin';
-const ACTIVITY = `${PACKAGE}/.MainActivity`;
+// applicationId and the Java activity namespace are intentionally different.
+const ACTIVITY = `${PACKAGE}/com.azkaralmumin.app.MainActivity`;
 
 const ADB =
   process.env.ADB_PATH ||
@@ -94,6 +95,14 @@ function tap(size, xRatio, yRatio) {
   adb(['shell', 'input', 'tap', String(x), String(y)]);
 }
 
+async function returnHome() {
+  // Every captured section below is opened directly from Home. Native Back
+  // returns along that single history entry and restores the home-only nav.
+  // Do not press Back while already home: it now exits the Android activity.
+  adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
+  await sleep(2600);
+}
+
 function capture(file) {
   // exec-out streams the PNG over the adb socket, avoiding a write to /sdcard
   // and the permission questions that come with it.
@@ -146,20 +155,21 @@ for (const tab of TABS) {
   const file = path.join(OUT, `${tab.name}.png`);
   const bytes = capture(file);
   console.log(`  ✓ ${tab.name}.png — ${tab.label} (${(bytes / 1024).toFixed(0)} KB)`);
+  if (tab.name !== '01-home') await returnHome();
 }
 
 for (const extra of EXTRA) {
   const source = TABS.find((t) => t.name === extra.tapFrom);
-  if (source) {
-    tap(size, source.x, NAV_Y);
-    await sleep(2600);
-  }
+  if (source?.name !== '01-home') throw new Error(`Extra screenshot ${extra.name} must start from Home`);
+  // The previous capture returned home; the next card is available without
+  // trying to tap a bottom-navigation position inside a section.
   tap(size, extra.x, extra.y);
   await sleep(5200);
 
   const file = path.join(OUT, `${extra.name}.png`);
   const bytes = capture(file);
   console.log(`  ✓ ${extra.name}.png — ${extra.label} (${(bytes / 1024).toFixed(0)} KB)`);
+  await returnHome();
 }
 
 console.log(`\nWritten to ${path.relative(ROOT, OUT)}\n`);

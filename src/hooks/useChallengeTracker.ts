@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { CHALLENGES, UserChallengeProgress, ChallengeCategory, ChallengeType } from '../challengesData';
 import { useAppContext } from '../AppContext';
 import { evaluateAllBadges, VISUAL_BADGES, getBadgeStatus, VisualBadge } from '../services/badgeService';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem } from "../utils/storage";
+import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeJsonParse } from "../utils/storage";
 
 // In-memory module-level caches to avoid synchronous disk thrashing on rapid taps
 let memoryProgressCache: Record<string, UserChallengeProgress> | null = null;
@@ -168,7 +168,7 @@ export const useChallengeTracker = () => {
   // Synchronize on mount and when userProgress changes
   useEffect(() => {
     const savedBadges = safeLocalStorageGetItem('believer_earned_badges_v2');
-    const badges: string[] = savedBadges ? JSON.parse(savedBadges) : [];
+    const badges = safeJsonParse<string[]>(savedBadges, []);
     syncBadges(progress, badges);
   }, [userProgress, syncBadges, progress]);
 

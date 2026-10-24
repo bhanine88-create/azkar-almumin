@@ -1,4 +1,5 @@
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey,  } from "../utils/storage";
+import { createAudioBlobUrl } from "../lib/audioBlobUrls";
 import { memoryManager } from "./memoryManager";
 export const AUDIO_CACHE_NAME = 'quran-offline-audio-v1';
 
@@ -264,8 +265,7 @@ export const audioCacheService = {
       }
       if (response) {
         const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        return memoryManager.registerBlobUrl(blobUrl, 'cached-audio');
+        return memoryManager.registerBlobUrl(createAudioBlobUrl(blob), 'cached-audio');
       }
       return null;
     } catch (e) {

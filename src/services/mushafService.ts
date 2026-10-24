@@ -340,8 +340,10 @@ export const mushafService = {
 
   getPageUrl: async (editionId: string, pageNum: number, attemptIndex: number = 0) => {
     const memKey = `${editionId}_${pageNum}_${attemptIndex}`;
-    if (memoryUrlCache.has(memKey)) {
-      return memoryUrlCache.get(memKey)!;
+    const remembered = memoryUrlCache.get(memKey);
+    if (remembered) {
+      setMemoryPageUrl(memKey, remembered); // mark as recently used
+      return remembered;
     }
 
     // Soft prefetch surrounding pages non-blockingly

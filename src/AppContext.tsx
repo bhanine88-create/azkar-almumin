@@ -7,9 +7,9 @@ import { quranOfflineService } from './services/quranOfflineService';
 import { userService } from './services/userService';
 import { syncService } from './services/syncService';
 import { auth, db } from './firebase';
-import { safeLocalStorageSetItem, safeLocalStorageGetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear } from './utils/storage';
+import { safeLocalStorageSetItem, safeLocalStorageGetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear, STORAGE_KEYS, readFirstStored, safeJsonParse } from './utils/storage';
 import { storageManager } from './services/storageManager';
-import i18n, { updateDocumentDirection } from './i18n';
+import i18n, { updateDocumentDirection, changeAppLanguage } from './i18n';
 import { loadAllDownloadedFontsOnStartup } from './services/fontService';
 import { adhkarNotificationController } from './services/adhkarNotificationController';
 import { 
@@ -118,7 +118,7 @@ const cleanupLegacyStorage = () => {
     keysToRemove.forEach(k => safeLocalStorageRemoveItem(k));
     
     // Integrity check: Fix invalid progress if any
-    const savedProgress = safeLocalStorageGetItem('believer_progress_v23') || safeLocalStorageGetItem('believer_progress_v22') || safeLocalStorageGetItem('believer_progress_v21') || safeLocalStorageGetItem('believer_progress_v5');
+    const savedProgress = readFirstStored(STORAGE_KEYS.progress);
     if (savedProgress) {
       const parsed = JSON.parse(savedProgress);
       if (typeof parsed.points !== 'number' || isNaN(parsed.points)) {
@@ -127,7 +127,7 @@ const cleanupLegacyStorage = () => {
       if (typeof parsed.level !== 'number' || isNaN(parsed.level)) {
         parsed.level = Math.floor(parsed.points / 100) + 1;
       }
-      safeLocalStorageSetItem('believer_progress_v23', JSON.stringify(parsed));
+      safeLocalStorageSetItem(STORAGE_KEYS.progress[0], JSON.stringify(parsed));
     }
   } catch (e) {
     // Fail silently in production
@@ -284,7 +284,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const [progress, setProgress] = useState<UserProgress>(() => {
-    const saved = safeLocalStorageGetItem('believer_progress_v24') || safeLocalStorageGetItem('believer_progress_v23') || safeLocalStorageGetItem('believer_progress_v22') || safeLocalStorageGetItem('believer_progress_v21') || safeLocalStorageGetItem('believer_progress_v20') || safeLocalStorageGetItem('believer_progress_v5');
+    const saved = readFirstStored(STORAGE_KEYS.progress);
     const defaultProgress: UserProgress = {
       points: 0,
       level: 1,
@@ -323,11 +323,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         lastUpdated: new Date().toDateString(),
       }
     };
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return { ...defaultProgress, ...parsed };
-    }
-    return defaultProgress;
+    // A corrupt value must not crash the app on every launch.
+    const parsed = safeJsonParse<Partial<UserProgress> | null>(saved, null);
+    return parsed && typeof parsed === 'object' ? { ...defaultProgress, ...parsed } : defaultProgress;
   });
 
   
@@ -383,7 +381,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = safeLocalStorageGetItem('believer_settings_v31') || safeLocalStorageGetItem('believer_settings_v30') || safeLocalStorageGetItem('believer_settings_v29') || safeLocalStorageGetItem('believer_settings_v28') || safeLocalStorageGetItem('believer_settings_v27') || safeLocalStorageGetItem('believer_settings_v23') || safeLocalStorageGetItem('believer_settings_v22') || safeLocalStorageGetItem('believer_settings_v21') || safeLocalStorageGetItem('believer_settings_v20');
+    const saved = readFirstStored(STORAGE_KEYS.settings);
     const defaultSettings: AppSettings = OFFICIAL_DEFAULT_SETTINGS;
 
     if (saved) {
@@ -609,7 +607,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      safeLocalStorageSetItem('believer_progress_v24', JSON.stringify(progress));
+      safeLocalStorageSetItem(STORAGE_KEYS.progress[0], JSON.stringify(progress));
     }, 1500); 
     return () => clearTimeout(handler);
   }, [progress]);
@@ -825,8 +823,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Debounced settings persistence to prevent storage pressure and thread blocking
   useEffect(() => {
     const handler = setTimeout(() => {
-      safeLocalStorageSetItem('believer_settings_v30', JSON.stringify(settings));
+      // Must be the key the loader reads first, or every change is lost on restart.
+      safeLocalStorageSetItem(STORAGE_KEYS.settings[0], JSON.stringify(settings));
       // Cleanup duplicate historical keys to reclaim quota
+      safeLocalStorageRemoveItem('believer_settings_v30');
       safeLocalStorageRemoveItem('believer_settings_v29');
       safeLocalStorageRemoveItem('believer_settings_v28');
       safeLocalStorageRemoveItem('believer_settings_v27');
@@ -905,11 +905,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     document.documentElement.style.setProperty('--app-font', `"${settings.fontFamily}"`);
     document.documentElement.style.setProperty('--adhkar-font', `"${settings.adhkarFontFamily}"`);
 
-    // Apply language and direction via i18next
+    // Apply language and direction via i18next.
+    //
+    // Goes through changeAppLanguage, not i18n.changeLanguage: only Arabic is
+    // bundled now, so a non-Arabic locale has to be fetched before it is
+    // switched to. Direction is applied straight away either way — it comes
+    // from the language list, not the dictionary, and waiting on a fetch to
+    // flip the page to LTR would show a visible reflow.
     const lang = settings.appLanguage || 'ar';
     updateDocumentDirection(lang);
     if (i18n.language !== lang) {
-      i18n.changeLanguage(lang);
+      void changeAppLanguage(lang);
     }
   }, [settings]);
 
@@ -1600,13 +1606,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return c;
       });
 
-      safeLocalStorageSetItem('believer_adhkar_v23', JSON.stringify(updated));
+      safeLocalStorageSetItem(STORAGE_KEYS.adhkar[0], JSON.stringify(updated));
       return updated;
     });
   }, []);
 
   const resetSettings = React.useCallback(() => {
     setSettings(OFFICIAL_DEFAULT_SETTINGS);
+    safeLocalStorageSetItem('believer_settings_v31', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
+    safeLocalStorageSetItem('believer_settings_v31_official', 'true');
     safeLocalStorageSetItem('believer_settings_v30', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
     safeLocalStorageSetItem('believer_settings_v29', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
     safeLocalStorageSetItem('believer_settings_v28', JSON.stringify(OFFICIAL_DEFAULT_SETTINGS));
