@@ -82,6 +82,7 @@ export const PrayerNotificationManager: React.FC = () => {
   // settings, instead of re-running — and re-requesting — on every settings write.
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+  const firstRunPromptDoneRef = useRef(false);
 
   // 1. Initialize Capacitor notification channels and deep link navigation on mount
   useEffect(() => {
@@ -156,7 +157,10 @@ export const PrayerNotificationManager: React.FC = () => {
 
     // First install / explainer flow with safe delay
     const firstRunTimer = setTimeout(async () => {
-      if (cancelled) return;
+      // This effect re-runs whenever an adhkar category is completed; asking
+      // again each time would spend the user's last chance at the dialog.
+      if (cancelled || firstRunPromptDoneRef.current) return;
+      firstRunPromptDoneRef.current = true;
       try {
         const perm = await checkLocalNotificationPermissions();
         const canStillAsk = perm.display === 'prompt' || perm.display === 'prompt-with-rationale';
@@ -251,7 +255,12 @@ export const PrayerNotificationManager: React.FC = () => {
       settings.customReminderRingtone
     );
     
-    const sound = NOTIFICATION_SOUNDS.find(s => s.id === finalSoundId) || NOTIFICATION_SOUNDS[0];
+    // The default sound is now the Makkah adhan. An adhan means prayer time, so
+    // reminders and random dhikr left on "default" get the soft chime instead
+    // (random dhikr alone would otherwise play a full adhan every 30 minutes).
+    const isDefault = !finalSoundId || finalSoundId === 'default';
+    const effectiveId = isDefault && type !== 'prayer' ? 'soft-chime' : finalSoundId;
+    const sound = NOTIFICATION_SOUNDS.find(s => s.id === effectiveId) || NOTIFICATION_SOUNDS[0];
     return sound.url;
   };
 
@@ -368,9 +377,8 @@ export const PrayerNotificationManager: React.FC = () => {
 
   useEffect(() => {
     const checkAllReminders = () => {
-      // Don't lockout if user specifically enabled morning, evening or prayer alerts
-      const isAnyEnabled = settings.notificationsEnabled || settings.morningNotificationsEnabled || settings.eveningNotificationsEnabled || settings.prayerNotificationsEnabled;
-      if (!isAnyEnabled) return;
+      // The master switch silences everything, as it does for the native schedule.
+      if (!settings.notificationsEnabled) return;
 
       // Always use the real local device time so alarms match user's phone clock precisely
       const localNow = new Date();
@@ -621,12 +629,16 @@ export const PrayerNotificationManager: React.FC = () => {
     
     playAudioWithGestureFallback(`prayer-${key}`, getAudioUrl('prayer'));
 
-    try {
-      triggerSafeNotification(`حان الآن موعد صلاة ${PRAYER_NAMES[key]}`, {
-        body: `بتوقيت ${time} - أقم صلاتك تنعم بحياتك`,
-        icon: '/logo-192.png'
-      });
-    } catch (e) {}
+    // Web only. On Android the scheduled native notification already covers
+    // this moment, and an immediate one opens the exact-alarm settings screen.
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        triggerSafeNotification(`حان الآن موعد صلاة ${PRAYER_NAMES[key]}`, {
+          body: `بتوقيت ${time} - أقم صلاتك تنعم بحياتك`,
+          icon: '/logo-192.png'
+        });
+      } catch (e) {}
+    }
 
     setTimeout(() => setActiveNotification(null), 12000);
   };
@@ -650,12 +662,14 @@ export const PrayerNotificationManager: React.FC = () => {
       console.error('Failed to play morning sound:', e);
     }
 
-    try {
-      triggerSafeNotification('حان الآن موعد أذكار الصباح 🌅', {
-        body: 'ابدأ يومك بالحصن الحصين والذكر المبارك',
-        icon: '/logo-192.png'
-      });
-    } catch (e) {}
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        triggerSafeNotification('حان الآن موعد أذكار الصباح 🌅', {
+          body: 'ابدأ يومك بالحصن الحصين والذكر المبارك',
+          icon: '/logo-192.png'
+        });
+      } catch (e) {}
+    }
 
     setTimeout(() => setActiveNotification(null), 12000);
   };
@@ -678,12 +692,14 @@ export const PrayerNotificationManager: React.FC = () => {
       console.error('Failed to play morning followup sound:', e);
     }
 
-    try {
-      triggerSafeNotification('تذكير مبارك 🌿: أذكار الصباح', {
-        body: 'لم تقرأ أذكار الصباح بعد. اجعل يومك عامراً بذكر الله!',
-        icon: '/logo-192.png'
-      });
-    } catch (e) {}
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        triggerSafeNotification('تذكير مبارك 🌿: أذكار الصباح', {
+          body: 'لم تقرأ أذكار الصباح بعد. اجعل يومك عامراً بذكر الله!',
+          icon: '/logo-192.png'
+        });
+      } catch (e) {}
+    }
 
     setTimeout(() => setActiveNotification(null), 12000);
   };
@@ -707,12 +723,14 @@ export const PrayerNotificationManager: React.FC = () => {
       console.error('Failed to play evening sound:', e);
     }
 
-    try {
-      triggerSafeNotification('حان الآن موعد أذكار المساء 🌙', {
-        body: 'ختام يومك بالطاعات والذكر الحكيم',
-        icon: '/logo-192.png'
-      });
-    } catch (e) {}
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        triggerSafeNotification('حان الآن موعد أذكار المساء 🌙', {
+          body: 'ختام يومك بالطاعات والذكر الحكيم',
+          icon: '/logo-192.png'
+        });
+      } catch (e) {}
+    }
 
     setTimeout(() => setActiveNotification(null), 12000);
   };
@@ -735,12 +753,14 @@ export const PrayerNotificationManager: React.FC = () => {
       console.error('Failed to play evening followup sound:', e);
     }
 
-    try {
-      triggerSafeNotification('تذكير مبارك 🌙: أذكار المساء', {
-        body: 'لم تقرأ أذكار المساء بعد. احفظ ليلتك بالطاعات والذكر!',
-        icon: '/logo-192.png'
-      });
-    } catch (e) {}
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        triggerSafeNotification('تذكير مبارك 🌙: أذكار المساء', {
+          body: 'لم تقرأ أذكار المساء بعد. احفظ ليلتك بالطاعات والذكر!',
+          icon: '/logo-192.png'
+        });
+      } catch (e) {}
+    }
 
     setTimeout(() => setActiveNotification(null), 12000);
   };

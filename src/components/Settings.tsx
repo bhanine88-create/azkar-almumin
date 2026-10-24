@@ -1203,7 +1203,7 @@ export const Settings: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => { updateSettings({ _triggerMorning: Date.now() }); window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'morning' } })); triggerHaptic('success'); }}
+                  onClick={() => { window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'morning' } })); triggerHaptic('success'); }}
                   className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs px-3 py-1.5 rounded-xl shrink-0 transition-all active:scale-95 shadow-sm"
                 >
                   {t('test_notification', 'تجربة إشعار')}
@@ -1735,7 +1735,7 @@ export const Settings: React.FC = () => {
                      <span className="text-xs sm:text-sm font-black text-white">{t('morning_adhkar_title', 'أذكار الصباح 🌅')}</span>
                    </div>
                    <button 
-                     onClick={() => { updateSettings({ _triggerMorning: Date.now() }); window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'morning' } })); triggerHaptic('success'); }}
+                     onClick={() => { window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'morning' } })); triggerHaptic('success'); }}
                      className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-lg border border-amber-400/20 hover:bg-amber-400/20 transition-all active:scale-95"
                    >
                      {t('test_alarm', 'تجربة التنبيه')}
@@ -1833,7 +1833,7 @@ export const Settings: React.FC = () => {
                      <span className="text-xs sm:text-sm font-black text-white">{t('evening_adhkar_title', 'أذكار المساء 🌙')}</span>
                    </div>
                    <button 
-                     onClick={() => { updateSettings({ _triggerEvening: Date.now() }); window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'evening' } })); triggerHaptic('success'); }}
+                     onClick={() => { window.dispatchEvent(new CustomEvent('trigger-screen-notification', { detail: { type: 'evening' } })); triggerHaptic('success'); }}
                      className="text-[10px] font-black text-indigo-400 bg-indigo-400/10 px-3 py-1.5 rounded-lg border border-indigo-400/20 hover:bg-indigo-400/20 transition-all active:scale-95"
                    >
                      {t('test_alarm', 'تجربة التنبيه')}

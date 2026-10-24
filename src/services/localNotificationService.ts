@@ -164,11 +164,12 @@ export async function requestLocalNotificationPermissions(): Promise<PermissionS
 }
 
 /**
- * Maps method value to adhan CalculationMethod
+ * Maps method value to adhan CalculationMethod.
+ * Values are Aladhan method ids, the same ones the in-app timings request uses.
  */
 function getCalculationMethod(methodValue: string) {
   switch (methodValue) {
-    case '1': return CalculationMethod.Egyptian();
+    case '1': return CalculationMethod.Karachi();
     case '2': return CalculationMethod.NorthAmerica();
     case '3': return CalculationMethod.MuslimWorldLeague();
     case '4': return CalculationMethod.UmmAlQura();
@@ -177,7 +178,14 @@ function getCalculationMethod(methodValue: string) {
     case '9': return CalculationMethod.Kuwait();
     case '10': return CalculationMethod.Qatar();
     case '11': return CalculationMethod.Singapore();
-    case '12': return CalculationMethod.Turkey();
+    case '12': {
+      // UOIF (France) has no adhan preset: Fajr and Isha at 12°.
+      const params = CalculationMethod.Other();
+      params.fajrAngle = 12;
+      params.ishaAngle = 12;
+      return params;
+    }
+    case '13': return CalculationMethod.Turkey();
     default: return CalculationMethod.MuslimWorldLeague();
   }
 }
@@ -405,7 +413,7 @@ export async function syncAllLocalNotifications(
               sound: 'beep.wav',
               autoCancel: true,
               extra: {
-                route: '/prayer',
+                route: '/prayer-times',
                 type: 'prayer',
                 prayerKey,
                 time: timeStr
@@ -664,7 +672,7 @@ export async function testLocalNotification(
       title = 'اختبار أذان الصلاة 🕌';
       body = 'حان الآن موعد صلاة الظهر • حي على الصلاة، حي على الفلاح';
       channelId = CHANNELS.PRAYER;
-      route = '/prayer';
+      route = '/prayer-times';
     } else if (type === 'adhkar') {
       title = 'اختبار أذكار الصباح والمساء 🌅';
       body = 'أصبحنا وأصبح الملك لله • لا تنسَ وردك اليومي من الأذكار';

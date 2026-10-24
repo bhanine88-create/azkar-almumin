@@ -134,6 +134,10 @@ const cleanupLegacyStorage = () => {
   }
 };
 
+/** The listed keys of `source` that hold a value, for carrying them through a reset. */
+const pickDefined = (source: Record<string, any>, keys: string[]): Record<string, any> =>
+  Object.fromEntries(keys.filter(k => source[k] !== undefined && source[k] !== null).map(k => [k, source[k]]));
+
 export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
   quizTimerDuration: 20,
   appLanguage: 'ar',
@@ -419,6 +423,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             customRandomAdhkar: (Array.isArray(parsed.customRandomAdhkar) && parsed.customRandomAdhkar.length > 0) ? parsed.customRandomAdhkar : OFFICIAL_DEFAULT_SETTINGS.customRandomAdhkar,
             namesOfAllahFavoriteIds: Array.isArray(parsed.namesOfAllahFavoriteIds) ? parsed.namesOfAllahFavoriteIds : [],
             userName: parsed.userName || OFFICIAL_DEFAULT_SETTINGS.userName,
+            // Where and how the user prays is not a preference to reset: a
+            // different method or offset moves every adhan notification.
+            ...pickDefined(parsed, ['appLanguage', 'hijriOffset', 'prayerCalcMethod', 'prayerAsrMethod',
+              'prayerOffsets', 'prayerDaylightSaving', 'prayerManualMode', 'prayerManualTimes']),
           });
 
           if (!safeLocalStorageGetItem('quran-reciter')) {
@@ -453,6 +461,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return guaranteedDefaults;
       }
     }
+    // A fresh install already has the v31 defaults. Without this flag the
+    // upgrade above would run on the second launch and wipe the first session.
+    safeLocalStorageSetItem('believer_settings_v31_official', 'true');
     const { updatedSettings: guaranteedDefaults } = adhkarNotificationController.ensureDefaultsActive(defaultSettings);
     return guaranteedDefaults;
   });
