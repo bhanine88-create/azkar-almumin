@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "Halaman gagal dimuatkan. Semak sambungan dan ketik untuk cuba lagi",
   "mushaf_card_title": "Al-Quran mengikut halaman",
   "mushaf_card_continue": "Sambung dari halaman {{page}} · Surah {{surah}}",
-  "mushaf_card_desc": "Mushaf Madinah halaman demi halaman, dengan leret dan zum"
+  "mushaf_card_desc": "Mushaf Madinah halaman demi halaman, dengan leret dan zum",
+  "mushaf_open_mode_label": "Buka surah:",
+  "mushaf_open_mode_pages": "Halaman Mushaf",
+  "mushaf_open_mode_text": "Sebagai teks"
 }

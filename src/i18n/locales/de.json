@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "Seite konnte nicht geladen werden. Verbindung prüfen und erneut tippen",
   "mushaf_card_title": "Der edle Koran nach Seiten",
   "mushaf_card_continue": "Weiter ab Seite {{page}} · Sure {{surah}}",
-  "mushaf_card_desc": "Der Madina-Mushaf Seite für Seite, mit Wischen und Zoom"
+  "mushaf_card_desc": "Der Madina-Mushaf Seite für Seite, mit Wischen und Zoom",
+  "mushaf_open_mode_label": "Suren öffnen:",
+  "mushaf_open_mode_pages": "Als Mushaf-Seiten",
+  "mushaf_open_mode_text": "Als Text"
 }

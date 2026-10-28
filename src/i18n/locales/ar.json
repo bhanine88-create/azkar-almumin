@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "تعذّر تحميل الصفحة. تحقّق من الاتصال ثم اضغط لإعادة المحاولة",
   "mushaf_card_title": "المصحف الشريف بالصفحات",
   "mushaf_card_continue": "متابعة من صفحة {{page}} · سورة {{surah}}",
-  "mushaf_card_desc": "مصحف المدينة بصفحاته، بالسحب والتكبير"
+  "mushaf_card_desc": "مصحف المدينة بصفحاته، بالسحب والتكبير",
+  "mushaf_open_mode_label": "فتح السور:",
+  "mushaf_open_mode_pages": "بالمصحف",
+  "mushaf_open_mode_text": "نصياً"
 }

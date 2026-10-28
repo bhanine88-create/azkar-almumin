@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "পৃষ্ঠা লোড হয়নি। সংযোগ দেখে আবার চাপুন",
   "mushaf_card_title": "পৃষ্ঠা অনুযায়ী পবিত্র কুরআন",
   "mushaf_card_continue": "পৃষ্ঠা {{page}} থেকে চালিয়ে যান · সূরা {{surah}}",
-  "mushaf_card_desc": "মদিনার মুসহাফ পৃষ্ঠা ধরে, সোয়াইপ ও জুম সহ"
+  "mushaf_card_desc": "মদিনার মুসহাফ পৃষ্ঠা ধরে, সোয়াইপ ও জুম সহ",
+  "mushaf_open_mode_label": "সূরা খুলুন:",
+  "mushaf_open_mode_pages": "মুসহাফের পৃষ্ঠা",
+  "mushaf_open_mode_text": "লেখা হিসেবে"
 }

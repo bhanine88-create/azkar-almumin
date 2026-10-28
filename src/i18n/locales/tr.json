@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "Sayfa yüklenemedi. Bağlantınızı kontrol edip yeniden dokunun",
   "mushaf_card_title": "Sayfa sayfa Kur'an-ı Kerim",
   "mushaf_card_continue": "{{page}}. sayfadan devam · {{surah}} Suresi",
-  "mushaf_card_desc": "Medine Mushafı sayfa sayfa, kaydırma ve yakınlaştırma ile"
+  "mushaf_card_desc": "Medine Mushafı sayfa sayfa, kaydırma ve yakınlaştırma ile",
+  "mushaf_open_mode_label": "Sureleri aç:",
+  "mushaf_open_mode_pages": "Mushaf sayfası",
+  "mushaf_open_mode_text": "Metin olarak"
 }

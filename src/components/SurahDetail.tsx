@@ -1870,6 +1870,23 @@ export const SurahDetail: React.FC = () => {
     };
   }, []);
 
+  // On Android the mushaf view is the native reader (MushafActivity). Once the
+  // surah is loaded it opens at the requested ayah's or page's page, and this
+  // screen steps back out, so Back from the reader returns to where the user was.
+  const opensNativeMushaf = viewMode === "mushaf" && isNativeMushafAvailable();
+  const nativeMushafOpened = React.useRef(false);
+  React.useEffect(() => {
+    if (!opensNativeMushaf || !surah || nativeMushafOpened.current) return;
+    nativeMushafOpened.current = true;
+    const params = new URLSearchParams(location.search);
+    const ayahPage = surah.ayahs.find((a) => a.numberInSurah === parseInt(params.get("ayah") || ""))?.page;
+    const pageParam = parseInt(params.get("page") || "");
+    const page = ayahPage || (pageParam > 0 ? pageParam : 0) || surah.ayahs[0]?.page || SURAH_START_PAGES[surah.number - 1] || 1;
+    openNativeMushaf(page, t, settings.appLanguage, isRtl).catch(() => {});
+    if (window.history.state?.idx > 0) navigate(-1);
+    else navigate("/quran", { replace: true });
+  }, [opensNativeMushaf, surah]);
+
   const themeClasses = {
     light: "bg-white text-slate-900",
     dark: "bg-slate-900 text-slate-100",
@@ -1880,7 +1897,7 @@ export const SurahDetail: React.FC = () => {
     creamyNight: "bg-[#1c1815] text-[#e8dac1]",
   } as Record<string, string>;
 
-  if (loading)
+  if (loading || (opensNativeMushaf && surah))
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center gap-6">
         <div className="relative flex items-center justify-center">

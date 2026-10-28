@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "Could not load the page. Check your connection and tap to try again",
   "mushaf_card_title": "The Holy Quran by pages",
   "mushaf_card_continue": "Continue from page {{page}} · Surah {{surah}}",
-  "mushaf_card_desc": "The Madinah Mushaf page by page, with swiping and zoom"
+  "mushaf_card_desc": "The Madinah Mushaf page by page, with swiping and zoom",
+  "mushaf_open_mode_label": "Open surahs:",
+  "mushaf_open_mode_pages": "As Mushaf pages",
+  "mushaf_open_mode_text": "As text"
 }

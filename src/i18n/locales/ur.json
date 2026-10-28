@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "صفحہ لوڈ نہیں ہو سکا۔ کنکشن چیک کر کے دوبارہ دبائیں",
   "mushaf_card_title": "قرآن مجید صفحات کے ساتھ",
   "mushaf_card_continue": "صفحہ {{page}} سے جاری رکھیں · سورہ {{surah}}",
-  "mushaf_card_desc": "مدینہ مصحف صفحہ بہ صفحہ، سوائپ اور زوم کے ساتھ"
+  "mushaf_card_desc": "مدینہ مصحف صفحہ بہ صفحہ، سوائپ اور زوم کے ساتھ",
+  "mushaf_open_mode_label": "سورتیں کھولیں:",
+  "mushaf_open_mode_pages": "مصحف کے صفحات",
+  "mushaf_open_mode_text": "متن کی صورت"
 }

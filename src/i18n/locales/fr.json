@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "Impossible de charger la page. Vérifiez la connexion puis touchez pour réessayer",
   "mushaf_card_title": "Le Saint Coran par pages",
   "mushaf_card_continue": "Reprendre à la page {{page}} · Sourate {{surah}}",
-  "mushaf_card_desc": "Le Mushaf de Médine page par page, avec glissement et zoom"
+  "mushaf_card_desc": "Le Mushaf de Médine page par page, avec glissement et zoom",
+  "mushaf_open_mode_label": "Ouvrir les sourates :",
+  "mushaf_open_mode_pages": "En pages du Mushaf",
+  "mushaf_open_mode_text": "En texte"
 }

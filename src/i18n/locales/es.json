@@ -1847,5 +1847,8 @@
   "mushaf_load_failed": "No se pudo cargar la página. Revisa la conexión y toca para reintentar",
   "mushaf_card_title": "El Sagrado Corán por páginas",
   "mushaf_card_continue": "Continuar desde la página {{page}} · Sura {{surah}}",
-  "mushaf_card_desc": "El Mushaf de Medina página a página, con deslizamiento y zoom"
+  "mushaf_card_desc": "El Mushaf de Medina página a página, con deslizamiento y zoom",
+  "mushaf_open_mode_label": "Abrir suras:",
+  "mushaf_open_mode_pages": "En páginas del Mushaf",
+  "mushaf_open_mode_text": "Como texto"
 }
