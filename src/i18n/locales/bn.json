@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "সহজে আপনার যাকাত হিসাব করুন",
   "zakat_calculator_title": "যাকাত ক্যালকুলেটর",
   "zakat_result": "যাকাত হিসাবের ফলাফল",
-  "zakat_rule_desc": "যাকাতের হার হলো মোট সম্পদের ২.৫%, যদি তা নিসাব স্পর্শ করে এবং পূর্ণ এক চন্দ্র বছর অতিবাহিত হয়।"
+  "zakat_rule_desc": "যাকাতের হার হলো মোট সম্পদের ২.৫%, যদি তা নিসাব স্পর্শ করে এবং পূর্ণ এক চন্দ্র বছর অতিবাহিত হয়।",
+  "adhkar_tools_title": "জিকিরের টুলস ও সেটিংস",
+  "adhkar_tools_settings": "জিকিরের সম্পূর্ণ সেটিংস",
+  "adhkar_tools_settings_desc": "ফন্ট, থিম, শব্দ, প্রদর্শন পদ্ধতি",
+  "adhkar_tools_edit": "জিকির সম্পাদনা ও যোগ করুন",
+  "adhkar_tools_edit_desc": "নিজের জিকির যোগ করুন বা ক্রম বদলান",
+  "adhkar_tools_reset": "কাউন্টার শূন্য করুন",
+  "adhkar_tools_reset_desc": "পড়ার কাউন্টার শূন্যে ফিরিয়ে আনুন",
+  "adhkar_tools_restore": "ডিফল্ট জিকির ফিরিয়ে আনুন",
+  "adhkar_tools_restore_desc": "এই অংশের জিকির মূল অবস্থায় ফেরান",
+  "adhkar_progress_label": "{{total}}টির মধ্যে {{completed}}টি সম্পন্ন"
 }

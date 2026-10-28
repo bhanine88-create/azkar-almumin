@@ -106,6 +106,8 @@ export const Layout: React.FC = () => {
         else setIsDrawerOpen(false);
         return;
       }
+      // A page closes its own open overlay by cancelling this event.
+      if (!window.dispatchEvent(new Event('app:android-back', { cancelable: true }))) return;
 
       // Home is the exit boundary even if earlier sections remain in history.
       if (location.pathname === '/') {

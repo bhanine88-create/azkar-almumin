@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "Calcula tu zakat fácilmente",
   "zakat_calculator_title": "Calculadora de Zakat",
   "zakat_result": "Resultado del cálculo de Zakat",
-  "zakat_rule_desc": "La tasa de Zakat es del 2.5% del patrimonio total si alcanza el Nisab y se ha mantenido durante un año lunar completo."
+  "zakat_rule_desc": "La tasa de Zakat es del 2.5% del patrimonio total si alcanza el Nisab y se ha mantenido durante un año lunar completo.",
+  "adhkar_tools_title": "Herramientas y ajustes de adhkar",
+  "adhkar_tools_settings": "Todos los ajustes de adhkar",
+  "adhkar_tools_settings_desc": "Fuentes, temas, sonido, modo de visualización",
+  "adhkar_tools_edit": "Editar y añadir adhkar",
+  "adhkar_tools_edit_desc": "Añade tus propios adhkar o cambia su orden",
+  "adhkar_tools_reset": "Reiniciar contadores",
+  "adhkar_tools_reset_desc": "Poner los contadores de lectura a cero",
+  "adhkar_tools_restore": "Restaurar adhkar predeterminados",
+  "adhkar_tools_restore_desc": "Devolver los adhkar de esta sección a su estado original",
+  "adhkar_progress_label": "{{completed}} de {{total}} completados"
 }

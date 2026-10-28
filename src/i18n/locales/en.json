@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "Calculate your zakat easily",
   "zakat_calculator_title": "Zakat Calculator",
   "zakat_result": "Zakat Calculation Result",
-  "zakat_rule_desc": "The Zakat rate is 2.5% of total wealth if it reaches Nisab and has been held for a full lunar year."
+  "zakat_rule_desc": "The Zakat rate is 2.5% of total wealth if it reaches Nisab and has been held for a full lunar year.",
+  "adhkar_tools_title": "Adhkar tools & settings",
+  "adhkar_tools_settings": "All adhkar settings",
+  "adhkar_tools_settings_desc": "Fonts, themes, sound, display mode",
+  "adhkar_tools_edit": "Edit & add adhkar",
+  "adhkar_tools_edit_desc": "Add your own adhkar or reorder them",
+  "adhkar_tools_reset": "Reset counters",
+  "adhkar_tools_reset_desc": "Set the reading counters back to zero",
+  "adhkar_tools_restore": "Restore default adhkar",
+  "adhkar_tools_restore_desc": "Return this section's adhkar to the original",
+  "adhkar_progress_label": "{{completed}} of {{total}} completed"
 }

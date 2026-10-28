@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "Berechnen Sie Ihre Zakat ganz einfach",
   "zakat_calculator_title": "Zakat-Rechner",
   "zakat_result": "Ergebnis der Zakat-Berechnung",
-  "zakat_rule_desc": "Der Zakat-Satz beträgt 2,5 % des Gesamtvermögens, wenn es den Nisab erreicht und ein ganzes Mondjahr lang gehalten wurde."
+  "zakat_rule_desc": "Der Zakat-Satz beträgt 2,5 % des Gesamtvermögens, wenn es den Nisab erreicht und ein ganzes Mondjahr lang gehalten wurde.",
+  "adhkar_tools_title": "Adhkar-Werkzeuge und Einstellungen",
+  "adhkar_tools_settings": "Alle Adhkar-Einstellungen",
+  "adhkar_tools_settings_desc": "Schriften, Designs, Ton, Anzeigemodus",
+  "adhkar_tools_edit": "Adhkar bearbeiten und hinzufügen",
+  "adhkar_tools_edit_desc": "Eigene Adhkar hinzufügen oder neu ordnen",
+  "adhkar_tools_reset": "Zähler zurücksetzen",
+  "adhkar_tools_reset_desc": "Lesezähler auf null setzen",
+  "adhkar_tools_restore": "Standard-Adhkar wiederherstellen",
+  "adhkar_tools_restore_desc": "Adhkar dieses Abschnitts auf das Original zurücksetzen",
+  "adhkar_progress_label": "{{completed}} von {{total}} erledigt"
 }

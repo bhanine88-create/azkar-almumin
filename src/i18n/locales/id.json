@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "Hitung zakat Anda dengan mudah",
   "zakat_calculator_title": "Kalkulator Zakat",
   "zakat_result": "Hasil Perhitungan Zakat",
-  "zakat_rule_desc": "Kadar zakat adalah 2,5% dari total kekayaan jika telah mencapai nisab dan haul (dimiliki selama satu tahun penuh)."
+  "zakat_rule_desc": "Kadar zakat adalah 2,5% dari total kekayaan jika telah mencapai nisab dan haul (dimiliki selama satu tahun penuh).",
+  "adhkar_tools_title": "Alat dan pengaturan dzikir",
+  "adhkar_tools_settings": "Pengaturan dzikir lengkap",
+  "adhkar_tools_settings_desc": "Font, tema, suara, mode tampilan",
+  "adhkar_tools_edit": "Ubah dan tambah dzikir",
+  "adhkar_tools_edit_desc": "Tambahkan dzikir Anda sendiri atau ubah urutannya",
+  "adhkar_tools_reset": "Atur ulang penghitung",
+  "adhkar_tools_reset_desc": "Kembalikan penghitung bacaan ke nol",
+  "adhkar_tools_restore": "Pulihkan dzikir bawaan",
+  "adhkar_tools_restore_desc": "Kembalikan dzikir bagian ini seperti semula",
+  "adhkar_progress_label": "{{completed}} dari {{total}} selesai"
 }

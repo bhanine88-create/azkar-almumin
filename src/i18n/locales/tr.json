@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "Zekatınızı kolayca hesaplayın",
   "zakat_calculator_title": "Zekat Hesaplama",
   "zakat_result": "Zekat Hesaplama Sonucu",
-  "zakat_rule_desc": "Zekat oranı, nisap miktarına ulaşan ve üzerinden bir hicri yıl geçen toplam varlığın %2,5'idir."
+  "zakat_rule_desc": "Zekat oranı, nisap miktarına ulaşan ve üzerinden bir hicri yıl geçen toplam varlığın %2,5'idir.",
+  "adhkar_tools_title": "Zikir araçları ve ayarları",
+  "adhkar_tools_settings": "Tüm zikir ayarları",
+  "adhkar_tools_settings_desc": "Yazı tipleri, temalar, ses, görünüm",
+  "adhkar_tools_edit": "Zikirleri düzenle ve ekle",
+  "adhkar_tools_edit_desc": "Kendi zikirlerinizi ekleyin veya sıralayın",
+  "adhkar_tools_reset": "Sayaçları sıfırla",
+  "adhkar_tools_reset_desc": "Okuma sayaçlarını sıfıra döndür",
+  "adhkar_tools_restore": "Varsayılan zikirleri geri yükle",
+  "adhkar_tools_restore_desc": "Bu bölümün zikirlerini orijinal haline döndür",
+  "adhkar_progress_label": "{{total}} zikirden {{completed}} tamamlandı"
 }

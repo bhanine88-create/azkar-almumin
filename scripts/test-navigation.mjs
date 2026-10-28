@@ -167,7 +167,17 @@ async function reachFinalContent(route) {
 }
 
 async function checkAdhkarSettings(width) {
-  await cdp.evaluate(`document.querySelector('button[title="إعدادات الأذكار"]').click()`);
+  await cdp.evaluate(`document.querySelector('button[aria-haspopup="menu"]').click()`);
+  await waitFor(`!!document.querySelector('[role="menu"]')`, 'Adhkar tools menu');
+  await sleep(400);
+  const menu = await cdp.evaluate(`(() => {
+    const r = document.querySelector('[role="menu"]').getBoundingClientRect();
+    return { left: r.left, right: r.right, bottom: r.bottom, width: innerWidth, height: innerHeight,
+      items: document.querySelectorAll('[role="menuitem"]').length };
+  })()`);
+  assert.equal(menu.items, 4, 'Adhkar tools menu must offer four actions');
+  assert(menu.left >= 0 && menu.right <= menu.width && menu.bottom <= menu.height, 'Adhkar tools menu must fit the screen');
+  await cdp.evaluate(`[...document.querySelectorAll('[role="menuitem"]')].find(b => b.textContent.includes('إعدادات الأذكار الشاملة')).click()`);
   await waitFor(`Array.from(document.querySelectorAll('h3')).some(h => h.textContent.includes('تخصيص مظهر الأذكار'))`, 'Adhkar settings panel');
   await sleep(700);
   const panel = await cdp.evaluate(`(() => {

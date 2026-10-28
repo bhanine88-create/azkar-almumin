@@ -922,6 +922,35 @@ export const Adhkar: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [showReward, setShowReward] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
+  const [toolsMenuPosition, setToolsMenuPosition] = useState({ top: 0, left: 0, width: 360 });
+  const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  // Android Back closes this page's overlays before leaving the page (see Layout).
+  React.useEffect(() => {
+    if (!isToolsMenuOpen && !isSettingsOpen) return;
+    const closeTopOverlay = (event: Event) => {
+      event.preventDefault();
+      if (isSettingsOpen) {
+        setIsSettingsOpen(false);
+        setIsFontDropdownOpen(false);
+      } else {
+        setIsToolsMenuOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsToolsMenuOpen(false);
+    };
+    const closeMenu = () => setIsToolsMenuOpen(false);
+    window.addEventListener('app:android-back', closeTopOverlay);
+    window.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('resize', closeMenu);
+    return () => {
+      window.removeEventListener('app:android-back', closeTopOverlay);
+      window.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('resize', closeMenu);
+    };
+  }, [isToolsMenuOpen, isSettingsOpen]);
   const [showExitModal, setShowExitModal] = useState(false);
   const [exitCardTiltX, setExitCardTiltX] = useState(8);
   const [exitCardTiltY, setExitCardTiltY] = useState(-4);
@@ -1838,6 +1867,83 @@ export const Adhkar: React.FC = () => {
          (settings.adhkarTheme && ADHKAR_THEMES[settings.adhkarTheme] ? settings.adhkarTheme : 'offWhite'))
   );
 
+  const RING_RADIUS = 15;
+  const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+  const isCategoryComplete = catProgress.total > 0 && catProgress.completed === catProgress.total;
+  const progressLabel = t('adhkar_progress_label', 'أنجزت {{completed}} من {{total}}', {
+    completed: catProgress.completed,
+    total: catProgress.total,
+  });
+  const toolsTitle = t('adhkar_tools_title', 'أدوات وإعدادات الأذكار');
+
+  const openToolsMenu = () => {
+    const rect = toolsButtonRef.current?.getBoundingClientRect();
+    if (rect) {
+      const width = Math.min(window.innerWidth - 24, 380);
+      const left = Math.min(Math.max(12, rect.left), window.innerWidth - 12 - width);
+      setToolsMenuPosition({ top: rect.bottom + 10, left, width });
+    }
+    setIsToolsMenuOpen(true);
+    triggerHaptic('light');
+  };
+
+  const resetCategoryCounts = () => {
+    if (!category) return;
+    resetCounts(category);
+    setSecondsElapsed(0);
+    setHasActiveCountingStarted(false);
+    setIsTimerRunning(false);
+  };
+
+  // The progress ring jumps to the next unfinished dhikr, or shows the reward card when all are done.
+  const handleProgressTap = () => {
+    if (isCategoryComplete) {
+      setShowReward(true);
+      return;
+    }
+    const nextIdx = filteredItems.findIndex(item => (counts[item.id] || 0) < item.count);
+    if (nextIdx === -1) return;
+    if (settings.adhkarViewMode === 'single') {
+      setSlideDirection(nextIdx >= activeDhikrIdx ? 'forward' : 'backward');
+      setActiveDhikrIdx(nextIdx);
+      return;
+    }
+    const originalIdx = currentCategory?.items.findIndex(i => i.id === filteredItems[nextIdx].id) ?? -1;
+    document.getElementById(`dhikr-card-${originalIdx !== -1 ? originalIdx : nextIdx}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const toolsMenuItems = [
+    {
+      key: 'settings',
+      icon: <Settings2 size={20} />,
+      title: t('adhkar_tools_settings', 'إعدادات الأذكار الشاملة'),
+      description: t('adhkar_tools_settings_desc', 'الخطوط، الثيمات، الصوت، طريقة العرض'),
+      action: () => setIsSettingsOpen(true),
+    },
+    {
+      key: 'edit',
+      icon: <Pen size={19} strokeWidth={2.5} />,
+      title: t('adhkar_tools_edit', 'تعديل وإضافة أذكار'),
+      description: t('adhkar_tools_edit_desc', 'إضافة أذكارك الخاصة أو إعادة ترتيبها'),
+      action: () => setIsManageMode(true),
+    },
+    {
+      key: 'reset',
+      icon: <RotateCcw size={20} />,
+      title: t('adhkar_tools_reset', 'تصفير العدادات'),
+      description: t('adhkar_tools_reset_desc', 'إعادة عدادات القراءة إلى الصفر'),
+      action: resetCategoryCounts,
+    },
+    {
+      key: 'restore',
+      icon: <ListRestart size={20} strokeWidth={2.5} />,
+      title: t('adhkar_tools_restore', 'استرجاع الأذكار الافتراضية'),
+      description: t('adhkar_tools_restore_desc', 'إعادة ضبط أذكار هذا القسم لأصلها'),
+      action: () => setShowResetConfirm(true),
+    },
+  ];
+
   const currentTheme = ADHKAR_THEMES[categoryThemeKey] || ADHKAR_THEMES.classicGold || ADHKAR_THEMES.offWhite;
 
   return (
@@ -1900,54 +2006,140 @@ export const Adhkar: React.FC = () => {
           </div>
         </div>
 
-        <div className="fit-narrow flex items-center shrink-0 bg-white dark:bg-slate-800 p-1 md:p-1.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm gap-1 transition-all hover:shadow-md">
-            <button 
-              onClick={() => setIsSettingsOpen(true)}
-              className="h-9 md:h-10 px-3 md:px-4 flex items-center justify-center gap-1.5 md:gap-2 rounded-full bg-[#006A4E] hover:bg-[#00523C] dark:bg-[#006A4E] dark:hover:bg-[#00523C] text-white shadow-[0_4px_15px_rgba(0,106,78,0.3)] hover:shadow-[0_6px_20px_rgba(0,106,78,0.4)] transition-all hover:-translate-y-0.5 active:translate-y-0 duration-200 active:scale-[0.95] group outline-none overflow-hidden relative"
-              title="إعدادات الأذكار"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/5 to-transparent -translate-x-[150%] group-hover:animate-[shimmer_2s_infinite]" />
-              <Settings2 size={16} className="md:w-[18px] md:h-[18px] transition-transform duration-700 group-hover:rotate-180 text-white" />
-              <span className="text-[11px] md:text-[12px] font-black tracking-wide hidden sm:inline-block">إعدادات</span>
-            </button>
-
-            <div className="w-[1px] h-5 md:h-6 bg-slate-200 dark:bg-slate-600 mx-0.5 md:mx-1 rounded-full" />
-
-            <div className="flex items-center gap-1 px-1">
-              <button 
-                onClick={() => setShowResetConfirm(true)}
-                className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-[#006A4E] hover:bg-[#00523C] dark:bg-[#006A4E] dark:hover:bg-[#00523C] text-white shadow-[0_4px_15px_rgba(0,106,78,0.3)] hover:shadow-[0_6px_20px_rgba(0,106,78,0.4)] transition-all hover:-translate-y-0.5 active:translate-y-0 duration-200 active:scale-[0.95] group outline-none"
-                title="الرجوع إلى الأذكار الافتراضية"
-              >
-                <ListRestart size={17} strokeWidth={2.5} className="transition-transform duration-500 group-hover:-rotate-180" />
-              </button>
-              <button 
-                onClick={() => {
-                  if (category) {
-                    resetCounts(category);
-                    setSecondsElapsed(0);
-                    setHasActiveCountingStarted(false);
-                    setIsTimerRunning(false);
-                  }
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleProgressTap}
+            title={progressLabel}
+            aria-label={progressLabel}
+            className="relative w-9 h-9 shrink-0 rounded-full bg-[#006A4E] shadow-[0_4px_15px_rgba(0,106,78,0.3)] flex items-center justify-center transition-transform duration-200 active:scale-[0.92] outline-none"
+          >
+            <svg viewBox="0 0 36 36" className="absolute inset-0 w-full h-full -rotate-90" aria-hidden="true">
+              <circle cx="18" cy="18" r={RING_RADIUS} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" />
+              <motion.circle
+                cx="18"
+                cy="18"
+                r={RING_RADIUS}
+                fill="none"
+                stroke={isCategoryComplete ? '#6ee7b7' : '#fcd34d'}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray={RING_CIRCUMFERENCE}
+                initial={false}
+                animate={{
+                  strokeDashoffset: RING_CIRCUMFERENCE * (1 - catProgress.percent / 100),
+                  opacity: catProgress.percent > 0 ? 1 : 0,
                 }}
-                className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-[#006A4E] hover:bg-[#00523C] dark:bg-[#006A4E] dark:hover:bg-[#00523C] text-white shadow-[0_4px_15px_rgba(0,106,78,0.3)] hover:shadow-[0_6px_20px_rgba(0,106,78,0.4)] transition-all hover:-translate-y-0.5 active:translate-y-0 duration-200 active:scale-[0.95] group outline-none"
-                title="تصفير العدادات"
-              >
-                <RotateCcw size={16} className="transition-transform duration-500 group-hover:-rotate-180" />
-              </button>
-            </div>
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            </svg>
+            {isCategoryComplete ? (
+              <Check size={16} strokeWidth={3.5} className="relative text-emerald-200" />
+            ) : (
+              <span dir="ltr" className="relative text-[9px] font-black leading-none tabular-nums text-amber-300">
+                {catProgress.percent}%
+              </span>
+            )}
+          </button>
 
-            <div className="w-[1px] h-5 md:h-6 bg-slate-200 dark:bg-slate-600 mx-0.5 md:mx-1 rounded-full hidden sm:block" />
-
-            <button 
-              onClick={() => setIsManageMode(true)}
-              className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-[#006A4E] hover:bg-[#00523C] dark:bg-[#006A4E] dark:hover:bg-[#00523C] text-white shadow-[0_4px_15px_rgba(0,106,78,0.3)] hover:shadow-[0_6px_20px_rgba(0,106,78,0.4)] transition-all hover:-translate-y-0.5 active:translate-y-0 duration-200 active:scale-[0.95] outline-none"
-              title="تعديل الأذكار"
-            >
-              <Pen size={17} strokeWidth={3} className="text-white relative right-0.5" />
-            </button>
-          </div>
+          <button
+            ref={toolsButtonRef}
+            type="button"
+            onClick={() => (isToolsMenuOpen ? setIsToolsMenuOpen(false) : openToolsMenu())}
+            title={toolsTitle}
+            aria-label={toolsTitle}
+            aria-haspopup="menu"
+            aria-expanded={isToolsMenuOpen}
+            className={cn(
+              "w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-white transition-all duration-200 active:scale-[0.92] outline-none",
+              isToolsMenuOpen
+                ? "bg-slate-900 shadow-[0_4px_15px_rgba(15,23,42,0.35)]"
+                : "bg-[#006A4E] hover:bg-[#00523C] shadow-[0_4px_15px_rgba(0,106,78,0.3)]"
+            )}
+          >
+            <Settings2 size={17} className={cn("transition-transform duration-500", isToolsMenuOpen && "rotate-90")} />
+          </button>
+        </div>
       </div>
+
+      {/* Tools menu: the four page actions behind the single header button */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isToolsMenuOpen && (
+            <div className="fixed inset-0 z-[110]" dir={isRtl ? 'rtl' : 'ltr'}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsToolsMenuOpen(false)}
+                className="absolute inset-0 bg-slate-950/25 backdrop-blur-[3px]"
+              />
+              <motion.div
+                role="menu"
+                aria-label={toolsTitle}
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ type: 'spring', damping: 26, stiffness: 340 }}
+                style={{
+                  top: toolsMenuPosition.top,
+                  left: toolsMenuPosition.left,
+                  width: toolsMenuPosition.width,
+                  transformOrigin: 'top left',
+                }}
+                className={cn(
+                  "absolute max-h-[calc(100dvh-90px)] overflow-y-auto rounded-[28px] backdrop-blur-2xl border shadow-[0_25px_60px_-15px_rgba(15,23,42,0.4)] text-start",
+                  currentTheme.isLight ? "bg-white/90 border-white/80" : "bg-slate-900/90 border-white/10"
+                )}
+              >
+                <div className={cn("flex items-center justify-between gap-3 px-5 py-4 border-b", currentTheme.isLight ? "border-slate-200/70" : "border-white/10")}>
+                  <h3 className={cn("flex items-center gap-2 text-sm font-black", currentTheme.isLight ? "text-slate-500" : "text-slate-300")}>
+                    <SlidersHorizontal size={18} className="text-teal-500 shrink-0" />
+                    {toolsTitle}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsToolsMenuOpen(false)}
+                    aria-label={t('close', 'إغلاق')}
+                    className={cn(
+                      "w-10 h-10 shrink-0 rounded-full border text-rose-500 flex items-center justify-center transition-transform active:scale-90",
+                      currentTheme.isLight ? "bg-rose-50 border-rose-100" : "bg-rose-500/15 border-rose-500/30"
+                    )}
+                  >
+                    <X size={18} strokeWidth={3} />
+                  </button>
+                </div>
+                <div className="p-2 flex flex-col">
+                  {toolsMenuItems.map(item => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsToolsMenuOpen(false);
+                        item.action();
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-4 px-3 py-3 rounded-2xl text-start transition-colors",
+                        currentTheme.isLight ? "hover:bg-slate-900/5 active:bg-slate-900/10" : "hover:bg-white/5 active:bg-white/10"
+                      )}
+                    >
+                      <span className="w-12 h-12 shrink-0 rounded-full bg-[#006A4E] text-white flex items-center justify-center shadow-[0_4px_15px_rgba(0,106,78,0.3)]">
+                        {item.icon}
+                      </span>
+                      <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+                        <span className={cn("text-[15px] font-black leading-snug", currentTheme.isLight ? "text-slate-800" : "text-slate-100")}>{item.title}</span>
+                        <span className="text-xs font-bold leading-snug text-slate-400">{item.description}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {renderResetConfirmModal()}
       {renderExitSessionModal()}

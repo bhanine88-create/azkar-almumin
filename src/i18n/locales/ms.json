@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "Kira zakat anda dengan mudah",
   "zakat_calculator_title": "Kalkulator Zakat",
   "zakat_result": "Hasil Pengiraan Zakat",
-  "zakat_rule_desc": "Kadar zakat adalah 2.5% daripada jumlah kekayaan jika telah mencapai nisab dan genap setahun (haul)."
+  "zakat_rule_desc": "Kadar zakat adalah 2.5% daripada jumlah kekayaan jika telah mencapai nisab dan genap setahun (haul).",
+  "adhkar_tools_title": "Alat dan tetapan zikir",
+  "adhkar_tools_settings": "Tetapan zikir penuh",
+  "adhkar_tools_settings_desc": "Fon, tema, bunyi, mod paparan",
+  "adhkar_tools_edit": "Sunting dan tambah zikir",
+  "adhkar_tools_edit_desc": "Tambah zikir anda sendiri atau susun semula",
+  "adhkar_tools_reset": "Set semula pembilang",
+  "adhkar_tools_reset_desc": "Kembalikan pembilang bacaan kepada sifar",
+  "adhkar_tools_restore": "Pulihkan zikir lalai",
+  "adhkar_tools_restore_desc": "Kembalikan zikir bahagian ini kepada asal",
+  "adhkar_progress_label": "{{completed}} daripada {{total}} selesai"
 }

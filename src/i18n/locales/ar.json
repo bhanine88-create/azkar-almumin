@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "احسب زكاة مالك بسهولة",
   "zakat_calculator_title": "حاسبة الزكاة",
   "zakat_result": "نتيجة حساب الزكاة",
-  "zakat_rule_desc": "نسبة الزكاة 2.5% من إجمالي الثروة إذا بلغت النصاب وحال عليها الحول."
+  "zakat_rule_desc": "نسبة الزكاة 2.5% من إجمالي الثروة إذا بلغت النصاب وحال عليها الحول.",
+  "adhkar_tools_title": "أدوات وإعدادات الأذكار",
+  "adhkar_tools_settings": "إعدادات الأذكار الشاملة",
+  "adhkar_tools_settings_desc": "الخطوط، الثيمات، الصوت، طريقة العرض",
+  "adhkar_tools_edit": "تعديل وإضافة أذكار",
+  "adhkar_tools_edit_desc": "إضافة أذكارك الخاصة أو إعادة ترتيبها",
+  "adhkar_tools_reset": "تصفير العدادات",
+  "adhkar_tools_reset_desc": "إعادة عدادات القراءة إلى الصفر",
+  "adhkar_tools_restore": "استرجاع الأذكار الافتراضية",
+  "adhkar_tools_restore_desc": "إعادة ضبط أذكار هذا القسم لأصلها",
+  "adhkar_progress_label": "أنجزت {{completed}} من {{total}}"
 }

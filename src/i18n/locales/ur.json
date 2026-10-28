@@ -1808,5 +1808,15 @@
   "zakat_calculator_subtitle": "اپنی زکوٰۃ کا آسانی سے حساب لگائیں",
   "zakat_calculator_title": "زکوٰۃ کیلکولیٹر",
   "zakat_result": "زکوٰۃ کے حساب کا نتیجہ",
-  "zakat_rule_desc": "اگر کل مال و دولت نصاب کو پہنچ جائے اور اس پر ایک سال گزر جائے تو زکوٰۃ کی شرح کل مال کا 2.5% ہے۔"
+  "zakat_rule_desc": "اگر کل مال و دولت نصاب کو پہنچ جائے اور اس پر ایک سال گزر جائے تو زکوٰۃ کی شرح کل مال کا 2.5% ہے۔",
+  "adhkar_tools_title": "اذکار کے اوزار اور ترتیبات",
+  "adhkar_tools_settings": "اذکار کی مکمل ترتیبات",
+  "adhkar_tools_settings_desc": "فونٹ، تھیم، آواز، ڈسپلے کا طریقہ",
+  "adhkar_tools_edit": "اذکار میں ترمیم اور اضافہ",
+  "adhkar_tools_edit_desc": "اپنے اذکار شامل کریں یا ترتیب بدلیں",
+  "adhkar_tools_reset": "کاؤنٹر صفر کریں",
+  "adhkar_tools_reset_desc": "پڑھنے کے کاؤنٹر صفر پر واپس لائیں",
+  "adhkar_tools_restore": "پہلے سے طے شدہ اذکار بحال کریں",
+  "adhkar_tools_restore_desc": "اس حصے کے اذکار کو اصل حالت میں لائیں",
+  "adhkar_progress_label": "{{total}} میں سے {{completed}} مکمل"
 }
