@@ -180,8 +180,18 @@ final class MushafPages {
 
     private static boolean download(Context app, int page) {
         if (has(app, page)) return true;
-        for (String pattern : SOURCES) {
-            if (downloadFrom(app, page, String.format(Locale.US, pattern, page))) return true;
+        // A second round after a pause rides out a brief network drop, which
+        // otherwise leaves the reader showing "could not load" for that page.
+        for (int round = 0; round < 2; round++) {
+            for (String pattern : SOURCES) {
+                if (downloadFrom(app, page, String.format(Locale.US, pattern, page))) return true;
+            }
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
         }
         return false;
     }
