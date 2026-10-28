@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Kembalikan penghitung bacaan ke nol",
   "adhkar_tools_restore": "Pulihkan dzikir bawaan",
   "adhkar_tools_restore_desc": "Kembalikan dzikir bagian ini seperti semula",
-  "adhkar_progress_label": "{{completed}} dari {{total}} selesai"
+  "adhkar_progress_label": "{{completed}} dari {{total}} selesai",
+  "random_overlay_title": "Tampilkan kartu di atas aplikasi lain",
+  "random_overlay_desc": "Kartu dzikir muncul di layar selama 3 detik lalu menghilang, tanpa suara, bahkan saat aplikasi ditutup. Tanpa izin ini, notifikasi senyap muncul dan menghilang setelah 3 detik.",
+  "random_overlay_allowed": "Izin diberikan",
+  "random_overlay_allow": "Izinkan tampil di atas aplikasi lain"
 }

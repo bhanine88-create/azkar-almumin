@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Set the reading counters back to zero",
   "adhkar_tools_restore": "Restore default adhkar",
   "adhkar_tools_restore_desc": "Return this section's adhkar to the original",
-  "adhkar_progress_label": "{{completed}} of {{total}} completed"
+  "adhkar_progress_label": "{{completed}} of {{total}} completed",
+  "random_overlay_title": "Show the card over other apps",
+  "random_overlay_desc": "The dhikr card appears on your screen for 3 seconds and then disappears, silently, even when the app is closed. Without this permission a silent notification appears and disappears after 3 seconds.",
+  "random_overlay_allowed": "Permission granted",
+  "random_overlay_allow": "Allow display over other apps"
 }

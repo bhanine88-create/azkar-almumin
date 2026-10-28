@@ -281,13 +281,18 @@ export const Layout: React.FC = () => {
   useEffect(() => {
     if (settings._triggerRandomText) {
       setRandomDhikr(settings._triggerRandomText);
-      const timer = setTimeout(() => {
-        setRandomDhikr(null);
-      }, 6000);
       updateSettings({ _triggerRandomText: undefined });
-      return () => clearTimeout(timer);
     }
   }, [settings._triggerRandomText, updateSettings]);
+
+  // Hidden after three seconds, like the native card shown while the app is
+  // closed. Timed from the card itself: clearing the trigger above re-runs that
+  // effect, which used to cancel the timer and leave the card up for good.
+  useEffect(() => {
+    if (!randomDhikr) return;
+    const timer = setTimeout(() => setRandomDhikr(null), 3000);
+    return () => clearTimeout(timer);
+  }, [randomDhikr]);
 
   // Toast notifications & Clipboard patching
   useEffect(() => {

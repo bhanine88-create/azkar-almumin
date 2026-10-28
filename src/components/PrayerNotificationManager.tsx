@@ -20,7 +20,8 @@ import {
   requestLocalNotificationPermissions,
   hasExactAlarmPermission,
   requestExactAlarmPermission,
-  isInQuietHours
+  isInQuietHours,
+  dhikrForSlot
 } from '../services/localNotificationService';
 import { adhkarNotificationController } from '../services/adhkarNotificationController';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
@@ -282,13 +283,11 @@ export const PrayerNotificationManager: React.FC = () => {
       type === 'prayer' ? settings.prayerRingtone :
       type === 'morning' ? settings.morningAdhkarRingtone :
       type === 'evening' ? settings.eveningAdhkarRingtone :
-      type === 'random' ? (settings.randomAdhkarSound || 'default') :
       settings.customReminderRingtone
     );
     
     // The default sound is now the Makkah adhan. An adhan means prayer time, so
-    // reminders and random dhikr left on "default" get the soft chime instead
-    // (random dhikr alone would otherwise play a full adhan every 30 minutes).
+    // reminders left on "default" get the soft chime instead.
     const isDefault = !finalSoundId || finalSoundId === 'default';
     const effectiveId = isDefault && type !== 'prayer' ? 'soft-chime' : finalSoundId;
     const sound = NOTIFICATION_SOUNDS.find(s => s.id === effectiveId) || NOTIFICATION_SOUNDS[0];
@@ -551,8 +550,8 @@ export const PrayerNotificationManager: React.FC = () => {
             }
           }
 
-          // Trigger Random Dhikr
-          triggerRandomDhikrNotification();
+          // Same text as the native card for this slot.
+          triggerRandomDhikrNotification(dhikrForSlot(settings.customRandomAdhkar, new Date()));
         }
       }
     };
@@ -790,10 +789,7 @@ export const PrayerNotificationManager: React.FC = () => {
     if (!list.length) return;
     const selectedDhikr = overrideText || list[Math.floor(Math.random() * list.length)];
 
-    // Play Sound if enabled
-    try {
-      playAdhan('random-dhikr', getAudioUrl('random', settings.randomAdhkarSound));
-    } catch (e) {}
+    // Random dhikr is silent by the client's request: no sound, the card only.
 
     // System Native Notification
     const notifType = settings.randomAdhkarNotificationType || 'both';

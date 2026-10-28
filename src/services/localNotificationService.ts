@@ -7,6 +7,7 @@ import {
 import { Coordinates, CalculationMethod, PrayerTimes as AdhanTimes, Madhab } from 'adhan';
 import { AppSettings } from '../types';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
+import { RandomDhikr, isRandomDhikrNativeAvailable, randomDhikrStyle } from './randomDhikrNative';
 
 export const PRAYER_NAMES_AR: Record<string, string> = {
   Fajr: 'الفجر',
@@ -23,8 +24,7 @@ const PRAYER_KEYS_ORDER = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
 export const CHANNELS = {
   PRAYER: 'prayer_times_channel',
   ADHKAR: 'adhkar_channel',
-  REMINDERS: 'reminders_channel',
-  RANDOM: 'random_dhikr_channel'
+  REMINDERS: 'reminders_channel'
 } as const;
 
 /**
@@ -33,10 +33,9 @@ export const CHANNELS = {
  *   1000-1499  morning / evening adhkar, their follow-ups, sunnah (base + day)
  *   10000+     prayers (10000 + 10 * day + prayer index)
  *   200000+    custom reminders (200000 + 100 * reminder + day)
- *   300000+    random dhikr (300000 + slot)
  * In-app alerts use 100-998 and the test button 9999.
  */
-const ID_BASE = { PRAYER: 10000, CUSTOM: 200000, RANDOM: 300000 } as const;
+const ID_BASE = { PRAYER: 10000, CUSTOM: 200000 } as const;
 
 /**
  * How many days ahead fixed-time notifications are scheduled. The schedule is
@@ -47,7 +46,7 @@ const DAYS_TO_SCHEDULE = 14;
 
 /**
  * Android caps an app at 500 pending alarms and every notification is one.
- * Random dhikr gets whatever room the fixed notifications leave under this.
+ * Random dhikr needs a single alarm of its own (see syncRandomDhikr).
  */
 const MAX_SCHEDULED = 400;
 
@@ -115,18 +114,8 @@ export async function initializeNotificationChannels(): Promise<void> {
       lightColor: '#F59E0B'
     });
 
-    // 4. Random Dhikr Channel. Separate so it can be quietened in Android
-    // settings without touching the adhan.
-    await LocalNotifications.createChannel({
-      id: CHANNELS.RANDOM,
-      name: 'الذكر العشوائي / Random Dhikr',
-      description: 'تذكير بذكر الله على فترات منتظمة طوال اليوم',
-      importance: 3, // DEFAULT: sound, no heads-up
-      visibility: 1,
-      sound: 'beep.wav',
-      vibration: true,
-      lights: false
-    });
+    // Random dhikr has no channel here: RandomDhikrPopup.java creates its own
+    // silent one and deletes the old 'random_dhikr_channel', which had a sound.
 
     channelsInitialized = true;
   } catch (err) {
@@ -329,7 +318,7 @@ function randomDhikrSlots(settings: AppSettings, from: Date, days: number, limit
  * so rebuilding the plan gives the same text and an unchanged schedule is
  * recognised as unchanged.
  */
-function dhikrForSlot(list: string[], at: Date): string {
+export function dhikrForSlot(list: string[], at: Date): string {
   const slot = Math.floor(at.getTime() / 60000);
   return list[(Math.imul(slot, 0x9E3779B1) >>> 0) % list.length];
 }
@@ -395,6 +384,33 @@ export async function requestExactAlarmPermission(): Promise<boolean> {
   }
 }
 
+/** Random dhikr slots kept in the native plan; 5-minute slots fill it in about five days. */
+const RANDOM_SLOT_LIMIT = 1500;
+
+/**
+ * Random dhikr is shown by the app's own native code rather than scheduled as a
+ * notification: the client wants a silent card on screen for three seconds, over
+ * other apps when allowed, and nothing left behind in the shade. A single alarm
+ * walks the plan, so it takes none of the MAX_SCHEDULED budget. Rewriting it is
+ * one small write and one alarm, so it is simply rewritten on every sync.
+ */
+async function syncRandomDhikr(settings: AppSettings): Promise<void> {
+  if (!isRandomDhikrNativeAvailable()) return;
+  try {
+    const list = settings.customRandomAdhkar || [];
+    const type = settings.randomAdhkarNotificationType || 'both';
+    if (!settings.notificationsEnabled || !settings.randomAdhkarEnabled || list.length === 0 || type === 'banner') {
+      await RandomDhikr.cancel();
+      return;
+    }
+    const items = randomDhikrSlots(settings, new Date(), DAYS_TO_SCHEDULE, RANDOM_SLOT_LIMIT)
+      .map(at => ({ at: at.getTime(), text: dhikrForSlot(list, at) }));
+    await RandomDhikr.schedule({ items, style: randomDhikrStyle(settings) });
+  } catch (err) {
+    console.warn('[RandomDhikr] Failed to schedule random dhikr:', err);
+  }
+}
+
 /**
  * Synchronizes and schedules all upcoming local notifications for Prayers and Daily Adhkar
  * Schedules DAYS_TO_SCHEDULE days in advance so notifications fire reliably even when the device is offline,
@@ -435,6 +451,7 @@ async function syncAllLocalNotificationsNow(
 
   try {
     await initializeNotificationChannels();
+    await syncRandomDhikr(settings);
 
     // Check permissions
     const perm = await LocalNotifications.checkPermissions();
@@ -728,41 +745,10 @@ async function syncAllLocalNotificationsNow(
       });
     }
 
-    // ==========================================
-    // 6. RANDOM DHIKR
-    // ==========================================
-    // Scheduled in Android like everything else, so it keeps arriving on its
-    // clock slots while the app is closed (it used to run only inside the app,
-    // timed from whenever the app was opened). It takes the room the fixed
-    // notifications leave under MAX_SCHEDULED, nearest slots first.
     if (notificationsToSchedule.length > MAX_SCHEDULED) {
       // Many custom reminders can outgrow Android's alarm cap; keep the nearest.
       notificationsToSchedule.sort((a, b) => atMs(a.schedule?.at) - atMs(b.schedule?.at));
       notificationsToSchedule.length = MAX_SCHEDULED;
-    }
-
-    const randomList = settings.customRandomAdhkar || [];
-    const randomType = settings.randomAdhkarNotificationType || 'both';
-    if (settings.randomAdhkarEnabled && randomList.length > 0 && randomType !== 'banner') {
-      const room = MAX_SCHEDULED - notificationsToSchedule.length;
-      randomDhikrSlots(settings, now, DAYS_TO_SCHEDULE, room).forEach((at, slot) => {
-        notificationsToSchedule.push({
-          id: ID_BASE.RANDOM + slot,
-          title: 'ذكر الله 🌟',
-          body: dhikrForSlot(randomList, at),
-          schedule: {
-            at,
-            allowWhileIdle: true
-          },
-          channelId: CHANNELS.RANDOM,
-          sound: 'beep.wav',
-          autoCancel: true,
-          extra: {
-            route: '/',
-            type: 'random'
-          }
-        });
-      });
     }
 
     // Stamped here rather than at each push site: it is one decision about this

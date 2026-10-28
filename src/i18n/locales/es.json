@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Poner los contadores de lectura a cero",
   "adhkar_tools_restore": "Restaurar adhkar predeterminados",
   "adhkar_tools_restore_desc": "Devolver los adhkar de esta sección a su estado original",
-  "adhkar_progress_label": "{{completed}} de {{total}} completados"
+  "adhkar_progress_label": "{{completed}} de {{total}} completados",
+  "random_overlay_title": "Mostrar la tarjeta sobre otras apps",
+  "random_overlay_desc": "La tarjeta de dhikr aparece en la pantalla 3 segundos y luego desaparece, sin sonido, incluso con la app cerrada. Sin este permiso aparece una notificación silenciosa que desaparece a los 3 segundos.",
+  "random_overlay_allowed": "Permiso concedido",
+  "random_overlay_allow": "Permitir mostrar sobre otras apps"
 }

@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Okuma sayaçlarını sıfıra döndür",
   "adhkar_tools_restore": "Varsayılan zikirleri geri yükle",
   "adhkar_tools_restore_desc": "Bu bölümün zikirlerini orijinal haline döndür",
-  "adhkar_progress_label": "{{total}} zikirden {{completed}} tamamlandı"
+  "adhkar_progress_label": "{{total}} zikirden {{completed}} tamamlandı",
+  "random_overlay_title": "Kartı diğer uygulamaların üzerinde göster",
+  "random_overlay_desc": "Zikir kartı ekranda 3 saniye görünür ve sonra kaybolur, sessizce, uygulama kapalıyken bile. Bu izin olmadan sessiz bir bildirim görünür ve 3 saniye sonra kaybolur.",
+  "random_overlay_allowed": "İzin verildi",
+  "random_overlay_allow": "Diğer uygulamaların üzerinde göstermeye izin ver"
 }

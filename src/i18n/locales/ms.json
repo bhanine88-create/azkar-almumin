@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Kembalikan pembilang bacaan kepada sifar",
   "adhkar_tools_restore": "Pulihkan zikir lalai",
   "adhkar_tools_restore_desc": "Kembalikan zikir bahagian ini kepada asal",
-  "adhkar_progress_label": "{{completed}} daripada {{total}} selesai"
+  "adhkar_progress_label": "{{completed}} daripada {{total}} selesai",
+  "random_overlay_title": "Paparkan kad di atas aplikasi lain",
+  "random_overlay_desc": "Kad zikir muncul pada skrin selama 3 saat kemudian hilang, tanpa bunyi, walaupun aplikasi ditutup. Tanpa kebenaran ini, pemberitahuan senyap muncul dan hilang selepas 3 saat.",
+  "random_overlay_allowed": "Kebenaran diberikan",
+  "random_overlay_allow": "Benarkan paparan di atas aplikasi lain"
 }

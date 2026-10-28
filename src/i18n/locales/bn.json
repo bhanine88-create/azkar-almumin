@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "পড়ার কাউন্টার শূন্যে ফিরিয়ে আনুন",
   "adhkar_tools_restore": "ডিফল্ট জিকির ফিরিয়ে আনুন",
   "adhkar_tools_restore_desc": "এই অংশের জিকির মূল অবস্থায় ফেরান",
-  "adhkar_progress_label": "{{total}}টির মধ্যে {{completed}}টি সম্পন্ন"
+  "adhkar_progress_label": "{{total}}টির মধ্যে {{completed}}টি সম্পন্ন",
+  "random_overlay_title": "অন্য অ্যাপের উপরে কার্ড দেখান",
+  "random_overlay_desc": "জিকিরের কার্ড স্ক্রিনে ৩ সেকেন্ড দেখা যায়, তারপর মিলিয়ে যায়, শব্দ ছাড়াই, অ্যাপ বন্ধ থাকলেও। এই অনুমতি ছাড়া একটি নীরব বিজ্ঞপ্তি দেখা যায় যা ৩ সেকেন্ড পরে মিলিয়ে যায়।",
+  "random_overlay_allowed": "অনুমতি দেওয়া হয়েছে",
+  "random_overlay_allow": "অন্য অ্যাপের উপরে দেখানোর অনুমতি দিন"
 }

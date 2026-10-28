@@ -17,6 +17,7 @@ import { useTranslation } from '../i18n';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
 
 import { NOTIFICATION_SOUNDS } from '../constants';
+import { RandomDhikrOverlayCard } from './RandomDhikrOverlayCard';
 import { MushafDownloader } from './MushafDownloader';
 import { TafsirDownloader } from './TafsirDownloader';
 import { OfflineManager } from './OfflineManager';
@@ -2037,21 +2038,9 @@ export const Settings: React.FC = () => {
                )}
              </div>
 
-             {/* Sound Selection */}
-             <div className="space-y-1.5">
-               <label className="text-xs font-black text-white/70 block text-right">{t('random_adhkar_sound_label', 'صوت التنبيه بالذكر العشوائي')}</label>
-               <select
-                 value={settings.randomAdhkarSound || 'default'}
-                 onChange={(e) => updateSettings({ randomAdhkarSound: e.target.value })}
-                 className="w-full bg-slate-900/90 text-white text-xs sm:text-sm font-black p-3 rounded-xl border border-white/10 focus:outline-none"
-               >
-                 {(NOTIFICATION_SOUNDS || []).map((sound) => (
-                   <option key={sound.id} value={sound.id} className="font-bold bg-slate-900 text-white">
-                     {t(`sound_${sound.id.replace(/-/g, `_`)}`, sound.label)}
-                   </option>
-                 ))}
-               </select>
-             </div>
+             {/* Random dhikr is silent (client request), so it has no sound picker.
+                 On Android it may instead appear over other apps. */}
+             <RandomDhikrOverlayCard t={t} />
 
              {/* Theme Selection */}
              <div className="pt-2 border-t border-white/10">

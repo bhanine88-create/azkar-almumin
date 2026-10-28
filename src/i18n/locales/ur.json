@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "پڑھنے کے کاؤنٹر صفر پر واپس لائیں",
   "adhkar_tools_restore": "پہلے سے طے شدہ اذکار بحال کریں",
   "adhkar_tools_restore_desc": "اس حصے کے اذکار کو اصل حالت میں لائیں",
-  "adhkar_progress_label": "{{total}} میں سے {{completed}} مکمل"
+  "adhkar_progress_label": "{{total}} میں سے {{completed}} مکمل",
+  "random_overlay_title": "کارڈ دوسری ایپس کے اوپر دکھائیں",
+  "random_overlay_desc": "ذکر کا کارڈ اسکرین پر 3 سیکنڈ کے لیے ظاہر ہو کر غائب ہو جاتا ہے، بغیر آواز کے، ایپ بند ہونے پر بھی۔ اس اجازت کے بغیر ایک خاموش اطلاع ظاہر ہوتی ہے جو 3 سیکنڈ بعد غائب ہو جاتی ہے۔",
+  "random_overlay_allowed": "اجازت دے دی گئی",
+  "random_overlay_allow": "دوسری ایپس کے اوپر دکھانے کی اجازت دیں"
 }

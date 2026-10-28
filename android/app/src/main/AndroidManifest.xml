@@ -55,6 +55,19 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
 
+        <!-- Random dhikr: one alarm walks the slots planned by JS (RandomDhikrSchedule). -->
+        <receiver android:name=".RandomDhikrAlarmReceiver" android:exported="false" />
+        <!-- Re-arms that alarm; these system broadcasts cannot be sent by other apps. -->
+        <receiver android:name=".RandomDhikrBootReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Firebase Analytics must not collect an advertising ID; the Play
              Data Safety declaration states the app collects none. -->
         <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
@@ -84,6 +97,11 @@
     <!-- Re-arms today's prayer notifications after a reboot, otherwise every
          scheduled alarm is lost when the phone restarts. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- The random dhikr card is drawn over other apps for three seconds when
+         the user allows "Display over other apps" (Settings offers it with the
+         reason). Without it a silent, self-removing notification is used. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Prayer times and the qibla direction are computed from the user's
          coordinates, obtained through navigator.geolocation in the WebView.

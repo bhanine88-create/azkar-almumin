@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Remettre les compteurs de lecture à zéro",
   "adhkar_tools_restore": "Restaurer les adhkar par défaut",
   "adhkar_tools_restore_desc": "Rétablir les adhkar d'origine de cette section",
-  "adhkar_progress_label": "{{completed}} sur {{total}} terminés"
+  "adhkar_progress_label": "{{completed}} sur {{total}} terminés",
+  "random_overlay_title": "Afficher la carte par-dessus les autres applis",
+  "random_overlay_desc": "La carte de dhikr s'affiche 3 secondes à l'écran puis disparaît, sans son, même quand l'appli est fermée. Sans cette autorisation, une notification silencieuse s'affiche et disparaît après 3 secondes.",
+  "random_overlay_allowed": "Autorisation accordée",
+  "random_overlay_allow": "Autoriser l'affichage par-dessus les autres applis"
 }

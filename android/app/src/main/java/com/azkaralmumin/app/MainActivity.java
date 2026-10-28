@@ -29,12 +29,19 @@ public class MainActivity extends BridgeActivity {
     private Runnable startupCheck;
     private boolean visualCheckPending;
     private int startupGeneration;
+    // Read by RandomDhikrPopup: while the app is open its own card shows random dhikr.
+    private static volatile boolean inForeground;
+
+    static boolean isInForeground() {
+        return inForeground;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= 31) {
             androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
         }
+        registerPlugin(RandomDhikrPlugin.class);
         super.onCreate(savedInstanceState);
         final Bridge bridge = getBridge();
         if (bridge == null) return;
@@ -172,6 +179,18 @@ public class MainActivity extends BridgeActivity {
                 ((ViewGroup) cover.getParent()).removeView(cover);
             }
         }).start();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        inForeground = true;
+    }
+
+    @Override
+    public void onPause() {
+        inForeground = false;
+        super.onPause();
     }
 
     @Override

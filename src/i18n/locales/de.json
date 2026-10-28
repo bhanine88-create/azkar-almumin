@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "Lesezähler auf null setzen",
   "adhkar_tools_restore": "Standard-Adhkar wiederherstellen",
   "adhkar_tools_restore_desc": "Adhkar dieses Abschnitts auf das Original zurücksetzen",
-  "adhkar_progress_label": "{{completed}} von {{total}} erledigt"
+  "adhkar_progress_label": "{{completed}} von {{total}} erledigt",
+  "random_overlay_title": "Karte über anderen Apps anzeigen",
+  "random_overlay_desc": "Die Dhikr-Karte erscheint 3 Sekunden lang auf dem Bildschirm und verschwindet dann, lautlos, auch wenn die App geschlossen ist. Ohne diese Berechtigung erscheint eine lautlose Benachrichtigung, die nach 3 Sekunden verschwindet.",
+  "random_overlay_allowed": "Berechtigung erteilt",
+  "random_overlay_allow": "Über anderen Apps einblenden erlauben"
 }

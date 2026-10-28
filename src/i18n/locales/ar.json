@@ -1818,5 +1818,9 @@
   "adhkar_tools_reset_desc": "إعادة عدادات القراءة إلى الصفر",
   "adhkar_tools_restore": "استرجاع الأذكار الافتراضية",
   "adhkar_tools_restore_desc": "إعادة ضبط أذكار هذا القسم لأصلها",
-  "adhkar_progress_label": "أنجزت {{completed}} من {{total}}"
+  "adhkar_progress_label": "أنجزت {{completed}} من {{total}}",
+  "random_overlay_title": "إظهار البطاقة فوق التطبيقات الأخرى",
+  "random_overlay_desc": "تظهر بطاقة الذكر على شاشة الهاتف 3 ثوانٍ ثم تختفي، بدون صوت، حتى والتطبيق مغلق. بدون هذا الإذن يظهر إشعار صامت يختفي بعد 3 ثوانٍ.",
+  "random_overlay_allowed": "الإذن مفعّل",
+  "random_overlay_allow": "السماح بالظهور فوق التطبيقات"
 }
