@@ -926,6 +926,15 @@ export const Adhkar: React.FC = () => {
   const [toolsMenuPosition, setToolsMenuPosition] = useState({ top: 0, left: 0, width: 360 });
   const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
 
+  // Anchors the tools menu under its button, kept inside the screen.
+  const placeToolsMenu = () => {
+    const rect = toolsButtonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const width = Math.min(window.innerWidth - 24, 380);
+    const left = Math.min(Math.max(12, rect.left), window.innerWidth - 12 - width);
+    setToolsMenuPosition({ top: rect.bottom + 10, left, width });
+  };
+
   // Android Back closes this page's overlays before leaving the page (see Layout).
   React.useEffect(() => {
     if (!isToolsMenuOpen && !isSettingsOpen) return;
@@ -941,14 +950,15 @@ export const Adhkar: React.FC = () => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setIsToolsMenuOpen(false);
     };
-    const closeMenu = () => setIsToolsMenuOpen(false);
+    // Android WebViews resize while bars settle, so the menu follows its button.
+    const followButton = () => placeToolsMenu();
     window.addEventListener('app:android-back', closeTopOverlay);
     window.addEventListener('keydown', closeOnEscape);
-    window.addEventListener('resize', closeMenu);
+    window.addEventListener('resize', followButton);
     return () => {
       window.removeEventListener('app:android-back', closeTopOverlay);
       window.removeEventListener('keydown', closeOnEscape);
-      window.removeEventListener('resize', closeMenu);
+      window.removeEventListener('resize', followButton);
     };
   }, [isToolsMenuOpen, isSettingsOpen]);
   const [showExitModal, setShowExitModal] = useState(false);
@@ -1877,12 +1887,7 @@ export const Adhkar: React.FC = () => {
   const toolsTitle = t('adhkar_tools_title', 'أدوات وإعدادات الأذكار');
 
   const openToolsMenu = () => {
-    const rect = toolsButtonRef.current?.getBoundingClientRect();
-    if (rect) {
-      const width = Math.min(window.innerWidth - 24, 380);
-      const left = Math.min(Math.max(12, rect.left), window.innerWidth - 12 - width);
-      setToolsMenuPosition({ top: rect.bottom + 10, left, width });
-    }
+    placeToolsMenu();
     setIsToolsMenuOpen(true);
     triggerHaptic('light');
   };
