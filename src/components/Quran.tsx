@@ -20,6 +20,7 @@ import { quranIndexedDbService } from '../services/quranIndexedDbService';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 import { useProgressiveList } from '../lib/useProgressiveList';
 import { useAppStability } from '../services/stabilityManager';
+import { MushafOpenCard } from './MushafOpenCard';
 
 const QURAN_FONTS = [
   { id: 'Uthmanic Hafs', name: 'عثماني حفص' },
@@ -723,6 +724,8 @@ export const Quran: React.FC = () => {
             </div>
           )}
         </header>
+
+        {!search && <MushafOpenCard t={t} language={settings.appLanguage} isRtl={isRtl} />}
 
         {/* Vertical Side Menu (Drawer) */}
         {typeof document !== 'undefined' && createPortal(

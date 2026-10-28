@@ -55,6 +55,14 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
 
+        <!-- Native mushaf reader, opened from JS through MushafPlugin. -->
+        <activity
+            android:name=".MushafActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|uiMode|density"
+            android:theme="@style/AppTheme.Mushaf" />
+
         <!-- Random dhikr: one alarm walks the slots planned by JS (RandomDhikrSchedule). -->
         <receiver android:name=".RandomDhikrAlarmReceiver" android:exported="false" />
         <!-- Re-arms that alarm; these system broadcasts cannot be sent by other apps. -->

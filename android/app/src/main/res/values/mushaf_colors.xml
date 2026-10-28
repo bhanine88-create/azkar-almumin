@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Behind the mushaf pages before the first one draws (MushafActivity). -->
+    <color name="mushafBackground">#F3EBDD</color>
+</resources>

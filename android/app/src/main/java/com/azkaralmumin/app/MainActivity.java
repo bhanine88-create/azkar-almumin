@@ -42,6 +42,7 @@ public class MainActivity extends BridgeActivity {
             androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
         }
         registerPlugin(RandomDhikrPlugin.class);
+        registerPlugin(MushafPlugin.class);
         super.onCreate(savedInstanceState);
         final Bridge bridge = getBridge();
         if (bridge == null) return;

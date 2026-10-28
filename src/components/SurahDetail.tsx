@@ -67,6 +67,7 @@ import { SettingsModal, TafsirModal } from './quran/SurahSubComponents';
 import { quranVocabulary, tajweedRules } from "../data/quranInteractions";
 import { STATIC_SURAHS } from "../utils/staticQuranData";
 import { SURAH_START_PAGES } from "../utils/quranUtils";
+import { isNativeMushafAvailable, openNativeMushaf } from "../services/mushafNative";
 import { Highlighter } from "lucide-react";
 import { PageTafsir } from "./PageTafsir";
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
@@ -535,7 +536,7 @@ export const SurahDetail: React.FC = () => {
     useAppContext();
   const { updateChallengeProgress, updateSpecificChallenge } =
     useChallengeTracker();
-  const { t } = useTranslation(settings.appLanguage);
+  const { t, isRtl } = useTranslation(settings.appLanguage);
   
   const getInitialPageIndex = (surahData: any) => {
     if (!surahData || !surahData.ayahs) return 0;
@@ -2704,10 +2705,16 @@ export const SurahDetail: React.FC = () => {
                     )}
                     <button
                       onClick={() => {
+                        setShowSideMenu(false);
+                        // On Android the page view is the native mushaf reader, opened at this surah.
+                        if (viewMode !== "mushaf" && isNativeMushafAvailable()) {
+                          const page = SURAH_START_PAGES[parseInt(number || "1") - 1] || 1;
+                          openNativeMushaf(page, t, settings.appLanguage, isRtl).catch(() => {});
+                          return;
+                        }
                         setViewMode(
                           viewMode === "mushaf" ? "vertical" : "mushaf",
                         );
-                        setShowSideMenu(false);
                       }}
                       className={cn(
                         "w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all group text-right",

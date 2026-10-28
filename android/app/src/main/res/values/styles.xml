@@ -32,6 +32,15 @@
     </style>
 
 
+    <!-- MushafActivity: full-screen pages under its own bars, no action bar. -->
+    <style name="AppTheme.Mushaf" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/mushafBackground</item>
+        <item name="android:statusBarColor">#00000000</item>
+        <item name="android:navigationBarColor">#00000000</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+
     <!--
         The launch theme, i.e. what the user actually sees for the first moment
         of a cold start.
