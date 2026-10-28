@@ -3,6 +3,7 @@ package com.azkaralmumin.app;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class MushafPages {
     static final int TOTAL = 604;
+    private static final String TAG = "MushafPages";
     /** Same King Fahd page set the web reader uses (src/services/mushafService.ts). */
     private static final String[] SOURCES = {
         "https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/%d.jpg",
@@ -193,7 +195,11 @@ final class MushafPages {
             connection.setConnectTimeout(15_000);
             connection.setReadTimeout(30_000);
             connection.setRequestProperty("User-Agent", "AzkarAlmumin/Android");
-            if (connection.getResponseCode() != 200) return false;
+            int status = connection.getResponseCode();
+            if (status != 200) {
+                Log.w(TAG, "page " + page + ": HTTP " + status + " from " + url);
+                return false;
+            }
             long bytes = 0;
             byte[] head = new byte[2];
             try (InputStream in = connection.getInputStream(); OutputStream out = new FileOutputStream(temp)) {
@@ -208,11 +214,13 @@ final class MushafPages {
             // A JPEG, and a whole one: never keep an error page or a cut-off file.
             boolean jpeg = (head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xD8;
             if (!jpeg || bytes < MIN_BYTES || !temp.renameTo(target)) {
+                Log.w(TAG, "page " + page + ": rejected (jpeg=" + jpeg + ", bytes=" + bytes + ") from " + url);
                 temp.delete();
                 return false;
             }
             return true;
         } catch (IOException | RuntimeException e) {
+            Log.w(TAG, "page " + page + ": " + e + " from " + url);
             temp.delete();
             return false;
         } finally {

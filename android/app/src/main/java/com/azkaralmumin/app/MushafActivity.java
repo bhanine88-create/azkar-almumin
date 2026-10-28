@@ -658,14 +658,19 @@ public class MushafActivity extends AppCompatActivity {
                 public void onReady() {
                     image.setMaxScale(image.getMinScale() * 4f);
                     image.setDoubleTapZoomScale(image.getMinScale() * 2.2f);
+                    if (holder.page == currentPage) pager.setUserInputEnabled(true);
                 }
             });
             image.setOnStateChangedListener(new SubsamplingScaleImageView.DefaultOnStateChangedListener() {
                 @Override
                 public void onScaleChanged(float newScale, int origin) {
-                    if (holder.page == currentPage) {
-                        pager.setUserInputEnabled(newScale <= image.getMinScale() * 1.03f);
-                    }
+                    // Only a real zoom on the page in view holds the pager still. A page
+                    // finishing its load mid-swipe also reports a scale change, and
+                    // disabling input then left the pager stuck between two pages.
+                    if (holder.page != currentPage || !image.isReady()) return;
+                    boolean zoomed = newScale > image.getMinScale() * 1.03f;
+                    if (zoomed && pager.getScrollState() != ViewPager2.SCROLL_STATE_IDLE) return;
+                    pager.setUserInputEnabled(!zoomed);
                 }
             });
             GestureDetector taps = new GestureDetector(parent.getContext(), new GestureDetector.SimpleOnGestureListener() {
