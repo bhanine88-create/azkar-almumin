@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "Le Mushaf de Médine page par page, avec glissement et zoom",
   "mushaf_open_mode_label": "Ouvrir les sourates :",
   "mushaf_open_mode_pages": "En pages du Mushaf",
-  "mushaf_open_mode_text": "En texte"
+  "mushaf_open_mode_text": "En texte",
+  "reminder_overlay_desc": "À l'heure des adhkar du matin et du soir, la carte de rappel s'affiche par-dessus n'importe quel écran, même appli fermée, avec un bouton « Lire maintenant ». Sans cette autorisation, seule la notification s'affiche."
 }

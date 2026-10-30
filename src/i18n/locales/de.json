@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "Der Madina-Mushaf Seite für Seite, mit Wischen und Zoom",
   "mushaf_open_mode_label": "Suren öffnen:",
   "mushaf_open_mode_pages": "Als Mushaf-Seiten",
-  "mushaf_open_mode_text": "Als Text"
+  "mushaf_open_mode_text": "Als Text",
+  "reminder_overlay_desc": "Zur Zeit der Morgen- und Abend-Adhkar erscheint die Erinnerungskarte über jedem Bildschirm, auch bei geschlossener App, mit der Schaltfläche „Jetzt lesen“. Ohne diese Berechtigung erscheint nur die Benachrichtigung."
 }

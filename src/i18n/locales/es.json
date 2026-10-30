@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "El Mushaf de Medina página a página, con deslizamiento y zoom",
   "mushaf_open_mode_label": "Abrir suras:",
   "mushaf_open_mode_pages": "En páginas del Mushaf",
-  "mushaf_open_mode_text": "Como texto"
+  "mushaf_open_mode_text": "Como texto",
+  "reminder_overlay_desc": "A la hora de los adhkar de la mañana y de la tarde, la tarjeta de recordatorio aparece sobre cualquier pantalla, incluso con la app cerrada, con un botón «Leer ahora». Sin este permiso solo aparece la notificación."
 }

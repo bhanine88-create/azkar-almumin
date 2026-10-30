@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "مصحف المدينة بصفحاته، بالسحب والتكبير",
   "mushaf_open_mode_label": "فتح السور:",
   "mushaf_open_mode_pages": "بالمصحف",
-  "mushaf_open_mode_text": "نصياً"
+  "mushaf_open_mode_text": "نصياً",
+  "reminder_overlay_desc": "عند موعد أذكار الصباح والمساء تظهر بطاقة التذكير فوق أي شاشة، حتى والتطبيق مغلق، وفيها زر «اقرأ الآن». بدون هذا الإذن يظهر الإشعار وحده."
 }

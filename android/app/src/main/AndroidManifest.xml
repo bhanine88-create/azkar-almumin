@@ -65,7 +65,9 @@
 
         <!-- Random dhikr: one alarm walks the slots planned by JS (RandomDhikrSchedule). -->
         <receiver android:name=".RandomDhikrAlarmReceiver" android:exported="false" />
-        <!-- Re-arms that alarm; these system broadcasts cannot be sent by other apps. -->
+        <!-- Morning / evening adhkar reminder cards (ReminderCardSchedule). -->
+        <receiver android:name=".ReminderCardReceiver" android:exported="false" />
+        <!-- Re-arms those alarms; these system broadcasts cannot be sent by other apps. -->
         <receiver android:name=".RandomDhikrBootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

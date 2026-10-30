@@ -8,6 +8,7 @@ import { Coordinates, CalculationMethod, PrayerTimes as AdhanTimes, Madhab } fro
 import { AppSettings } from '../types';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
 import { RandomDhikr, isRandomDhikrNativeAvailable, randomDhikrStyle } from './randomDhikrNative';
+import { scheduleReminderCards } from './reminderCardNative';
 
 export const PRAYER_NAMES_AR: Record<string, string> = {
   Fajr: 'الفجر',
@@ -497,6 +498,7 @@ async function syncAllLocalNotificationsNow(
     // If master notifications disabled, we stop here (notifications are cleanly cancelled)
     if (!settings.notificationsEnabled) {
       await cancelPending();
+      await scheduleReminderCards([]);
       safeLocalStorageSetItem(SYNC_META_KEY, '');
       return { success: true, scheduledCount: 0, message: 'Notifications are disabled by user settings' };
     }
@@ -757,6 +759,9 @@ async function syncAllLocalNotificationsNow(
     // `canUseExactAlarms` above for why it must be the real permission state
     // and never the default.
     const plan = notificationsToSchedule.map((n) => ({ ...n, isExactNotification: canUseExactAlarms }));
+    // The adhkar reminders also get a floating card over other apps (one
+    // native alarm, outside the MAX_SCHEDULED budget); cheap, so always rewritten.
+    await scheduleReminderCards(plan);
 
     // This runs on every launch and every return to the app. Rewriting an
     // unchanged plan is hundreds of alarms of work, and re-posting the same ids

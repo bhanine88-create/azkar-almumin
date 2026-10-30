@@ -7,10 +7,14 @@ import {
 } from '../services/randomDhikrNative';
 
 /**
- * Random dhikr settings: whether the card may appear over other apps. Android
- * only; re-checked whenever the user comes back from the system screen.
+ * Whether the app's cards (random dhikr, adhkar reminders) may appear over
+ * other apps. Android only; re-checked whenever the user comes back from the system screen.
  */
-export function RandomDhikrOverlayCard({ t }: { t: (key: string, fallback: string) => string }) {
+export function RandomDhikrOverlayCard({ t, description }: {
+  t: (key: string, fallback: string) => string;
+  /** Explains what this section shows over other apps; defaults to the random dhikr text. */
+  description?: string;
+}) {
   const [allowed, setAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -39,7 +43,7 @@ export function RandomDhikrOverlayCard({ t }: { t: (key: string, fallback: strin
         </span>
       </div>
       <p className="text-[11px] font-bold text-white/70 leading-relaxed">
-        {t('random_overlay_desc', 'تظهر بطاقة الذكر على شاشة الهاتف 3 ثوانٍ ثم تختفي، بدون صوت، حتى والتطبيق مغلق. بدون هذا الإذن يظهر إشعار صامت يختفي بعد 3 ثوانٍ.')}
+        {description ?? t('random_overlay_desc', 'تظهر بطاقة الذكر على شاشة الهاتف 3 ثوانٍ ثم تختفي، بدون صوت، حتى والتطبيق مغلق. بدون هذا الإذن يظهر إشعار صامت يختفي بعد 3 ثوانٍ.')}
       </p>
       {allowed ? (
         <div className="flex items-center gap-1.5 text-[11px] font-black text-emerald-300">

@@ -26,6 +26,7 @@ import {
 import { adhkarNotificationController } from '../services/adhkarNotificationController';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
 import { PRAYER_LOCATION_EVENT, resolvePrayerLocationIfNeeded } from '../services/prayerLocation';
+import { onReminderCardRoute } from '../services/reminderCardNative';
 
 /**
  * Marks that the permissions explainer has been shown once on this install.
@@ -391,6 +392,9 @@ export const PrayerNotificationManager: React.FC = () => {
     const interval = setInterval(fetchTimes, 6 * 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [settings.prayerCalcMethod, settings.prayerAsrMethod, settings.prayerOffsets, settings.prayerManualMode, settings.prayerManualTimes, settings.prayerDaylightSaving, locationVersion]);
+
+  // "Read now" on a floating adhkar reminder card opened the app: show that page.
+  useEffect(() => onReminderCardRoute(route => navigate(route)), []);
 
   // Find the user's location if it has never been found (it would otherwise
   // stay on the Makkah fallback): at start-up and whenever the network returns.

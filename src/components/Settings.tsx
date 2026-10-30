@@ -1925,6 +1925,8 @@ export const Settings: React.FC = () => {
                  </div>
                </div>
              </div>
+             {/* The reminder also floats over other apps when this is allowed. */}
+             <RandomDhikrOverlayCard t={t} description={t('reminder_overlay_desc', 'عند موعد أذكار الصباح والمساء تظهر بطاقة التذكير فوق أي شاشة، حتى والتطبيق مغلق، وفيها زر «اقرأ الآن». بدون هذا الإذن يظهر الإشعار وحده.')} />
            </div>
         </SubAccordion>
 

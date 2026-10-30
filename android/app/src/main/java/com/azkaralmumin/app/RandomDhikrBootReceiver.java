@@ -6,11 +6,13 @@ import android.content.Intent;
 
 /**
  * Alarms do not survive a reboot or an app update, and a clock or time zone
- * change moves every slot. Re-arm the next random dhikr slot after each.
+ * change moves every slot. Re-arm the next random dhikr slot and the next
+ * adhkar reminder card after each.
  */
 public class RandomDhikrBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         RandomDhikrSchedule.armNext(context.getApplicationContext());
+        ReminderCardSchedule.armNext(context.getApplicationContext());
     }
 }

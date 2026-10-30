@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "The Madinah Mushaf page by page, with swiping and zoom",
   "mushaf_open_mode_label": "Open surahs:",
   "mushaf_open_mode_pages": "As Mushaf pages",
-  "mushaf_open_mode_text": "As text"
+  "mushaf_open_mode_text": "As text",
+  "reminder_overlay_desc": "At morning and evening adhkar time the reminder card appears over any screen, even when the app is closed, with a \"Read now\" button. Without this permission only the notification appears."
 }

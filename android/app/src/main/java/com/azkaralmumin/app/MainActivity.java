@@ -1,5 +1,6 @@
 package com.azkaralmumin.app;
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.net.Uri;
@@ -36,6 +37,22 @@ public class MainActivity extends BridgeActivity {
         return inForeground;
     }
 
+    /** Page to open, set by a reminder card's "Read now" (ReminderCardPopup). */
+    static final String EXTRA_ROUTE = "azkar_route";
+
+    private static void openRouteFrom(Intent intent) {
+        String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
+        if (route == null || route.isEmpty()) return;
+        intent.removeExtra(EXTRA_ROUTE);
+        ReminderCardPlugin.openRoute(route);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openRouteFrom(intent);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= 31) {
@@ -43,7 +60,9 @@ public class MainActivity extends BridgeActivity {
         }
         registerPlugin(RandomDhikrPlugin.class);
         registerPlugin(MushafPlugin.class);
+        registerPlugin(ReminderCardPlugin.class);
         super.onCreate(savedInstanceState);
+        openRouteFrom(getIntent());
         final Bridge bridge = getBridge();
         if (bridge == null) return;
 

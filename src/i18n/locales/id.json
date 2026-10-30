@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "Mushaf Madinah halaman demi halaman, dengan geser dan perbesar",
   "mushaf_open_mode_label": "Buka surah:",
   "mushaf_open_mode_pages": "Halaman Mushaf",
-  "mushaf_open_mode_text": "Sebagai teks"
+  "mushaf_open_mode_text": "Sebagai teks",
+  "reminder_overlay_desc": "Saat waktu dzikir pagi dan petang, kartu pengingat muncul di atas layar apa pun, bahkan saat aplikasi ditutup, dengan tombol \"Baca sekarang\". Tanpa izin ini hanya notifikasi yang muncul."
 }

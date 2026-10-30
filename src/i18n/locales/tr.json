@@ -1850,5 +1850,6 @@
   "mushaf_card_desc": "Medine Mushafı sayfa sayfa, kaydırma ve yakınlaştırma ile",
   "mushaf_open_mode_label": "Sureleri aç:",
   "mushaf_open_mode_pages": "Mushaf sayfası",
-  "mushaf_open_mode_text": "Metin olarak"
+  "mushaf_open_mode_text": "Metin olarak",
+  "reminder_overlay_desc": "Sabah ve akşam zikirleri vaktinde hatırlatma kartı, uygulama kapalıyken bile her ekranın üzerinde \"Şimdi oku\" düğmesiyle görünür. Bu izin olmadan yalnızca bildirim görünür."
 }
