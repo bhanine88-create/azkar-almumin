@@ -411,17 +411,17 @@ export const Istighfar: React.FC = () => {
             <div className="flex items-center gap-2.5 sm:gap-3">
               <BackButton />
               <div>
-                <h1 className="text-base sm:text-xl font-black bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-lg sm:text-xl font-black bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight flex items-center gap-1.5 sm:gap-2">
                   <span>رُكْنُ التَّوْبَةِ وَالِاسْتِغْفَارِ</span>
                 </h1>
-                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-bold">
                   أدعية الاستغفار المأثورة وصلاة التوبة خطوة بخطوة
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5 shadow-xs whitespace-nowrap">
+              <div className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm font-black flex items-center gap-1.5 shadow-xs whitespace-nowrap">
                 <Droplets size={14} className="text-emerald-500 animate-pulse" />
                 <span>{totalRecited} استغفار</span>
               </div>
@@ -433,7 +433,7 @@ export const Istighfar: React.FC = () => {
             <button
               onClick={() => setMainView('athkar')}
               className={cn(
-                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[11px] min-[400px]:text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[13px] min-[400px]:text-sm sm:text-base font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
                 mainView === 'athkar'
                   ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm scale-[1.01]"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -446,7 +446,7 @@ export const Istighfar: React.FC = () => {
             <button
               onClick={() => setMainView('salat_tawbah')}
               className={cn(
-                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[11px] min-[400px]:text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[13px] min-[400px]:text-sm sm:text-base font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
                 mainView === 'salat_tawbah'
                   ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-sm scale-[1.01]"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -459,7 +459,7 @@ export const Istighfar: React.FC = () => {
             <button
               onClick={() => setMainView('virtues')}
               className={cn(
-                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[11px] min-[400px]:text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
+                "flex-1 min-w-0 py-1.5 sm:py-2 px-1 min-[400px]:px-2 sm:px-3 rounded-xl text-[13px] min-[400px]:text-sm sm:text-base font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
                 mainView === 'virtues'
                   ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-300 shadow-sm scale-[1.01]"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -484,7 +484,7 @@ export const Istighfar: React.FC = () => {
                   key={cat.id}
                   onClick={() => setCategoryFilter(cat.id as any)}
                   className={cn(
-                    "shrink-0 px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all border cursor-pointer whitespace-nowrap",
+                    "shrink-0 px-3 py-1 rounded-xl text-[13px] sm:text-sm font-bold transition-all border cursor-pointer whitespace-nowrap",
                     categoryFilter === cat.id
                       ? "bg-emerald-600 text-white border-emerald-600 shadow-xs font-black"
                       : "bg-slate-100/90 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-200/80 dark:hover:bg-slate-700"
@@ -525,17 +525,17 @@ export const Istighfar: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
                       <span>{timeContext.title}</span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-white/15 text-white">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-white/15 text-white">
                         وقت فاضل
                       </span>
                     </h3>
-                    <span className="text-[11px] font-bold text-emerald-300 group-hover:underline">
+                    <span className="text-[13px] font-bold text-emerald-300 group-hover:underline">
                       انتقل للورد المقترح ←
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
+                  <p className="text-sm sm:text-base text-white/90 leading-relaxed font-medium">
                     {timeContext.message}
                   </p>
                 </div>
@@ -561,7 +561,7 @@ export const Istighfar: React.FC = () => {
                     key={item.id}
                     onClick={() => setActiveItemId(item.id)}
                     className={cn(
-                      "snap-center shrink-0 px-3.5 py-2.5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-2 font-bold text-xs sm:text-sm cursor-pointer outline-none shadow-xs",
+                      "snap-center shrink-0 px-3.5 py-2.5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-2 font-bold text-sm sm:text-base cursor-pointer outline-none shadow-xs",
                       isActive 
                         ? "bg-white dark:bg-slate-900 border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-md scale-[1.02]" 
                         : "bg-white/70 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800"
@@ -596,15 +596,15 @@ export const Istighfar: React.FC = () => {
                   <div className="flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-black uppercase">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase">
                           {activeItem.category === 'quranic' ? 'آية قرآنية' : activeItem.category === 'salat_tawbah' ? 'صلاة التوبة' : 'سنة نبوية'}
                         </span>
-                        <span className="text-[11px] text-slate-400 font-bold">{activeItem.source}</span>
+                        <span className="text-[13px] text-slate-400 font-bold">{activeItem.source}</span>
                       </div>
                       <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
                         {activeItem.title}
                       </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-0.5">
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-bold mt-0.5">
                         {activeItem.subtitle}
                       </p>
                     </div>
@@ -630,7 +630,7 @@ export const Istighfar: React.FC = () => {
 
                   {/* Virtue notice if present */}
                   {activeItem.virtue && (
-                    <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2">
+                    <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-900 dark:text-amber-200 text-sm font-semibold flex items-center gap-2">
                       <Star size={14} className="text-amber-600 shrink-0" />
                       <span>{activeItem.virtue}</span>
                     </div>
@@ -650,12 +650,12 @@ export const Istighfar: React.FC = () => {
                 {/* Counter & Action Button */}
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
                   <div className="flex justify-between items-center px-1">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
                       التكرار المطلوب: <span className="font-black text-slate-700 dark:text-slate-200">{activeItem.count} مرة</span>
                     </span>
                     <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-baseline gap-1">
                       <span>{currentCount}</span>
-                      <span className="text-xs text-slate-400 font-bold">/ {activeItem.count}</span>
+                      <span className="text-sm text-slate-400 font-bold">/ {activeItem.count}</span>
                     </div>
                   </div>
 
@@ -698,7 +698,7 @@ export const Istighfar: React.FC = () => {
 
             {/* List of All Other Supplications Quick-Cards */}
             <div className="space-y-3 pt-4">
-              <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <BookMarked size={18} className="text-emerald-600" />
                 <span>فهرس أدعية الاستغفار والتوبة المختارة</span>
               </h3>
@@ -723,26 +723,26 @@ export const Istighfar: React.FC = () => {
                             <item.icon size={16} />
                           </div>
                           <div>
-                            <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                            <h4 className="text-base font-black text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
                               {item.title}
                             </h4>
-                            <p className="text-[10px] text-slate-400 font-bold">{item.source}</p>
+                            <p className="text-xs text-slate-400 font-bold">{item.source}</p>
                           </div>
                         </div>
 
                         {isDone && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center gap-1">
+                          <span className="text-xs font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center gap-1">
                             <CheckCircle2 size={10} />
                             مكتمل
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed font-medium" style={{ fontFamily: "'Amiri', serif" }}>
+                      <p className="text-lg text-slate-700 dark:text-slate-200 line-clamp-3 leading-loose font-medium" style={{ fontFamily: "'Amiri', serif" }}>
                         {item.text}
                       </p>
 
-                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between text-[13px] font-bold text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <span>العدد: {item.count}</span>
                         <span className="text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform">
                           فتح وتكرار ←
@@ -770,22 +770,22 @@ export const Istighfar: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black">صَلَاةُ التَّوْبَةِ وَسُنَّتُهَا</h2>
-                  <p className="text-xs text-emerald-200/90 font-bold">ركعتان تغسلان الذنوب وتجددان العهد مع الغفور الرحيم</p>
+                  <p className="text-sm text-emerald-200/90 font-bold">ركعتان تغسلان الذنوب وتجددان العهد مع الغفور الرحيم</p>
                 </div>
               </div>
 
               <div className="p-4 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 space-y-2">
-                <div className="flex items-center gap-2 text-amber-300 text-xs font-black">
+                <div className="flex items-center gap-2 text-amber-300 text-sm font-black">
                   <Sparkles size={14} />
                   <span>دليل مشروعيتها من السنة النبوية الشريفة:</span>
                 </div>
-                <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed font-semibold">
+                <p className="text-sm sm:text-base text-emerald-100 leading-relaxed font-semibold">
                   عَنْ عَلِيِّ بْنِ أَبِي طَالِبٍ رَضِيَ اللَّهُ عَنْهُ، عَنْ أَبِي بَكْرٍ الصِّدِّيقِ رَضِيَ اللَّهُ عَنْهُ قَالَ: سَمِعْتُ رَسُولَ اللَّهِ ﷺ يَقُولُ:
                 </p>
-                <p className="text-sm sm:text-base text-amber-200 leading-relaxed font-black" style={{ fontFamily: "'Amiri', serif" }}>
+                <p className="text-base sm:text-lg text-amber-200 leading-relaxed font-black" style={{ fontFamily: "'Amiri', serif" }}>
                   «مَا مِنْ رَجُلٍ يُذْنِبُ ذَنْبًا، ثُمَّ يَقُومُ فَيَتَطَهَّرُ، ثُمَّ يُصَلِّي [رَكْعَتَيْنِ]، ثُمَّ يَسْتَغْفِرُ اللَّهَ، إِلَّا غَفَرَ اللَّهُ لَهُ»
                 </p>
-                <p className="text-[11px] text-emerald-200/70">
+                <p className="text-[13px] text-emerald-200/70">
                   ثم قرأ قوله تعالى: ﴿وَالَّذِينَ إِذَا فَعَلُوا فَاحِشَةً أَوْ ظَلَمُوا أَنفُسَهُمْ ذَكَرُوا اللَّهَ فَاسْتَغْفَرُوا لِذُنُوبِهِمْ وَمَن يَغْفِرُ الذُّنُوبَ إِلَّا اللَّهُ﴾ [آل عمران: 135]. (رواه الترمذي وأبو داود وصححه الألباني).
                 </p>
               </div>
@@ -793,12 +793,12 @@ export const Istighfar: React.FC = () => {
 
             {/* Conditions of True Repentance (شروط التوبة النصوح) */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-              <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <ShieldCheck size={18} className="text-emerald-600" />
                 <span>أركان وشروط التوبة النصوح الصادقة</span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 {[
                   { num: '١', title: 'الإِقْلَاعُ عَنِ الذَّنْبِ فَوْراً', desc: 'ترك المعصية ومجانبة أسبابها ودواعيها فوراً ابتغاء وجه الله.' },
                   { num: '٢', title: 'النَّدَمُ الصَّادِقُ عَلَى مَا فَاتَ', desc: 'استشعار عظمة الله والتحسر على التقصير ومخالفة أمره.' },
@@ -807,12 +807,12 @@ export const Istighfar: React.FC = () => {
                 ].map(cond => (
                   <div key={cond.num} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black flex items-center justify-center text-[10px]">
+                      <span className="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black flex items-center justify-center text-xs">
                         {cond.num}
                       </span>
                       <h4 className="font-black text-slate-900 dark:text-white">{cond.title}</h4>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                    <p className="text-slate-500 dark:text-slate-400 text-[13px] leading-relaxed">
                       {cond.desc}
                     </p>
                   </div>
@@ -824,16 +824,16 @@ export const Istighfar: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <CheckCircle2 size={18} className="text-teal-600" />
                     <span>كيفية أداء صلاة التوبة (خطوة بخطوة)</span>
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
                     اضغط على كل خطوة لتأكيد إتمامها بخشوع
                   </p>
                 </div>
 
-                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full">
+                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full">
                   {completedSteps.length} / 5 خطوات
                 </span>
               </div>
@@ -887,12 +887,12 @@ export const Istighfar: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={cn(
-                            "w-6 h-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors",
+                            "w-6 h-6 rounded-lg flex items-center justify-center font-black text-sm transition-colors",
                             isChecked ? "bg-emerald-600 text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
                           )}>
                             {item.step}
                           </div>
-                          <h4 className="text-sm font-black">{item.title}</h4>
+                          <h4 className="text-base font-black">{item.title}</h4>
                         </div>
 
                         <div className={cn(
@@ -903,12 +903,12 @@ export const Istighfar: React.FC = () => {
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pr-9">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed pr-9">
                         {item.desc}
                       </p>
 
                       <div className="pr-9 pt-1">
-                        <div className="p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold text-emerald-800 dark:text-emerald-300" style={{ fontFamily: "'Amiri', serif" }}>
+                        <div className="p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/60 text-sm font-semibold text-emerald-800 dark:text-emerald-300" style={{ fontFamily: "'Amiri', serif" }}>
                           {item.dua}
                         </div>
                       </div>
@@ -925,7 +925,7 @@ export const Istighfar: React.FC = () => {
                     setCompletedSteps([1, 2, 3, 4, 5]);
                     setTimeout(() => setTawbahPrayerLogged(false), 4000);
                   }}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/20 active:scale-98 transition-all cursor-pointer"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/20 active:scale-98 transition-all cursor-pointer"
                 >
                   <ShieldCheck size={20} />
                   <span>تَسْجِيلُ إِقَامَةِ صَلَاةِ التَّوْبَةِ الآن</span>
@@ -935,7 +935,7 @@ export const Istighfar: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-black text-center"
+                    className="mt-3 p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm font-black text-center"
                   >
                     تقبل الله توبتك وصالح عملك وغفر ذنبك ورزقك الثبات والسكينة!
                   </motion.div>
@@ -945,12 +945,12 @@ export const Istighfar: React.FC = () => {
 
             {/* Questions & Fatawa about Salat al Tawbah */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
-              <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <HelpCircle size={16} className="text-amber-500" />
                 <span>مسائل وأحكام مهمة حول صلاة التوبة</span>
               </h3>
 
-              <div className="space-y-2 text-xs">
+              <div className="space-y-2 text-sm">
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
                   <p className="font-bold text-slate-900 dark:text-white">س: هل لصلاة التوبة وقت محدد؟</p>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -977,11 +977,11 @@ export const Istighfar: React.FC = () => {
             
             {/* Top Ayat banner */}
             <div className="bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 text-white rounded-3xl p-6 shadow-xl space-y-3 text-center border border-amber-400/30">
-              <p className="text-xs uppercase tracking-widest text-amber-200 font-bold">نداء الله الكريم للتائبين</p>
+              <p className="text-sm uppercase tracking-widest text-amber-200 font-bold">نداء الله الكريم للتائبين</p>
               <h2 className="text-xl sm:text-2xl font-black leading-relaxed" style={{ fontFamily: "'Amiri', serif" }}>
                 ﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ ۚ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا ۚ إِنَّهُ هُوَ الْغَفُورُ الرَّحِيمُ﴾
               </h2>
-              <p className="text-[11px] text-amber-100/80 font-bold">[سورة الزمر: 53]</p>
+              <p className="text-[13px] text-amber-100/80 font-bold">[سورة الزمر: 53]</p>
             </div>
 
             {/* Virtues Grid */}
@@ -1029,9 +1029,9 @@ export const Istighfar: React.FC = () => {
                     <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center", virtue.color)}>
                       <virtue.icon size={16} />
                     </div>
-                    <h4 className="text-sm font-black text-slate-900 dark:text-white">{virtue.title}</h4>
+                    <h4 className="text-base font-black text-slate-900 dark:text-white">{virtue.title}</h4>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     {virtue.desc}
                   </p>
                 </div>
@@ -1040,11 +1040,11 @@ export const Istighfar: React.FC = () => {
 
             {/* Practical Advice for Ongoing Istighfar */}
             <div className="p-5 rounded-3xl bg-slate-900 text-white space-y-3 border border-slate-800 shadow-lg">
-              <h3 className="text-sm font-black text-amber-300 flex items-center gap-2">
+              <h3 className="text-base font-black text-amber-300 flex items-center gap-2">
                 <Flame size={16} />
                 <span>نصائح عملية للتائب والمستغفر</span>
               </h3>
-              <ul className="text-xs text-slate-300 space-y-2 leading-relaxed list-disc list-inside">
+              <ul className="text-sm text-slate-300 space-y-2 leading-relaxed list-disc list-inside">
                 <li>عاهد نفسك على الاستغفار 100 مرة على الأقل يومياً في طريقك أو فراغك.</li>
                 <li>اجعل سيد الاستغفار وردك الصباحي والمسائي الذي لا تتركه أبداً.</li>
                 <li>إذا زللت بذنب، فبادر مباشرة بركعتي التوبة ولا تسوّف، فالشيطان يرجو تأجيل توبتك.</li>
