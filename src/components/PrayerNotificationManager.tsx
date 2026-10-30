@@ -25,6 +25,7 @@ import {
 } from '../services/localNotificationService';
 import { adhkarNotificationController } from '../services/adhkarNotificationController';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
+import { PRAYER_LOCATION_EVENT, resolvePrayerLocationIfNeeded } from '../services/prayerLocation';
 
 /**
  * Marks that the permissions explainer has been shown once on this install.
@@ -91,6 +92,7 @@ export const PrayerNotificationManager: React.FC = () => {
   // Lets the permission effect below run once and still schedule with current
   // settings, instead of re-running — and re-requesting — on every settings write.
   const settingsRef = useRef(settings);
+  const [locationVersion, setLocationVersion] = useState(0);
   settingsRef.current = settings;
   const firstRunPromptDoneRef = useRef(false);
 
@@ -388,7 +390,26 @@ export const PrayerNotificationManager: React.FC = () => {
     fetchTimes();
     const interval = setInterval(fetchTimes, 6 * 60 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [settings.prayerCalcMethod, settings.prayerAsrMethod, settings.prayerOffsets, settings.prayerManualMode, settings.prayerManualTimes, settings.prayerDaylightSaving]);
+  }, [settings.prayerCalcMethod, settings.prayerAsrMethod, settings.prayerOffsets, settings.prayerManualMode, settings.prayerManualTimes, settings.prayerDaylightSaving, locationVersion]);
+
+  // Find the user's location if it has never been found (it would otherwise
+  // stay on the Makkah fallback): at start-up and whenever the network returns.
+  // A new location, from here or from the prayer screen, re-plans the adhan
+  // and adhkar notifications, which are computed from the stored coordinates.
+  useEffect(() => {
+    const onLocation = () => {
+      setLocationVersion(v => v + 1);
+      syncAllLocalNotifications(settingsRef.current).catch(() => {});
+    };
+    const tryResolve = () => { resolvePrayerLocationIfNeeded().catch(() => {}); };
+    window.addEventListener(PRAYER_LOCATION_EVENT, onLocation);
+    window.addEventListener('online', tryResolve);
+    tryResolve();
+    return () => {
+      window.removeEventListener(PRAYER_LOCATION_EVENT, onLocation);
+      window.removeEventListener('online', tryResolve);
+    };
+  }, []);
 
   useEffect(() => {
     const checkAllReminders = () => {

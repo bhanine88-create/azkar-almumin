@@ -42,6 +42,7 @@ import { NOTIFICATION_SOUNDS } from '../constants';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 import { useAppStability } from '../services/stabilityManager';
 import { useGlobalAudio } from '../context/GlobalAudioContext';
+import { LOCATION_SOURCE_KEY, PRAYER_LOCATION_EVENT, detectLocationByIp, getLocationSource, resolvePrayerLocationIfNeeded, saveLocation } from '../services/prayerLocation';
 
 const PRAYER_NAMES: Record<string, { ar: string; icon: React.ReactNode }> = {
   Fajr: { ar: 'الفجر', icon: <Sunrise size={20} /> },
@@ -164,6 +165,8 @@ export const PrayerTimes: React.FC = () => {
     setSearchResults([]);
 
     await fetchTimes(finalCity, finalCountry, method, asrMethod, settings.hijriOffset || 0, false, newLat, newLng);
+    safeLocalStorageSetItem(LOCATION_SOURCE_KEY, 'manual');
+    window.dispatchEvent(new CustomEvent(PRAYER_LOCATION_EVENT));
 
     setLocationMessage({ 
       text: `تم بنجاح تحديث الموقع والمواقيت إلى: ${finalCity}، ${finalCountry}`, 
@@ -172,14 +175,21 @@ export const PrayerTimes: React.FC = () => {
     setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
   };
 
-  // Auto-detect location on first load if not initialized
+  // Until a location has been found the city is the Makkah fallback, so look
+  // for it on every visit (it used to be tried once, and a failed first try
+  // left Makkah for good). Also follow a location found at app start-up.
   useEffect(() => {
-    const hasInitialized = safeLocalStorageGetItem('prayer_initialized');
-    if (!hasInitialized && !lat && !lng) {
-      safeLocalStorageSetItem('prayer_initialized', 'true');
-      detectLocation('ip');
-    }
-  }, [lat, lng]);
+    const onLocation = () => {
+      setCity(safeLocalStorageGetItem('prayer_city') || 'Makkah');
+      setCountry(safeLocalStorageGetItem('prayer_country') || 'SA');
+      setLat(safeLocalStorageGetItem('prayer_lat'));
+      setLng(safeLocalStorageGetItem('prayer_lng'));
+      setUseGPS(safeLocalStorageGetItem('prayer_use_gps') === 'true');
+    };
+    window.addEventListener(PRAYER_LOCATION_EVENT, onLocation);
+    resolvePrayerLocationIfNeeded().catch(() => {});
+    return () => window.removeEventListener(PRAYER_LOCATION_EVENT, onLocation);
+  }, []);
 
   useEffect(() => {
     setCityInput(city);
@@ -638,6 +648,8 @@ export const PrayerTimes: React.FC = () => {
             setCountryInput(detectedCountry);
             safeLocalStorageSetItem('prayer_city', detectedCity);
             safeLocalStorageSetItem('prayer_country', detectedCountry);
+            safeLocalStorageSetItem(LOCATION_SOURCE_KEY, 'gps');
+            window.dispatchEvent(new CustomEvent(PRAYER_LOCATION_EVENT));
 
             await fetchTimes(detectedCity, detectedCountry, method, asrMethod, settings.hijriOffset || 0, true, latitude, longitude);
 
@@ -663,104 +675,27 @@ export const PrayerTimes: React.FC = () => {
         setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
       }
     } else {
-      // IP-based quick geolocation with redundant providers
-      let success = false;
-      const providers = [
-        async () => {
-          const res = await fetch('https://freeipapi.com/api/json');
-          if (!res.ok) throw new Error('freeipapi failed');
-          const data = await res.json();
-          if (!data.cityName || !data.countryName) throw new Error('incomplete freeipapi data');
-          return {
-            city: data.cityName,
-            country: data.countryName,
-            lat: data.latitude?.toString(),
-            lng: data.longitude?.toString()
-          };
-        },
-        async () => {
-          const res = await fetch('https://ipapi.co/json/');
-          if (!res.ok) throw new Error('ipapi failed');
-          const data = await res.json();
-          if (!data.city || !data.country_name) throw new Error('incomplete ipapi.co data');
-          return {
-            city: data.city,
-            country: data.country_name,
-            lat: data.latitude?.toString(),
-            lng: data.longitude?.toString()
-          };
-        },
-        async () => {
-          const res = await fetch('https://ipinfo.io/json');
-          if (!res.ok) throw new Error('ipinfo failed');
-          const data = await res.json();
-          const [ipLat, ipLng] = (data.loc || '').split(',');
-          if (!data.city) throw new Error('incomplete ipinfo data');
-          return {
-            city: data.city,
-            country: data.country || 'SA',
-            lat: ipLat,
-            lng: ipLng
-          };
-        }
-      ];
-
-      for (const provider of providers) {
-        try {
-          const result = await provider();
-          if (result && result.city) {
-            let finalCity = result.city;
-            let finalCountry = result.country;
-            setLat(result.lat || null);
-            setLng(result.lng || null);
-
-            if (result.lat && result.lng) {
-              safeLocalStorageSetItem('prayer_lat', result.lat);
-              safeLocalStorageSetItem('prayer_lng', result.lng);
-              // Background reverse geocode using OSM to resolve in Arabic if possible
-              try {
-                const geoRes = await fetch(
-                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${result.lat}&lon=${result.lng}&zoom=11&accept-language=ar`
-                );
-                if (geoRes.ok) {
-                  const geoData = await geoRes.json();
-                  const address = geoData.address || {};
-                  finalCity = address.city || address.town || address.village || address.suburb || address.city_district || finalCity;
-                  finalCountry = address.country || finalCountry;
-                }
-              } catch (bgErr) {
-                console.warn('Background reverse geocode failed:', bgErr);
-              }
-            }
-
-            setCity(finalCity);
-            setCountry(finalCountry);
-            setCityInput(finalCity);
-            setCountryInput(finalCountry);
-            setUseGPS(false);
-            safeLocalStorageSetItem('prayer_use_gps', 'false');
-            safeLocalStorageSetItem('prayer_city', finalCity);
-            safeLocalStorageSetItem('prayer_country', finalCountry);
-
-            await fetchTimes(finalCity, finalCountry, method, asrMethod, settings.hijriOffset || 0, false, result.lat || undefined, result.lng || undefined);
-
-            setLocationMessage({ 
-              text: `تم التعرف تلقائياً على مدينتك: ${finalCity}، ${finalCountry}`, 
-              type: 'success' 
-            });
-            setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
-            success = true;
-            break;
-          }
-        } catch (err) {
-          console.warn('IP geolocor provider error, switching fallback:', err);
-        }
-      }
-
-      if (!success) {
-        setLocationMessage({ 
-          text: 'تعذر تحديد الموقع الجغرافي تلقائياً عبر الإنترنت. يمكنك استخدام تحديد الموقع بدقة عبر GPS أو كتابتها يدوياً.', 
-          type: 'error' 
+      // IP-based detection, shared with app start-up (src/services/prayerLocation.ts).
+      const found = await detectLocationByIp();
+      if (found) {
+        saveLocation(found, 'ip');
+        setCity(found.city);
+        setCountry(found.country);
+        setCityInput(found.city);
+        setCountryInput(found.country);
+        setLat(found.lat);
+        setLng(found.lng);
+        setUseGPS(false);
+        await fetchTimes(found.city, found.country, method, asrMethod, settings.hijriOffset || 0, false, found.lat, found.lng);
+        setLocationMessage({
+          text: `تم التعرف تلقائياً على مدينتك: ${found.city}، ${found.country}`,
+          type: 'success'
+        });
+        setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
+      } else {
+        setLocationMessage({
+          text: 'تعذر تحديد الموقع الجغرافي تلقائياً عبر الإنترنت. يمكنك استخدام تحديد الموقع بدقة عبر GPS أو كتابتها يدوياً.',
+          type: 'error'
         });
         setTimeout(() => setLocationMessage({ text: '', type: null }), 6000);
       }
@@ -962,7 +897,9 @@ export const PrayerTimes: React.FC = () => {
     safeLocalStorageSetItem('prayer_country', finalCountry);
     
     await fetchTimes(finalCity, finalCountry, method, asrMethod, settings.hijriOffset || 0, false);
-    
+    safeLocalStorageSetItem(LOCATION_SOURCE_KEY, 'manual');
+    window.dispatchEvent(new CustomEvent(PRAYER_LOCATION_EVENT));
+
     setLocationMessage({ text: `تم تحديث الموقع لمطابقة: ${finalCity}`, type: 'success' });
     setTimeout(() => setLocationMessage({ text: '', type: null }), 4000);
   };
@@ -1195,6 +1132,11 @@ export const PrayerTimes: React.FC = () => {
                 <button
                   type="button"
                   onClick={async () => {
+                    const source = getLocationSource();
+                    if (source !== 'manual') {
+                      await detectLocation(source === 'gps' ? 'gps' : 'ip');
+                      return;
+                    }
                     setLocationMessage({ text: 'جاري تحديث مواقيت الصلاة ومزامنتها الآن...', type: 'loading' });
                     try {
                       await fetchTimes(city, country, method, asrMethod, settings.hijriOffset || 0, useGPS, lat || undefined, lng || undefined);
