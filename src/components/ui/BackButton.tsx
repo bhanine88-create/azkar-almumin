@@ -37,12 +37,12 @@ export function BackButton({ onClick, fallbackPath = '/', forceFallback = false,
       aria-label={t('back', 'رجوع')}
       title={t('back', 'رجوع')}
       className={cn(
-        // A 38px capsule outlined in the app's royal green, with a soft halo,
-        // so the way back is easy to spot on every page.
+        // A white 38px capsule outlined in the app's royal green, with a soft
+        // halo, so the way back is easy to spot on every page. Not themed by
+        // dark mode: page backgrounds don't follow it (the adhkar page stays
+        // light), and the white capsule stands out on dark pages too.
         "relative shrink-0 w-[38px] h-[38px] rounded-full flex items-center justify-center",
-        "bg-white dark:bg-slate-900",
-        "border-2 border-[#006A4E] dark:border-emerald-400",
-        "ring-4 ring-[#006A4E]/15 dark:ring-emerald-400/20",
+        "bg-white border-2 border-[#006A4E] ring-4 ring-[#006A4E]/15",
         "shadow-sm hover:shadow-md transition-shadow z-10",
         className
       )}
@@ -51,7 +51,7 @@ export function BackButton({ onClick, fallbackPath = '/', forceFallback = false,
         size={20}
         strokeWidth={3.85}
         aria-hidden="true"
-        className="text-[#006A4E] dark:text-emerald-400 rtl:rotate-0 ltr:rotate-180"
+        className="text-[#006A4E] rtl:rotate-0 ltr:rotate-180"
       />
     </motion.button>
   );
