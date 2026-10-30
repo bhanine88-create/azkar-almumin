@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { opensInNativeMushaf } from './services/mushafNative';
 import { UserProgress, AppSettings, AdhkarData, Dhikr, QuranLog, BaqiyatSalihat, WorshipActivity, Bookmark, Challenge, Badge, UnifiedFavoriteItem } from './types';
 import { ADHKAR_DATA as INITIAL_ADHKAR_DATA } from './constants';
 import { backupService } from './services/backupService';
@@ -271,6 +272,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storageManager.checkAndClearStorageIfNeeded();
 
     const timer = setTimeout(async () => {
+      // On Android the Hafs pages belong to the native mushaf, which stores its
+      // own; pre-caching the web copy there would download ~150 MB for nothing.
+      if (opensInNativeMushaf('hafs')) return;
       try {
         const isHafsDownloaded = await mushafService.isEditionDownloaded('hafs');
         if (!isHafsDownloaded) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Download, Check, Trash2, RefreshCw, AlertCircle, HardDrive } from 'lucide-react';
 import { mushafService, MUSHAF_EDITIONS } from '../services/mushafService';
+import { opensInNativeMushaf } from '../services/mushafNative';
 import { cn } from '../lib/utils';
 import { useQuranSettings } from '../context/QuranSettingsContext';
 
@@ -58,7 +59,8 @@ export const MushafDownloader: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {Object.values(MUSHAF_EDITIONS).map((edition) => {
+        {/* On Android the Hafs pages live in the native mushaf, which downloads them itself. */}
+        {Object.values(MUSHAF_EDITIONS).filter((edition) => !opensInNativeMushaf(edition.id)).map((edition) => {
           const isDownloaded = !!isDownloadedMap[edition.id];
           const downloadState = downloadProgress[edition.id] || { isDownloading: false, progress: 0 };
           

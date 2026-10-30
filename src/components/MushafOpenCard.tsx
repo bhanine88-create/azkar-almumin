@@ -4,6 +4,8 @@ import { getNativeMushafState, isNativeMushafAvailable, Mushaf, openNativeMushaf
 import { SURAH_NAMES, SURAH_START_PAGES } from '../utils/quranUtils';
 import { useQuranSettings } from '../context/QuranSettingsContext';
 import { cn } from '../lib/utils';
+import { mushafService } from '../services/mushafService';
+import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
 
 /**
  * Top of the surah list on Android: opens the native page-by-page mushaf,
@@ -22,6 +24,12 @@ export function MushafOpenCard({ t, language, isRtl }: {
     if (!isNativeMushafAvailable()) return;
     let active = true;
     getNativeMushafState().then(state => { if (active && state) setLastPage(state.lastPage); });
+    // The old web Hafs pages are replaced by the native mushaf; free their space once.
+    if (!safeLocalStorageGetItem('believer_old_hafs_cache_cleared')) {
+      mushafService.removeEdition('hafs')
+        .then(() => safeLocalStorageSetItem('believer_old_hafs_cache_cleared', '1'))
+        .catch(() => {});
+    }
     const handle = Mushaf.addListener('closed', ({ lastPage: page }) => { if (active) setLastPage(page); });
     return () => {
       active = false;

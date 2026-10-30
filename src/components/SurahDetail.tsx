@@ -67,7 +67,7 @@ import { SettingsModal, TafsirModal } from './quran/SurahSubComponents';
 import { quranVocabulary, tajweedRules } from "../data/quranInteractions";
 import { STATIC_SURAHS } from "../utils/staticQuranData";
 import { SURAH_START_PAGES } from "../utils/quranUtils";
-import { isNativeMushafAvailable, openNativeMushaf } from "../services/mushafNative";
+import { isNativeMushafAvailable, openNativeMushaf, opensInNativeMushaf } from "../services/mushafNative";
 import { Highlighter } from "lucide-react";
 import { PageTafsir } from "./PageTafsir";
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
@@ -1873,7 +1873,7 @@ export const SurahDetail: React.FC = () => {
   // On Android the mushaf view is the native reader (MushafActivity). Once the
   // surah is loaded it opens at the requested ayah's or page's page, and this
   // screen steps back out, so Back from the reader returns to where the user was.
-  const opensNativeMushaf = viewMode === "mushaf" && isNativeMushafAvailable();
+  const opensNativeMushaf = viewMode === "mushaf" && opensInNativeMushaf(mushafEdition);
   const nativeMushafOpened = React.useRef(false);
   React.useEffect(() => {
     if (!opensNativeMushaf || !surah || nativeMushafOpened.current) return;
@@ -2724,7 +2724,7 @@ export const SurahDetail: React.FC = () => {
                       onClick={() => {
                         setShowSideMenu(false);
                         // On Android the page view is the native mushaf reader, opened at this surah.
-                        if (viewMode !== "mushaf" && isNativeMushafAvailable()) {
+                        if (viewMode !== "mushaf" && opensInNativeMushaf(mushafEdition)) {
                           const page = SURAH_START_PAGES[parseInt(number || "1") - 1] || 1;
                           openNativeMushaf(page, t, settings.appLanguage, isRtl).catch(() => {});
                           return;

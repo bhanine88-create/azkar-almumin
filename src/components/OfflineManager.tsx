@@ -4,6 +4,7 @@ import { Download, Check, Trash2, RefreshCw, Wifi, WifiOff, HardDrive, ShieldChe
 import { useAppContext } from '../AppContext';
 import { useQuranSettings } from '../context/QuranSettingsContext';
 import { mushafService, MUSHAF_EDITIONS } from '../services/mushafService';
+import { opensInNativeMushaf } from '../services/mushafNative';
 import { quranOfflineService } from '../services/quranOfflineService';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from '../i18n';
@@ -438,7 +439,8 @@ export const OfflineManager: React.FC = () => {
           </div>
 
           {/* Quran Editions Section */}
-          {Object.values(MUSHAF_EDITIONS).map((edition) => {
+          {/* On Android the Hafs pages live in the native mushaf, which downloads them itself. */}
+          {Object.values(MUSHAF_EDITIONS).filter((edition) => !opensInNativeMushaf(edition.id)).map((edition) => {
             const state = downloadStates[edition.id] || { isDownloaded: false, count: 0 };
             const isDownloading = downloadProgress[edition.id]?.isDownloading;
             const progress = downloadProgress[edition.id]?.progress || 0;

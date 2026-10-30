@@ -242,7 +242,8 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
   const [mushafEdition, setMushafEdition] = useState<'hafs' | 'warsh' | 'tajweed'>(() => {
     try {
       const saved = safeLocalStorageGetItem('quran-mushafEdition');
-      const validEditions = ['hafs', 'tajweed'];
+      // Warsh was missing here, so a saved Warsh choice fell back to Hafs on every start.
+      const validEditions = ['hafs', 'warsh', 'tajweed'];
       if (saved && validEditions.includes(saved)) return saved as any;
       return 'hafs';
     } catch (e) {

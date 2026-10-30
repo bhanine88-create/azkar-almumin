@@ -33,6 +33,14 @@ export const Mushaf = registerPlugin<MushafPlugin>('Mushaf');
 
 export const isNativeMushafAvailable = () => Capacitor.getPlatform() === 'android';
 
+/**
+ * The native reader holds the Madinah mushaf (Hafs), and on Android it replaces
+ * the old web Hafs edition. Warsh and the colour-coded tajweed edition keep the
+ * web page reader, which has their pages.
+ */
+export const opensInNativeMushaf = (edition: string | undefined) =>
+  isNativeMushafAvailable() && (!edition || edition === 'hafs');
+
 type Translate = (key: string, fallback: string) => string;
 
 /** Reader texts: [translation key, Arabic fallback]. */
