@@ -371,30 +371,39 @@ const getPatternStyle = (settings: any, currentTheme: any) => {
   return {};
 };
 
+// Fonts for the adhkar text. Chosen side by side on a dhikr with full
+// diacritics: near-duplicates were dropped (see RETIRED_ADHKAR_FONTS in
+// AppContext.tsx), and so were fonts that break the ligature of «الله».
 const FONTS_LIST = [
   { id: 'Amiri', name: 'الخط الأميري (كلاسيكي تراثي وقرآني)' },
   { id: 'Scheherazade New', name: 'خط شهرزاد (نسخي تقليدي ممتاز)' },
-  { id: 'Lateef', name: 'خط لطيف (نسخي ناعم مقروء)' },
-  { id: 'Aref Ruqaa', name: 'خط الرقعة (فني كلاسيكي)' },
   { id: 'Noto Naskh Arabic', name: 'خط النسخ (واضح ومثالي للقراءة)' },
-  { id: 'El Messiri', name: 'خط المسيري (ديواني انسيابي)' },
+  { id: 'Gulzar', name: 'خط جلزار (خطاطي أنيق جديد)' },
+  { id: 'Aref Ruqaa', name: 'خط الرقعة (فني كلاسيكي)' },
+  { id: 'Readex Pro', name: 'خط ريدكس (عصري واضح جديد)' },
   { id: 'Cairo', name: 'خط القاهرة (هندسي عريض عصري)' },
   { id: 'Tajawal', name: 'خط تجوال (ناعم وسلس)' },
-  { id: 'Zain', name: 'خط زين (أنيق ونحيف جداً)' },
-  { id: 'Beiruti', name: 'خط بيروتي (تصميم مبتكر فاخر)' },
+  { id: 'Playpen Sans Arabic', name: 'خط بلاي بن (عصري ودود جديد)' },
+  { id: 'Kufam', name: 'خط كوفام (كوفي عصري جديد)' },
   { id: 'Noto Kufi Arabic', name: 'الخط الكوفي (تراثي عريق هندسي)' },
-  { id: 'Alexandria', name: 'خط الإسكندرية (عريض وفخم)' },
-  { id: 'Lalezar', name: 'خط لاليزار (فني عريض وجذاب)' },
-  { id: 'Marhey', name: 'خط مرحي (إبداعي وممتع)' },
-  { id: 'Baloo Bhaijaan 2', name: 'خط بالو (دائري ناعم وجميل)' },
+  { id: 'Beiruti', name: 'خط بيروتي (تصميم مبتكر فاخر)' },
+  { id: 'Ruwudu', name: 'خط رُوُدُو (فني حديث جديد)' },
   { id: 'Reem Kufi', name: 'خط ريم كوفي (فني مزخرف وبسيط)' },
-  { id: 'Rakkas', name: 'خط رقاص (مزخرف فني فريد)' },
-  { id: 'Changa', name: 'خط شانجا (هندسي مسطح)' },
-  { id: 'Lemonada', name: 'خط ليمونادة (انسيابي حديث)' },
-  { id: 'Harmattan', name: 'خط هرمتان (بسيط وناعم)' },
-  { id: 'Katibeh', name: 'خط كتيبة (قديم الطراز)' },
-  { id: 'IBM Plex Sans Arabic', name: 'خط IBM بلكس (شكل تقني نقي)' }
+  { id: 'Marhey', name: 'خط مرحي (إبداعي وممتع)' },
+  { id: 'Rakkas', name: 'خط رقاص (مزخرف فني فريد)' }
 ];
+
+/** Loads every font in the list once, so each option previews in its own face. */
+const ADHKAR_FONT_PREVIEW_LINK = 'adhkar-font-previews';
+const loadAdhkarFontPreviews = () => {
+  if (typeof document === 'undefined' || document.getElementById(ADHKAR_FONT_PREVIEW_LINK)) return;
+  const link = document.createElement('link');
+  link.id = ADHKAR_FONT_PREVIEW_LINK;
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?' +
+    FONTS_LIST.map(f => `family=${f.id.replace(/\s+/g, '+')}:wght@400;700`).join('&') + '&display=swap';
+  document.head.appendChild(link);
+};
 
 // Memoized Dhikr Card Component for Better Performance
 const DhikrCard = React.memo(({ 
@@ -418,21 +427,10 @@ const DhikrCard = React.memo(({
   className?: string,
   categoryTitle?: string
 }) => {
-  const { adhkarData, toggleDhikrFavorite } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   const [isShared, setIsShared] = useState(false);
   const isFinished = count >= item.count;
   const progressPercent = (count / item.count) * 100;
-
-  const isFavorite = React.useMemo(() => {
-    const favoritesCat = adhkarData?.find(c => c.category === 'favorites');
-    if (!favoritesCat) return false;
-    return favoritesCat.items.some(i => 
-      (Boolean(i.id && item.id && i.id === item.id)) ||
-      (Boolean(i.id && item.id && (i.id.startsWith(`fv_${item.id}_`) || item.id.startsWith(`fv_${i.id}_`)))) ||
-      (Boolean(i.text && item.text && i.text.trim() === item.text.trim()))
-    );
-  }, [adhkarData, item.id, item.text]);
 
   const cardRef = React.useRef<HTMLDivElement>(null);
 
@@ -596,7 +594,8 @@ const DhikrCard = React.memo(({
           {title && (
             <h3 className={cn(
               "font-bold drop-shadow-sm transition-all",
-              isSpecialTitle ? "text-lg text-center" : "text-sm",
+              // The number and the share button float over a centred title; keep clear of both.
+              isSpecialTitle ? "text-lg text-center px-12" : "text-sm",
               theme.titleColor || (theme.isLight ? "text-slate-800" : "text-teal-800 dark:text-teal-400")
             )}>{title}</h3>
           )}
@@ -635,31 +634,6 @@ const DhikrCard = React.memo(({
             ) : (
               <Share2 size={15} strokeWidth={2.5} className="shrink-0" />
             )}
-          </button>
-
-          {/* Favorite Heart Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              triggerHaptic('light');
-              toggleDhikrFavorite(item);
-            }}
-            className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer shrink-0 shadow-sm active:scale-[0.95]",
-              isFavorite
-                ? "bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 border-[2.5px] border-rose-600 dark:border-rose-400 text-white shadow-[0_2px_12px_rgba(244,63,94,0.4)]"
-                : "bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 border-[2.5px] border-rose-600 hover:border-rose-700 dark:border-rose-500 dark:hover:border-rose-400 text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
-            )}
-            title={isFavorite ? (isRtl ? "إزالة من أذكاري المفضلة" : "Remove from favorites") : (isRtl ? "إضافة إلى أذكاري المفضلة" : "Add to favorites")}
-          >
-            <Heart 
-              size={15} 
-              strokeWidth={2.5}
-              className={cn(
-                "shrink-0 transition-transform duration-200",
-                isFavorite ? "fill-white text-white scale-105" : ""
-              )} 
-            />
           </button>
 
           {isFinished && (
@@ -994,14 +968,18 @@ export const Adhkar: React.FC = () => {
 
   // Keep incrementing seconds if timer is active and not finished
   React.useEffect(() => {
-    if (!isTimerRunning || showReward) return;
+    // Paused while the exit card is open: no reading happens then, and a
+    // re-render every second kept moving the card under the user's finger
+    // (the English sentence changes length each second), so taps on
+    // "Confirm Exit" were lost.
+    if (!isTimerRunning || showReward || showExitModal) return;
     
     const intervalId = setInterval(() => {
       setSecondsElapsed(prev => prev + 1);
     }, 1000);
     
     return () => clearInterval(intervalId);
-  }, [isTimerRunning, showReward]);
+  }, [isTimerRunning, showReward, showExitModal]);
 
   // Handle active count action when user clicks Dhikr Counter button
   const handleUpdateCountWithTimer = React.useCallback((id: string, newCount: number) => {
@@ -1387,7 +1365,7 @@ export const Adhkar: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowExitModal(false)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-all"
+              className="fixed inset-0 bg-black/85"
             />
 
             {/* Modal Card with crisp high-contrast layout */}
@@ -2275,7 +2253,7 @@ export const Adhkar: React.FC = () => {
                           </div>
 
                           {/* Filtered scrollable list of font options (Touch friendly) */}
-                          <div className="overflow-y-auto max-h-[200px] custom-scrollbar space-y-1 pr-1">
+                          <div className="overflow-y-auto max-h-[200px] custom-scrollbar space-y-1 pr-1" ref={loadAdhkarFontPreviews}>
                             {FONTS_LIST.filter(f => f.name.includes(fontSearchQuery) || f.id.toLowerCase().includes(fontSearchQuery.toLowerCase()))
                               .map((font) => (
                                 <button

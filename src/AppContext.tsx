@@ -224,7 +224,7 @@ export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
   inspirationType: 'all',
   inspirationFont: 'Amiri, serif',
   inspirationTheme: 'dynamic',
-  hapticTasbihEnabled: true,
+  hapticTasbihEnabled: false,
   tasbihBeadStyle: 'emerald',
   tasbihSoundEnabled: true,
   tasbihDailyGoal: 100,
@@ -404,6 +404,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         else if (parsed.adhkarFontSize === 'large') parsed.adhkarFontSize = '25px';
         else if (parsed.adhkarFontSize && !['15px', '18px', '20px', '25px', '30px'].includes(parsed.adhkarFontSize)) {
           parsed.adhkarFontSize = '25px';
+        }
+
+        // Adhkar fonts removed from the list (near-duplicates, or fonts that break
+        // the ligature of «الله») move to the closest font that stayed.
+        const RETIRED_ADHKAR_FONTS: Record<string, string> = {
+          'Lateef': 'Amiri', 'Harmattan': 'Noto Naskh Arabic', 'Katibeh': 'Aref Ruqaa',
+          'Changa': 'Cairo', 'El Messiri': 'Cairo', 'Alexandria': 'Cairo',
+          'Zain': 'Tajawal', 'IBM Plex Sans Arabic': 'Tajawal', 'Baloo Bhaijaan 2': 'Tajawal',
+          'Lemonada': 'Marhey', 'Lalezar': 'Marhey',
+        };
+        if (RETIRED_ADHKAR_FONTS[parsed.adhkarFontFamily]) {
+          parsed.adhkarFontFamily = RETIRED_ADHKAR_FONTS[parsed.adhkarFontFamily];
+        }
+
+        // Haptic tasbih is now off by default (client request). It was on by
+        // default before, so it is switched off once for everyone; whoever wants
+        // it can turn it back on and that choice is kept.
+        if (!safeLocalStorageGetItem('believer_haptic_default_off_v1')) {
+          parsed.hapticTasbihEnabled = false;
+          safeLocalStorageSetItem('believer_haptic_default_off_v1', '1');
         }
 
         // Reset heavy deleted themes to 'classic'

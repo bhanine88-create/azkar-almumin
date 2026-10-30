@@ -23,9 +23,18 @@ const PRAYER_KEYS_ORDER = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
 // Android Notification Channel IDs
 export const CHANNELS = {
   PRAYER: 'prayer_times_channel',
-  ADHKAR: 'adhkar_channel',
-  REMINDERS: 'reminders_channel'
+  // Adhkar and the other reminders share one channel at maximum importance, so
+  // they pop up on screen (heads-up) rather than only landing in the shade.
+  ADHKAR: 'reminders_channel_high',
+  REMINDERS: 'reminders_channel_high'
 } as const;
+
+/**
+ * Channels replaced by CHANNELS.ADHKAR / REMINDERS. Android never lets an app
+ * raise an existing channel's importance, so the new one has a new id and the
+ * old ones are deleted.
+ */
+const RETIRED_CHANNELS = ['adhkar_channel', 'reminders_channel'];
 
 /**
  * Notification id ranges. Each kind owns its own range, so scheduling further
@@ -88,31 +97,23 @@ export async function initializeNotificationChannels(): Promise<void> {
       lightColor: '#10B981'
     });
 
-    // 2. Daily Adhkar Channel (High Importance)
+    // 2. Adhkar & reminders: morning / evening adhkar, their follow-ups, qiyam,
+    // sunnah and custom reminders. Maximum importance pops them up on screen;
+    // public visibility shows their text on the lock screen.
     await LocalNotifications.createChannel({
       id: CHANNELS.ADHKAR,
-      name: 'أذكار الصباح والمساء / Daily Adhkar',
-      description: 'تذكير ورد أذكار الصباح وأذكار المساء والتحصين اليومي',
-      importance: 4, // HIGH importance
+      name: 'تذكيرات أذكار المؤمن',
+      description: 'أذكار الصباح والمساء، وقيام الليل والسنن، والتذكيرات المخصصة',
+      importance: 5,
       visibility: 1,
       sound: 'beep.wav',
       vibration: true,
       lights: true,
       lightColor: '#0D9488'
     });
-
-    // 3. Reminders & Sunnah Channel
-    await LocalNotifications.createChannel({
-      id: CHANNELS.REMINDERS,
-      name: 'التذكيرات والسنن / Reminders & Sunnah',
-      description: 'تذكير قيام الليل وسنن الرواتب والتذكيرات المخصصة',
-      importance: 4,
-      visibility: 1,
-      sound: 'beep.wav',
-      vibration: true,
-      lights: true,
-      lightColor: '#F59E0B'
-    });
+    for (const id of RETIRED_CHANNELS) {
+      await LocalNotifications.deleteChannel({ id }).catch(() => undefined);
+    }
 
     // Random dhikr has no channel here: RandomDhikrPopup.java creates its own
     // silent one and deletes the old 'random_dhikr_channel', which had a sound.
