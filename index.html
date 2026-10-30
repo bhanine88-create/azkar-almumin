@@ -125,7 +125,14 @@
         }
       }
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <!--
+      No viewport-fit=cover: Android 15+ draws apps edge to edge, and with cover
+      Capacitor leaves the status and navigation bars to the page, so headers
+      slid under the clock on notched phones. Without it Capacitor keeps the
+      whole WebView between the bars on every device (MainActivity colours the
+      strips behind them).
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>أذكار المؤمن azkar almumin</title>
     <meta name="theme-color" content="#052418" />
     <meta name="mobile-web-app-capable" content="yes" />

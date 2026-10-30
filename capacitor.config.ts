@@ -72,6 +72,13 @@ const config: CapacitorConfig = {
       style: 'dark',
       resizeOnFullScreen: true,
     },
+    // Android 15+ (edge to edge): Capacitor's own SystemBars plugin sets the
+    // status/navigation icon colour. The app keeps the WebView between the bars
+    // over a dark green strip (MainActivity), so the icons must be light;
+    // 'DEFAULT' followed the phone's theme and drew dark icons on dark green.
+    SystemBars: {
+      style: 'DARK',
+    },
     StatusBar: {
       style: 'DARK',
       backgroundColor: '#052418',

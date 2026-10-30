@@ -53,6 +53,12 @@ public class MainActivity extends BridgeActivity {
             WebView.setWebContentsDebuggingEnabled(true);
         }
         startupWebView.setBackgroundColor(Color.rgb(5, 36, 24));
+        // On Android 15+ Capacitor pads the WebView's parent clear of the status
+        // and navigation bars; this is the colour seen behind them, instead of
+        // the window's splash image.
+        if (startupWebView.getParent() instanceof View) {
+            ((View) startupWebView.getParent()).setBackgroundColor(Color.rgb(5, 36, 24));
+        }
         startupWebView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         // A transparent WebView can still submit a black compositor frame while
