@@ -1,7 +1,9 @@
 package com.azkaralmumin.app;
 
 import android.app.KeyguardManager;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
@@ -9,7 +11,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.service.notification.StatusBarNotification;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -29,6 +30,9 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import org.json.JSONObject;
 
 /**
@@ -38,16 +42,18 @@ import org.json.JSONObject;
  * the lock screen, the reminder notification alone is shown. "Read now" opens
  * the adhkar page; the card goes away on ✕ or after VISIBLE_MS.
  *
- * When the card shows it replaces the reminder notification posted for the
- * same minute (client: one alert, not two). The two alarms fire together in
- * either order, so the notification is cancelled now and for a few seconds
- * after; if the card came first it plays the notification's sound itself.
+ * The card owns the morning / evening reminder: JS no longer schedules a
+ * notification for it on Android (localNotificationService), because a
+ * notification posted at the same minute popped up over the card. Here it is
+ * either the card with the reminder's sound, or, where the card cannot show
+ * (screen off, lock screen, no permission), the notification itself.
  */
 final class ReminderCardPopup {
     static final long VISIBLE_MS = 30_000;
     /** Back at the top: the heads-up it once had to clear is cancelled now. */
     private static final int TOP_MARGIN_DP = 10;
-    private static final long[] CANCEL_RETRY_MS = {400, 1200, 2500, 5000, 9000};
+    /** Created by JS (localNotificationService); recreated here if missing. */
+    private static final String CHANNEL_ID = "reminders_channel_high";
     private static final long FADE_MS = 250;
     private static View current;
 
@@ -59,13 +65,14 @@ final class ReminderCardPopup {
         KeyguardManager keyguard = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
         boolean screenOn = power == null || power.isInteractive();
         boolean locked = keyguard != null && keyguard.isKeyguardLocked();
-        // While the app is open its own card shows this reminder.
-        if (!screenOn || locked || MainActivity.isInForeground() || !Settings.canDrawOverlays(context)) {
+        // While the app is open its own in-app card shows this reminder.
+        if (MainActivity.isInForeground()) {
             done.run();
             return;
         }
         WindowManager windows = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        if (windows == null) {
+        if (!screenOn || locked || !Settings.canDrawOverlays(context) || windows == null) {
+            postNotification(context, item);
             done.run();
             return;
         }
@@ -87,6 +94,7 @@ final class ReminderCardPopup {
         try {
             windows.addView(card, params);
         } catch (RuntimeException e) {
+            postNotification(context, item);
             done.run();
             return;
         }
@@ -96,25 +104,54 @@ final class ReminderCardPopup {
         card.animate().alpha(1f).translationY(0f).setDuration(FADE_MS).start();
         Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(() -> remove(windows, card), VISIBLE_MS);
-        replaceNotification(context, item.optInt("notificationId", -1), handler);
+        alert(context);
         // A visible overlay keeps the process alive; the broadcast can end now.
         done.run();
     }
 
-    /** Cancels the reminder notification; plays its sound if it had not sounded yet. */
-    private static void replaceNotification(Context context, int id, Handler handler) {
+    /** The reminder as a notification, for when the card cannot be shown. */
+    private static void postNotification(Context context, JSONObject item) {
+        ensureChannel(context);
+        String route = item.optString("route", "/");
+        int id = item.optInt("notificationId", 7302);
+        Intent open = new Intent(context, MainActivity.class)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(MainActivity.EXTRA_ROUTE, route);
+        PendingIntent tap = PendingIntent.getActivity(context, id, open,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        String body = item.optString("body");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_notify)
+            .setColor(Color.parseColor("#0D9488"))
+            .setContentTitle(item.optString("title"))
+            .setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+            .setContentIntent(tap);
+        try {
+            NotificationManagerCompat.from(context).notify(id, builder.build());
+        } catch (SecurityException ignored) {
+            // Notifications not allowed (Android 13+).
+        }
+    }
+
+    private static void ensureChannel(Context context) {
+        if (Build.VERSION.SDK_INT < 26) return;
         NotificationManager manager = context.getSystemService(NotificationManager.class);
-        if (id < 0 || manager == null) {
-            alert(context);
-            return;
-        }
-        boolean alreadyPosted = false;
-        for (StatusBarNotification posted : manager.getActiveNotifications()) {
-            if (posted.getId() == id) alreadyPosted = true;
-        }
-        manager.cancel(id);
-        if (!alreadyPosted) alert(context);
-        for (long delay : CANCEL_RETRY_MS) handler.postDelayed(() -> manager.cancel(id), delay);
+        if (manager == null || manager.getNotificationChannel(CHANNEL_ID) != null) return;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "تذكيرات أذكار المؤمن",
+            NotificationManager.IMPORTANCE_HIGH);
+        channel.setSound(Uri.parse("android.resource://" + context.getPackageName() + "/raw/beep"),
+            new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build());
+        channel.enableVibration(true);
+        channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+        manager.createNotificationChannel(channel);
     }
 
     /** The reminder's sound and a short vibration, following the ringer mode. */
