@@ -180,6 +180,8 @@ const MushafPage = React.memo<{
   const [error, setError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [attemptIndex, setAttemptIndex] = useState(0);
+  // Second pass over all sources after a short pause, for a brief network drop.
+  const [sourceRound, setSourceRound] = useState(0);
   const [pageAspectRatio, setPageAspectRatio] = useState<number>(843 / 1140);
   const { theme, mushafEdition, mushafZoom, fontFamily, fontSize, setViewMode } = useQuranSettings();
   const isTajweedEdition = mushafEdition === "tajweed";
@@ -190,6 +192,7 @@ const MushafPage = React.memo<{
   // Reset attempt index and aspect ratio when page or edition changes
   useEffect(() => {
     setAttemptIndex(0);
+    setSourceRound(0);
     setPageAspectRatio(843 / 1140);
   }, [pageNum, mushafEdition]);
 
@@ -257,112 +260,8 @@ const MushafPage = React.memo<{
     return String(num).replace(/[0-9]/g, (w) => arabicDigits[+w]);
   };
 
-  if (error && ayahs.length > 0) {
-    const firstAyah = ayahs[0];
-    const juzNum = firstAyah?.juz;
-    const hizbNum = firstAyah?.hizb;
-
-    return (
-      <div
-        className={cn(
-          "relative w-full flex flex-col items-center justify-between overflow-hidden p-4 sm:p-6 select-text",
-          isVertical ? "rounded-none border-none" : "rounded-2xl border border-slate-150/10 dark:border-slate-850/50",
-          containerBg
-        )}
-      >
-        {/* Subtle Islamic Background Patterns */}
-        <div className="absolute inset-0 bg-[radial-gradient(#00d2c4_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.015] pointer-events-none" />
-
-        {/* Top Header info */}
-        <div className="w-full flex items-center justify-between border-b border-dashed border-slate-200/40 dark:border-slate-800/60 pb-2.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 select-none">
-          <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-black">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-            <span>عرض تفاعلي غير متصل</span>
-          </div>
-          <div>
-            {surahName} • صفحة {toArabicNumerals(pageNum)}
-          </div>
-          <div className="hidden sm:block">
-            {juzNum && `الجزء ${toArabicNumerals(juzNum)}`} {hizbNum && `• الحِزْب ${toArabicNumerals(hizbNum)}`}
-          </div>
-        </div>
-
-        {/* Elegant Inner Frame for reading */}
-        <div className={cn(
-          "w-full flex-1 my-3 p-3 sm:p-5 border-4 border-double rounded-xl flex flex-col justify-center overflow-y-auto custom-scrollbar relative",
-          frameBorder
-        )}>
-          {/* Top Surah header block (only if we are repeating surah or page starts index 1) */}
-          {ayahs.some((a) => a.numberInSurah === 1) && (
-            <div className="w-full text-center py-2.5 px-4 mb-4 border-2 border-double border-teal-500/20 bg-teal-500/5 rounded-lg flex items-center justify-between relative overflow-hidden shadow-inner select-none">
-              <span className="text-teal-600/25 dark:text-teal-400/25 font-bold text-base">❖</span>
-              <h3 className="font-black text-xs text-teal-800 dark:text-teal-300 tracking-wider">
-                {surahName || "سورة القرآن الكريمة"}
-              </h3>
-              <span className="text-teal-600/25 dark:text-teal-400/25 font-bold text-base">❖</span>
-            </div>
-          )}
-
-          {/* Bismillah */}
-          {hasBismillah && (
-            <div className="text-center font-bold text-teal-600 dark:text-teal-400 my-3 text-[1.15em] tracking-normal select-none">
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-            </div>
-          )}
-
-          {/* Verses flow block */}
-          <div
-            className="text-right leading-[2.5] tracking-wide text-justify select-text focus:outline-none"
-            dir="rtl"
-            style={{
-              fontFamily: `${fontFamily}, "Amiri", serif`,
-              fontSize: `${Math.max(16, fontSize * 1.12)}px`
-            }}
-          >
-            {ayahs.map((ayah, i) => (
-              <span
-                key={ayah.number || i}
-                className="inline group/ayah hover:bg-teal-500/15 rounded px-1.5 py-0.5 transition-all duration-150 cursor-pointer relative"
-                onClick={() => {
-                  if (typeof setSelectedAyah === "function") {
-                    setSelectedAyah(ayah);
-                  }
-                }}
-              >
-                {ayah.text}{" "}
-                <span className="inline-flex items-center justify-center w-6 h-6 mx-1 bg-teal-50/80 dark:bg-slate-800/85 text-teal-700 dark:text-teal-300 font-mono text-[9px] font-black rounded-full border border-teal-500/20 shadow-sm align-middle select-none transition-transform group-hover/ayah:scale-110">
-                  {toArabicNumerals(ayah.numberInSurah)}
-                </span>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom Actions and Help banners */}
-        <div className="w-full flex flex-col items-center gap-2 border-t border-slate-100/10 dark:border-slate-805/30 pt-2.5 select-none font-sans">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <button
-              onClick={handleRetry}
-              className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-[9px] font-black transition-all flex items-center gap-1 border border-transparent active:scale-95 cursor-pointer shadow-sm shadow-teal-600/10"
-            >
-              <RefreshCw size={11} className="animate-pulse" />
-              تحديث المحاولة والاتصال
-            </button>
-            <button
-              onClick={() => setViewMode("vertical")}
-              className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-150 dark:hover:bg-slate-755 text-slate-700 dark:text-slate-300 rounded-lg text-[9px] font-black transition-all flex items-center gap-1 border border-slate-200 dark:border-slate-700 active:scale-95 cursor-pointer"
-            >
-              <Layout size={11} />
-              تحويل للنمط الرأسي التفاعلي
-            </button>
-          </div>
-          <p className="text-[9px] text-slate-400 dark:text-slate-500 text-center font-bold leading-normal">
-            💡 يعرض النص الرقمي التفاعلي لتعذر تحميل الصفحة المصورة دون نت. قراءتك مستمرة دائماً!
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // No typed-text stand-in for a page that will not load: it mixed text pages
+  // in with the printed ones. The page retries, then offers a retry button.
 
   return (
     <div
@@ -492,6 +391,9 @@ const MushafPage = React.memo<{
                 if (attemptIndex < maxAttempts - 1) {
                   // Seamlessly try next server in background without breaking layout
                   setAttemptIndex((prev) => prev + 1);
+                } else if (sourceRound === 0) {
+                  setSourceRound(1);
+                  setTimeout(() => setAttemptIndex(0), 2000);
                 } else {
                   setError(true);
                   setLoading(false);

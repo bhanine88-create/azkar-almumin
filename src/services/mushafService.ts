@@ -9,7 +9,9 @@ export const MUSHAF_EDITIONS = {
     getUrls: (pageNum: number) => {
       const paddedPage = String(pageNum).padStart(3, '0');
       return [
-        // JSDelivr is incredibly fast and reliable worldwide with zero CORS/referrer issues
+        // GitHub first: jsDelivr refuses this repository at times ("package size
+        // exceeded", HTTP 403), and a page whose every source fails was shown as text.
+        `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/hafs-wasat/${pageNum}.jpg`,
         `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/${pageNum}.jpg`,
         `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/${paddedPage}.jpg`,
         
@@ -39,7 +41,8 @@ export const MUSHAF_EDITIONS = {
     getUrls: (pageNum: number) => {
       const paddedPage = String(pageNum).padStart(3, '0');
       return [
-        // JSDelivr source (highly consistent, fast, and light)
+        // GitHub first, as for Hafs: jsDelivr refuses this repository at times.
+        `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/warsh/${pageNum}.jpg`,
         `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/warsh/${pageNum}.jpg`,
         `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/warsh/${paddedPage}.jpg`,
         
@@ -334,12 +337,19 @@ export const mushafService = {
       }
     }, 400);
 
-    const cache = await caches.open(`${CACHE_NAME_PREFIX}${editionId}`);
+    // Page storage can be unavailable (private browsing, a damaged browser
+    // profile): the page then loads from the network instead of failing.
+    let cache: Cache | null = null;
+    try {
+      cache = await caches.open(`${CACHE_NAME_PREFIX}${editionId}`);
+    } catch (e) {
+      console.warn('Mushaf page storage unavailable:', e);
+    }
     const newKey = mushafService.getAbsoluteCacheKey(editionId, pageNum);
     const oldKey = `mushaf-${editionId}-page-${pageNum}`;
     
-    let cachedResponse = await cache.match(newKey);
-    if (!cachedResponse) {
+    let cachedResponse = cache ? await cache.match(newKey) : undefined;
+    if (cache && !cachedResponse) {
       cachedResponse = await cache.match(oldKey);
       if (cachedResponse) {
         // Self-heal & migrate legacy relative key to robust absolute URL key
@@ -389,7 +399,7 @@ export const mushafService = {
           if (response.ok) {
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('text/html')) {
-              await cache.put(newKey, response.clone());
+              await cache?.put(newKey, response.clone());
             }
           }
         } catch (e) {
