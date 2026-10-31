@@ -1,6 +1,15 @@
 package com.azkaralmumin.app;
 
 import android.app.KeyguardManager;
+import android.app.NotificationManager;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.service.notification.StatusBarNotification;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -28,10 +37,17 @@ import org.json.JSONObject;
  * shows while it is open. Needs "Display over other apps"; without it, or on
  * the lock screen, the reminder notification alone is shown. "Read now" opens
  * the adhkar page; the card goes away on ✕ or after VISIBLE_MS.
+ *
+ * When the card shows it replaces the reminder notification posted for the
+ * same minute (client: one alert, not two). The two alarms fire together in
+ * either order, so the notification is cancelled now and for a few seconds
+ * after; if the card came first it plays the notification's sound itself.
  */
 final class ReminderCardPopup {
     static final long VISIBLE_MS = 30_000;
-    private static final int HEADS_UP_CLEARANCE_DP = 124;
+    /** Back at the top: the heads-up it once had to clear is cancelled now. */
+    private static final int TOP_MARGIN_DP = 10;
+    private static final long[] CANCEL_RETRY_MS = {400, 1200, 2500, 5000, 9000};
     private static final long FADE_MS = 250;
     private static View current;
 
@@ -66,9 +82,7 @@ final class ReminderCardPopup {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-        // The reminder notification pops up at the top at the same minute (heads-up,
-        // up to ~110dp with two lines). Sit below it so it never covers the card.
-        params.y = statusBarHeight(context) + dp(context, HEADS_UP_CLEARANCE_DP);
+        params.y = statusBarHeight(context) + dp(context, TOP_MARGIN_DP);
         params.setTitle("AdhkarReminderCard");
         try {
             windows.addView(card, params);
@@ -80,9 +94,58 @@ final class ReminderCardPopup {
         card.setAlpha(0f);
         card.setTranslationY(-dp(context, 24));
         card.animate().alpha(1f).translationY(0f).setDuration(FADE_MS).start();
-        new Handler(Looper.getMainLooper()).postDelayed(() -> remove(windows, card), VISIBLE_MS);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(() -> remove(windows, card), VISIBLE_MS);
+        replaceNotification(context, item.optInt("notificationId", -1), handler);
         // A visible overlay keeps the process alive; the broadcast can end now.
         done.run();
+    }
+
+    /** Cancels the reminder notification; plays its sound if it had not sounded yet. */
+    private static void replaceNotification(Context context, int id, Handler handler) {
+        NotificationManager manager = context.getSystemService(NotificationManager.class);
+        if (id < 0 || manager == null) {
+            alert(context);
+            return;
+        }
+        boolean alreadyPosted = false;
+        for (StatusBarNotification posted : manager.getActiveNotifications()) {
+            if (posted.getId() == id) alreadyPosted = true;
+        }
+        manager.cancel(id);
+        if (!alreadyPosted) alert(context);
+        for (long delay : CANCEL_RETRY_MS) handler.postDelayed(() -> manager.cancel(id), delay);
+    }
+
+    /** The reminder's sound and a short vibration, following the ringer mode. */
+    private static void alert(Context context) {
+        AudioManager audio = context.getSystemService(AudioManager.class);
+        int mode = audio == null ? AudioManager.RINGER_MODE_NORMAL : audio.getRingerMode();
+        if (mode == AudioManager.RINGER_MODE_NORMAL) {
+            try {
+                Uri sound = Uri.parse("android.resource://" + context.getPackageName() + "/raw/beep");
+                Ringtone ringtone = RingtoneManager.getRingtone(context, sound);
+                if (ringtone != null) {
+                    ringtone.setAudioAttributes(new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build());
+                    ringtone.play();
+                }
+            } catch (RuntimeException ignored) {
+                // No sound rather than no card.
+            }
+        }
+        if (mode != AudioManager.RINGER_MODE_SILENT) {
+            Vibrator vibrator = context.getSystemService(Vibrator.class);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(250, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(250);
+                }
+            }
+        }
     }
 
     private static void dismissCurrent(WindowManager windows) {

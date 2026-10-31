@@ -3,12 +3,15 @@ import type { LocalNotificationSchema } from '@capacitor/local-notifications';
 
 /**
  * Morning / evening adhkar reminders as a floating card over other apps
- * (android/.../ReminderCardPopup.java), next to the notification posted at the
- * same minute. The card needs "Display over other apps", the same permission
- * the random dhikr card uses (RandomDhikrOverlayCard).
+ * (android/.../ReminderCardPopup.java). When the card shows, it replaces the
+ * notification posted for the same minute, so there is one alert. The card
+ * needs "Display over other apps", the same permission the random dhikr card
+ * uses (RandomDhikrOverlayCard).
  */
 interface ReminderCardItem {
   at: number;
+  /** The notification posted for the same reminder; the card replaces it. */
+  notificationId: number;
   title: string;
   body: string;
   route: string;
@@ -33,6 +36,7 @@ export async function scheduleReminderCards(plan: LocalNotificationSchema[]): Pr
       const route = String(n.extra?.route || '/adhkar/morning');
       return {
         at: new Date(n.schedule!.at as Date).getTime(),
+        notificationId: n.id,
         title: n.title || '',
         body: n.body || '',
         route,
