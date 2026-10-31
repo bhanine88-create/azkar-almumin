@@ -31,6 +31,7 @@ import org.json.JSONObject;
  */
 final class ReminderCardPopup {
     static final long VISIBLE_MS = 30_000;
+    private static final int HEADS_UP_CLEARANCE_DP = 124;
     private static final long FADE_MS = 250;
     private static View current;
 
@@ -63,7 +64,9 @@ final class ReminderCardPopup {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-        params.y = statusBarHeight(context) + dp(context, 10);
+        // The reminder notification pops up at the top at the same minute (heads-up,
+        // up to ~110dp with two lines). Sit below it so it never covers the card.
+        params.y = statusBarHeight(context) + dp(context, HEADS_UP_CLEARANCE_DP);
         params.setTitle("AdhkarReminderCard");
         try {
             windows.addView(card, params);

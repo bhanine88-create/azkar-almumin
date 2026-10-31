@@ -182,6 +182,7 @@ const MushafPage = React.memo<{
   const [attemptIndex, setAttemptIndex] = useState(0);
   const [pageAspectRatio, setPageAspectRatio] = useState<number>(843 / 1140);
   const { theme, mushafEdition, mushafZoom, fontFamily, fontSize, setViewMode } = useQuranSettings();
+  const isTajweedEdition = mushafEdition === "tajweed";
   const { settings } = useAppContext();
   const { t } = useTranslation(settings.appLanguage);
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 640;
@@ -417,6 +418,9 @@ const MushafPage = React.memo<{
             id={`mushaf-page-frame-${pageNum}`}
             className={cn(
               "relative group/mushaf-page select-none cursor-pointer flex items-start justify-center transition-all duration-150 active:scale-[0.995]",
+              // The colour-coded (tajweed) pages are cropped to the text with no
+              // side frame: give them room and a frame of their own.
+              isTajweedEdition && "p-2 sm:p-3 bg-[#fffdf5] border-[3px] border-double border-teal-700/70 rounded-md shadow-[inset_0_0_0_2px_rgba(234,179,8,0.35)]",
               isVertical
                 ? "w-full max-w-[760px] sm:max-w-[800px] md:max-w-[840px] mx-auto h-auto my-0 p-0"
                 : cn(
@@ -460,7 +464,8 @@ const MushafPage = React.memo<{
                 }
               }}
               className={cn(
-                "origin-center [image-rendering:high-quality] relative z-0 transition-opacity duration-150 block w-full h-full object-fill pointer-events-none select-none",
+                "origin-center [image-rendering:high-quality] relative z-0 transition-opacity duration-150 block w-full h-full pointer-events-none select-none",
+                isTajweedEdition ? "object-contain" : "object-fill",
                 loading ? "opacity-0" : "opacity-100",
                 isCreamyNight
                   ? "invert hue-rotate-[160deg] contrast-125 brightness-[0.85] sepia-[0.3]"
@@ -469,7 +474,8 @@ const MushafPage = React.memo<{
                   : "contrast-[1.05] brightness-[1.02] mix-blend-darken",
               )}
               style={{
-                transform: `scale(${mushafZoom / 100})`,
+                // Zooming past 100% cut the letters off the edges of the tajweed pages.
+                transform: `scale(${isTajweedEdition ? 1 : mushafZoom / 100})`,
                 userSelect: "none",
               }}
               onLoad={(e) => {
