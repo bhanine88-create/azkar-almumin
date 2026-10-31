@@ -14,7 +14,6 @@ import type { CapacitorConfig } from '@capacitor/cli';
  *     (`https://localhost`), which is required for Service Workers,
  *     crypto.subtle, and persistent storage quotas.
  */
-const OFFICIAL_ORIGIN = 'azkaralmumin.netlify.app';
 
 const config: CapacitorConfig = {
   appId: 'com.azkar.almumin',
@@ -25,9 +24,10 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
     iosScheme: 'https',
     hostname: 'localhost',
-    // Only the official domain may be opened inside the WebView; every other
-    // link is handed to the system browser.
-    allowNavigation: [OFFICIAL_ORIGIN],
+    // No allowNavigation: every outside link, the official site included, opens
+    // in the system browser. Capacitor grants native-bridge access to any origin
+    // listed there, so the site loaded in the WebView would have reached the
+    // phone's plugins.
   },
   android: {
     // Block http:// sub-resources from being pulled into the https:// origin.

@@ -15,8 +15,8 @@ import { SafeUnmount } from './components/SafeUnmount';
 import { memoryManager } from './services/memoryManager';
 import { stabilityManager } from './services/stabilityManager';
 import { cn } from './lib/utils';
-import { auth } from './firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+import { loadFirebaseWhenIdle } from './lib/firebaseLazy';
 import { PageSkeletonFallback } from './components/ui/PageSkeletonFallback';
 
 const IndependentHadith = lazyRetry(() => import('./components/IndependentHadith'), 'IndependentHadith');
@@ -208,14 +208,26 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && currentUser.isAnonymous) {
-        setUser(null);
-      } else {
-        setUser(currentUser);
-      }
-    });
-    return () => unsubscribe();
+    // Firebase loads after the first screen (see lib/firebaseLazy.ts).
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    loadFirebaseWhenIdle()
+      .then(async ({ auth }) => {
+        const { onAuthStateChanged } = await import('firebase/auth');
+        if (cancelled) return;
+        unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          if (currentUser && currentUser.isAnonymous) {
+            setUser(null);
+          } else {
+            setUser(currentUser);
+          }
+        });
+      })
+      .catch((err) => console.warn('[Firebase] failed to load:', err));
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   useEffect(() => {

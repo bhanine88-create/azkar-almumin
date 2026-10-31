@@ -261,327 +261,367 @@ export const Home: React.FC = () => {
 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-          {widgets.filter(w => w.isVisible).map(widget => {
-            switch(widget.id) {
-              case 'mushaf':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1">
-                    <div
+          {widgets.filter(w => w.isVisible).map(widget => (
+            <HomeWidgetCard
+              key={widget.id}
+              id={widget.id}
+              t={t}
+              navigate={navigate}
+              isRtl={isRtl}
+              currentLang={currentLang}
+              hijriOffset={settings.hijriOffset}
+              isMorningCompleted={isMorningCompleted}
+              isEveningCompleted={isEveningCompleted}
+            />
+          ))}
+      </div>
+
+
+    </div>
+  );
+};
+
+
+interface HomeWidgetCardProps {
+  id: string;
+  t: ReturnType<typeof useTranslation>['t'];
+  navigate: ReturnType<typeof useSmartNavigation>['navigate'];
+  isRtl: boolean;
+  currentLang: string;
+  hijriOffset: number;
+  isMorningCompleted: boolean;
+  isEveningCompleted: boolean;
+}
+
+/**
+ * One card of the home menu. Memoised on plain values, so a change elsewhere in
+ * the app state (progress, settings) re-renders only the cards it touches, not
+ * the whole menu.
+ */
+const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl, currentLang, hijriOffset, isMorningCompleted, isEveningCompleted }) => {
+  const today = new Date();
+  const widget = { id };
+  const settings = { hijriOffset };
+  switch(widget.id) {
+    case 'mushaf':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1">
+          <div
           className="px-1"
         >
           <button
-            onClick={() => {
-              triggerHaptic('light');
-              navigate('/quran');
-            }}
-            className="navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-amber-600 via-amber-700 to-yellow-900 shadow-xl shadow-amber-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
+  onClick={() => {
+    triggerHaptic('light');
+    navigate('/quran');
+  }}
+  className="navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-amber-600 via-amber-700 to-yellow-900 shadow-xl shadow-amber-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
           >
-            {/* Decorative Elements */}
-            <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute -top-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
+  {/* Decorative Elements */}
+  <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute -top-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
 
-            <div className="relative min-h-[88px] py-3 flex items-center justify-between gap-3 px-4 sm:px-7 text-white">
-              <div className="min-w-0 flex flex-col text-right">
-                <div className="flex items-center gap-2.5 mb-0.5">
-                  <BookOpenText size={20} className="text-amber-200" />
-                  <h3 className="font-black text-xl sm:text-2xl drop-shadow-lg tracking-tight">{t('mushaf_title')}</h3>
-                </div>
-                <p className="text-[11px] text-amber-100/80 font-bold tracking-widest">{t('mushaf_subtitle')}</p>
-              </div>
-              <div className="w-13 h-13 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                <Book size={28} className="text-white drop-shadow-xl" />
-              </div>
-            </div>
+  <div className="relative min-h-[88px] py-3 flex items-center justify-between gap-3 px-4 sm:px-7 text-white">
+    <div className="min-w-0 flex flex-col text-right">
+      <div className="flex items-center gap-2.5 mb-0.5">
+        <BookOpenText size={20} className="text-amber-200" />
+        <h3 className="font-black text-xl sm:text-2xl drop-shadow-lg tracking-tight">{t('mushaf_title')}</h3>
+      </div>
+      <p className="text-[11px] text-amber-100/80 font-bold tracking-widest">{t('mushaf_subtitle')}</p>
+    </div>
+    <div className="w-13 h-13 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+      <Book size={28} className="text-white drop-shadow-xl" />
+    </div>
+  </div>
           </button>
         </div>
-                  </div>
-                );
-              case 'audio_library':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1">
-                    {/* Audio Library Card - Fuchsia Theme */}
+        </div>
+      );
+    case 'audio_library':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1">
+          {/* Audio Library Card - Fuchsia Theme */}
         <div
           className="px-1"
         >
           <button
-            onClick={() => {
-              triggerHaptic('light');
-              navigate('/audio-library');
-            }}
-            className={cn("navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-fuchsia-500 via-pink-600 to-rose-700 shadow-xl shadow-fuchsia-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
+  onClick={() => {
+    triggerHaptic('light');
+    navigate('/audio-library');
+  }}
+  className={cn("navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-fuchsia-500 via-pink-600 to-rose-700 shadow-xl shadow-fuchsia-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
           >
-            {/* Decorative Elements */}
-            <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute -top-10 -left-10 w-32 h-32 text-white/20 rounded-full card-glow group-hover:scale-150 transition-transform duration-700" />
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 text-fuchsia-400/20 rounded-full card-glow group-hover:scale-150 transition-transform duration-700" />
+  {/* Decorative Elements */}
+  <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute -top-10 -left-10 w-32 h-32 text-white/20 rounded-full card-glow group-hover:scale-150 transition-transform duration-700" />
+  <div className="absolute -bottom-10 -right-10 w-32 h-32 text-fuchsia-400/20 rounded-full card-glow group-hover:scale-150 transition-transform duration-700" />
 
-            <div className={cn("relative min-h-[88px] py-3 flex items-center justify-between gap-3 px-4 sm:px-7 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
-              <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
-                <div className="flex items-center gap-2.5 mb-0.5">
-                  <AudioLines size={20} className="text-fuchsia-200" />
-                  <h3 className="font-black text-xl sm:text-2xl drop-shadow-lg tracking-tight">{t('audio_library')}</h3>
-                </div>
-                <p className="text-[11px] text-fuchsia-100/80 font-bold tracking-widest">{t('audio_library_subtitle')}</p>
-              </div>
-              <div className="w-13 h-13 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
-                <Headphones size={28} className="text-white drop-shadow-xl" />
-              </div>
-            </div>
+  <div className={cn("relative min-h-[88px] py-3 flex items-center justify-between gap-3 px-4 sm:px-7 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
+    <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
+      <div className="flex items-center gap-2.5 mb-0.5">
+        <AudioLines size={20} className="text-fuchsia-200" />
+        <h3 className="font-black text-xl sm:text-2xl drop-shadow-lg tracking-tight">{t('audio_library')}</h3>
+      </div>
+      <p className="text-[11px] text-fuchsia-100/80 font-bold tracking-widest">{t('audio_library_subtitle')}</p>
+    </div>
+    <div className="w-13 h-13 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
+      <Headphones size={28} className="text-white drop-shadow-xl" />
+    </div>
+  </div>
           </button>
         </div>
-                  </div>
-                );
-              case 'adhkar':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1">
-                    {/* Adhkar Cards Under Quran - Restored Vibrant Style */}
+        </div>
+      );
+    case 'adhkar':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1">
+          {/* Adhkar Cards Under Quran - Restored Vibrant Style */}
         <div
           className="grid grid-cols-2 gap-3 px-1"
         >
           <button
-            onClick={() => {
-              triggerHaptic('light');
-              navigate('/adhkar/morning');
-            }}
-            className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-orange-400/50 shadow-xl shadow-red-500/20 group cursor-pointer outline-none text-right"
+  onClick={() => {
+    triggerHaptic('light');
+    navigate('/adhkar/morning');
+  }}
+  className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-orange-400/50 shadow-xl shadow-red-500/20 group cursor-pointer outline-none text-right"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600" />
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative flex flex-col items-center justify-center p-3 text-white z-10 text-center">
-              <div className="flex items-center gap-1.5 mb-1">
-                <h3 className="font-black text-[15px] leading-tight text-white drop-shadow-md">{t('morning_adhkar')}</h3>
-                {isMorningCompleted && <CheckCircle2 size={12} className="text-emerald-100 shrink-0 drop-shadow-sm" />}
-              </div>
-              <p className="text-[9px] text-orange-50 font-bold uppercase tracking-widest drop-shadow-sm opacity-90">{t('subtitle_morning')}</p>
-            </div>
+  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600" />
+  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+  <div className="relative flex flex-col items-center justify-center p-3 text-white z-10 text-center">
+    <div className="flex items-center gap-1.5 mb-1">
+      <h3 className="font-black text-[15px] leading-tight text-white drop-shadow-md">{t('morning_adhkar')}</h3>
+      {isMorningCompleted && <CheckCircle2 size={12} className="text-emerald-100 shrink-0 drop-shadow-sm" />}
+    </div>
+    <p className="text-[9px] text-orange-50 font-bold uppercase tracking-widest drop-shadow-sm opacity-90">{t('subtitle_morning')}</p>
+  </div>
           </button>
           <button
-            onClick={() => {
-              triggerHaptic('light');
-              navigate('/adhkar/evening');
-            }}
-            className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-indigo-500/20 shadow-xl shadow-indigo-900/40 group cursor-pointer outline-none text-right"
+  onClick={() => {
+    triggerHaptic('light');
+    navigate('/adhkar/evening');
+  }}
+  className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-indigo-500/20 shadow-xl shadow-indigo-900/40 group cursor-pointer outline-none text-right"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900" />
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative flex flex-col items-center justify-center p-3 text-white z-10 text-center">
-              <div className="flex items-center gap-1.5 mb-1">
-                <h3 className="font-black text-[15px] leading-tight text-indigo-50 drop-shadow-md">{t('evening_adhkar')}</h3>
-                {isEveningCompleted && <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />}
-              </div>
-              <p className="text-[9px] text-indigo-200/70 font-bold uppercase tracking-widest drop-shadow-sm opacity-90">{t('subtitle_evening')}</p>
-            </div>
+  <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900" />
+  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+  <div className="relative flex flex-col items-center justify-center p-3 text-white z-10 text-center">
+    <div className="flex items-center gap-1.5 mb-1">
+      <h3 className="font-black text-[15px] leading-tight text-indigo-50 drop-shadow-md">{t('evening_adhkar')}</h3>
+      {isEveningCompleted && <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />}
+    </div>
+    <p className="text-[9px] text-indigo-200/70 font-bold uppercase tracking-widest drop-shadow-sm opacity-90">{t('subtitle_evening')}</p>
+  </div>
           </button>
         </div>
-                  </div>
-                );
-              case 'prayer_times':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1">
-                    {/* Prayer Times Card - Architectural Style */}
+        </div>
+      );
+    case 'prayer_times':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1">
+          {/* Prayer Times Card - Architectural Style */}
         <div
           className="px-1"
         >
           <button
-            onClick={() => navigate('/prayer-times')}
-            className="navigation-card w-full relative block min-h-[84px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-900 shadow-xl shadow-teal-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
+  onClick={() => navigate('/prayer-times')}
+  className="navigation-card w-full relative block min-h-[84px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-900 shadow-xl shadow-teal-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
           >
-            {/* Decorative Elements */}
-            <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 text-white/10 rounded-full card-glow" />
-            <div className="absolute top-0 left-0 w-24 h-24 text-black/20 rounded-full card-glow" />
+  {/* Decorative Elements */}
+  <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute -bottom-10 -right-10 w-32 h-32 text-white/10 rounded-full card-glow" />
+  <div className="absolute top-0 left-0 w-24 h-24 text-black/20 rounded-full card-glow" />
 
-            <div className="relative min-h-[84px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white">
-              <div className="min-w-0 flex flex-col text-right">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Clock size={16} className="text-teal-200" />
-                  <h3 className="font-black text-xl drop-shadow-md">{t('prayer_times_card_title')}</h3>
-                </div>
-                <p className="text-[10px] text-teal-100/70 font-bold uppercase tracking-widest">{t('prayer_times_card_subtitle')}</p>
-              </div>
-              <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
-                <Sunrise size={24} className="text-white drop-shadow-lg" />
-              </div>
-            </div>
+  <div className="relative min-h-[84px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white">
+    <div className="min-w-0 flex flex-col text-right">
+      <div className="flex items-center gap-2 mb-0.5">
+        <Clock size={16} className="text-teal-200" />
+        <h3 className="font-black text-xl drop-shadow-md">{t('prayer_times_card_title')}</h3>
+      </div>
+      <p className="text-[10px] text-teal-100/70 font-bold uppercase tracking-widest">{t('prayer_times_card_subtitle')}</p>
+    </div>
+    <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
+      <Sunrise size={24} className="text-white drop-shadow-lg" />
+    </div>
+  </div>
           </button>
         </div>
-                  </div>
-                );
-              case 'names_qibla':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2 lg:col-span-1">
-                    {/* Modern Dual Card: Names of Allah & Qibla - Bento Style Smart Section */}
+        </div>
+      );
+    case 'names_qibla':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2 lg:col-span-1">
+          {/* Modern Dual Card: Names of Allah & Qibla - Bento Style Smart Section */}
         <div className="grid grid-cols-2 gap-3 px-1 h-full">
           <button
-            onClick={() => navigate('/names')}
-            className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-orange-400/20 shadow-xl shadow-orange-900/10 group bg-gradient-to-br from-orange-400 via-orange-600 to-red-800 dark:from-orange-800 dark:via-red-900 dark:to-red-950 cursor-pointer outline-none text-right"
+  onClick={() => navigate('/names')}
+  className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-orange-400/20 shadow-xl shadow-orange-900/10 group bg-gradient-to-br from-orange-400 via-orange-600 to-red-800 dark:from-orange-800 dark:via-red-900 dark:to-red-950 cursor-pointer outline-none text-right"
           >
-            <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
-            <div className="absolute -top-10 -right-10 w-24 h-24 text-white/10 rounded-full card-glow group-hover:scale-125 transition-transform duration-700" />
+  <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
+  <div className="absolute -top-10 -right-10 w-24 h-24 text-white/10 rounded-full card-glow group-hover:scale-125 transition-transform duration-700" />
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-white dark:text-amber-100 text-center">
-              <div className="w-10 h-10 bg-white/10 dark:bg-black/20 rounded-xl flex items-center justify-center border border-white/20 shadow-inner mb-1.5 group-hover:scale-110 group-hover:rotate-12 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
-                <Sparkles size={22} className="text-white fill-orange-400/30" />
-              </div>
-              <h3 className="font-black text-[14px] leading-tight drop-shadow-md">{t('names_of_allah')}</h3>
-              <p className="text-[8px] text-orange-100/70 font-bold uppercase tracking-widest mt-0.5">{t('subtitle_names')}</p>
-            </div>
+  <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-white dark:text-amber-100 text-center">
+    <div className="w-10 h-10 bg-white/10 dark:bg-black/20 rounded-xl flex items-center justify-center border border-white/20 shadow-inner mb-1.5 group-hover:scale-110 group-hover:rotate-12 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
+      <Sparkles size={22} className="text-white fill-orange-400/30" />
+    </div>
+    <h3 className="font-black text-[14px] leading-tight drop-shadow-md">{t('names_of_allah')}</h3>
+    <p className="text-[8px] text-orange-100/70 font-bold uppercase tracking-widest mt-0.5">{t('subtitle_names')}</p>
+  </div>
           </button>
 
           <button
-            onClick={() => navigate('/compass')}
-            className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-indigo-400/20 shadow-xl shadow-indigo-900/10 group bg-gradient-to-br from-indigo-600 via-blue-700 to-slate-900 dark:from-indigo-900 dark:via-indigo-950 dark:to-slate-950 cursor-pointer outline-none text-right"
+  onClick={() => navigate('/compass')}
+  className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-indigo-400/20 shadow-xl shadow-indigo-900/10 group bg-gradient-to-br from-indigo-600 via-blue-700 to-slate-900 dark:from-indigo-900 dark:via-indigo-950 dark:to-slate-950 cursor-pointer outline-none text-right"
           >
-            <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
-            <div className="absolute -bottom-10 -left-10 w-24 h-24 text-white/10 rounded-full card-glow group-hover:scale-125 transition-transform duration-700" />
+  <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
+  <div className="absolute -bottom-10 -left-10 w-24 h-24 text-white/10 rounded-full card-glow group-hover:scale-125 transition-transform duration-700" />
 
-            <div className="relative min-h-[110px] flex flex-col items-center justify-center p-3 text-white dark:text-blue-100 text-center">
-              <div className="w-10 h-10 bg-white/10 dark:bg-black/20 rounded-xl flex items-center justify-center border border-white/20 shadow-inner mb-1.5 group-hover:scale-110 group-hover:-rotate-12 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
-                <Navigation size={22} className="text-white fill-indigo-400/30" />
-              </div>
-              <h3 className="font-black text-[14px] leading-tight drop-shadow-md">{t('qibla')}</h3>
-              <p className="text-[8px] text-indigo-100/70 font-bold uppercase tracking-widest mt-0.5">{t('subtitle_qibla')}</p>
-            </div>
+  <div className="relative min-h-[110px] flex flex-col items-center justify-center p-3 text-white dark:text-blue-100 text-center">
+    <div className="w-10 h-10 bg-white/10 dark:bg-black/20 rounded-xl flex items-center justify-center border border-white/20 shadow-inner mb-1.5 group-hover:scale-110 group-hover:-rotate-12 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
+      <Navigation size={22} className="text-white fill-indigo-400/30" />
+    </div>
+    <h3 className="font-black text-[14px] leading-tight drop-shadow-md">{t('qibla')}</h3>
+    <p className="text-[8px] text-indigo-100/70 font-bold uppercase tracking-widest mt-0.5">{t('subtitle_qibla')}</p>
+  </div>
           </button>
         </div>
-                  </div>
-                );
-              case 'daily_widget':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Daily Ayah & Hadith Widget */}
+        </div>
+      );
+    case 'daily_widget':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Daily Ayah & Hadith Widget */}
         <div className="">
           <DailyAyahDhikrWidget />
         </div>
-                  </div>
-                );
-              case 'heart_feelings':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Heart Feelings & Duas Widget */}
-                    <HeartFeelingsWidget />
-                  </div>
-                );
-              case 'khatma':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Modern Section: Khatma - Architectural Style */}
+        </div>
+      );
+    case 'heart_feelings':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Heart Feelings & Duas Widget */}
+          <HeartFeelingsWidget />
+        </div>
+      );
+    case 'khatma':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Modern Section: Khatma - Architectural Style */}
         <div
           className="px-1"
         >
           <button
-            onClick={() => navigate('/khatma')}
-            className="navigation-card w-full relative block min-h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 shadow-xl shadow-indigo-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
+  onClick={() => navigate('/khatma')}
+  className="navigation-card w-full relative block min-h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 shadow-xl shadow-indigo-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
           >
-            <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
+  <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
 
-            <div className="relative min-h-[110px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white">
-              <div className="min-w-0 flex flex-col text-right">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <BookOpen size={18} className="text-indigo-200" />
-                  <h3 className="font-black text-xl drop-shadow-md">{t('khatma')}</h3>
-                </div>
-                <p className="text-[10px] text-indigo-100/70 font-bold uppercase tracking-widest">{t('subtitle_khatma')}</p>
-              </div>
-              <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-3 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
-                <BookOpenText size={24} className="text-white drop-shadow-lg" />
-              </div>
-            </div>
+  <div className="relative min-h-[110px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white">
+    <div className="min-w-0 flex flex-col text-right">
+      <div className="flex items-center gap-2 mb-0.5">
+        <BookOpen size={18} className="text-indigo-200" />
+        <h3 className="font-black text-xl drop-shadow-md">{t('khatma')}</h3>
+      </div>
+      <p className="text-[10px] text-indigo-100/70 font-bold uppercase tracking-widest">{t('subtitle_khatma')}</p>
+    </div>
+    <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:rotate-3 transform transition-all duration-75 active:scale-[0.85] active:opacity-70">
+      <BookOpenText size={24} className="text-white drop-shadow-lg" />
+    </div>
+  </div>
           </button>
         </div>
-                  </div>
-                );
-              case 'hijri_calendar':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Modern Section: Hijri Calendar - Horizontal Architectural Banner Style */}
+        </div>
+      );
+    case 'hijri_calendar':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Modern Section: Hijri Calendar - Horizontal Architectural Banner Style */}
         <div
           className="px-1"
         >
           <button
-            onClick={() => {
-              triggerHaptic('light');
-              navigate('/hijri-calendar');
-            }}
-            className={cn("navigation-card w-full relative block min-h-[90px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-800 via-teal-900 to-emerald-950 shadow-xl shadow-emerald-950/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
+  onClick={() => {
+    triggerHaptic('light');
+    navigate('/hijri-calendar');
+  }}
+  className={cn("navigation-card w-full relative block min-h-[90px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-800 via-teal-900 to-emerald-950 shadow-xl shadow-emerald-950/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
           >
-            <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
+  <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
+  <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
 
-            <div className={cn("relative min-h-[90px] py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 sm:px-6 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
-              <div className={cn("min-w-0 flex items-center gap-3.5", isRtl ? "flex-row" : "flex-row-reverse")}>
-                <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-300 active:scale-[0.85] active:opacity-70">
-                  <Calendar size={24} className="text-emerald-200 drop-shadow-lg" />
-                </div>
-                <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <h3 className="font-black text-lg sm:text-xl drop-shadow-md text-white">{t('hijri_calendar_card_title')}</h3>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-[10px] font-bold text-emerald-100">
-                      {getHijriDate(today, settings.hijriOffset, currentLang)}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-emerald-100/75 font-medium">{t('hijri_calendar_card_desc')}</p>
-                </div>
-              </div>
-              <div className={cn("flex items-center gap-2 relative z-10 shrink-0", isRtl ? "flex-row" : "flex-row-reverse")}>
-                <span className="text-xs font-bold bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-emerald-100 group-hover:bg-white/20 transition-colors flex items-center gap-1.5">
-                  <span>{t('view_calendar_action') || (isRtl ? 'عرض التقويم الكامل' : 'View Calendar')}</span>
-                  <ChevronRight size={14} className={cn(!isRtl && "rotate-180")} />
-                </span>
-              </div>
-            </div>
+  <div className={cn("relative min-h-[90px] py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 sm:px-6 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
+    <div className={cn("min-w-0 flex items-center gap-3.5", isRtl ? "flex-row" : "flex-row-reverse")}>
+      <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-300 active:scale-[0.85] active:opacity-70">
+        <Calendar size={24} className="text-emerald-200 drop-shadow-lg" />
+      </div>
+      <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
+        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+          <h3 className="font-black text-lg sm:text-xl drop-shadow-md text-white">{t('hijri_calendar_card_title')}</h3>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-[10px] font-bold text-emerald-100">
+            {getHijriDate(today, settings.hijriOffset, currentLang)}
+          </span>
+        </div>
+        <p className="text-[11px] text-emerald-100/75 font-medium">{t('hijri_calendar_card_desc')}</p>
+      </div>
+    </div>
+    <div className={cn("flex items-center gap-2 relative z-10 shrink-0", isRtl ? "flex-row" : "flex-row-reverse")}>
+      <span className="text-xs font-bold bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/15 text-emerald-100 group-hover:bg-white/20 transition-colors flex items-center gap-1.5">
+        <span>{t('view_calendar_action') || (isRtl ? 'عرض التقويم الكامل' : 'View Calendar')}</span>
+        <ChevronRight size={14} className={cn(!isRtl && "rotate-180")} />
+      </span>
+    </div>
+  </div>
           </button>
         </div>
-                  </div>
-                );
+        </div>
+      );
 
-              case 'adhkar_stats':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Adhkar Commitment Stats Card */}
+    case 'adhkar_stats':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Adhkar Commitment Stats Card */}
       <div
         className="px-1"
       >
         <button
           onClick={() => {
-            triggerHaptic('light');
-            navigate('/adhkar-stats');
+  triggerHaptic('light');
+  navigate('/adhkar-stats');
           }}
           className={cn(
-            "navigation-card w-full relative overflow-hidden min-h-[76px] rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 p-4 flex flex-wrap gap-3 items-center justify-between border border-white/10 shadow-lg shadow-purple-950/30 group transition-all outline-none cursor-pointer",
-            isRtl ? "text-right" : "text-left"
+  "navigation-card w-full relative overflow-hidden min-h-[76px] rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 p-4 flex flex-wrap gap-3 items-center justify-between border border-white/10 shadow-lg shadow-purple-950/30 group transition-all outline-none cursor-pointer",
+  isRtl ? "text-right" : "text-left"
           )}
         >
           <div className="absolute inset-0 opacity-10 bg-[url('/images/arabesque.png')]" />
           <div className={cn("flex items-center gap-3 relative z-10", isRtl ? "flex-row" : "flex-row-reverse")}>
-            <div className="w-12 h-12 shrink-0 bg-purple-500/20 rounded-xl flex items-center justify-center shadow-md border border-purple-400/30 group-hover:scale-105 transition-transform duration-300">
-              <BarChart3 size={24} className="text-purple-200 drop-shadow-md" />
-            </div>
-            <div className={isRtl ? "text-right" : "text-left"}>
-              <h3 className="text-sm md:text-base font-black text-white leading-tight">
-                {t('adhkar_commitment_stats')}
-              </h3>
-              <p className="text-[11px] text-purple-200/70 font-medium mt-0.5">
-                {t('adhkar_commitment_stats_desc')}
-              </p>
-            </div>
+  <div className="w-12 h-12 shrink-0 bg-purple-500/20 rounded-xl flex items-center justify-center shadow-md border border-purple-400/30 group-hover:scale-105 transition-transform duration-300">
+    <BarChart3 size={24} className="text-purple-200 drop-shadow-md" />
+  </div>
+  <div className={isRtl ? "text-right" : "text-left"}>
+    <h3 className="text-sm md:text-base font-black text-white leading-tight">
+      {t('adhkar_commitment_stats')}
+    </h3>
+    <p className="text-[11px] text-purple-200/70 font-medium mt-0.5">
+      {t('adhkar_commitment_stats_desc')}
+    </p>
+  </div>
           </div>
           <div className={cn("flex items-center gap-2 relative z-10 shrink-0", isRtl ? "flex-row" : "flex-row-reverse")}>
-            <span className="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-xl border border-white/15 text-purple-100 group-hover:bg-white/20 transition-colors">
-              {t('view_stats_action')}
-            </span>
+  <span className="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-xl border border-white/15 text-purple-100 group-hover:bg-white/20 transition-colors">
+    {t('view_stats_action')}
+  </span>
           </div>
         </button>
       </div>
-                  </div>
-                );
-              case 'challenges':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Challenges & Badges Strip */}
+        </div>
+      );
+    case 'challenges':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Challenges & Badges Strip */}
       <div
         className="px-1"
       >
@@ -591,33 +631,33 @@ export const Home: React.FC = () => {
         >
           <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-10 mix-blend-overlay" />
           <div className={cn("flex items-center gap-3 relative z-10", isRtl ? "flex-row" : "flex-row-reverse")}>
-            <div className="w-14 h-14 shrink-0 bg-white/20 rounded-2xl flex items-center justify-center shadow-lg border border-white/30 group-hover:rotate-12 transition-transform duration-500">
-              <Zap size={28} className="text-amber-300 fill-amber-300/30" />
-            </div>
-            <div className={isRtl ? "text-right" : "text-left"}>
-              <h3 className="text-lg font-black text-white dark:text-white leading-tight">{t('challenges_nav')}</h3>
-              <p className="text-[10px] text-indigo-100 font-bold uppercase tracking-widest">{t('challenges_card_desc')}</p>
-            </div>
+  <div className="w-14 h-14 shrink-0 bg-white/20 rounded-2xl flex items-center justify-center shadow-lg border border-white/30 group-hover:rotate-12 transition-transform duration-500">
+    <Zap size={28} className="text-amber-300 fill-amber-300/30" />
+  </div>
+  <div className={isRtl ? "text-right" : "text-left"}>
+    <h3 className="text-lg font-black text-white dark:text-white leading-tight">{t('challenges_nav')}</h3>
+    <p className="text-[10px] text-indigo-100 font-bold uppercase tracking-widest">{t('challenges_card_desc')}</p>
+  </div>
           </div>
           <div className={cn("flex items-center gap-2 relative z-10", isRtl ? "flex-row" : "flex-row-reverse")}>
-            <div className="flex -space-x-3 rtl:space-x-reverse">
-              <div className="w-8 h-8 rounded-full border-2 border-indigo-700 bg-amber-400 flex items-center justify-center shadow-md">
-                <Trophy size={14} className="text-amber-900" />
-              </div>
-              <div className="w-8 h-8 rounded-full border-2 border-indigo-700 bg-emerald-400 flex items-center justify-center shadow-md">
-                <Award size={14} className="text-emerald-900" />
-              </div>
-            </div>
-            <ChevronRight size={20} className={cn("text-white/50 group-hover:text-white transition-colors", !isRtl && "rotate-180")} />
+  <div className="flex -space-x-3 rtl:space-x-reverse">
+    <div className="w-8 h-8 rounded-full border-2 border-indigo-700 bg-amber-400 flex items-center justify-center shadow-md">
+      <Trophy size={14} className="text-amber-900" />
+    </div>
+    <div className="w-8 h-8 rounded-full border-2 border-indigo-700 bg-emerald-400 flex items-center justify-center shadow-md">
+      <Award size={14} className="text-emerald-900" />
+    </div>
+  </div>
+  <ChevronRight size={20} className={cn("text-white/50 group-hover:text-white transition-colors", !isRtl && "rotate-180")} />
           </div>
         </button>
       </div>
-                  </div>
-                );
-              case 'sadaqah':
-                return (
-                  <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
-                    {/* Sadaqah Jariyah Project Banner (مشروع الصدقة الجارية) */}
+        </div>
+      );
+    case 'sadaqah':
+      return (
+        <div key={widget.id} className="min-w-0 col-span-1 md:col-span-2">
+          {/* Sadaqah Jariyah Project Banner (مشروع الصدقة الجارية) */}
       <div
         className="px-1"
       >
@@ -626,49 +666,45 @@ export const Home: React.FC = () => {
           <div className="absolute -top-12 -left-12 w-32 h-32 text-emerald-500/20 rounded-full card-glow pointer-events-none" />
 
           <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-[1_1_12rem] items-center gap-3 min-w-0">
-              <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30 shrink-0 shadow-inner group-hover:scale-110 transition-transform">
-                <HandHeart size={26} className="animate-pulse" />
-              </div>
-              <div className="min-w-0 text-right">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shrink-0">
-                    {t('sadaqah_badge')}
-                  </span>
-                </div>
-                <h3 className="text-base font-black text-white leading-tight">
-                  {t('sadaqah_title')}
-                </h3>
-                <p className="text-[11px] text-emerald-100/80 font-semibold mt-0.5">
-                  {t('sadaqah_subtitle')}
-                </p>
-              </div>
-            </div>
+  <div className="flex flex-[1_1_12rem] items-center gap-3 min-w-0">
+    <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30 shrink-0 shadow-inner group-hover:scale-110 transition-transform">
+      <HandHeart size={26} className="animate-pulse" />
+    </div>
+    <div className="min-w-0 text-right">
+      <div className="flex items-center gap-2 mb-0.5">
+        <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shrink-0">
+          {t('sadaqah_badge')}
+        </span>
+      </div>
+      <h3 className="text-base font-black text-white leading-tight">
+        {t('sadaqah_title')}
+      </h3>
+      <p className="text-[11px] text-emerald-100/80 font-semibold mt-0.5">
+        {t('sadaqah_subtitle')}
+      </p>
+    </div>
+  </div>
 
-            <button
-              onClick={() => {
-                  triggerHaptic('light');
-                  navigate('/sadaqah-jariyah');
-                }}
-                className="shrink-0 px-3.5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
-              >
-                <span>{t('sadaqah_action')}</span>
-                <ChevronRight size={14} className={cn(!isRtl && "rotate-180")} />
-              </button>
-            </div>
+  <button
+    onClick={() => {
+        triggerHaptic('light');
+        navigate('/sadaqah-jariyah');
+      }}
+      className="shrink-0 px-3.5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
+    >
+      <span>{t('sadaqah_action')}</span>
+      <ChevronRight size={14} className={cn(!isRtl && "rotate-180")} />
+    </button>
+  </div>
           </div>
         </div>
-                  </div>
-                );
-              default:
-                return null;
-            }
-          })}
-      </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+});
 
-
-    </div>
-  );
-};
+HomeWidgetCard.displayName = 'HomeWidgetCard';
 
 export default React.memo(Home);

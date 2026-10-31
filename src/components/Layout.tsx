@@ -12,9 +12,9 @@ import { PageSkeletonFallback } from './ui/PageSkeletonFallback';
 import { AppInfoModal } from './AppInfoModal';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
-import { GlobalAudioBar } from './GlobalAudioBar';
+import { useGlobalAudio } from '../context/GlobalAudioContext';
 import { DownloadProgressWidget } from './DownloadProgressWidget';
-import { auth } from '../firebase';
+import { loadFirebaseWhenIdle } from '../lib/firebaseLazy';
 import { SectionErrorBoundary } from './SectionErrorBoundary';
 import { playNotificationChimeSound } from '../lib/sounds';
 
@@ -36,8 +36,43 @@ const widgetIconMap: Record<string, any> = {
   'sadaqah': HandHeart
 };
 
+// The floating audio bar (and the ~370 KB lecture catalogue it reads) loads only
+// once something plays, instead of with every app start.
+const GlobalAudioBar = React.lazy(() => import('./GlobalAudioBar').then(m => ({ default: m.GlobalAudioBar })));
+
+function LazyGlobalAudioBar() {
+  const { currentTrack } = useGlobalAudio();
+  const [needed, setNeeded] = useState(false);
+  useEffect(() => {
+    if (currentTrack) setNeeded(true);
+  }, [currentTrack]);
+  if (!needed && !currentTrack) return null;
+  return (
+    <React.Suspense fallback={null}>
+      <GlobalAudioBar />
+    </React.Suspense>
+  );
+}
+
 export const Layout: React.FC = () => {
-  const { progress, settings, isCategoryCompleted, adhkarData, setNotified, updateSettings, updateProgress, homeWidgets, updateHomeWidgets } = useAppContext();
+  // The signed-in user's name for the menu; Firebase loads after the first screen.
+  const [accountName, setAccountName] = useState<string | null>(null);
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    loadFirebaseWhenIdle()
+      .then(async ({ auth }) => {
+        const { onAuthStateChanged } = await import('firebase/auth');
+        if (cancelled) return;
+        unsubscribe = onAuthStateChanged(auth, (user) => setAccountName(user?.displayName ?? null));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+const { progress, settings, isCategoryCompleted, adhkarData, setNotified, updateSettings, updateProgress, homeWidgets, updateHomeWidgets } = useAppContext();
   const { isCategoryFinished } = useAdhkarCounts();
   const { t, isRtl, currentLang } = useTranslation(settings.appLanguage);
   const location = useLocation();
@@ -1568,7 +1603,7 @@ export const Layout: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <p className="text-white font-bold text-sm truncate w-32">{t('welcome_prefix')} {auth.currentUser?.displayName || t('welcome_believer')}</p>
+                        <p className="text-white font-bold text-sm truncate w-32">{t('welcome_prefix')} {accountName || t('welcome_believer')}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">{t('level')} {progress.level}</span>
                           <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1"><Sparkles size={10} /> {progress.points} {t('points')}</span>
@@ -1800,8 +1835,8 @@ export const Layout: React.FC = () => {
             </React.Suspense>
           </div>
         </main>
-        <GlobalAudioBar />
-        <DownloadProgressWidget />
+        <LazyGlobalAudioBar />
+<DownloadProgressWidget />
         {/* Fades in on returning home but leaves at once: an exit animation kept
             the bar's height in the layout for 200ms after a section had already
             reserved its own bottom space, so the content jumped. */}

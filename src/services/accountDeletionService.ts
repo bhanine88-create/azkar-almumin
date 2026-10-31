@@ -1,6 +1,6 @@
 import { auth, db } from '../firebase';
 import { deleteUser, GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocsFromServer, deleteDoc, doc } from 'firebase/firestore';
 import { safeLocalStorageRemoveItem } from '../utils/storage';
 
 export interface DeleteAccountResult {
@@ -17,24 +17,23 @@ export const deleteAccountAndAllData = async (): Promise<DeleteAccountResult> =>
     if (user) {
       const uid = user.uid;
 
-      // Sub-collections to delete
-      const subCollections = ['backups', 'quranProgress', 'tasbeehGoals'];
-      for (const colName of subCollections) {
-        try {
-          const colRef = collection(db, 'users', uid, colName);
-          const snap = await getDocs(colRef);
-          const deletePromises = snap.docs.map(d => deleteDoc(d.ref));
-          await Promise.all(deletePromises);
-        } catch (e) {
-          console.warn(`Could not clear subcollection ${colName}:`, e);
-        }
-      }
-
-      // Delete the root user doc if exists
+      // The cloud data must be gone before the account is: deleting the
+      // account first would leave the data in Firestore with no owner able to
+      // reach or delete it. The list comes from the server, not the offline
+      // cache, so no document is missed and an offline attempt stops here.
       try {
+        const subCollections = ['backups', 'quranProgress', 'tasbeehGoals'];
+        for (const colName of subCollections) {
+          const snap = await getDocsFromServer(collection(db, 'users', uid, colName));
+          await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+        }
         await deleteDoc(doc(db, 'users', uid));
       } catch (e) {
-        console.warn('Could not clear root user doc:', e);
+        console.warn('Could not delete the cloud data; the account is kept:', e);
+        return {
+          success: false,
+          error: 'تعذّر حذف بياناتك من السحابة. تحقّق من الاتصال بالإنترنت ثم حاول مرة أخرى، ولم يُحذف الحساب.'
+        };
       }
 
       // 2. Delete the Firebase Authentication account

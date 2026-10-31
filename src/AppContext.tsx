@@ -2,23 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { opensInNativeMushaf, prefetchNativeMushaf } from './services/mushafNative';
 import { UserProgress, AppSettings, AdhkarData, Dhikr, QuranLog, BaqiyatSalihat, WorshipActivity, Bookmark, Challenge, Badge, UnifiedFavoriteItem } from './types';
 import { ADHKAR_DATA as INITIAL_ADHKAR_DATA } from './constants';
-import { backupService } from './services/backupService';
 import { mushafService } from './services/mushafService';
 import { quranOfflineService } from './services/quranOfflineService';
-import { userService } from './services/userService';
-import { syncService } from './services/syncService';
-import { auth, db } from './firebase';
+import { currentFirebaseUser, loadFirebase, loadFirebaseWhenIdle } from './lib/firebaseLazy';
 import { safeLocalStorageSetItem, safeLocalStorageGetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear, STORAGE_KEYS, readFirstStored, safeJsonParse } from './utils/storage';
 import { storageManager } from './services/storageManager';
 import i18n, { updateDocumentDirection, changeAppLanguage } from './i18n';
 import { loadAllDownloadedFontsOnStartup } from './services/fontService';
 import { adhkarNotificationController } from './services/adhkarNotificationController';
-import { 
-  updateDoc, 
-  doc, 
-  increment, 
-  serverTimestamp 
-} from 'firebase/firestore';
 
 interface AppContextType {
   progress: UserProgress;
@@ -785,9 +776,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
 
           // 2. Cloud Backup (If authenticated)
-          if (auth.currentUser) {
+          if (await currentFirebaseUser()) {
             try {
               const fullData = { ...dataToStore, adhkarData };
+              const { backupService } = await import('./services/backupService');
               await backupService.createCloudBackup(fullData);
               safeLocalStorageSetItem('believer_last_cloud_backup', new Date().toLocaleString('ar-EG'));
             } catch (cloudErr) {
@@ -807,10 +799,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Debounced auto-save progress and settings to Cloud (Firestore) using syncService
   useEffect(() => {
-    if (auth.currentUser) {
+    currentFirebaseUser().then((user) => {
+      if (!user) return;
       // Let the syncService handle synchronization smoothly in the background
-      syncService.markDirty();
-    }
+      import('./services/syncService').then(({ syncService }) => syncService.markDirty());
+    });
   }, [progress, settings]);
 
   // Listen for background cloud updates from the sync manager
@@ -837,9 +830,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Load cloud profile once on initial authenticated mount
   useEffect(() => {
     let active = true;
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    let unsubscribe: (() => void) | undefined;
+    // Firebase loads after the first screen (see lib/firebaseLazy.ts). The sync
+    // manager starts with it: it schedules its own periodic cloud sync.
+    loadFirebaseWhenIdle().then(({ auth }) => {
+      import('./services/syncService').catch(() => {});
+      if (!active) return;
+      unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user && active) {
         try {
+          const { userService } = await import('./services/userService');
           const cloudProfile = await userService.getUserProfile(user.uid);
           if (cloudProfile && active) {
             if (cloudProfile.progress) {
@@ -853,11 +853,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('[AppContext] Initial cloud profile load failed:', err);
         }
       }
-    });
+      });
+    }).catch((err) => console.warn('[AppContext] Firebase failed to load:', err));
 
     return () => {
       active = false;
-      unsubscribe();
+      unsubscribe?.();
     };
   }, []);
 
@@ -1004,12 +1005,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProgress(prev => {
       if (!prev.completedAdhkar.includes(category)) {
         // Increment global stats if possible
-        if (auth.currentUser) {
-          updateDoc(doc(db, 'stats', 'global'), {
+        currentFirebaseUser().then(async (user) => {
+          if (!user) return;
+          const [{ db }, { updateDoc, doc, increment, serverTimestamp }] = await Promise.all([
+            loadFirebase(),
+            import('firebase/firestore'),
+          ]);
+          await updateDoc(doc(db, 'stats', 'global'), {
             totalAdhkarRecited: increment(1),
             lastUpdated: serverTimestamp()
-          }).catch(err => console.warn('Global stats update failed:', err));
-        }
+          });
+        }).catch(err => console.warn('Global stats update failed:', err));
 
         const today = new Date().toISOString().split('T')[0];
         const lastDate = prev.streak?.lastDate || '';

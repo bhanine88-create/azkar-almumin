@@ -53,9 +53,17 @@ export async function scheduleReminderCards(plan: LocalNotificationSchema[]): Pr
   }
 }
 
+/**
+ * Only adhkar pages: the route arrives as an intent extra, and any installed app
+ * can start MainActivity with one.
+ */
+const CARD_ROUTE = /^\/adhkar\/[a-z0-9_-]+$/i;
+
 /** Calls back with the page a card's "Read now" asked for. */
 export function onReminderCardRoute(open: (route: string) => void): () => void {
   if (!available()) return () => {};
-  const handle = ReminderCard.addListener('openRoute', ({ route }) => open(route));
+  const handle = ReminderCard.addListener('openRoute', ({ route }) => {
+    if (typeof route === 'string' && CARD_ROUTE.test(route)) open(route);
+  });
   return () => { handle.then(h => h.remove()).catch(() => {}); };
 }

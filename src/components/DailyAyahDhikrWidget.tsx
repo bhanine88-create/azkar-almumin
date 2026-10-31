@@ -6,7 +6,7 @@ import { useAppContext } from '../AppContext';
 import { INSPIRATIONS } from '../data/inspirations';
 import { cn } from '../lib/utils';
 
-export const DailyAyahDhikrWidget: React.FC = () => {
+const DailyAyahDhikrWidgetContent: React.FC = () => {
   const { settings } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
   
@@ -181,3 +181,6 @@ export const DailyAyahDhikrWidget: React.FC = () => {
     </motion.div>
   );
 };
+
+// Takes no props: memoised, the home menu re-rendering leaves it alone.
+export const DailyAyahDhikrWidget = React.memo(DailyAyahDhikrWidgetContent);

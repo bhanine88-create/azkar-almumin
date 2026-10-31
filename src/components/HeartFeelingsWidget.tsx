@@ -15,7 +15,7 @@ import { useAppContext } from '../AppContext';
 
 const HeartFeelingsModal = React.lazy(() => import('./HeartFeelingsModal').then(m => ({ default: m.HeartFeelingsModal })));
 
-export const HeartFeelingsWidget: React.FC = () => {
+const HeartFeelingsWidgetContent: React.FC = () => {
   const { settings } = useAppContext();
   const { t, isRtl } = useTranslation(settings?.appLanguage);
 
@@ -1055,3 +1055,6 @@ export const HeartFeelingsWidget: React.FC = () => {
     </>
   );
 };
+
+// Takes no props: memoised, the home menu re-rendering leaves it alone.
+export const HeartFeelingsWidget = React.memo(HeartFeelingsWidgetContent);
