@@ -53,6 +53,19 @@ public class MushafPlugin extends Plugin {
         call.resolve();
     }
 
+    /**
+     * Starts downloading every missing page in the background, quietly. Called
+     * at app start, as the app used to pre-cache the web Hafs edition, so pages
+     * open instantly and offline.
+     */
+    @PluginMethod
+    public void prefetchAll(PluginCall call) {
+        if (MushafPages.downloadedCount(getContext()) < MushafPages.TOTAL) {
+            MushafPages.downloadAll(getContext(), null);
+        }
+        call.resolve();
+    }
+
     @PluginMethod
     public void getState(PluginCall call) {
         SharedPreferences prefs = getContext().getSharedPreferences(MushafActivity.PREFS, android.content.Context.MODE_PRIVATE);

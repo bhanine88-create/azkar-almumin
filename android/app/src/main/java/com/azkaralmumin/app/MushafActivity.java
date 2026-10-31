@@ -337,10 +337,9 @@ public class MushafActivity extends AppCompatActivity {
         boolean marked = bookmarks.contains(currentPage);
         markButton.setImageResource(marked ? R.drawable.ic_mushaf_bookmarked : R.drawable.ic_mushaf_bookmark);
         markButton.setColorFilter(marked ? GOLD : Color.WHITE);
-        for (int d = 1; d <= 2; d++) {
-            MushafPages.prefetch(this, currentPage + d);
-            MushafPages.prefetch(this, currentPage - d);
-        }
+        // Readers mostly go forward: four pages ahead, two behind.
+        for (int d = 1; d <= 4; d++) MushafPages.prefetch(this, currentPage + d);
+        for (int d = 1; d <= 2; d++) MushafPages.prefetch(this, currentPage - d);
     }
 
     private void applyMode(boolean keepPage) {

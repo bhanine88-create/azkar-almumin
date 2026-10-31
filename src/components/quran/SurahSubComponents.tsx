@@ -191,8 +191,8 @@ export const SettingsModal = React.memo(({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     { id: "hafs", name: t("mushaf_hafs"), desc: "مصحف المدينة الكلاسيكي" },
-                    { id: "tajweed", name: t("mushaf_tajweed"), desc: "ملون لمساعدة القارئ" },
-                  ].map((ed: any) => (
+                    { id: "warsh", name: t("mushaf_warsh"), desc: "رواية ورش عن نافع" },
+].map((ed: any) => (
                     <button
                       key={ed.id}
                       onClick={() => setMushafEdition(ed.id)}

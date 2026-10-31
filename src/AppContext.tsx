@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { opensInNativeMushaf } from './services/mushafNative';
+import { opensInNativeMushaf, prefetchNativeMushaf } from './services/mushafNative';
 import { UserProgress, AppSettings, AdhkarData, Dhikr, QuranLog, BaqiyatSalihat, WorshipActivity, Bookmark, Challenge, Badge, UnifiedFavoriteItem } from './types';
 import { ADHKAR_DATA as INITIAL_ADHKAR_DATA } from './constants';
 import { backupService } from './services/backupService';
@@ -271,10 +271,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     cleanupLegacyStorage();
     storageManager.checkAndClearStorageIfNeeded();
 
+    // The colour-coded (tajweed) edition was removed; free its cached pages once.
+    if (!safeLocalStorageGetItem('believer_tajweed_cache_cleared')) {
+      mushafService.removeEdition('tajweed')
+        .then(() => safeLocalStorageSetItem('believer_tajweed_cache_cleared', '1'))
+        .catch(() => {});
+    }
+
     const timer = setTimeout(async () => {
-      // On Android the Hafs pages belong to the native mushaf, which stores its
-      // own; pre-caching the web copy there would download ~150 MB for nothing.
-      if (opensInNativeMushaf('hafs')) return;
+      // On Android the Hafs pages belong to the native mushaf, which keeps its
+      // own copy: pre-cache that one instead, so pages open instantly.
+      if (opensInNativeMushaf('hafs')) {
+        prefetchNativeMushaf();
+        return;
+      }
       try {
         const isHafsDownloaded = await mushafService.isEditionDownloaded('hafs');
         if (!isHafsDownloaded) {

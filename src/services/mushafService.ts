@@ -57,27 +57,6 @@ export const MUSHAF_EDITIONS = {
       ];
     }
   },
-  tajweed: {
-    id: 'tajweed',
-    name: 'مصحف التجويد',
-    totalPage: 604,
-    getUrls: (pageNum: number) => {
-      const paddedPage = String(pageNum).padStart(3, '0');
-      return [
-        // JSDelivr Tajweed sources (QuranHub has full side borders)
-        `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/easyquran.com/hafs-tajweed/${pageNum}.jpg`,
-        `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/easyquran.com/hafs-tajweed/${paddedPage}.jpg`,
-        
-        // Imomzoda tajweed mirrors (backup)
-        `https://cdn.jsdelivr.net/gh/Imomzoda8/tajweed-quran-images@main/page_${paddedPage}.jpg`,
-        `https://cdn.jsdelivr.net/gh/Imomzoda8/tajweed-quran-images@main/page_${pageNum}.jpg`,
-        
-        // GlobalQuran tajweed mirrors
-        `https://raw.githubusercontent.com/GlobalQuran/quran-images/master/images/hafs_tadjweed/${paddedPage}.png`,
-        `https://raw.githubusercontent.com/GlobalQuran/quran-images/master/images/hafs_tadjweed/${pageNum}.png`,
-      ];
-    }
-  }
 };
 
 const CACHE_NAME_PREFIX = 'mushaf-cache-v3-';

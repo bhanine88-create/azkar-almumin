@@ -2,15 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getNativeMushafState, isNativeMushafAvailable, Mushaf, openNativeMushaf } from '../services/mushafNative';
 import { SURAH_NAMES, SURAH_START_PAGES } from '../utils/quranUtils';
-import { useQuranSettings } from '../context/QuranSettingsContext';
-import { cn } from '../lib/utils';
 import { mushafService } from '../services/mushafService';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
 
 /**
  * Top of the surah list on Android: opens the native page-by-page mushaf,
- * continuing from the last page read, and chooses how a tapped surah opens:
- * in the mushaf (native reader) or as text.
+ * continuing from the last page read. Tapped surahs open in it too; its own
+ * button switches between page turning and vertical scrolling.
  */
 export function MushafOpenCard({ t, language, isRtl }: {
   t: (key: string, fallback: string, params?: Record<string, string | number>) => string;
@@ -18,7 +16,6 @@ export function MushafOpenCard({ t, language, isRtl }: {
   isRtl: boolean;
 }) {
   const [lastPage, setLastPage] = useState(0);
-  const { viewMode, setViewMode } = useQuranSettings();
 
   useEffect(() => {
     if (!isNativeMushafAvailable()) return;
@@ -62,25 +59,6 @@ export function MushafOpenCard({ t, language, isRtl }: {
         </span>
         <Arrow size={20} className="text-amber-300 shrink-0" />
       </button>
-      <div className="mt-2 flex items-center justify-center gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
-        <span>{t('mushaf_open_mode_label', 'فتح السور:')}</span>
-        {([['mushaf', t('mushaf_open_mode_pages', 'بالمصحف')], ['vertical', t('mushaf_open_mode_text', 'نصياً')]] as const).map(([mode, text]) => (
-          <button
-            key={mode}
-            type="button"
-            onClick={() => setViewMode(mode)}
-            aria-pressed={viewMode === mode}
-            className={cn(
-              "px-3 py-1 rounded-full border transition-colors",
-              viewMode === mode
-                ? "bg-[#006A4E] text-white border-[#006A4E]"
-                : "border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400"
-            )}
-          >
-            {text}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

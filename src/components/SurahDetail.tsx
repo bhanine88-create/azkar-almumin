@@ -1876,10 +1876,12 @@ export const SurahDetail: React.FC = () => {
     };
   }, []);
 
-  // On Android the mushaf view is the native reader (MushafActivity). Once the
-  // surah is loaded it opens at the requested ayah's or page's page, and this
-  // screen steps back out, so Back from the reader returns to where the user was.
-  const opensNativeMushaf = viewMode === "mushaf" && opensInNativeMushaf(mushafEdition);
+  // On Android the Madinah (Hafs) mushaf is the native reader (MushafActivity),
+  // in either view: it has its own vertical mode, and the web page view here
+  // showed text in place of pages whose image had not loaded. Once the surah is
+  // loaded it opens at the requested ayah's or page's page, and this screen
+  // steps back out, so Back from the reader returns to where the user was.
+  const opensNativeMushaf = opensInNativeMushaf(mushafEdition);
   const nativeMushafOpened = React.useRef(false);
   React.useEffect(() => {
     if (!opensNativeMushaf || !surah || nativeMushafOpened.current) return;
@@ -3183,8 +3185,7 @@ export const SurahDetail: React.FC = () => {
                       {[
                         { id: "hafs", name: "مصحف حفص", recitation: "uthmani" },
                         { id: "warsh", name: "مصحف ورش", recitation: "warsh" },
-                        { id: "tajweed", name: "مصحف التجويد", recitation: "uthmani" },
-                      ].map((ed) => (
+].map((ed) => (
                         <button
                           key={ed.id}
                           onClick={() => {

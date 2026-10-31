@@ -827,9 +827,8 @@ export const Quran: React.FC = () => {
                             <div className="flex flex-col gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-2xl">
                               {[
                                 { id: 'hafs', name: localT('editionHafs'), recitation: 'uthmani' },
-                                { id: 'warsh', name: localT('editionWarsh'), recitation: 'warsh' },
-                                { id: 'tajweed', name: localT('editionTajweed'), recitation: 'uthmani' }
-                              ].map(ed => (
+                                { id: 'warsh', name: localT('editionWarsh'), recitation: 'warsh' }
+].map(ed => (
                                 <button
                                   key={ed.id}
                                   onClick={() => { setMushafEdition(ed.id as any); setRecitation(ed.recitation as any); }}
@@ -1531,16 +1530,7 @@ export const Quran: React.FC = () => {
                     >
                       {localT('editionWarsh')}
                     </button>
-                    <button 
-                      onClick={() => { setRecitation('uthmani'); setMushafEdition('tajweed'); }} 
-                      className={cn(
-                        "flex-1 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap", 
-                        mushafEdition === 'tajweed' ? 'bg-white dark:bg-slate-700 shadow-md scale-[1.02] text-teal-600 dark:text-teal-400' : 'text-slate-500'
-                      )}
-                    >
-                      {localT('editionTajweed')}
-                    </button>
-                  </div>
+</div>
                 </div>
 
                 {/* Font Size */}

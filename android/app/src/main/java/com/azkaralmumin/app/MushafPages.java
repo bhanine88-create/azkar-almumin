@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Madinah mushaf page images (King Fahd Complex, 604 pages), downloaded once
@@ -29,10 +30,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class MushafPages {
     static final int TOTAL = 604;
     private static final String TAG = "MushafPages";
-    /** Same King Fahd page set the web reader uses (src/services/mushafService.ts). */
+    /**
+     * Same King Fahd page set the web reader used (src/services/mushafService.ts).
+     * GitHub first: jsDelivr refuses this repository at times ("package size
+     * exceeded the configured limit of 50 MB", HTTP 403) and was the slower
+     * of the two when measured.
+     */
     private static final String[] SOURCES = {
-        "https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/%d.jpg",
         "https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/hafs-wasat/%d.jpg",
+        "https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/%d.jpg",
     };
     /** Smaller than any real page; anything below is a failed or partial download. */
     private static final long MIN_BYTES = 20_000;
@@ -47,7 +53,9 @@ final class MushafPages {
     }
 
     private static final ExecutorService PAGE_POOL = Executors.newFixedThreadPool(3);
-    private static final ExecutorService BULK_POOL = Executors.newSingleThreadExecutor();
+    /** Three pages at a time: about three times faster than one by one. */
+    private static final int BULK_THREADS = 3;
+    private static final ExecutorService BULK_POOL = Executors.newFixedThreadPool(BULK_THREADS);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static final Map<Integer, List<PageListener>> WAITING = new HashMap<>();
     private static final AtomicBoolean BULK_RUNNING = new AtomicBoolean(false);
@@ -135,24 +143,33 @@ final class MushafPages {
      * picks the progress up again.
      */
     static void downloadAll(Context context, ProgressListener listener) {
-        bulkListener = listener;
+        // A silent background start (no listener) must not drop the reader's.
+        if (listener != null || !BULK_RUNNING.get()) bulkListener = listener;
         if (!BULK_RUNNING.compareAndSet(false, true)) {
             reportBulk(lastProgress[0], lastProgress[2] == 1, lastProgress[3]);
             return;
         }
         BULK_CANCEL.set(false);
         final Context app = context.getApplicationContext();
-        BULK_POOL.execute(() -> {
-            int done = 0;
-            int failed = 0;
-            for (int page = 1; page <= TOTAL && !BULK_CANCEL.get(); page++) {
-                if (has(app, page) || download(app, page)) done++;
-                else failed++;
-                if (page % 4 == 0) reportBulk(done, false, failed);
-            }
-            BULK_RUNNING.set(false);
-            reportBulk(done, true, failed);
-        });
+        // Workers take the next page in order until all 604 are handled.
+        final AtomicInteger nextPage = new AtomicInteger(1);
+        final AtomicInteger done = new AtomicInteger();
+        final AtomicInteger failed = new AtomicInteger();
+        final AtomicInteger workersLeft = new AtomicInteger(BULK_THREADS);
+        for (int w = 0; w < BULK_THREADS; w++) {
+            BULK_POOL.execute(() -> {
+                int page;
+                while (!BULK_CANCEL.get() && (page = nextPage.getAndIncrement()) <= TOTAL) {
+                    if (has(app, page) || download(app, page)) done.incrementAndGet();
+                    else failed.incrementAndGet();
+                    if (page % 4 == 0) reportBulk(done.get(), false, failed.get());
+                }
+                if (workersLeft.decrementAndGet() == 0) {
+                    BULK_RUNNING.set(false);
+                    reportBulk(done.get(), true, failed.get());
+                }
+            });
+        }
     }
 
     static boolean isBulkRunning() {
@@ -198,12 +215,15 @@ final class MushafPages {
 
     private static boolean downloadFrom(Context app, int page, String url) {
         File target = file(app, page);
-        File temp = new File(target.getPath() + ".part");
+        // Its own temp file: the background download and the reader's prefetch can
+        // fetch the same page at once, and a shared .part file made one of them fail.
+        File temp = new File(target.getPath() + "." + Thread.currentThread().getId() + ".part");
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(15_000);
-            connection.setReadTimeout(30_000);
+            // A stalled source gives way to the other one instead of holding the page.
+            connection.setConnectTimeout(8_000);
+            connection.setReadTimeout(15_000);
             connection.setRequestProperty("User-Agent", "AzkarAlmumin/Android");
             int status = connection.getResponseCode();
             if (status != 200) {
@@ -223,7 +243,11 @@ final class MushafPages {
             }
             // A JPEG, and a whole one: never keep an error page or a cut-off file.
             boolean jpeg = (head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xD8;
-            if (!jpeg || bytes < MIN_BYTES || !temp.renameTo(target)) {
+            if (jpeg && bytes >= MIN_BYTES && !temp.renameTo(target) && has(app, page)) {
+                temp.delete(); // another download saved this page first
+                return true;
+            }
+            if (!jpeg || bytes < MIN_BYTES || !target.exists()) {
                 Log.w(TAG, "page " + page + ": rejected (jpeg=" + jpeg + ", bytes=" + bytes + ") from " + url);
                 temp.delete();
                 return false;

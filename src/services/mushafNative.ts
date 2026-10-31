@@ -26,6 +26,7 @@ interface MushafPlugin {
     rtl: boolean;
   }): Promise<void>;
   getState(): Promise<MushafState>;
+  prefetchAll(): Promise<void>;
   addListener(event: 'closed', listener: (data: { lastPage: number }) => void): Promise<PluginListenerHandle>;
 }
 
@@ -35,8 +36,7 @@ export const isNativeMushafAvailable = () => Capacitor.getPlatform() === 'androi
 
 /**
  * The native reader holds the Madinah mushaf (Hafs), and on Android it replaces
- * the old web Hafs edition. Warsh and the colour-coded tajweed edition keep the
- * web page reader, which has their pages.
+ * the old web Hafs edition. Warsh keeps the web page reader, which has its pages.
  */
 export const opensInNativeMushaf = (edition: string | undefined) =>
   isNativeMushafAvailable() && (!edition || edition === 'hafs');
@@ -82,6 +82,12 @@ export async function openNativeMushaf(page: number | undefined, t: Translate, l
     arabicDigits: language === 'ar',
     rtl,
   });
+}
+
+/** Downloads the native mushaf's missing pages in the background (Android). */
+export function prefetchNativeMushaf(): void {
+  if (!isNativeMushafAvailable()) return;
+  Mushaf.prefetchAll().catch(err => console.warn('[Mushaf] background download failed to start:', err));
 }
 
 export async function getNativeMushafState(): Promise<MushafState | null> {

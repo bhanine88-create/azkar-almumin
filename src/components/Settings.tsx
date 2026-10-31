@@ -640,9 +640,8 @@ export const Settings: React.FC = () => {
               <div className="flex bg-black/25 backdrop-blur-md p-1.5 rounded-xl border border-white/10 gap-1.5">
                 {[
                   { id: 'hafs', label: t('mushaf_hafs', 'مصحف حفص') },
-                  { id: 'warsh', label: t('mushaf_warsh', 'مصحف ورش') },
-                  { id: 'tajweed', label: t('mushaf_tajweed', 'مصحف التجويد') }
-                ].map((mushaf) => (
+                  { id: 'warsh', label: t('mushaf_warsh', 'مصحف ورش') }
+].map((mushaf) => (
                   <button
                     key={mushaf.id}
                     onClick={() => updateSettings({ mushafEdition: mushaf.id as any })}

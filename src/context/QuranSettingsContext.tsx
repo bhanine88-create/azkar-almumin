@@ -242,8 +242,10 @@ export const QuranSettingsProvider: React.FC<{ children: ReactNode }> = ({ child
   const [mushafEdition, setMushafEdition] = useState<'hafs' | 'warsh' | 'tajweed'>(() => {
     try {
       const saved = safeLocalStorageGetItem('quran-mushafEdition');
-      // Warsh was missing here, so a saved Warsh choice fell back to Hafs on every start.
-      const validEditions = ['hafs', 'warsh', 'tajweed'];
+      // Warsh was missing here, so a saved Warsh choice fell back to Hafs on every
+      // start. The colour-coded (tajweed) edition was removed at the client's
+      // request; a saved tajweed choice now opens Hafs.
+      const validEditions = ['hafs', 'warsh'];
       if (saved && validEditions.includes(saved)) return saved as any;
       return 'hafs';
     } catch (e) {
