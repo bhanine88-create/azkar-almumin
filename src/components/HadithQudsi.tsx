@@ -128,15 +128,15 @@ export const HadithQudsi: React.FC = () => {
   });
 
   // Introductory Identity Card toggle state (expanded / compact)
+  // Folded by default: open, it filled most of the screen above the hadiths.
   const [isIntroExpanded, setIsIntroExpanded] = useState<boolean>(() => {
-    const saved = safeLocalStorageGetItem('qudsi-intro-expanded');
-    return saved !== null ? saved === 'true' : true;
+    return safeLocalStorageGetItem('qudsi-intro-expanded-v2') === 'true';
   });
 
   const toggleIntroExpanded = () => {
     setIsIntroExpanded(prev => {
       const next = !prev;
-      safeLocalStorageSetItem('qudsi-intro-expanded', String(next));
+      safeLocalStorageSetItem('qudsi-intro-expanded-v2', String(next));
       return next;
     });
   };
@@ -504,33 +504,20 @@ export const HadithQudsi: React.FC = () => {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-y-auto w-full mx-auto pb-16">
       
       {/* ========================================================================= */}
-      {/* الحاوية العلوية الثابتة تماماً مع التبويبات (Fully Sticky Header & Tabs Container) */}
+      {/* الشريط العلوي الثابت: زر الرجوع وأزرار التحكم فقط، كي لا يغطي الأحاديث */}
+      {/* (Only this compact bar is sticky; the identity card and filters scroll away) */}
       {/* ========================================================================= */}
-      <div className="sticky top-0 z-40 p-2 sm:p-3.5 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-md space-y-2.5 transition-all">
-        
-        {/* ========================================================================= */}
-        {/* البطاقة التعريفية الشريفة الثابتة (The Fixed Identity Card for Hadith Qudsi) */}
-        {/* ========================================================================= */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-500/35 dark:border-amber-500/25 shadow-xl bg-gradient-to-br from-[#0c2b20] via-[#092219] to-[#040e0b] text-white p-3 sm:p-4 transition-all duration-300">
-          {/* Subtle Arabesque & Ambient Light Overlay */}
-          <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')]" />
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="sticky top-0 z-40 p-2 sm:px-3.5 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-amber-500/35 dark:border-amber-500/25 shadow-lg bg-gradient-to-br from-[#0c2b20] via-[#092219] to-[#040e0b] text-white px-2 py-1.5 sm:px-3 sm:py-2">
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
-
-          {/* Top Control Bar inside Identity Card */}
-          <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-4 mb-2.5 flex-wrap">
-            {/* Back button & Royal badge */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="relative z-10 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <BackButton fallbackPath="/library" />
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[10px] sm:text-xs font-bold text-amber-300 backdrop-blur-md">
-                <Crown size={14} className="text-amber-400 animate-pulse shrink-0" />
-                <span className="truncate">كلام الله عز وجل بلفظ النبي ﷺ</span>
-              </div>
+              <span className="hidden sm:block truncate text-sm font-black text-white">{t('home_qudsi_title')}</span>
             </div>
 
             {/* Quick Action Button Group */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 shrink-0">
               {/* View Layout Toggle */}
               <div className="flex items-center bg-black/30 p-0.5 sm:p-1 rounded-xl border border-white/15">
                 <button
@@ -613,126 +600,8 @@ export const HadithQudsi: React.FC = () => {
                 <Settings2 size={15} />
               </button>
 
-              {/* Expand / Collapse Intro Details button */}
-              <button
-                onClick={toggleIntroExpanded}
-                className="px-2 py-1.5 rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 text-white/90 transition-all flex items-center gap-1 text-[10px] sm:text-[11px] font-bold cursor-pointer"
-                title={isIntroExpanded ? "طي النبذة التعريفية" : "عرض النبذة التعريفية والفوائد"}
-              >
-                <Info size={13} className="text-amber-400" />
-                <span className="hidden sm:inline">{isIntroExpanded ? "طي النبذة" : "النبذة التعريفية"}</span>
-                {isIntroExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-              </button>
             </div>
           </div>
-
-          {/* Main Title & Brief Summary */}
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-2 pt-1 border-t border-white/10">
-            <div>
-              <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight drop-shadow-sm flex items-center gap-2">
-                <span>{t('home_qudsi_title')}</span>
-                <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  {QUDSI_HADITHS.length} حديثاً جليلاً
-                </span>
-              </h2>
-              <p className="text-[11px] sm:text-xs font-medium text-emerald-100/90 leading-relaxed mt-0.5">
-                ما رواه النبي ﷺ عن ربه عز وجل؛ فالمعنى موحىً به من الله واللفظ بلسان المصطفى ﷺ، حافلةٌ بالرحمة والرجاء والمغفرة.
-              </p>
-            </div>
-
-            {/* Quick Micro Badges */}
-            <div className="flex items-center gap-2 flex-wrap shrink-0">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
-                <CheckCircle2 size={12} className="text-emerald-400" />
-                <span>محققة ومخرجة</span>
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
-                <BookOpen size={12} className="text-amber-400" />
-                <span>شرح وفوائد موسعة</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Expandable Deep Identity Definition & Distinctions Drawer */}
-          <AnimatePresence>
-            {isIntroExpanded && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
-              >
-                <div className="pt-3 mt-3 border-t border-white/15 space-y-2.5">
-                  {/* Definition and Meaning Box */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                      <div className="flex items-center gap-1.5 text-amber-300 font-black text-[11px]">
-                        <Crown size={13} />
-                        <span>ما هو الحديث القدسي؟</span>
-                      </div>
-                      <p className="text-[11px] text-white/85 leading-relaxed font-medium">
-                        هو الحديث الذي يُسنده النبي ﷺ إلى الله تبارك وتعالى قائلاً: «قال الله تعالى»، فالمعنى من الله تبارك وتعالى، واللفظ من رسول الله ﷺ، ولذلك نُسب إلى القدس طهارةً وتنزيهاً وإجلالاً.
-                      </p>
-                    </div>
-
-                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                      <div className="flex items-center gap-1.5 text-emerald-300 font-black text-[11px]">
-                        <Scale size={13} />
-                        <span>الفرق بينه وبين القرآن والحديث النبوي:</span>
-                      </div>
-                      <p className="text-[11px] text-white/85 leading-relaxed font-medium">
-                        القرآن الكريم معجز بلفظه ومعناه متعبد بتلاوته في الصلاة، أما الحديث القدسي فلا تصح به الصلاة، والحديث النبوي معناه وحي أو اجتهاد بلفظ النبي ﷺ دون إسناده إلى قول الله عز وجل.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 4 Identity Stats Pillars */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0">
-                        <BookOpen size={14} />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">مجموع الأحاديث</span>
-                        <span className="block text-xs font-black text-white">{QUDSI_HADITHS.length} حديثاً</span>
-                      </div>
-                    </div>
-
-                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">المقروءة والمحفوظة</span>
-                        <span className="block text-xs font-black text-emerald-300">{readHadiths.length} من {QUDSI_HADITHS.length}</span>
-                      </div>
-                    </div>
-
-                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
-                        <Lightbulb size={14} />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">الشروح والفوائد</span>
-                        <span className="block text-xs font-black text-blue-200">تحليل وتفسير شامل</span>
-                      </div>
-                    </div>
-
-                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center shrink-0">
-                        <Heart size={14} />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">قائمة المفضلة</span>
-                        <span className="block text-xs font-black text-rose-300">{favorites.length} حديثاً</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         {/* Font Customization Panel */}
@@ -743,7 +612,7 @@ export const HadithQudsi: React.FC = () => {
               animate={{ height: 'auto', opacity: 1, scale: 1 }}
               exit={{ height: 0, opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className="overflow-hidden mb-3"
+              className="overflow-hidden mt-2"
             >
               <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-amber-500/5 space-y-4">
                 <div className="flex items-center justify-between mb-2">
@@ -843,6 +712,138 @@ export const HadithQudsi: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* البطاقة التعريفية والبحث والتصنيفات: تتحرك مع التمرير (scroll with the page) */}
+      {/* ========================================================================= */}
+      <div className="px-2 pt-2.5 sm:px-3.5 space-y-2.5">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-500/35 dark:border-amber-500/25 shadow-xl bg-gradient-to-br from-[#0c2b20] via-[#092219] to-[#040e0b] text-white p-3 sm:p-4 transition-all duration-300">
+          {/* Subtle Arabesque & Ambient Light Overlay */}
+          <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none bg-[url('/images/arabesque.png')]" />
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
+
+          {/* Main Title & Brief Summary */}
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight drop-shadow-sm flex items-center gap-2">
+                <span>{t('home_qudsi_title')}</span>
+                <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  {QUDSI_HADITHS.length} حديثاً جليلاً
+                </span>
+              </h2>
+              <p className="text-[11px] sm:text-xs font-medium text-emerald-100/90 leading-relaxed mt-0.5">
+                ما رواه النبي ﷺ عن ربه عز وجل؛ فالمعنى موحىً به من الله واللفظ بلسان المصطفى ﷺ، حافلةٌ بالرحمة والرجاء والمغفرة.
+              </p>
+            </div>
+
+            {/* Quick Micro Badges */}
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
+                <CheckCircle2 size={12} className="text-emerald-400" />
+                <span>محققة ومخرجة</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
+                <BookOpen size={12} className="text-amber-400" />
+                <span>شرح وفوائد موسعة</span>
+              </span>
+              {/* Expand / Collapse Intro Details button */}
+              <button
+                onClick={toggleIntroExpanded}
+                aria-expanded={isIntroExpanded}
+                className="px-2.5 py-1 rounded-lg border border-amber-400/40 bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 transition-all flex items-center gap-1 text-[10px] sm:text-[11px] font-black cursor-pointer"
+                title={isIntroExpanded ? "طي النبذة التعريفية" : "عرض النبذة التعريفية والفوائد"}
+              >
+                <Info size={12} className="text-amber-300" />
+                <span>{isIntroExpanded ? "طي النبذة" : "النبذة التعريفية"}</span>
+                {isIntroExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Expandable Deep Identity Definition & Distinctions Drawer */}
+          <AnimatePresence>
+            {isIntroExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-3 mt-3 border-t border-white/15 space-y-2.5">
+                  {/* Definition and Meaning Box */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                      <div className="flex items-center gap-1.5 text-amber-300 font-black text-[11px]">
+                        <Crown size={13} />
+                        <span>ما هو الحديث القدسي؟</span>
+                      </div>
+                      <p className="text-[11px] text-white/85 leading-relaxed font-medium">
+                        هو الحديث الذي يُسنده النبي ﷺ إلى الله تبارك وتعالى قائلاً: «قال الله تعالى»، فالمعنى من الله تبارك وتعالى، واللفظ من رسول الله ﷺ، ولذلك نُسب إلى القدس طهارةً وتنزيهاً وإجلالاً.
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                      <div className="flex items-center gap-1.5 text-emerald-300 font-black text-[11px]">
+                        <Scale size={13} />
+                        <span>الفرق بينه وبين القرآن والحديث النبوي:</span>
+                      </div>
+                      <p className="text-[11px] text-white/85 leading-relaxed font-medium">
+                        القرآن الكريم معجز بلفظه ومعناه متعبد بتلاوته في الصلاة، أما الحديث القدسي فلا تصح به الصلاة، والحديث النبوي معناه وحي أو اجتهاد بلفظ النبي ﷺ دون إسناده إلى قول الله عز وجل.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 4 Identity Stats Pillars */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0">
+                        <BookOpen size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">مجموع الأحاديث</span>
+                        <span className="block text-xs font-black text-white">{QUDSI_HADITHS.length} حديثاً</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">المقروءة والمحفوظة</span>
+                        <span className="block text-xs font-black text-emerald-300">{readHadiths.length} من {QUDSI_HADITHS.length}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
+                        <Lightbulb size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">الشروح والفوائد</span>
+                        <span className="block text-xs font-black text-blue-200">تحليل وتفسير شامل</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/20 border border-white/10 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center shrink-0">
+                        <Heart size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-[10px] text-white/60 font-bold">قائمة المفضلة</span>
+                        <span className="block text-xs font-black text-rose-300">{favorites.length} حديثاً</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Live Search Bar & Interactive Autocomplete Suggestions */}
         <div ref={searchBarContainerRef} className="relative mb-2">

@@ -38,23 +38,21 @@ const LibraryCard = React.memo<LibraryCardProps>(({ item, onNavigate }) => {
         onClick={handleClick}
         className={cn(
           "navigation-card relative group flex flex-col justify-between items-center min-w-0 w-full h-full min-h-[158px] sm:min-h-[168px] p-3 sm:p-3.5 rounded-2xl sm:rounded-3xl transition-colors text-center cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#feb10b]",
-          "border border-emerald-500/60 dark:border-emerald-400/50",
+          "border border-emerald-200/20 dark:border-emerald-200/15",
           "hover:border-[#feb10b] dark:hover:border-[#feb10b]",
-          "bg-gradient-to-br from-[#063b28] via-[#04281b] to-[#021810]",
-          "shadow-md shadow-emerald-950/30"
+          // The dark green of the app logo (#083927), lit slightly from the top.
+          "bg-gradient-to-b from-[#0c4a34] to-[#083927]",
+          "shadow-md shadow-black/25"
         )}
       >
-        {/* Subtle Ambient Islamic Arabesque Pattern without color-washing overlay */}
-        <div aria-hidden="true" className="absolute inset-0 rounded-[inherit] opacity-20 bg-[url('/images/arabesque.png')] pointer-events-none" />
-        
-        {/* A painted gradient keeps the warm glow without a blurred compositing layer per card. */}
-        <div aria-hidden="true" className="absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_at_top_right,rgba(254,177,11,0.18),transparent_65%)] pointer-events-none" />
+        {/* Faint arabesque only: the yellow corner glow made the green look olive. */}
+        <div aria-hidden="true" className="absolute inset-0 rounded-[inherit] opacity-[0.07] bg-[url('/images/arabesque.png')] pointer-events-none" />
         
         {/* Card Foreground Content */}
         <div className="relative z-10 flex flex-1 flex-col items-center justify-between gap-3 min-w-0 w-full">
           {/* Icon in High-Contrast Dark Capsule with Golden Glowing Border */}
           <div aria-hidden="true" className="flex items-center justify-center w-full pt-0.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#061d14] flex items-center justify-center border border-[#feb10b]/60 dark:border-[#feb10b]/70 group-hover:border-[#feb10b] transition-colors shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-[#052a1c] flex items-center justify-center border border-[#feb10b]/60 dark:border-[#feb10b]/70group-hover:border-[#feb10b] transition-colors shrink-0">
               {React.cloneElement(item.icon as React.ReactElement<any>, { 
                 size: 24, 
                 className: "text-[#feb10b]"

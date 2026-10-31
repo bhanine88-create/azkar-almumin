@@ -922,7 +922,8 @@ export const IndependentHadith: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Modern Speech Rate Control */}
+                    {/* Modern Speech Rate Control (the hadith of the day has no voice button) */}
+                    {categoryId !== 'daily' && (
                     <div className="flex flex-col gap-2.5 bg-white/5 border border-white/10 p-3.5 rounded-2xl transition-all hover:bg-white/10">
                       <span className="text-xs font-black text-white/95 select-none whitespace-nowrap flex items-center gap-1.5">
                         <Volume2 size={14} className="text-amber-300" />
@@ -949,6 +950,7 @@ export const IndependentHadith: React.FC = () => {
                         })}
                       </div>
                     </div>
+                    )}
 
                     {/* Modern Explanation Toggle with visual switch */}
                     <div className="flex flex-col gap-2.5 bg-white/5 border border-white/10 p-3.5 rounded-2xl transition-all hover:bg-white/10">
@@ -1335,6 +1337,8 @@ export const IndependentHadith: React.FC = () => {
             const isPlaying = hadithPlayingId === (hadith.id || index + 1);
             const isCopied = hadithCopiedId === (hadith.id || index + 1);
             const isDownloading = downloadingId === cardId;
+            // Hadith of the day: everything centred, and no voice button (client request).
+            const centered = categoryId === 'daily';
 
             return (
               <div
@@ -1364,9 +1368,15 @@ export const IndependentHadith: React.FC = () => {
                   <div className="relative z-10 w-full flex-1 flex flex-col justify-between">
                     {/* Header of the Card */}
                     <div>
-                      <div className="flex justify-between items-start gap-3 mb-2.5">
-                        <div className="flex flex-col gap-1 text-right flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className={cn(
+                        "flex gap-3 mb-2.5",
+                        centered ? "flex-col-reverse items-center" : "justify-between items-start"
+                      )}>
+                        <div className={cn(
+                          "flex flex-col gap-1 min-w-0",
+                          centered ? "items-center text-center w-full" : "text-right flex-1"
+                        )}>
+                          <div className={cn("flex items-center gap-1.5 flex-wrap", centered && "justify-center")}>
                             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-400 text-slate-950 shadow-sm border border-amber-300/40 flex items-center gap-1 shrink-0">
                               <BookOpen size={12} className="shrink-0" />
                               <span>الحديث #{hadith.id || index + 1}</span>
@@ -1377,13 +1387,13 @@ export const IndependentHadith: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <h3 className="text-base sm:text-lg font-black leading-snug text-white mt-1 drop-shadow-sm line-clamp-2">
+                          <h3 className={cn("text-base sm:text-lg font-black leading-snug text-white mt-1 drop-shadow-sm line-clamp-2", centered && "text-center w-full")}>
                             {hadith.title}
                           </h3>
                         </div>
 
                         {/* Action Buttons Toolbar */}
-                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 z-20" data-html2canvas-ignore>
+                        <div className={cn("flex items-center gap-1 sm:gap-1.5 shrink-0 z-20", centered && "justify-center gap-2")} data-html2canvas-ignore>
                           {/* Favorite */}
                           <button
                             type="button"
@@ -1402,8 +1412,8 @@ export const IndependentHadith: React.FC = () => {
                             <Star size={14} strokeWidth={isFavorite ? 0 : 2.5} className={isFavorite ? "fill-amber-950" : ""} />
                           </button>
 
-                          {/* Recitation (Audio) - Visible on both mobile and desktop! */}
-                          <button
+                          {/* Recitation (Audio) - not on the hadith of the day */}
+                          {!centered && <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1425,7 +1435,7 @@ export const IndependentHadith: React.FC = () => {
                             ) : (
                               <Volume2 size={14} strokeWidth={2.5} />
                             )}
-                          </button>
+                          </button>}
 
                           {/* Share */}
                           <button
@@ -1473,10 +1483,11 @@ export const IndependentHadith: React.FC = () => {
 
                       {/* Hadith Matn (Text) with decorative quotation mark */}
                       <div className="w-full my-2.5 sm:my-3 relative">
-                        <span className="absolute -top-5 -right-2 text-6xl sm:text-7xl font-serif select-none pointer-events-none opacity-[0.14] leading-none text-white">«</span>
+                        {!centered && <span className="absolute -top-5 -right-2 text-6xl sm:text-7xl font-serif select-none pointer-events-none opacity-[0.14] leading-none text-white">«</span>}
                         <p
                           className={cn(
-                            "whitespace-pre-line text-right w-full transition-all duration-300 text-white leading-[1.85] sm:leading-[2.05] px-1 relative z-10",
+                            "whitespace-pre-line w-full transition-all duration-300 text-white leading-[1.85] sm:leading-[2.05] px-1 relative z-10",
+                            centered ? "text-center" : "text-right",
                             fontWeight === 'normal' ? 'font-normal' :
                             fontWeight === 'semibold' ? 'font-semibold' :
                             fontWeight === 'bold' ? 'font-bold' : 'font-extrabold'
@@ -1495,12 +1506,12 @@ export const IndependentHadith: React.FC = () => {
                     <div className="mt-3">
                       {hadith.explanation && showExplanation && (
                         <div className="mb-3 p-3 sm:p-3.5 rounded-2xl border border-white/15 bg-white/10 dark:bg-black/25 backdrop-blur-sm shadow-inner relative overflow-hidden">
-                          <div className="flex items-start gap-2.5">
+                          <div className={cn("flex gap-2.5", centered ? "flex-col items-center" : "items-start")}>
                             <div className="mt-0.5 shrink-0 p-1.5 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-300/30">
                               <Sparkles size={13} className="animate-pulse" />
                             </div>
-                            <div className="text-right flex-1 min-w-0">
-                              <h4 className="text-[10px] font-black text-amber-200 mb-0.5 select-none flex items-center gap-1">
+                            <div className={cn("flex-1 min-w-0", centered ? "text-center w-full" : "text-right")}>
+                              <h4 className={cn("text-[10px] font-black text-amber-200 mb-0.5 select-none flex items-center gap-1", centered && "justify-center")}>
                                 <span>{t('hadith_practical_benefit', 'الفائدة والتوجيه العملي:')}</span>
                               </h4>
                               <p className="text-xs sm:text-[13px] leading-relaxed font-bold text-white/95">
