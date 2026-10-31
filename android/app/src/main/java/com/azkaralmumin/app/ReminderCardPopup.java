@@ -55,8 +55,10 @@ final class ReminderCardPopup {
         }
         dismissCurrent(windows);
         View card = buildCard(context, item, windows);
+        // Full width on phones; no wider than 560dp on tablets and landscape screens.
+        int width = Math.min(context.getResources().getDisplayMetrics().widthPixels, dp(context, 560));
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
+            width,
             WindowManager.LayoutParams.WRAP_CONTENT,
             Build.VERSION.SDK_INT >= 26
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
