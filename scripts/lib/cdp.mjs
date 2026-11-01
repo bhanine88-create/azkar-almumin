@@ -98,6 +98,9 @@ export function launchChrome(profileDir, debugPort) {
       '--disable-sync',
       '--disable-background-networking',
       '--disable-features=Translate,OptimizationHints',
+      // The app opens in the device language on first launch; the tests read
+      // Arabic labels, so the browser presents itself as Arabic.
+      '--lang=ar',
       `--user-data-dir=${profileDir}`,
       `--remote-debugging-port=${debugPort}`,
       'about:blank',
