@@ -37,7 +37,7 @@ export const Khatma: React.FC = () => {
   });
   const [showAdd, setShowAdd] = useState(false);
 
-  const [newGoal, setNewGoal] = useState({ name: 'ختمة جديدة', days: 30 });
+  const [newGoal, setNewGoal] = useState({ name: t('ui_khatma_new_name', 'ختمة جديدة'), days: 30 });
 
   useEffect(() => {
     safeLocalStorageSetItem('believer_khatma_v2', JSON.stringify(goals));
@@ -112,14 +112,14 @@ export const Khatma: React.FC = () => {
               <BookOpen size={40} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">لا توجد ختمات حالية</h3>
-              <p className="text-sm text-slate-500">ابدأ بتنظيم قراءتك للقرآن الكريم اليوم</p>
+              <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{t('ui_khatma_none', 'لا توجد ختمات حالية')}</h3>
+              <p className="text-sm text-slate-500">{t('ui_khatma_none_sub', 'ابدأ بتنظيم قراءتك للقرآن الكريم اليوم')}</p>
             </div>
             <button 
               onClick={() => setShowAdd(true)}
               className="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all"
             >
-              إنشاء ختمة جديدة
+              {t('ui_khatma_create', 'إنشاء ختمة جديدة')}
             </button>
           </div>
         ) : (
@@ -140,7 +140,7 @@ export const Khatma: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="font-black text-lg">{goal.name}</h3>
-                        <p className="text-xs font-bold text-slate-400 uppercase">المدة: {goal.days} يوم</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase">{t('ui_khatma_duration', 'المدة: {{days}} يوم', { days: goal.days })}</p>
                       </div>
                     </div>
                     <button onClick={() => deleteGoal(goal.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
@@ -150,7 +150,7 @@ export const Khatma: React.FC = () => {
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-bold">
-                      <span className="text-slate-500">التقدم الحالي</span>
+                      <span className="text-slate-500">{t('ui_khatma_progress', 'التقدم الحالي')}</span>
                       <span className="text-emerald-600">{Math.round(progress)}%</span>
                     </div>
                     <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -161,18 +161,18 @@ export const Khatma: React.FC = () => {
                       />
                     </div>
                     <div className="flex justify-between text-[10px] font-bold text-slate-400">
-                      <span>صفحة {goal.currentPage}</span>
-                      <span>صفحة {goal.totalPages}</span>
+                      <span>{t('ui_khatma_page_n', 'صفحة {{n}}', { n: goal.currentPage })}</span>
+                      <span>{t('ui_khatma_page_n', 'صفحة {{n}}', { n: goal.totalPages })}</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl text-center">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">ورد اليوم</p>
-                      <p className="text-xl font-black text-emerald-600">{daily} صفحات</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">{t('ui_khatma_daily_wird', 'ورد اليوم')}</p>
+                      <p className="text-xl font-black text-emerald-600">{t('ui_khatma_pages_n', '{{n}} صفحات', { n: daily })}</p>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl text-center">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">الصفحة التالية</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">{t('ui_khatma_next_page', 'الصفحة التالية')}</p>
                       <p className="text-xl font-black text-slate-800 dark:text-slate-100">{goal.currentPage}</p>
                     </div>
                   </div>
@@ -183,26 +183,26 @@ export const Khatma: React.FC = () => {
                       className="border border-emerald-200 dark:border-emerald-800 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 py-3 rounded-xl font-bold text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center justify-center gap-1 shadow-sm"
                     >
                       <CheckCircle2 size={14} />
-                      + صفحة
+                      {t('ui_khatma_plus_page', '+ صفحة')}
                     </button>
                     <button 
                       onClick={() => updateProgress(goal.id, goal.currentPage + 10)}
                       className="border border-emerald-200 dark:border-emerald-800 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 py-3 rounded-xl font-bold text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center justify-center gap-1 shadow-sm"
                     >
                       <CheckCircle2 size={14} />
-                      + حزب
+                      {t('ui_khatma_plus_hizb', '+ حزب')}
                     </button>
                     <button 
                       onClick={() => updateProgress(goal.id, goal.currentPage + 20)}
                       className="bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-md shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-1"
                     >
                       <CheckCircle2 size={14} />
-                      + جزء
+                      {t('ui_khatma_plus_juz', '+ جزء')}
                     </button>
                   </div>
                   
                   <div className="flex items-center gap-2 mb-4 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-                     <span className="text-xs font-bold text-slate-500 px-2 whitespace-nowrap">وصلت لصفحة:</span>
+                     <span className="text-xs font-bold text-slate-500 px-2 whitespace-nowrap">{t('ui_khatma_reached_page', 'وصلت لصفحة:')}</span>
                      <input 
                        type="number"
                        min="1"
@@ -234,7 +234,7 @@ export const Khatma: React.FC = () => {
                       className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
                     >
                       <Play size={18} />
-                      متابعة القراءة من المصحف
+                      {t('ui_khatma_continue_mushaf', 'متابعة القراءة من المصحف')}
                     </button>
                   </div>
                 </motion.div>
@@ -261,7 +261,7 @@ export const Khatma: React.FC = () => {
               className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl p-8 pb-12 sm:pb-8 space-y-6 shadow-2xl max-h-[85vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-black">ختمة جديدة</h2>
+                <h2 className="text-2xl font-black">{t('ui_khatma_new_name', 'ختمة جديدة')}</h2>
                 <button onClick={() => setShowAdd(false)} className="w-10 h-10 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transform transition-all duration-75 active:scale-[0.85] active:opacity-70 shadow-lg shadow-rose-500/20">
                   <X size={20} />
                 </button>
@@ -269,7 +269,7 @@ export const Khatma: React.FC = () => {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase px-1">اسم الختمة</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase px-1">{t('ui_khatma_name_label', 'اسم الختمة')}</label>
                   <input 
                     type="text" 
                     value={newGoal.name}
@@ -278,7 +278,7 @@ export const Khatma: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase px-1">المدة (بالأيام)</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase px-1">{t('ui_khatma_duration_days', 'المدة (بالأيام)')}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[7, 15, 30, 60, 180, 365].map(d => (
                       <button 
@@ -289,7 +289,7 @@ export const Khatma: React.FC = () => {
                           newGoal.days === d ? "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
                         )}
                       >
-                        {d === 365 ? 'سنة' : d === 180 ? '٦ أشهر' : d === 30 ? 'شهر' : `${d} يوم`}
+                        {d === 365 ? t('ui_khatma_1year', 'سنة') : d === 180 ? t('ui_khatma_6months', '٦ أشهر') : d === 30 ? t('ui_khatma_1month', 'شهر') : t('ui_days_n', '{{n}} يوم', { n: d })}
                       </button>
                     ))}
                   </div>
@@ -300,7 +300,7 @@ export const Khatma: React.FC = () => {
                 onClick={addGoal}
                 className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all"
               >
-                بدء الختمة
+                {t('ui_khatma_start', 'بدء الختمة')}
               </button>
             </motion.div>
           </div>

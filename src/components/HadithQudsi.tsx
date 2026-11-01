@@ -159,7 +159,7 @@ export const HadithQudsi: React.FC = () => {
         : [...prev, id];
       safeLocalStorageSetItem('qudsi-favorites', JSON.stringify(updated));
 
-      setToastMessage(isFav ? 'تمت إزالة الحديث من المفضلة' : 'تمت إضافة الحديث إلى المفضلة ❤️');
+      setToastMessage(isFav ? t('hq_toast_fav_removed', 'تمت إزالة الحديث من المفضلة') : t('hq_toast_fav_added', 'تمت إضافة الحديث إلى المفضلة ❤️'));
       setTimeout(() => setToastMessage(null), 2200);
 
       return updated;
@@ -167,10 +167,10 @@ export const HadithQudsi: React.FC = () => {
   };
 
   const clearAllFavorites = () => {
-    if (window.confirm('هل أنت تأكد من رغبتك في إزالة جميع الأحاديث القدسية من قائمة المفضلة؟')) {
+    if (window.confirm(t('hq_confirm_clear_favs', 'هل أنت تأكد من رغبتك في إزالة جميع الأحاديث القدسية من قائمة المفضلة؟'))) {
       setFavorites([]);
       safeLocalStorageSetItem('qudsi-favorites', JSON.stringify([]));
-      setToastMessage('تم تفريغ قائمة المفضلة بنجاح');
+      setToastMessage(t('hq_toast_favs_cleared', 'تم تفريغ قائمة المفضلة بنجاح'));
       setTimeout(() => setToastMessage(null), 2200);
     }
   };
@@ -182,7 +182,7 @@ export const HadithQudsi: React.FC = () => {
       const updated = isRead ? prev.filter(i => i !== id) : [...prev, id];
       safeLocalStorageSetItem('qudsi-read-hadiths', JSON.stringify(updated));
 
-      setToastMessage(isRead ? 'تم إلغاء علامة القراءة' : 'تمت إضافة الحديث لقائمة المقروءة ✓');
+      setToastMessage(isRead ? t('hq_toast_unread', 'تم إلغاء علامة القراءة') : t('hq_toast_read', 'تمت إضافة الحديث لقائمة المقروءة ✓'));
       setTimeout(() => setToastMessage(null), 2000);
 
       return updated;
@@ -193,15 +193,15 @@ export const HadithQudsi: React.FC = () => {
     const allIds = QUDSI_HADITHS.map(h => h.id);
     setReadHadiths(allIds);
     safeLocalStorageSetItem('qudsi-read-hadiths', JSON.stringify(allIds));
-    setToastMessage('تم تعيين جميع الأحاديث كمقروءة 🎉');
+    setToastMessage(t('hq_toast_all_read', 'تم تعيين جميع الأحاديث كمقروءة 🎉'));
     setTimeout(() => setToastMessage(null), 2200);
   };
 
   const resetReadProgress = () => {
-    if (window.confirm('هل أنت متأكد من إعادة ضبط سجل الأحاديث المقروءة؟')) {
+    if (window.confirm(t('hq_confirm_reset', 'هل أنت متأكد من إعادة ضبط سجل الأحاديث المقروءة؟'))) {
       setReadHadiths([]);
       safeLocalStorageSetItem('qudsi-read-hadiths', JSON.stringify([]));
-      setToastMessage('تم إعادة ضبط سجل القراءة بنجاح');
+      setToastMessage(t('hq_toast_reset', 'تم إعادة ضبط سجل القراءة بنجاح'));
       setTimeout(() => setToastMessage(null), 2200);
     }
   };
@@ -225,15 +225,15 @@ export const HadithQudsi: React.FC = () => {
 
   // Category statistics breakdown
   const categoryStats = [
-    { id: 'mercy', label: 'الرحمة والمغفرة' },
-    { id: 'repentance', label: 'التوبة والاستغفار' },
-    { id: 'dhikr', label: 'فضل الذكر' },
-    { id: 'justice', label: 'العدل والتوحيد' },
-    { id: 'worship', label: 'العبادات والدعاء' },
-    { id: 'love', label: 'المحبة والولاء' },
-    { id: 'paradise', label: 'الجنة والنعيم' },
-    { id: 'sincerity', label: 'الإخلاص والنية' },
-    { id: 'patience', label: 'الصبر والاحتساب' },
+    { id: 'mercy', label: t('hq_cat_mercy', 'الرحمة والمغفرة') },
+    { id: 'repentance', label: t('hq_cat_repentance', 'التوبة والاستغفار') },
+    { id: 'dhikr', label: t('hq_cat_dhikr', 'فضل الذكر') },
+    { id: 'justice', label: t('hq_cat_justice', 'العدل والتوحيد') },
+    { id: 'worship', label: t('hq_cat_worship', 'العبادات والدعاء') },
+    { id: 'love', label: t('hq_cat_love', 'المحبة والولاء') },
+    { id: 'paradise', label: t('hq_cat_paradise', 'الجنة والنعيم') },
+    { id: 'sincerity', label: t('hq_cat_sincerity', 'الإخلاص والنية') },
+    { id: 'patience', label: t('hq_cat_patience', 'الصبر والاحتساب') },
   ].map((cat, idx) => {
     const catHadiths = QUDSI_HADITHS.filter(h => h.category === cat.id);
     const totalInCat = catHadiths.length;
@@ -297,7 +297,7 @@ export const HadithQudsi: React.FC = () => {
 
   // Copy Hadith with decorative unicode borders
   const handleCopyHadith = async (item: QudsiHadith) => {
-    const text = `۞═════════ ❃ ۩ ❃ ═════════۞\n✨ *${item.title}* ✨\n\nقال الله تبارك وتعالى:\n"${item.hadith}"\n\n📖 المصدر والتخريج: ${item.attribution} [${item.reference}]\n⭐ رتبة الحديث: ${item.grade}\n\n📝 من الشرح والفوائد:\n${item.explanation.overview}\n\n—\nتمت المشاركة من قسم الأحاديث القدسية الشريفة - تطبيق أذكار المؤمن 💚\n۞═════════ ❃ ۩ ❃ ═════════۞`;
+    const text = `۞═════════ ❃ ۩ ❃ ═════════۞\n✨ *${item.title}* ✨\n\nقال الله تبارك وتعالى:\n"${item.hadith}"\n\n${t('hq_copy_source', '📖 المصدر والتخريج:')} ${item.attribution} [${item.reference}]\n${t('hq_copy_grade', '⭐ رتبة الحديث:')} ${item.grade}\n\n${t('hq_copy_expl', '📝 من الشرح والفوائد:')}\n${item.explanation.overview}\n\n—\n${t('hq_copy_footer', 'تمت المشاركة من قسم الأحاديث القدسية الشريفة - تطبيق {{app}} 💚', { app: t('app_name', 'أذكار المؤمن') })}\n۞═════════ ❃ ۩ ❃ ═════════۞`;
     
     await copyTextToClipboard(text);
     setCopiedId(item.id);
@@ -347,31 +347,31 @@ export const HadithQudsi: React.FC = () => {
 
   // Topic Categories definition with icons and counts
   const categories = [
-    { id: 'all', label: 'جميع الأحاديث', icon: <BookOpen size={15} /> },
-    { id: 'favorites', label: 'المفضلة', icon: <Heart size={15} className="text-rose-500 fill-rose-500" /> },
-    { id: 'read', label: 'المقروءة', icon: <CheckCircle2 size={15} className="text-emerald-500" /> },
-    { id: 'unread', label: 'غير المقروءة', icon: <Circle size={15} className="text-amber-500" /> },
-    { id: 'mercy', label: 'الرحمة والمغفرة', icon: <Heart size={15} /> },
-    { id: 'repentance', label: 'التوبة والاستغفار', icon: <RefreshCw size={15} /> },
-    { id: 'dhikr', label: 'فضل الذكر', icon: <Sparkles size={15} /> },
-    { id: 'justice', label: 'العدل والتوحيد', icon: <Scale size={15} /> },
-    { id: 'worship', label: 'العبادات والدعاء', icon: <Compass size={15} /> },
-    { id: 'love', label: 'المحبة والولاء', icon: <Heart size={15} /> },
-    { id: 'paradise', label: 'الجنة والنعيم', icon: <Crown size={15} /> },
-    { id: 'sincerity', label: 'الإخلاص والنية', icon: <ShieldCheck size={15} /> },
-    { id: 'patience', label: 'الصبر والاحتساب', icon: <Feather size={15} /> },
+    { id: 'all', label: t('hq_cat_all', 'جميع الأحاديث'), icon: <BookOpen size={15} /> },
+    { id: 'favorites', label: t('hq_cat_favorites', 'المفضلة'), icon: <Heart size={15} className="text-rose-500 fill-rose-500" /> },
+    { id: 'read', label: t('hq_cat_read', 'المقروءة'), icon: <CheckCircle2 size={15} className="text-emerald-500" /> },
+    { id: 'unread', label: t('hq_cat_unread', 'غير المقروءة'), icon: <Circle size={15} className="text-amber-500" /> },
+    { id: 'mercy', label: t('hq_cat_mercy', 'الرحمة والمغفرة'), icon: <Heart size={15} /> },
+    { id: 'repentance', label: t('hq_cat_repentance', 'التوبة والاستغفار'), icon: <RefreshCw size={15} /> },
+    { id: 'dhikr', label: t('hq_cat_dhikr', 'فضل الذكر'), icon: <Sparkles size={15} /> },
+    { id: 'justice', label: t('hq_cat_justice', 'العدل والتوحيد'), icon: <Scale size={15} /> },
+    { id: 'worship', label: t('hq_cat_worship', 'العبادات والدعاء'), icon: <Compass size={15} /> },
+    { id: 'love', label: t('hq_cat_love', 'المحبة والولاء'), icon: <Heart size={15} /> },
+    { id: 'paradise', label: t('hq_cat_paradise', 'الجنة والنعيم'), icon: <Crown size={15} /> },
+    { id: 'sincerity', label: t('hq_cat_sincerity', 'الإخلاص والنية'), icon: <ShieldCheck size={15} /> },
+    { id: 'patience', label: t('hq_cat_patience', 'الصبر والاحتساب'), icon: <Feather size={15} /> },
   ];
 
   // Curated Popular Search Topics with badges & categories
   const POPULAR_SEARCH_TOPICS = [
-    { title: "أنا عند ظن عبدي بي", query: "أنا عند ظن عبدي بي", category: "حسن الظن والرجاء", count: 18, isTrending: true },
-    { title: "يا عبادي إني حرمت الظلم على نفسي", query: "إني حرمت الظلم", category: "العدل والتوحيد", count: 15, isTrending: true },
-    { title: "إنك ما دعوتني ورجوتني غفرت لك", query: "إنك ما دعوتني ورجوتني", category: "التوبة والمغفرة", count: 21, isTrending: true },
-    { title: "من عادى لي ولياً فقد آذنته بالحرب", query: "من عادى لي وليا", category: "المحبة والنوافل", count: 14, isTrending: false },
-    { title: "الصوم لي وأنا أجزي به", query: "الصوم لي وأنا أجزي به", category: "فضل الصيام", count: 19, isTrending: true },
-    { title: "تنزل الرب في ثلث الليل الآخر", query: "ثلث الليل الآخر", category: "قيام الليل والدعاء", count: 12, isTrending: false },
-    { title: "فضل الذكر ومجالس العلم والسكينة", query: "فضل الذكر", category: "حلق الذكر", count: 16, isTrending: false },
-    { title: "يا ابن آدم لو بلغت ذنوبك عنان السماء", query: "عنان السماء", category: "سعة المغفرة", count: 17, isTrending: true }
+    { title: "أنا عند ظن عبدي بي", query: "أنا عند ظن عبدي بي", category: t('hq_pop_cat_1', 'حسن الظن والرجاء'), count: 18, isTrending: true },
+    { title: "يا عبادي إني حرمت الظلم على نفسي", query: "إني حرمت الظلم", category: t('hq_pop_cat_2', 'العدل والتوحيد'), count: 15, isTrending: true },
+    { title: "إنك ما دعوتني ورجوتني غفرت لك", query: "إنك ما دعوتني ورجوتني", category: t('hq_pop_cat_3', 'التوبة والمغفرة'), count: 21, isTrending: true },
+    { title: "من عادى لي ولياً فقد آذنته بالحرب", query: "من عادى لي وليا", category: t('hq_pop_cat_4', 'المحبة والنوافل'), count: 14, isTrending: false },
+    { title: "الصوم لي وأنا أجزي به", query: "الصوم لي وأنا أجزي به", category: t('hq_pop_cat_5', 'فضل الصيام'), count: 19, isTrending: true },
+    { title: "تنزل الرب في ثلث الليل الآخر", query: "ثلث الليل الآخر", category: t('hq_pop_cat_6', 'قيام الليل والدعاء'), count: 12, isTrending: false },
+    { title: "فضل الذكر ومجالس العلم والسكينة", query: "فضل الذكر", category: t('hq_pop_cat_7', 'حلق الذكر'), count: 16, isTrending: false },
+    { title: "يا ابن آدم لو بلغت ذنوبك عنان السماء", query: "عنان السماء", category: t('hq_pop_cat_8', 'سعة المغفرة'), count: 17, isTrending: true }
   ];
 
   // Quick search suggestions chips
@@ -528,10 +528,10 @@ export const HadithQudsi: React.FC = () => {
                       ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
                       : "text-white/70 hover:text-white"
                   )}
-                  title="عرض الأحاديث في صفحة موحدة متصلة"
+                  title={t('hq_view_single_title', 'عرض الأحاديث في صفحة موحدة متصلة')}
                 >
                   <FileText size={13} />
-                  <span className="hidden md:inline">صفحة موحدة</span>
+                  <span className="hidden md:inline">{t('hq_view_single', 'صفحة موحدة')}</span>
                 </button>
                 <button
                   onClick={() => handleToggleViewLayoutMode('cards')}
@@ -541,10 +541,10 @@ export const HadithQudsi: React.FC = () => {
                       ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
                       : "text-white/70 hover:text-white"
                   )}
-                  title="عرض الأحاديث على شكل بطاقات"
+                  title={t('hq_view_cards_title', 'عرض الأحاديث على شكل بطاقات')}
                 >
                   <Layers size={13} />
-                  <span className="hidden md:inline">بطاقات</span>
+                  <span className="hidden md:inline">{t('hq_view_cards', 'بطاقات')}</span>
                 </button>
               </div>
 
@@ -552,10 +552,10 @@ export const HadithQudsi: React.FC = () => {
               <button
                 onClick={() => setShowStatsModal(true)}
                 className="px-2 sm:px-2.5 py-1.5 rounded-xl border border-emerald-400/30 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30 transition-all flex items-center gap-1 text-[11px] font-black cursor-pointer shadow-sm"
-                title="لوحة إحصائيات القراءة والتصفح"
+                title={t('hq_stats_btn_title', 'لوحة إحصائيات القراءة والتصفح')}
               >
                 <BarChart2 size={14} className="text-emerald-300" />
-                <span className="hidden lg:inline">الإحصائيات</span>
+                <span className="hidden lg:inline">{t('hq_stats_btn', 'الإحصائيات')}</span>
                 <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 rounded-md font-extrabold">
                   {readPercentage}%
                 </span>
@@ -565,10 +565,10 @@ export const HadithQudsi: React.FC = () => {
               <button
                 onClick={() => setShowIndexModal(true)}
                 className="px-2 sm:px-2.5 py-1.5 rounded-xl border border-amber-400/30 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 transition-all flex items-center gap-1 text-[11px] font-black cursor-pointer shadow-sm"
-                title="فهرس المواضيع"
+                title={t('hq_topics_index_title', 'فهرس المواضيع')}
               >
                 <Grid size={14} />
-                <span className="hidden lg:inline">المواضيع</span>
+                <span className="hidden lg:inline">{t('hq_topics_btn', 'المواضيع')}</span>
               </button>
 
               {/* Favorites toggle */}
@@ -580,7 +580,7 @@ export const HadithQudsi: React.FC = () => {
                     ? "bg-rose-500/30 border-rose-400/50 text-rose-200 shadow-sm"
                     : "bg-white/10 border-white/15 text-white/80 hover:bg-white/20"
                 )}
-                title="المفضلة"
+                title={t('hq_cat_favorites', 'المفضلة')}
               >
                 <Heart size={14} className={cn(onlyFavorites && "fill-rose-400 text-rose-400")} />
                 <span className="hidden sm:inline">({favorites.length})</span>
@@ -595,7 +595,7 @@ export const HadithQudsi: React.FC = () => {
                     ? "bg-amber-500/30 border-amber-400/50 text-amber-300 shadow-sm"
                     : "bg-white/10 border-white/15 text-white/80 hover:bg-white/20"
                 )}
-                title="تعديل الخط والحجم"
+                title={t('hq_settings_btn_title', 'تعديل الخط والحجم')}
               >
                 <Settings2 size={15} />
               </button>
@@ -621,8 +621,8 @@ export const HadithQudsi: React.FC = () => {
                       <Settings2 size={20} />
                     </div>
                     <div>
-                      <span className="block font-black text-slate-800 dark:text-slate-100 text-sm sm:text-base">إعدادات العرض والقراءة</span>
-                      <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">تخصيص مظهر الأحاديث لراحتك</span>
+                      <span className="block font-black text-slate-800 dark:text-slate-100 text-sm sm:text-base">{t('hq_settings_title', 'إعدادات العرض والقراءة')}</span>
+                      <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">{t('hq_settings_sub', 'تخصيص مظهر الأحاديث لراحتك')}</span>
                     </div>
                   </div>
                   <button
@@ -638,7 +638,7 @@ export const HadithQudsi: React.FC = () => {
                   <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-700/50 p-4 rounded-2xl space-y-3">
                     <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
                       <FileText size={16} className="text-emerald-500" />
-                      <span className="text-sm font-black">نوع الخط الشريف</span>
+                      <span className="text-sm font-black">{t('hq_font_type', 'نوع الخط الشريف')}</span>
                     </div>
                     <div className="relative group">
                       <select
@@ -647,12 +647,12 @@ export const HadithQudsi: React.FC = () => {
                         className="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-3 px-4 pl-10 rounded-xl text-sm font-bold text-slate-800 dark:text-slate-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500/50 shadow-sm transition-all group-hover:border-emerald-400/50"
                         style={{ fontFamily: hadithFont }}
                       >
-                        <option value="Scheherazade New">خط النسخ المميز (شهرزاد)</option>
-                        <option value="Amiri">خط أميري التراثي</option>
-                        <option value="Cairo">خط القاهرة الحديث</option>
-                        <option value="Tajawal">خط تجوال المبسط</option>
-                        <option value="Zain">خط زين الناعم</option>
-                        <option value="Alexandria">خط الإسكندرية</option>
+                        <option value="Scheherazade New">{t('hq_font_scheherazade', 'خط النسخ المميز (شهرزاد)')}</option>
+                        <option value="Amiri">{t('hq_font_amiri', 'خط أميري التراثي')}</option>
+                        <option value="Cairo">{t('hq_font_cairo', 'خط القاهرة الحديث')}</option>
+                        <option value="Tajawal">{t('hq_font_tajawal', 'خط تجوال المبسط')}</option>
+                        <option value="Zain">{t('hq_font_zain', 'خط زين الناعم')}</option>
+                        <option value="Alexandria">{t('hq_font_alexandria', 'خط الإسكندرية')}</option>
                       </select>
                       <ChevronDown size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     </div>
@@ -663,7 +663,7 @@ export const HadithQudsi: React.FC = () => {
                     <div className="flex items-center justify-between text-slate-700 dark:text-slate-200">
                       <div className="flex items-center gap-2">
                         <Search size={16} className="text-blue-500" />
-                        <span className="text-sm font-black">حجم الخط</span>
+                        <span className="text-sm font-black">{t('hq_font_size', 'حجم الخط')}</span>
                       </div>
                       <span className="text-xs font-black bg-white dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-amber-600 dark:text-amber-400">
                         {hadithFontSize}px
@@ -705,7 +705,7 @@ export const HadithQudsi: React.FC = () => {
                     className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 transition-colors cursor-pointer bg-slate-100 hover:bg-amber-50 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-2 rounded-xl"
                   >
                     <RotateCcw size={14} />
-                    <span>إعادة الضبط للافتراضي</span>
+                    <span>{t('hq_reset_default', 'إعادة الضبط للافتراضي')}</span>
                   </button>
                 </div>
               </div>
@@ -731,11 +731,11 @@ export const HadithQudsi: React.FC = () => {
               <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight drop-shadow-sm flex items-center gap-2">
                 <span>{t('home_qudsi_title')}</span>
                 <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  {QUDSI_HADITHS.length} حديثاً جليلاً
+                  {t('hq_count_badge', '{{count}} حديثاً جليلاً', { count: QUDSI_HADITHS.length })}
                 </span>
               </h2>
               <p className="text-[11px] sm:text-xs font-medium text-emerald-100/90 leading-relaxed mt-0.5">
-                ما رواه النبي ﷺ عن ربه عز وجل؛ فالمعنى موحىً به من الله واللفظ بلسان المصطفى ﷺ، حافلةٌ بالرحمة والرجاء والمغفرة.
+                {t('hq_intro_desc', 'ما رواه النبي ﷺ عن ربه عز وجل؛ فالمعنى موحىً به من الله واللفظ بلسان المصطفى ﷺ، حافلةٌ بالرحمة والرجاء والمغفرة.')}
               </p>
             </div>
 
@@ -743,21 +743,21 @@ export const HadithQudsi: React.FC = () => {
             <div className="flex items-center gap-2 flex-wrap shrink-0">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
                 <CheckCircle2 size={12} className="text-emerald-400" />
-                <span>محققة ومخرجة</span>
+                <span>{t('hq_badge_verified', 'محققة ومخرجة')}</span>
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-[10px] font-bold border border-white/10">
                 <BookOpen size={12} className="text-amber-400" />
-                <span>شرح وفوائد موسعة</span>
+                <span>{t('hq_badge_explained', 'شرح وفوائد موسعة')}</span>
               </span>
               {/* Expand / Collapse Intro Details button */}
               <button
                 onClick={toggleIntroExpanded}
                 aria-expanded={isIntroExpanded}
                 className="px-2.5 py-1 rounded-lg border border-amber-400/40 bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 transition-all flex items-center gap-1 text-[10px] sm:text-[11px] font-black cursor-pointer"
-                title={isIntroExpanded ? "طي النبذة التعريفية" : "عرض النبذة التعريفية والفوائد"}
+                title={isIntroExpanded ? t('hq_intro_collapse_title', 'طي النبذة التعريفية') : t('hq_intro_expand_title', 'عرض النبذة التعريفية والفوائد')}
               >
                 <Info size={12} className="text-amber-300" />
-                <span>{isIntroExpanded ? "طي النبذة" : "النبذة التعريفية"}</span>
+                <span>{isIntroExpanded ? t('hq_intro_collapse', 'طي النبذة') : t('hq_intro_expand', 'النبذة التعريفية')}</span>
                 {isIntroExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
             </div>
@@ -779,20 +779,20 @@ export const HadithQudsi: React.FC = () => {
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
                       <div className="flex items-center gap-1.5 text-amber-300 font-black text-[11px]">
                         <Crown size={13} />
-                        <span>ما هو الحديث القدسي؟</span>
+                        <span>{t('hq_what_is', 'ما هو الحديث القدسي؟')}</span>
                       </div>
                       <p className="text-[11px] text-white/85 leading-relaxed font-medium">
-                        هو الحديث الذي يُسنده النبي ﷺ إلى الله تبارك وتعالى قائلاً: «قال الله تعالى»، فالمعنى من الله تبارك وتعالى، واللفظ من رسول الله ﷺ، ولذلك نُسب إلى القدس طهارةً وتنزيهاً وإجلالاً.
+                        {t('hq_what_is_body', 'هو الحديث الذي يُسنده النبي ﷺ إلى الله تبارك وتعالى قائلاً: «قال الله تعالى»، فالمعنى من الله تبارك وتعالى، واللفظ من رسول الله ﷺ، ولذلك نُسب إلى القدس طهارةً وتنزيهاً وإجلالاً.')}
                       </p>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
                       <div className="flex items-center gap-1.5 text-emerald-300 font-black text-[11px]">
                         <Scale size={13} />
-                        <span>الفرق بينه وبين القرآن والحديث النبوي:</span>
+                        <span>{t('hq_diff_title', 'الفرق بينه وبين القرآن والحديث النبوي:')}</span>
                       </div>
                       <p className="text-[11px] text-white/85 leading-relaxed font-medium">
-                        القرآن الكريم معجز بلفظه ومعناه متعبد بتلاوته في الصلاة، أما الحديث القدسي فلا تصح به الصلاة، والحديث النبوي معناه وحي أو اجتهاد بلفظ النبي ﷺ دون إسناده إلى قول الله عز وجل.
+                        {t('hq_diff_body', 'القرآن الكريم معجز بلفظه ومعناه متعبد بتلاوته في الصلاة، أما الحديث القدسي فلا تصح به الصلاة، والحديث النبوي معناه وحي أو اجتهاد بلفظ النبي ﷺ دون إسناده إلى قول الله عز وجل.')}
                       </p>
                     </div>
                   </div>
@@ -804,8 +804,8 @@ export const HadithQudsi: React.FC = () => {
                         <BookOpen size={14} />
                       </div>
                       <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">مجموع الأحاديث</span>
-                        <span className="block text-xs font-black text-white">{QUDSI_HADITHS.length} حديثاً</span>
+                        <span className="block text-[10px] text-white/60 font-bold">{t('hq_pillar_total', 'مجموع الأحاديث')}</span>
+                        <span className="block text-xs font-black text-white">{t('hq_n_hadiths', '{{count}} حديثاً', { count: QUDSI_HADITHS.length })}</span>
                       </div>
                     </div>
 
@@ -814,8 +814,8 @@ export const HadithQudsi: React.FC = () => {
                         <CheckCircle2 size={14} />
                       </div>
                       <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">المقروءة والمحفوظة</span>
-                        <span className="block text-xs font-black text-emerald-300">{readHadiths.length} من {QUDSI_HADITHS.length}</span>
+                        <span className="block text-[10px] text-white/60 font-bold">{t('hq_pillar_read', 'المقروءة والمحفوظة')}</span>
+                        <span className="block text-xs font-black text-emerald-300">{t('hq_x_of_y', '{{a}} من {{b}}', { a: readHadiths.length, b: QUDSI_HADITHS.length })}</span>
                       </div>
                     </div>
 
@@ -824,8 +824,8 @@ export const HadithQudsi: React.FC = () => {
                         <Lightbulb size={14} />
                       </div>
                       <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">الشروح والفوائد</span>
-                        <span className="block text-xs font-black text-blue-200">تحليل وتفسير شامل</span>
+                        <span className="block text-[10px] text-white/60 font-bold">{t('hq_pillar_explain', 'الشروح والفوائد')}</span>
+                        <span className="block text-xs font-black text-blue-200">{t('hq_pillar_explain_val', 'تحليل وتفسير شامل')}</span>
                       </div>
                     </div>
 
@@ -834,8 +834,8 @@ export const HadithQudsi: React.FC = () => {
                         <Heart size={14} />
                       </div>
                       <div className="min-w-0">
-                        <span className="block text-[10px] text-white/60 font-bold">قائمة المفضلة</span>
-                        <span className="block text-xs font-black text-rose-300">{favorites.length} حديثاً</span>
+                        <span className="block text-[10px] text-white/60 font-bold">{t('hq_pillar_fav', 'قائمة المفضلة')}</span>
+                        <span className="block text-xs font-black text-rose-300">{t('hq_n_hadiths', '{{count}} حديثاً', { count: favorites.length })}</span>
                       </div>
                     </div>
                   </div>
@@ -856,7 +856,7 @@ export const HadithQudsi: React.FC = () => {
                 setIsSearchFocused(true);
               }}
               onFocus={() => setIsSearchFocused(true)}
-              placeholder="بحث نصي شامل في الأحاديث، الشرح والكلمات (مثل: التوبة، الرحمة، الذكر)..."
+              placeholder={t('hq_search_placeholder', 'بحث نصي شامل في الأحاديث، الشرح والكلمات (مثل: التوبة، الرحمة، الذكر)...')}
               className={cn(
                 "w-full pr-10 pl-24 py-3 text-sm font-bold bg-white dark:bg-slate-900 border rounded-2xl outline-none transition-all text-slate-800 dark:text-slate-100 shadow-sm",
                 isSearchFocused 
@@ -870,7 +870,7 @@ export const HadithQudsi: React.FC = () => {
             <div className="absolute left-3 flex items-center gap-2">
               {searchTerm && (
                 <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold border border-amber-500/20">
-                  {filteredHadiths.length} نتيجة
+                  {t('hq_results_count', '{{count}} نتيجة', { count: filteredHadiths.length })}
                 </span>
               )}
               {searchTerm && (
@@ -880,7 +880,7 @@ export const HadithQudsi: React.FC = () => {
                     setIsSearchFocused(true);
                   }} 
                   className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
-                  title="مسح النص"
+                  title={t('hq_clear_text', 'مسح النص')}
                 >
                   <X size={16} />
                 </button>
@@ -903,12 +903,12 @@ export const HadithQudsi: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Sparkles size={16} className="text-amber-500" />
                     <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                      {searchTerm.trim() ? 'نتائج ومقترحات البحث المباشر (Live Search)' : '🔥 المواضيع والأحاديث الأكثر بحثاً وتصفحاً'}
+                      {searchTerm.trim() ? t('hq_live_header', 'نتائج ومقترحات البحث المباشر (Live Search)') : t('hq_popular_header', '🔥 المواضيع والأحاديث الأكثر بحثاً وتصفحاً')}
                     </span>
                   </div>
                   {searchTerm.trim() && (
                     <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                      {filteredHadiths.length} حديث مطابق
+                      {t('hq_matching_count', '{{count}} حديث مطابق', { count: filteredHadiths.length })}
                     </span>
                   )}
                 </div>
@@ -916,7 +916,7 @@ export const HadithQudsi: React.FC = () => {
                 {/* If search query is empty -> Show Popular Topics Grid */}
                 {!searchTerm.trim() && (
                   <div className="space-y-2.5">
-                    <span className="text-[11px] font-bold text-slate-400 block">اختر موضوعاً شائعاً للبحث المباشر عنه:</span>
+                    <span className="text-[11px] font-bold text-slate-400 block">{t('hq_pick_popular', 'اختر موضوعاً شائعاً للبحث المباشر عنه:')}</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {POPULAR_SEARCH_TOPICS.map((topic, idx) => (
                         <button
@@ -933,13 +933,13 @@ export const HadithQudsi: React.FC = () => {
                             </span>
                             {topic.isTrending && (
                               <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[9px] font-black shrink-0 border border-amber-500/20">
-                                شائع 🔥
+                                {t('hq_trending', 'شائع 🔥')}
                               </span>
                             )}
                           </div>
                           <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
-                            <span>باب {topic.category}</span>
-                            <span className="text-amber-600 dark:text-amber-400 group-hover:translate-x-[-2px] transition-transform">ابحث الآن ←</span>
+                            <span>{t('hq_chapter', 'باب {{category}}', { category: topic.category })}</span>
+                            <span className="text-amber-600 dark:text-amber-400 group-hover:translate-x-[-2px] transition-transform">{t('hq_search_now', 'ابحث الآن ←')}</span>
                           </div>
                         </button>
                       ))}
@@ -952,7 +952,7 @@ export const HadithQudsi: React.FC = () => {
                   <div className="space-y-3">
                     {liveHadithMatches.length > 0 ? (
                       <div className="space-y-2">
-                        <span className="text-[11px] font-bold text-slate-400 block">الأحاديث المطابقة لنص البحث:</span>
+                        <span className="text-[11px] font-bold text-slate-400 block">{t('hq_matching_hadiths', 'الأحاديث المطابقة لنص البحث:')}</span>
                         {liveHadithMatches.map((item) => (
                           <button
                             key={item.id}
@@ -979,15 +979,15 @@ export const HadithQudsi: React.FC = () => {
                     ) : (
                       <div className="text-center py-6 space-y-2">
                         <Search size={28} className="mx-auto text-slate-300 dark:text-slate-600" />
-                        <p className="text-xs font-bold text-slate-500">لم يتم العثور على حديث مطابق تماماً للعبارة "{searchTerm}"</p>
-                        <p className="text-[11px] font-medium text-slate-400">جرب البحث بكلمات عامة مثل: التوبة، المغفرة، الصلاة، الذكر، الصبر</p>
+                        <p className="text-xs font-bold text-slate-500">{t('hq_no_match', 'لم يتم العثور على حديث مطابق تماماً للعبارة "{{term}}"', { term: searchTerm })}</p>
+                        <p className="text-[11px] font-medium text-slate-400">{t('hq_try_words', 'جرب البحث بكلمات عامة مثل: التوبة، المغفرة، الصلاة، الذكر، الصبر')}</p>
                       </div>
                     )}
 
                     {/* Live Matching Tags Pills */}
                     {liveMatchingTags.length > 0 && (
                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 block">وسوم متعلقة بكلمة البحث:</span>
+                        <span className="text-[10px] font-bold text-slate-400 block">{t('hq_related_tags', 'وسوم متعلقة بكلمة البحث:')}</span>
                         <div className="flex flex-wrap gap-1.5">
                           {liveMatchingTags.map((tag, idx) => (
                             <button
@@ -1011,12 +1011,12 @@ export const HadithQudsi: React.FC = () => {
 
                 {/* Autocomplete Footer */}
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] font-bold text-slate-400">
-                  <span>💡 انقر على أي نتيجة أو موضوع للفلترة الفورية</span>
+                  <span>{t('hq_dropdown_tip', '💡 انقر على أي نتيجة أو موضوع للفلترة الفورية')}</span>
                   <button
                     onClick={() => setIsSearchFocused(false)}
                     className="text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
                   >
-                    إغلاق القائمة
+                    {t('hq_close_menu', 'إغلاق القائمة')}
                   </button>
                 </div>
               </motion.div>
@@ -1028,7 +1028,7 @@ export const HadithQudsi: React.FC = () => {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-[11px]">
           <span className="text-slate-400 font-bold shrink-0 ml-1 flex items-center gap-1">
             <Flame size={12} className="text-amber-500" />
-            <span>الأكثر بحثاً:</span>
+            <span>{t('hq_most_searched', 'الأكثر بحثاً:')}</span>
           </span>
           {quickSearchSuggestions.map((sug, idx) => (
             <button
@@ -1049,7 +1049,7 @@ export const HadithQudsi: React.FC = () => {
               onClick={() => setSearchTerm('')}
               className="px-2 py-1 rounded-xl font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 shrink-0 cursor-pointer text-[10px]"
             >
-              مسح الفلترة
+              {t('hq_clear_filter', 'مسح الفلترة')}
             </button>
           )}
         </div>
@@ -1106,32 +1106,32 @@ export const HadithQudsi: React.FC = () => {
         {(selectedTag || searchTerm || selectedCategory !== 'all' || onlyFavorites) && (
           <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800 text-xs font-bold text-amber-800 dark:text-amber-300">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-slate-500 dark:text-slate-400">التصفية النشطة:</span>
+              <span className="text-slate-500 dark:text-slate-400">{t('hq_active_filters', 'التصفية النشطة:')}</span>
               
               {selectedCategory !== 'all' && (
                 <span className="bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <span>القسم: {categories.find(c => c.id === selectedCategory)?.label}</span>
+                  <span>{t('hq_filter_section', 'القسم: {{name}}', { name: categories.find(c => c.id === selectedCategory)?.label })}</span>
                   <X size={12} className="cursor-pointer hover:text-rose-500" onClick={() => setSelectedCategory('all')} />
                 </span>
               )}
 
               {selectedTag && (
                 <span className="bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <span>الموضوع: #{selectedTag}</span>
+                  <span>{t('hq_filter_topic', 'الموضوع: #{{tag}}', { tag: selectedTag })}</span>
                   <X size={12} className="cursor-pointer hover:text-rose-500" onClick={() => setSelectedTag(null)} />
                 </span>
               )}
 
               {searchTerm && (
                 <span className="bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <span>البحث: "{searchTerm}"</span>
+                  <span>{t('hq_filter_search', 'البحث: "{{term}}"', { term: searchTerm })}</span>
                   <X size={12} className="cursor-pointer hover:text-rose-500" onClick={() => setSearchTerm('')} />
                 </span>
               )}
 
               {onlyFavorites && (
                 <span className="bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <span>المفضلة فقط</span>
+                  <span>{t('hq_favorites_only', 'المفضلة فقط')}</span>
                   <X size={12} className="cursor-pointer hover:text-rose-500" onClick={() => setOnlyFavorites(false)} />
                 </span>
               )}
@@ -1142,7 +1142,7 @@ export const HadithQudsi: React.FC = () => {
               className="text-[11px] font-black text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1 cursor-pointer shrink-0"
             >
               <RotateCcw size={12} />
-              <span>إعادة ضبط الكل</span>
+              <span>{t('hq_reset_all', 'إعادة ضبط الكل')}</span>
             </button>
           </div>
         )}
@@ -1158,7 +1158,7 @@ export const HadithQudsi: React.FC = () => {
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-amber-500" />
               <span className="text-xs font-black text-slate-700 dark:text-slate-300">
-                عرض {filteredHadiths.length} من أصل {QUDSI_HADITHS.length} حديث قدسي شريف
+                {t('hq_showing', 'عرض {{shown}} من أصل {{total}} حديث قدسي شريف', { shown: filteredHadiths.length, total: QUDSI_HADITHS.length })}
               </span>
             </div>
             {(selectedCategory === 'favorites' || onlyFavorites) && favorites.length > 0 && (
@@ -1167,7 +1167,7 @@ export const HadithQudsi: React.FC = () => {
                 className="text-[11px] font-black text-rose-600 dark:text-rose-400 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
               >
                 <X size={13} />
-                <span>مسح المفضلة ({favorites.length})</span>
+                <span>{t('hq_clear_favs', 'مسح المفضلة ({{count}})', { count: favorites.length })}</span>
               </button>
             )}
           </div>
@@ -1176,7 +1176,7 @@ export const HadithQudsi: React.FC = () => {
             <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-between gap-3 text-xs font-bold text-rose-700 dark:text-rose-300">
               <div className="flex items-center gap-2">
                 <Heart size={16} className="fill-rose-500 text-rose-500 shrink-0" />
-                <span>تعرض حالياً الأحاديث المحفوظة في قائمة المفضلة الخاصة بك.</span>
+                <span>{t('hq_fav_banner', 'تعرض حالياً الأحاديث المحفوظة في قائمة المفضلة الخاصة بك.')}</span>
               </div>
             </div>
           )}
@@ -1189,10 +1189,10 @@ export const HadithQudsi: React.FC = () => {
                 <Heart size={32} className="fill-rose-500" />
               </div>
               <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">
-                قائمة المفضلة فارغة حالياً
+                {t('hq_empty_fav_title', 'قائمة المفضلة فارغة حالياً')}
               </h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                يمكنك إضافة الأحاديث القدسية الشريفة إلى قائمة المفضلة عبر الضغط على أيقونة القلب (❤️) الموجودة في أعلى بطاقة أي حديث للوصول إليها بسرعة في أي وقت.
+                {t('hq_empty_fav_body', 'يمكنك إضافة الأحاديث القدسية الشريفة إلى قائمة المفضلة عبر الضغط على أيقونة القلب (❤️) الموجودة في أعلى بطاقة أي حديث للوصول إليها بسرعة في أي وقت.')}
               </p>
               <button
                 onClick={() => {
@@ -1202,7 +1202,7 @@ export const HadithQudsi: React.FC = () => {
                 className="mt-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black rounded-xl shadow-md cursor-pointer hover:from-amber-600 hover:to-amber-700 transition-all flex items-center gap-2 mx-auto"
               >
                 <BookOpen size={16} />
-                <span>استعراض جميع الأحاديث القدسية</span>
+                <span>{t('hq_browse_all', 'استعراض جميع الأحاديث القدسية')}</span>
               </button>
             </div>
           ) : (
@@ -1210,15 +1210,15 @@ export const HadithQudsi: React.FC = () => {
               <div className="w-16 h-16 mx-auto bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-2xl flex items-center justify-center">
                 <BookOpen size={32} />
               </div>
-              <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">لم يتم العثور على أحاديث قدسية تطابق بحثك</h3>
+              <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">{t('hq_empty_title', 'لم يتم العثور على أحاديث قدسية تطابق بحثك')}</h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                جرّب استخدام كلمات مفتاحية أخرى مثل "الرحمة"، "التوبة"، "الذكر"، "العدل"، أو اختر قسماً آخر من فهرس الموضوعات.
+                {t('hq_empty_body', 'جرّب استخدام كلمات مفتاحية أخرى مثل "الرحمة"، "التوبة"، "الذكر"، "العدل"، أو اختر قسماً آخر من فهرس الموضوعات.')}
               </p>
               <button
                 onClick={resetAllFilters}
                 className="mt-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black rounded-xl shadow-md cursor-pointer hover:from-amber-600 hover:to-amber-700"
               >
-                عرض جميع الأحاديث القدسية
+                {t('hq_show_all', 'عرض جميع الأحاديث القدسية')}
               </button>
             </div>
           )
@@ -1240,13 +1240,13 @@ export const HadithQudsi: React.FC = () => {
             <div className="text-center pb-6 border-b border-amber-200/60 dark:border-slate-800 space-y-2">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 text-xs font-black">
                 <BookOpen size={15} className="text-amber-600 dark:text-amber-400" />
-                <span>جامع الأحاديث القدسية الشريفة — صفحة متصلة موحدة</span>
+                <span>{t('hq_sp_badge', 'جامع الأحاديث القدسية الشريفة — صفحة متصلة موحدة')}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-amber-950 dark:text-amber-200 tracking-tight">
-                الأحاديث القدسية المباركة ({filteredHadiths.length} حديث)
+                {t('hq_sp_title', 'الأحاديث القدسية المباركة ({{count}} حديث)', { count: filteredHadiths.length })}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-                تم دمج كافة الأحاديث الشريفة في صفحة واحدة ممتدة للقراءة المتصلة مع المفهوم الشامل والفوائد التوجيهية بدون تشتيت.
+                {t('hq_sp_desc', 'تم دمج كافة الأحاديث الشريفة في صفحة واحدة ممتدة للقراءة المتصلة مع المفهوم الشامل والفوائد التوجيهية بدون تشتيت.')}
               </p>
             </div>
 
@@ -1264,7 +1264,7 @@ export const HadithQudsi: React.FC = () => {
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <span className="px-3.5 py-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-sm flex items-center gap-1.5">
                           <Sparkles size={14} />
-                          <span>﴿ الحديث {index + 1} ﴾</span>
+                          <span>{t('hq_hadith_n', '﴿ الحديث {{n}} ﴾', { n: index + 1 })}</span>
                         </span>
 
                         <button
@@ -1285,7 +1285,7 @@ export const HadithQudsi: React.FC = () => {
                         {isRead && (
                           <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] rounded-lg border border-emerald-500/30 flex items-center gap-1">
                             <CheckCircle2 size={12} className="text-emerald-500" />
-                            <span>تمت القراءة</span>
+                            <span>{t('hq_read_done', 'تمت القراءة')}</span>
                           </span>
                         )}
                       </div>
@@ -1300,16 +1300,16 @@ export const HadithQudsi: React.FC = () => {
                               ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" 
                               : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-700"
                           )}
-                          title={isRead ? "مقروء" : "تعيين كمقروء"}
+                          title={isRead ? t('hq_read_title', 'مقروء') : t('hq_mark_read', 'تعيين كمقروء')}
                         >
                           <CheckCircle2 size={15} className={cn(isRead && "fill-white text-emerald-500")} />
-                          <span className="hidden sm:inline">{isRead ? "تمت القراءة" : "مقروء"}</span>
+                          <span className="hidden sm:inline">{isRead ? t('hq_read_done', 'تمت القراءة') : t('hq_read_title', 'مقروء')}</span>
                         </button>
 
                         <button
                           onClick={() => handleCopyHadith(item)}
                           className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-amber-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
-                          title="نسخ الحديث"
+                          title={t('hq_copy_title', 'نسخ الحديث')}
                         >
                           {copiedId === item.id ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
                         </button>
@@ -1317,7 +1317,7 @@ export const HadithQudsi: React.FC = () => {
                         <button
                           onClick={() => setShareItem(item)}
                           className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-amber-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
-                          title="مشاركة كبطاقة"
+                          title={t('hq_share_card_title', 'مشاركة كبطاقة')}
                         >
                           <Share2 size={16} />
                         </button>
@@ -1330,7 +1330,7 @@ export const HadithQudsi: React.FC = () => {
                               ? "bg-rose-500 text-white border-rose-500" 
                               : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-rose-100"
                           )}
-                          title="المفضلة"
+                          title={t('hq_cat_favorites', 'المفضلة')}
                         >
                           <Heart size={16} className={cn(isFav && "fill-white")} />
                         </button>
@@ -1364,7 +1364,7 @@ export const HadithQudsi: React.FC = () => {
                       </p>
                       <div className="mt-4 pt-3 border-t border-amber-200/40 dark:border-slate-800/80 flex flex-wrap justify-between items-center gap-2">
                         <span className="text-xs sm:text-sm font-bold text-amber-800/90 dark:text-amber-400/90">
-                          📖 التخريج والمصدر الرئيسي: {item.attribution}
+                          {t('hq_takhrij_label', '📖 التخريج والمصدر الرئيسي:')} {item.attribution}
                         </span>
                         <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">
                           [{item.reference}]
@@ -1380,10 +1380,10 @@ export const HadithQudsi: React.FC = () => {
                       >
                         <div className="flex items-center gap-2">
                           <BookOpen size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                          <span>الشرح والفوائد التربوية والدروس الاستنباطية</span>
+                          <span>{t('hq_expl_title_sp', 'الشرح والفوائد التربوية والدروس الاستنباطية')}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-slate-500 text-xs">
-                          <span>{isExplanationExpanded ? 'إخفاء الشرح' : 'عرض الشرح والفوائد'}</span>
+                          <span>{isExplanationExpanded ? t('hq_hide_expl', 'إخفاء الشرح') : t('hq_show_expl', 'عرض الشرح والفوائد')}</span>
                           {isExplanationExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </div>
                       </button>
@@ -1402,7 +1402,7 @@ export const HadithQudsi: React.FC = () => {
                               <div className="space-y-2">
                                 <h4 className="text-sm sm:text-base lg:text-lg font-black text-amber-900 dark:text-amber-400 flex items-center gap-2">
                                   <Info size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                                  <span>شرح الحديث العام والمفهوم الإيماني:</span>
+                                  <span>{t('hq_overview_h', 'شرح الحديث العام والمفهوم الإيماني:')}</span>
                                 </h4>
                                 <p className="text-base sm:text-lg lg:text-xl text-slate-900 dark:text-slate-100 leading-loose text-justify font-bold">
                                   {renderHighlightedText(item.explanation.overview, searchTerm)}
@@ -1413,7 +1413,7 @@ export const HadithQudsi: React.FC = () => {
                               <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <h4 className="text-sm sm:text-base lg:text-lg font-black text-amber-900 dark:text-amber-400 flex items-center gap-2">
                                   <Lightbulb size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                                  <span>أبرز الفوائد والدروس الاستنباطية:</span>
+                                  <span>{t('hq_lessons_h', 'أبرز الفوائد والدروس الاستنباطية:')}</span>
                                 </h4>
                                 <ul className="space-y-3">
                                   {item.explanation.keyLessons.map((lesson, lIdx) => (
@@ -1430,7 +1430,7 @@ export const HadithQudsi: React.FC = () => {
                                 <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                                   <h4 className="text-sm sm:text-base lg:text-lg font-black text-amber-900 dark:text-amber-400 flex items-center gap-2">
                                     <BookOpen size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                                    <span>معاني الغريب والمفردات:</span>
+                                    <span>{t('hq_vocab_h_sp', 'معاني الغريب والمفردات:')}</span>
                                   </h4>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {item.explanation.vocabulary.map((vocab, vIdx) => (
@@ -1446,7 +1446,7 @@ export const HadithQudsi: React.FC = () => {
                               {/* Reflections */}
                               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 bg-gradient-to-r from-amber-500/10 via-emerald-500/5 to-transparent p-4 sm:p-5 rounded-2xl border-r-4 border-amber-500">
                                 <span className="text-sm sm:text-base lg:text-lg font-black text-amber-950 dark:text-amber-300 block mb-1">
-                                  💡 تطبيق عملي في حياتك:
+                                  {t('hq_practical', '💡 تطبيق عملي في حياتك:')}
                                 </span>
                                 <p className="text-base sm:text-lg lg:text-xl text-slate-900 dark:text-slate-100 font-bold leading-loose italic">
                                   {item.explanation.reflections}
@@ -1462,7 +1462,7 @@ export const HadithQudsi: React.FC = () => {
                     <div className="flex items-center gap-2 flex-wrap pt-2">
                       <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
                         <Tag size={13} />
-                        <span>الوسوم:</span>
+                        <span>{t('hq_tags_sp', 'الوسوم:')}</span>
                       </span>
                       {item.tags.map((tag, tIdx) => {
                         const isTagActive = selectedTag === tag;
@@ -1546,7 +1546,7 @@ export const HadithQudsi: React.FC = () => {
                       {isRead && (
                         <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-extrabold text-xs rounded-lg border border-emerald-500/30 flex items-center gap-1">
                           <CheckCircle2 size={13} className="text-emerald-500" />
-                          <span>تمت القراءة</span>
+                          <span>{t('hq_read_done', 'تمت القراءة')}</span>
                         </span>
                       )}
 
@@ -1565,16 +1565,16 @@ export const HadithQudsi: React.FC = () => {
                             ? "bg-emerald-500 text-white border-emerald-500 shadow-sm" 
                             : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-700"
                         )}
-                        title={isRead ? "مقروء (انقر لإلغاء التحديد)" : "تعيين كمقروء"}
+                        title={isRead ? t('hq_read_undo_title', 'مقروء (انقر لإلغاء التحديد)') : t('hq_mark_read', 'تعيين كمقروء')}
                       >
                         <CheckCircle2 size={16} className={cn(isRead && "fill-white text-emerald-500")} />
-                        <span className="hidden sm:inline">{isRead ? "تمت قراءته" : "مقروء"}</span>
+                        <span className="hidden sm:inline">{isRead ? t('hq_read_done_m', 'تمت قراءته') : t('hq_read_title', 'مقروء')}</span>
                       </button>
 
                       <button
                         onClick={() => handleCopyHadith(item)}
                         className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-amber-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
-                        title="نسخ الحديث الشريف"
+                        title={t('hq_copy_title_full', 'نسخ الحديث الشريف')}
                       >
                         {copiedId === item.id ? <Check size={18} className="text-emerald-600" /> : <Copy size={18} />}
                       </button>
@@ -1582,7 +1582,7 @@ export const HadithQudsi: React.FC = () => {
                       <button
                         onClick={() => setShareItem(item)}
                         className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-amber-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
-                        title="مشاركة كبطاقة مصورة"
+                        title={t('hq_share_image_title', 'مشاركة كبطاقة مصورة')}
                       >
                         <Share2 size={18} />
                       </button>
@@ -1595,7 +1595,7 @@ export const HadithQudsi: React.FC = () => {
                             ? "bg-rose-500 text-white border-rose-500" 
                             : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-rose-100"
                         )}
-                        title="إضافة للمفضلة"
+                        title={t('hq_add_fav_title', 'إضافة للمفضلة')}
                       >
                         <Heart size={18} className={cn(isFav && "fill-white")} />
                       </button>
@@ -1629,7 +1629,7 @@ export const HadithQudsi: React.FC = () => {
                     </p>
                     <div className="mt-4 pt-3 border-t border-amber-200/40 dark:border-slate-800/80 flex justify-between items-center">
                       <span className="text-xs sm:text-sm font-bold text-amber-800/80 dark:text-amber-400/80">
-                        📖 التخريج والمصدر الرئيسي: {item.attribution}
+                        {t('hq_takhrij_label', '📖 التخريج والمصدر الرئيسي:')} {item.attribution}
                       </span>
                       <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">
                         [{item.reference}]
@@ -1645,10 +1645,10 @@ export const HadithQudsi: React.FC = () => {
                     >
                       <div className="flex items-center gap-2.5">
                         <BookOpen size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                        <span>الشرح الموسع والتفصيلي والفوائد التربوية</span>
+                        <span>{t('hq_expl_title_cards', 'الشرح الموسع والتفصيلي والفوائد التربوية')}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-slate-500">
-                        <span className="text-xs font-bold">{isExplanationExpanded ? 'إخفاء الشرح' : 'عرض الشرح والفوائد'}</span>
+                        <span className="text-xs font-bold">{isExplanationExpanded ? t('hq_hide_expl', 'إخفاء الشرح') : t('hq_show_expl', 'عرض الشرح والفوائد')}</span>
                         {isExplanationExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                       </div>
                     </button>
@@ -1669,7 +1669,7 @@ export const HadithQudsi: React.FC = () => {
                             <div className="space-y-2">
                               <h4 className="text-sm sm:text-base lg:text-lg font-black text-amber-900 dark:text-amber-400 flex items-center gap-2 tracking-wider">
                                 <Info size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                                <span>شرح الحديث العام والمفهوم الإيماني:</span>
+                                <span>{t('hq_overview_h', 'شرح الحديث العام والمفهوم الإيماني:')}</span>
                               </h4>
                               <p className="text-base sm:text-lg lg:text-xl text-slate-900 dark:text-slate-100 leading-loose text-justify font-bold">
                                 {renderHighlightedText(item.explanation.overview, searchTerm)}
@@ -1680,7 +1680,7 @@ export const HadithQudsi: React.FC = () => {
                             <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                               <h4 className="text-sm sm:text-base lg:text-lg font-black text-amber-900 dark:text-amber-400 flex items-center gap-2 tracking-wider">
                                 <Lightbulb size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                                <span>أبرز الفوائد والدروس الاستنباطية:</span>
+                                <span>{t('hq_lessons_h', 'أبرز الفوائد والدروس الاستنباطية:')}</span>
                               </h4>
                               <ul className="space-y-3">
                                 {item.explanation.keyLessons.map((lesson, lIdx) => (
@@ -1697,7 +1697,7 @@ export const HadithQudsi: React.FC = () => {
                               <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <h4 className="text-sm sm:text-base lg:text-lg font-black text-amber-900 dark:text-amber-400 flex items-center gap-2 tracking-wider">
                                   <BookOpen size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                                  <span>معاني غريب الكلمات والمفردات:</span>
+                                  <span>{t('hq_vocab_h_cards', 'معاني غريب الكلمات والمفردات:')}</span>
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                   {item.explanation.vocabulary.map((vocab, vIdx) => (
@@ -1713,7 +1713,7 @@ export const HadithQudsi: React.FC = () => {
                             {/* Practical Reflection */}
                             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 bg-gradient-to-r from-amber-500/10 via-emerald-500/5 to-transparent p-4 sm:p-5 rounded-2xl border-r-4 border-r-amber-500">
                               <span className="text-sm sm:text-base lg:text-lg font-black text-amber-950 dark:text-amber-300 block mb-1">
-                                💡 تطبيق عملي في حياتك:
+                                {t('hq_practical', '💡 تطبيق عملي في حياتك:')}
                               </span>
                               <p className="text-base sm:text-lg lg:text-xl text-slate-900 dark:text-slate-100 font-bold leading-loose italic">
                                 {item.explanation.reflections}
@@ -1730,7 +1730,7 @@ export const HadithQudsi: React.FC = () => {
                   <div className="flex items-center gap-2 flex-wrap pt-3 border-t border-slate-100 dark:border-slate-800">
                     <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
                       <Tag size={13} />
-                      <span>المواضيع والوسوم:</span>
+                      <span>{t('hq_tags_cards', 'المواضيع والوسوم:')}</span>
                     </span>
                     {item.tags.map((tag, tIdx) => {
                       const isTagActive = selectedTag === tag;
@@ -1781,9 +1781,9 @@ export const HadithQudsi: React.FC = () => {
                   <Grid size={22} className="text-amber-500" />
                   <div>
                     <h3 className="font-black text-slate-900 dark:text-white text-lg">
-                      فهرس الأحاديث القدسية
+                      {t('hq_index_title', 'فهرس الأحاديث القدسية')}
                     </h3>
-                    <p className="text-xs text-slate-500">اختر طريقة العرض للانتقال المباشر</p>
+                    <p className="text-xs text-slate-500">{t('hq_index_sub', 'اختر طريقة العرض للانتقال المباشر')}</p>
                   </div>
                 </div>
                 <button
@@ -1803,7 +1803,7 @@ export const HadithQudsi: React.FC = () => {
                     indexModalTab === 'categories' ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm" : "text-slate-600 dark:text-slate-300"
                   )}
                 >
-                  المواضيع والتصنيفات
+                  {t('hq_tab_categories', 'المواضيع والتصنيفات')}
                 </button>
                 <button
                   onClick={() => setIndexModalTab('titles')}
@@ -1812,7 +1812,7 @@ export const HadithQudsi: React.FC = () => {
                     indexModalTab === 'titles' ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm" : "text-slate-600 dark:text-slate-300"
                   )}
                 >
-                  عناوين الأحاديث
+                  {t('hq_tab_titles', 'عناوين الأحاديث')}
                 </button>
               </div>
 
@@ -1822,7 +1822,7 @@ export const HadithQudsi: React.FC = () => {
                   <div className="space-y-3">
                     <h4 className="text-xs font-black text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
                       <Layers size={15} />
-                      <span>أبواب ومواضيع الأحاديث القدسية الرئيسية:</span>
+                      <span>{t('hq_index_chapters_h', 'أبواب ومواضيع الأحاديث القدسية الرئيسية:')}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1852,7 +1852,7 @@ export const HadithQudsi: React.FC = () => {
                               </div>
                               <div>
                                 <span className="text-xs font-extrabold block">{cat.label}</span>
-                                <span className="text-[10px] text-slate-500 font-bold">{count} أحاديث قدسية</span>
+                                <span className="text-[10px] text-slate-500 font-bold">{t('hq_n_qudsi', '{{count}} أحاديث قدسية', { count })}</span>
                               </div>
                             </div>
 
@@ -1869,7 +1869,7 @@ export const HadithQudsi: React.FC = () => {
                   <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
                     <h4 className="text-xs font-black text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
                       <Tag size={15} />
-                      <span>فهرس الموضوعات والكلمات الدلالية (#الوسوم):</span>
+                      <span>{t('hq_index_tags_h', 'فهرس الموضوعات والكلمات الدلالية (#الوسوم):')}</span>
                     </h4>
 
                     <div className="flex flex-wrap gap-2">
@@ -1947,7 +1947,7 @@ export const HadithQudsi: React.FC = () => {
                   }}
                   className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-300 cursor-pointer"
                 >
-                  إلغاء وتصفح الكل
+                  {t('hq_cancel_browse_all', 'إلغاء وتصفح الكل')}
                 </button>
               </div>
 
@@ -1981,10 +1981,10 @@ export const HadithQudsi: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-black text-slate-900 dark:text-white text-lg sm:text-xl">
-                      لوحة إحصائيات قراءة الأحاديث القدسية
+                      {t('hq_stats_title', 'لوحة إحصائيات قراءة الأحاديث القدسية')}
                     </h3>
                     <p className="text-xs text-slate-500 font-bold">
-                      متابعة بصرية لمعدل الإنجاز والموضوعات الأكثر تصفحاً وقراءة
+                      {t('hq_stats_sub', 'متابعة بصرية لمعدل الإنجاز والموضوعات الأكثر تصفحاً وقراءة')}
                     </p>
                   </div>
                 </div>
@@ -2001,12 +2001,12 @@ export const HadithQudsi: React.FC = () => {
                 {/* Card 1: Read Count & Progress */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-emerald-800 dark:text-emerald-300">الأحاديث المقروءة</span>
+                    <span className="text-[11px] font-black text-emerald-800 dark:text-emerald-300">{t('hq_stat_read', 'الأحاديث المقروءة')}</span>
                     <CheckCircle2 size={18} className="text-emerald-500" />
                   </div>
                   <div className="mt-2 flex items-baseline gap-1.5">
                     <span className="text-2xl font-black text-slate-900 dark:text-white">{totalReadCount}</span>
-                    <span className="text-xs font-bold text-slate-500">من {totalHadithsCount}</span>
+                    <span className="text-xs font-bold text-slate-500">{t('hq_of_total', 'من {{total}}', { total: totalHadithsCount })}</span>
                   </div>
                   <div className="w-full bg-emerald-200/50 dark:bg-slate-800 rounded-full h-2 mt-2 overflow-hidden">
                     <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${readPercentage}%` }} />
@@ -2016,29 +2016,29 @@ export const HadithQudsi: React.FC = () => {
                 {/* Card 2: Percentage Completion Rate */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-amber-800 dark:text-amber-300">نسبة الإنجاز الخاطر</span>
+                    <span className="text-[11px] font-black text-amber-800 dark:text-amber-300">{t('hq_stat_rate', 'نسبة الإنجاز الخاطر')}</span>
                     <TrendingUp size={18} className="text-amber-500" />
                   </div>
                   <div className="mt-2 flex items-baseline gap-1">
                     <span className="text-2xl font-black text-slate-900 dark:text-white">{readPercentage}%</span>
                   </div>
                   <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 mt-2">
-                    {readPercentage === 100 ? '🎉 ختمت جميع الأحاديث القدسية!' : readPercentage > 50 ? '🌟 تجاوزت المنتصف بفضل الله!' : '🌱 واصل تدبر الكلام الشريف'}
+                    {readPercentage === 100 ? t('hq_msg_done', '🎉 ختمت جميع الأحاديث القدسية!') : readPercentage > 50 ? t('hq_msg_half', '🌟 تجاوزت المنتصف بفضل الله!') : t('hq_msg_keep', '🌱 واصل تدبر الكلام الشريف')}
                   </p>
                 </div>
 
                 {/* Card 3: Top Topic Category */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-blue-800 dark:text-blue-300">الأكثر تصفحاً وقراءة</span>
+                    <span className="text-[11px] font-black text-blue-800 dark:text-blue-300">{t('hq_stat_top', 'الأكثر تصفحاً وقراءة')}</span>
                     <Flame size={18} className="text-blue-500" />
                   </div>
                   <div className="mt-2">
                     <span className="text-sm font-black text-slate-900 dark:text-white block truncate">
-                      {mostReadCategory?.read > 0 ? mostReadCategory.name : 'لم تُحدد بعد'}
+                      {mostReadCategory?.read > 0 ? mostReadCategory.name : t('hq_stat_none', 'لم تُحدد بعد')}
                     </span>
                     <span className="text-[11px] font-bold text-slate-500">
-                      {mostReadCategory?.read > 0 ? `${mostReadCategory.read} أحاديث مقروءة` : 'حدد أحاديث للقراءة'}
+                      {mostReadCategory?.read > 0 ? t('hq_stat_n_read', '{{count}} أحاديث مقروءة', { count: mostReadCategory.read }) : t('hq_stat_pick', 'حدد أحاديث للقراءة')}
                     </span>
                   </div>
                 </div>
@@ -2046,14 +2046,14 @@ export const HadithQudsi: React.FC = () => {
                 {/* Card 4: Favorites Saved */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent border border-rose-500/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-rose-800 dark:text-rose-300">المفضلة المحفوظة</span>
+                    <span className="text-[11px] font-black text-rose-800 dark:text-rose-300">{t('hq_stat_fav', 'المفضلة المحفوظة')}</span>
                     <Heart size={18} className="text-rose-500 fill-rose-500" />
                   </div>
                   <div className="mt-2 flex items-baseline gap-1.5">
                     <span className="text-2xl font-black text-slate-900 dark:text-white">{favorites.length}</span>
-                    <span className="text-xs font-bold text-slate-500">حديث مفضل</span>
+                    <span className="text-xs font-bold text-slate-500">{t('hq_stat_fav_unit', 'حديث مفضل')}</span>
                   </div>
-                  <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-2">محفوظة للرجوع السريع</p>
+                  <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-2">{t('hq_stat_fav_note', 'محفوظة للرجوع السريع')}</p>
                 </div>
               </div>
 
@@ -2066,11 +2066,11 @@ export const HadithQudsi: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <PieIcon size={16} className="text-amber-500" />
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        توزيع المقروء حسب الأبواب والموضوعات
+                        {t('hq_chart_pie_title', 'توزيع المقروء حسب الأبواب والموضوعات')}
                       </h4>
                     </div>
                     <span className="text-[10px] font-extrabold text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
-                      مخطط دائرى
+                      {t('hq_chart_pie_tag', 'مخطط دائرى')}
                     </span>
                   </div>
 
@@ -2114,11 +2114,11 @@ export const HadithQudsi: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <BarChart2 size={16} className="text-emerald-500" />
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        مقارنة المقروء والمتبقي بكل باب
+                        {t('hq_chart_bar_title', 'مقارنة المقروء والمتبقي بكل باب')}
                       </h4>
                     </div>
                     <span className="text-[10px] font-extrabold text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
-                      مخطط أعمدة
+                      {t('hq_chart_bar_tag', 'مخطط أعمدة')}
                     </span>
                   </div>
 
@@ -2143,8 +2143,8 @@ export const HadithQudsi: React.FC = () => {
                             direction: 'rtl'
                           }} 
                         />
-                        <Bar dataKey="read" fill="#10b981" name="المقروء" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="total" fill="#cbd5e1" name="الإجمالي" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="read" fill="#10b981" name={t('hq_chart_read', 'المقروء')} radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="total" fill="#cbd5e1" name={t('hq_chart_total', 'الإجمالي')} radius={[4, 4, 0, 0]} />
                       </ReBarChart>
                     </ResponsiveContainer>
                   </div>
@@ -2156,7 +2156,7 @@ export const HadithQudsi: React.FC = () => {
               <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Layers size={16} className="text-amber-500" />
-                  <span>تفاصيل إنجاز القراءة بحسب مواضيع الأحاديث:</span>
+                  <span>{t('hq_progress_h', 'تفاصيل إنجاز القراءة بحسب مواضيع الأحاديث:')}</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -2171,7 +2171,7 @@ export const HadithQudsi: React.FC = () => {
                           <span className="text-slate-800 dark:text-slate-200">{cat.name}</span>
                         </div>
                         <span className="text-[11px] font-black text-slate-500">
-                          {cat.read} من {cat.total} ({cat.percentage}%)
+                          {t('hq_cat_progress', '{{read}} من {{total}} ({{pct}}%)', { read: cat.read, total: cat.total, pct: cat.percentage })}
                         </span>
                       </div>
 
@@ -2194,7 +2194,7 @@ export const HadithQudsi: React.FC = () => {
                     className="px-4 py-2 bg-emerald-500 text-white text-xs font-black rounded-xl shadow-md hover:bg-emerald-600 cursor-pointer flex items-center gap-1.5 transition-all"
                   >
                     <CheckCircle2 size={15} />
-                    <span>تعيين جميع الأحاديث كمقروءة</span>
+                    <span>{t('hq_mark_all', 'تعيين جميع الأحاديث كمقروءة')}</span>
                   </button>
 
                   <button
@@ -2202,7 +2202,7 @@ export const HadithQudsi: React.FC = () => {
                     className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-1.5 transition-all"
                   >
                     <RotateCcw size={14} />
-                    <span>إعادة ضبط السجل</span>
+                    <span>{t('hq_reset_log', 'إعادة ضبط السجل')}</span>
                   </button>
                 </div>
 
@@ -2210,7 +2210,7 @@ export const HadithQudsi: React.FC = () => {
                   onClick={() => setShowStatsModal(false)}
                   className="px-5 py-2 bg-amber-500 text-white text-xs font-black rounded-xl hover:bg-amber-600 cursor-pointer shadow-md"
                 >
-                  إغلاق اللوحة
+                  {t('hq_close_panel', 'إغلاق اللوحة')}
                 </button>
               </div>
 
@@ -2239,7 +2239,7 @@ export const HadithQudsi: React.FC = () => {
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="font-black text-slate-800 dark:text-white text-base flex items-center gap-2">
                   <Share2 size={18} className="text-amber-500" />
-                  <span>تصدير بطاقة حديث قدسي شريف</span>
+                  <span>{t('hq_share_title', 'تصدير بطاقة حديث قدسي شريف')}</span>
                 </h3>
                 <button
                   onClick={() => setShareItem(null)}
@@ -2251,7 +2251,7 @@ export const HadithQudsi: React.FC = () => {
 
               {/* Theme selector */}
               <div className="flex items-center justify-center gap-3 py-1">
-                <span className="text-xs font-bold text-slate-500">المظهر:</span>
+                <span className="text-xs font-bold text-slate-500">{t('hq_theme', 'المظهر:')}</span>
                 {(['emerald', 'amber', 'indigo', 'slate'] as const).map(th => (
                   <button
                     key={th}
@@ -2283,7 +2283,7 @@ export const HadithQudsi: React.FC = () => {
 
                 <div className="relative z-10 space-y-3">
                   <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold text-amber-300 border border-white/20">
-                    ✨ حديث قدسي شريف ✨
+                    {t('hq_card_badge', '✨ حديث قدسي شريف ✨')}
                   </div>
 
                   <h4 className="font-black text-lg text-amber-200">
@@ -2303,7 +2303,7 @@ export const HadithQudsi: React.FC = () => {
                   </div>
 
                   <div className="pt-2 text-[10px] text-white/50 text-center font-bold">
-                    تطبيق أذكار المؤمن 💚
+                    {t('hq_card_app', 'تطبيق {{app}} 💚', { app: t('app_name', 'أذكار المؤمن') })}
                   </div>
                 </div>
               </div>
@@ -2316,7 +2316,7 @@ export const HadithQudsi: React.FC = () => {
                   className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
                 >
                   <Download size={16} />
-                  <span>{sharingStatus === 'generating' ? 'جاري التوليد...' : 'حفظ كصورة عالية الدقة'}</span>
+                  <span>{sharingStatus === 'generating' ? t('hq_generating', 'جاري التوليد...') : t('hq_save_hd', 'حفظ كصورة عالية الدقة')}</span>
                 </button>
               </div>
 

@@ -3066,8 +3066,7 @@ export const Settings: React.FC = () => {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder={t('feedback_placeholder', 'اكتب مقترحك أو ملاحظتك هنا...')}
-                className="w-full h-28 bg-black/30 backdrop-blur-md border border-white/20 rounded-xl p-3.5 text-xs sm:text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent resize-none transition-all text-right font-bold"
-                dir="rtl"
+                className="w-full h-28 bg-black/30 backdrop-blur-md border border-white/20 rounded-xl p-3.5 text-xs sm:text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent resize-none transition-all text-start font-bold"
                 disabled={isSubmittingFeedback || feedbackSubmitted}
               />
             </div>
@@ -3450,8 +3449,7 @@ export const Settings: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg bg-slate-900 border border-emerald-500/30 rounded-3xl shadow-2xl z-[121] overflow-hidden max-h-[90vh] flex flex-col text-right dir-rtl"
-              dir="rtl"
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg bg-slate-900 border border-emerald-500/30 rounded-3xl shadow-2xl z-[121] overflow-hidden max-h-[90vh] flex flex-col text-start dir-rtl"
             >
               {/* Modal Header */}
               <div className="relative p-4 sm:p-5 bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 border-b border-emerald-500/20 flex items-center justify-between shrink-0">
@@ -3571,8 +3569,7 @@ export const Settings: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="relative w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 shadow-2xl text-white overflow-hidden text-right"
-                dir="rtl"
+                className="relative w-full max-w-md bg-slate-900 border border-teal-500/30 rounded-3xl p-6 shadow-2xl text-white overflow-hidden text-start"
               >
                 <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-400 to-amber-400" />
                 

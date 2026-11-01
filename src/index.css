@@ -135,6 +135,14 @@ a:not([disabled]):not(.navigation-card):active,
   overflow: hidden;
 }
 
+/* Letter-spacing (tracking-widest, tracking-[0.45em]…) pulls Devanagari and
+   Bengali apart: the browser drops the conjuncts once letters are spaced, so
+   "रविवार" showed as "र वि वा र". These scripts get no extra spacing. */
+html:lang(hi) *,
+html:lang(bn) * {
+  letter-spacing: normal !important;
+}
+
 /* A touch that starts on a navigation card may become a scroll. Keep the
    card and its Arabic text on the same paint surface throughout that gesture. */
 .navigation-card {

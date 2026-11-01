@@ -3,6 +3,7 @@ import { shareContent, copyTextToClipboard, triggerHaptic, cn } from '../lib/uti
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../utils/storage';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { NAMES_OF_ALLAH, NameOfAllah } from '../data/namesOfAllah';
 import { ALLAH_NAMES_TRANSLATIONS } from '../data/namesOfAllahTranslations';
@@ -487,6 +488,7 @@ ListNameCard.displayName = 'ListNameCard';
 
 const NamesOfAllahComponent: React.FC = () => {
   const { settings, updateSettings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   
   // Active settings with fallbacks
   const layout = (settings.namesOfAllahLayout || 'grid4') as LayoutMode;
@@ -666,7 +668,7 @@ const NamesOfAllahComponent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full flex-1 overflow-hidden select-none w-full max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto pt-2 pb-0 px-2 sm:px-4" dir="rtl">
+    <div className="flex flex-col h-full flex-1 overflow-hidden select-none w-full max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto pt-2 pb-0 px-2 sm:px-4">
       
       {/* 🌟 TOP HEADER CAPSULE (Modern & Smart Interactive Capsule - Fixed at Top) */}
       <div 
@@ -694,23 +696,23 @@ const NamesOfAllahComponent: React.FC = () => {
                   className={cn("text-lg sm:text-xl font-black drop-shadow-md leading-tight", activeTheme.textColor)}
                   style={{ fontFamily: activeFont.family }}
                 >
-                  أسماء الله الحسنى
+                  {t('names_of_allah', 'أسماء الله الحسنى')}
                 </h2>
                 <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full border border-white/10 hidden sm:inline-block", activeTheme.badgeBg, activeTheme.textColor)}>
-                  99 اسماً مباركاً
+                  {t('ui_names_99_blessed', '99 اسماً مباركاً')}
                 </span>
               </div>
               <p className={cn(
                 "text-[11px] font-bold tracking-wide flex items-center gap-1.5 opacity-90",
                 activeTheme.isLight ? "text-slate-700" : "text-slate-200"
               )}>
-                <span>{filteredNames.length} اسماً</span>
+                <span>{t('ui_names_count', '{{count}} اسماً', { count: filteredNames.length })}</span>
                 {favoriteIds.length > 0 && (
                   <>
                     <span>•</span>
                     <span className="text-amber-400 flex items-center gap-0.5">
                       <Star size={10} className="fill-amber-400" />
-                      {favoriteIds.length} مفضلة
+                      {t('ui_names_n_favs', '{{count}} مفضلة', { count: favoriteIds.length })}
                     </span>
                   </>
                 )}
@@ -735,10 +737,10 @@ const NamesOfAllahComponent: React.FC = () => {
                   ? "bg-amber-400 text-slate-950 border-amber-300 font-black shadow-amber-400/30"
                   : "bg-white/10 hover:bg-white/20 text-slate-100 border-white/15"
               )}
-              title={onlyFavorites ? "عرض الكل" : "عرض المفضلة فقط"}
+              title={onlyFavorites ? t('ui_names_show_all', 'عرض الكل') : t('ui_names_only_favs', 'عرض المفضلة فقط')}
             >
               <Star size={16} className={onlyFavorites ? "fill-slate-950" : ""} />
-              <span className="text-xs font-black hidden md:inline">المفضلة</span>
+              <span className="text-xs font-black hidden md:inline">{t('favorites', 'المفضلة')}</span>
               {favoriteIds.length > 0 && (
                 <span className={cn(
                   "text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full",
@@ -762,11 +764,11 @@ const NamesOfAllahComponent: React.FC = () => {
                   ? "bg-amber-400/90 text-slate-950 border-amber-300 font-black"
                   : "bg-white/10 hover:bg-white/20 text-slate-100 border-white/15"
               )}
-              title={layout === 'horizontal' ? "التبديل إلى الشبكة" : "التبديل إلى العرض الأفقي"}
+              title={layout === 'horizontal' ? t('ui_names_switch_grid', 'التبديل إلى الشبكة') : t('ui_names_switch_horizontal', 'التبديل إلى العرض الأفقي')}
             >
               {layout === 'horizontal' ? <Grid size={16} /> : <SlidersHorizontal size={16} />}
               <span className="text-xs font-black hidden sm:inline">
-                {layout === 'horizontal' ? 'أفقي' : 'شبكة'}
+                {layout === 'horizontal' ? t('ui_layout_horizontal_short', 'أفقي') : t('ui_layout_grid_short', 'شبكة')}
               </span>
             </button>
 
@@ -777,7 +779,7 @@ const NamesOfAllahComponent: React.FC = () => {
                 triggerHaptic('light');
               }}
               className="p-2 sm:p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-300 border border-white/15 transition-all cursor-pointer active:scale-90 shadow-sm"
-              title="فضل أسماء الله الحسنى"
+              title={t('ui_names_virtue_title', 'فضل أسماء الله الحسنى')}
             >
               <Info size={18} />
             </button>
@@ -789,10 +791,10 @@ const NamesOfAllahComponent: React.FC = () => {
                 triggerHaptic('medium');
               }}
               className="p-2 sm:px-3.5 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black border border-amber-300/80 transition-all duration-200 cursor-pointer shadow-lg shadow-amber-500/25 active:scale-90 flex items-center gap-1.5 group"
-              title="إعدادات المظهر والخطوط والإطارات"
+              title={t('ui_names_appearance_settings', 'إعدادات المظهر والخطوط والإطارات')}
             >
               <Sliders size={18} className="group-hover:rotate-45 transition-transform duration-300" />
-              <span className="text-xs font-black hidden sm:inline">الإعدادات</span>
+              <span className="text-xs font-black hidden sm:inline">{t('settings', 'الإعدادات')}</span>
               <Sparkles size={13} className="text-slate-950 animate-pulse hidden xs:inline" />
             </button>
 
@@ -811,11 +813,11 @@ const NamesOfAllahComponent: React.FC = () => {
           </div>
           <input
             type="text"
-            placeholder="ابحث عن اسم بالمعنى أو اللفظ أو الرقم (مثال: الرحمن، الحكيم، 1)..."
+            placeholder={t('ui_names_search_ph', 'ابحث عن اسم بالمعنى أو اللفظ أو الرقم (مثال: الرحمن، الحكيم، 1)...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pr-10 pl-10 text-xs sm:text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-sm font-medium"
-            dir="rtl"
+            dir="auto"
           />
           {searchQuery && (
             <button
@@ -834,11 +836,11 @@ const NamesOfAllahComponent: React.FC = () => {
             setSettingsTab('layout');
           }}
           className="px-3 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-black flex items-center gap-1.5 shrink-0 hover:border-amber-500/50 shadow-sm"
-          title="تغيير طريقة العرض"
+          title={t('ui_names_change_view', 'تغيير طريقة العرض')}
         >
           <Layers size={16} className="text-amber-500" />
           <span className="hidden sm:inline">
-            {layout === 'horizontal' ? 'عرض أفقي' : layout === 'grid4' ? 'شبكة 4x' : layout === 'grid2' ? 'شبكة 2x' : layout === 'list' ? 'قائمة' : 'تدبر'}
+            {layout === 'horizontal' ? t('ui_names_view_horizontal', 'عرض أفقي') : layout === 'grid4' ? t('ui_names_view_grid4', 'شبكة 4x') : layout === 'grid2' ? t('ui_names_view_grid2', 'شبكة 2x') : layout === 'list' ? t('ui_names_view_list', 'قائمة') : t('ui_names_view_focus', 'تدبر')}
           </span>
         </button>
       </div>
@@ -874,7 +876,7 @@ const NamesOfAllahComponent: React.FC = () => {
           activeTheme.isLight ? "text-slate-700" : "text-slate-200/80"
         )}>
           <Sparkles size={13} className="text-amber-400" />
-          <span>أصل التوحيد وأعظم الذكر • اضغط للتفاصيل</span>
+          <span>{t('ui_names_tawhid_origin', 'أصل التوحيد وأعظم الذكر • اضغط للتفاصيل')}</span>
         </div>
       </motion.div>
 
@@ -886,7 +888,7 @@ const NamesOfAllahComponent: React.FC = () => {
           {filteredNames.length === 0 ? (
             <div className="py-16 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-6">
               <Compass size={36} className="mx-auto text-slate-400 mb-2 opacity-50" />
-              <p className="text-sm font-bold text-slate-500">لا توجد أسماء مطابقة لبحثك</p>
+              <p className="text-sm font-bold text-slate-500">{t('ui_names_no_match', 'لا توجد أسماء مطابقة لبحثك')}</p>
             </div>
           ) : (
             (() => {
@@ -921,7 +923,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         activeTheme.borderColor,
                         activeTheme.textColor
                       )}>
-                        #{currentItem.id} من 99
+                        {t('ui_names_x_of_99', '#{{id}} من 99', { id: currentItem.id })}
                       </span>
 
                       {/* Controls: Favorite, Copy, Share */}
@@ -934,7 +936,7 @@ const NamesOfAllahComponent: React.FC = () => {
                               ? "bg-amber-400 text-slate-950 border-amber-300 shadow-md shadow-amber-400/30" 
                               : "bg-white/10 hover:bg-white/20 text-white border-white/20"
                           )}
-                          title={isFav ? "إزالة من المفضلة" : "إضافة للمفضلة"}
+                          title={isFav ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
                         >
                           <Star size={16} className={isFav ? "fill-slate-950" : ""} />
                         </button>
@@ -942,7 +944,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         <button
                           onClick={(e) => handleCopy(currentItem, e)}
                           className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer active:scale-85"
-                          title="نسخ"
+                          title={t('copy', 'نسخ')}
                         >
                           {copiedId === currentItem.id ? <Check size={16} className="text-emerald-300" /> : <Copy size={16} />}
                         </button>
@@ -950,7 +952,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         <button
                           onClick={(e) => handleShare(currentItem, e)}
                           className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer active:scale-85"
-                          title="مشاركة"
+                          title={t('share', 'مشاركة')}
                         >
                           <Share2 size={16} />
                         </button>
@@ -999,7 +1001,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         </h3>
 
                         <div className="mt-3 w-12 h-1 bg-amber-400/40 rounded-full group-hover:w-20 transition-all duration-300" />
-                        <span className="text-[9px] font-bold text-slate-300/70 mt-2">اضغط لمعرفة الشرح والتدبر</span>
+                        <span className="text-[9px] font-bold text-slate-300/70 mt-2">{t('ui_names_tap_explain', 'اضغط لمعرفة الشرح والتدبر')}</span>
                       </div>
 
                       {/* Direct Meaning Preview */}
@@ -1011,7 +1013,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         >
                           <div className="flex items-center justify-center gap-2 mb-1 text-[11px] font-black text-amber-300">
                             <BookOpen size={13} />
-                            <span>المعنى والبيان:</span>
+                            <span>{t('ui_names_meaning_explain', 'المعنى والبيان:')}</span>
                           </div>
                           <p className="text-sm sm:text-base font-bold text-slate-100 leading-relaxed">
                             {currentItem.meaning}
@@ -1029,7 +1031,7 @@ const NamesOfAllahComponent: React.FC = () => {
                           className="px-5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-400/20 active:scale-95 transition-all cursor-pointer"
                         >
                           <Sparkles size={16} />
-                          <span>تكرار الذكر بالاسم ({tasbihCounter})</span>
+                          <span>{t('ui_names_dhikr_repeat', 'تكرار الذكر بالاسم ({{count}})', { count: tasbihCounter })}</span>
                         </button>
                         {tasbihCounter > 0 && (
                           <button
@@ -1038,7 +1040,7 @@ const NamesOfAllahComponent: React.FC = () => {
                               triggerHaptic('light');
                             }}
                             className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-200 border border-white/15 text-xs font-bold transition-all cursor-pointer"
-                            title="إعادة تصفير العداد"
+                            title={t('ui_names_reset_counter', 'إعادة تصفير العداد')}
                           >
                             <RotateCcw size={16} />
                           </button>
@@ -1059,7 +1061,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs flex items-center gap-1.5 border border-white/20 transition-all cursor-pointer active:scale-90"
                       >
                         <ChevronRight size={18} />
-                        <span>السابق</span>
+                        <span>{t('previous', 'السابق')}</span>
                       </button>
 
                       {/* Center: Slideshow Autoplay Toggle & Position */}
@@ -1075,10 +1077,10 @@ const NamesOfAllahComponent: React.FC = () => {
                               ? "bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-500/30"
                               : "bg-white/10 text-white border-white/20 hover:bg-white/20"
                           )}
-                          title={isAutoPlaying ? "إيقاف العرض التلقائي" : "تشغيل العرض التلقائي"}
+                          title={isAutoPlaying ? t('ui_names_autoplay_stop', 'إيقاف العرض التلقائي') : t('ui_names_autoplay_start', 'تشغيل العرض التلقائي')}
                         >
                           {isAutoPlaying ? <Pause size={15} /> : <Play size={15} />}
-                          <span className="hidden xs:inline">{isAutoPlaying ? 'إيقاف تلقائي' : 'عرض تلقائي'}</span>
+                          <span className="hidden xs:inline">{isAutoPlaying ? t('ui_names_auto_stop', 'إيقاف تلقائي') : t('ui_names_auto_start', 'عرض تلقائي')}</span>
                         </button>
 
                         <span className="text-xs font-mono font-black text-amber-300">
@@ -1094,7 +1096,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         }}
                         className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs flex items-center gap-1.5 border border-white/20 transition-all cursor-pointer active:scale-90"
                       >
-                        <span>التالي</span>
+                        <span>{t('next', 'التالي')}</span>
                         <ChevronLeft size={18} />
                       </button>
 
@@ -1105,7 +1107,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   {/* Horizontal Interactive Filmstrip / Thumbnail Bar */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between px-1 text-xs font-black text-slate-500 dark:text-slate-400">
-                      <span>شريط التمرير السريع (انقر للانتقال لأي اسم):</span>
+                      <span>{t('ui_names_quick_scroll', 'شريط التمرير السريع (انقر للانتقال لأي اسم):')}</span>
                       <span className="font-mono">{activeHorizontalIdx + 1} / {filteredNames.length}</span>
                     </div>
 
@@ -1219,7 +1221,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   
                   <div className="flex items-center justify-between relative z-10 mb-6">
                     <span className={cn("px-3 py-1 rounded-full text-xs font-mono font-black border", activeTheme.badgeBg, activeTheme.borderColor, activeTheme.textColor)}>
-                      الاسم المبارك #{currentItem.id}
+                      {t('ui_names_blessed_name', 'الاسم المبارك #{{id}}', { id: currentItem.id })}
                     </span>
                     <button
                       onClick={(e) => toggleFavorite(currentItem.id, e)}
@@ -1230,7 +1232,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   </div>
 
                   <div className="py-4 relative z-10">
-                    <span className="text-xs font-bold text-amber-300/80 uppercase tracking-widest block mb-2">جل جلاله وتعالت أسماؤه</span>
+                    <span className="text-xs font-bold text-amber-300/80 uppercase tracking-widest block mb-2">{t('ui_names_jalla', 'جل جلاله وتعالت أسماؤه')}</span>
                     <h2 
                       className={cn("text-5xl sm:text-6xl md:text-7xl font-black drop-shadow-lg", activeTheme.textColor)}
                       style={{ fontFamily: activeFont.family }}
@@ -1269,7 +1271,7 @@ const NamesOfAllahComponent: React.FC = () => {
                       className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1"
                     >
                       <ChevronRight size={16} />
-                      <span>السابق</span>
+                      <span>{t('previous', 'السابق')}</span>
                     </button>
 
                     <button
@@ -1279,7 +1281,7 @@ const NamesOfAllahComponent: React.FC = () => {
                       }}
                       className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1"
                     >
-                      <span>التالي</span>
+                      <span>{t('next', 'التالي')}</span>
                       <ChevronLeft size={16} />
                     </button>
                   </div>
@@ -1332,7 +1334,7 @@ const NamesOfAllahComponent: React.FC = () => {
           activeTheme.isLight ? "text-slate-700" : "text-slate-200/80"
         )}>
           <BookOpen size={13} className="text-amber-400" />
-          <span>دعاء تفريج الهم بالأسماء الحسنى • اضغط لمعرفة فضله وأثره</span>
+          <span>{t('ui_names_dua_hint', 'دعاء تفريج الهم بالأسماء الحسنى • اضغط لمعرفة فضله وأثره')}</span>
         </div>
       </motion.div>
       </div>
@@ -1361,7 +1363,6 @@ const NamesOfAllahComponent: React.FC = () => {
                 exit={{ opacity: 0, y: 100 }}
                 transition={{ type: "spring", damping: 25, stiffness: 280 }}
                 className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col my-auto overflow-hidden shadow-2xl relative z-10 border border-slate-200 dark:border-slate-800"
-                dir="rtl"
               >
                 {/* Header of Settings */}
                 <div className={cn(
@@ -1373,8 +1374,8 @@ const NamesOfAllahComponent: React.FC = () => {
                       <Sliders size={20} className="text-amber-300" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-black text-amber-300">إعدادات أسماء الله الحسنى</h3>
-                      <p className="text-xs text-slate-200 font-bold">تخصيص طرق العرض، الإطارات، الخطوط والألوان</p>
+                      <h3 className="text-lg font-black text-amber-300">{t('ui_names_settings_title', 'إعدادات أسماء الله الحسنى')}</h3>
+                      <p className="text-xs text-slate-200 font-bold">{t('ui_names_settings_sub', 'تخصيص طرق العرض، الإطارات، الخطوط والألوان')}</p>
                     </div>
                   </div>
 
@@ -1389,11 +1390,11 @@ const NamesOfAllahComponent: React.FC = () => {
                 {/* Tabs Navigation */}
                 <div className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar shrink-0">
                   {[
-                    { id: 'layout', label: 'العرض والتنقل', icon: Layers },
-                    { id: 'frames', label: 'الإطارات والأشكال', icon: Compass },
-                    { id: 'fonts', label: 'الخطوط العربية', icon: Type },
-                    { id: 'themes', label: 'الألوان والمظهر', icon: Palette },
-                    { id: 'extras', label: 'خيارات إضافية', icon: Eye }
+                    { id: 'layout', label: t('ui_names_tab_layout', 'العرض والتنقل'), icon: Layers },
+                    { id: 'frames', label: t('ui_names_tab_frames', 'الإطارات والأشكال'), icon: Compass },
+                    { id: 'fonts', label: t('ui_names_tab_fonts', 'الخطوط العربية'), icon: Type },
+                    { id: 'themes', label: t('ui_names_tab_themes', 'الألوان والمظهر'), icon: Palette },
+                    { id: 'extras', label: t('ui_names_tab_extras', 'خيارات إضافية'), icon: Eye }
                   ].map(tab => {
                     const TabIcon = tab.icon;
                     const isActive = settingsTab === tab.id;
@@ -1652,10 +1653,10 @@ const NamesOfAllahComponent: React.FC = () => {
                                   "text-xs font-black",
                                   isSelected ? "text-amber-600 dark:text-amber-400" : "text-slate-800 dark:text-slate-200"
                                 )}>
-                                  {f.name}
+                                  {f.id === 'Amiri' ? t('ui_names_font_thuluth', f.name) : f.name}
                                 </span>
                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400">
-                                  {f.category}
+                                  {f.id === 'Amiri' ? t('ui_names_cat_heritage', f.category) : f.category}
                                 </span>
                               </div>
 
@@ -1749,17 +1750,17 @@ const NamesOfAllahComponent: React.FC = () => {
                       {/* Font Size Selector */}
                       <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-slate-800 dark:text-slate-200">حجم خط أسماء الله:</span>
+                          <span className="text-xs font-black text-slate-800 dark:text-slate-200">{t('ui_names_font_size', 'حجم خط أسماء الله:')}</span>
                           <span className="text-xs font-bold text-amber-500">
                             {fontSize === 'small' ? 'صغير' : fontSize === 'medium' ? 'متوسط' : fontSize === 'large' ? 'كبير' : 'كبير جداً'}
                           </span>
                         </div>
                         <div className="grid grid-cols-4 gap-2 pt-1">
                           {[
-                            { id: 'small', label: 'صغير' },
-                            { id: 'medium', label: 'متوسط' },
-                            { id: 'large', label: 'كبير' },
-                            { id: 'xlarge', label: 'كبير جداً' }
+                            { id: 'small', label: t('size_small', 'صغير') },
+                            { id: 'medium', label: t('size_medium', 'متوسط') },
+                            { id: 'large', label: t('size_large', 'كبير') },
+                            { id: 'xlarge', label: t('ui_size_xlarge', 'كبير جداً') }
                           ].map(item => (
                             <button
                               key={item.id}
@@ -1789,8 +1790,8 @@ const NamesOfAllahComponent: React.FC = () => {
                         className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between cursor-pointer"
                       >
                         <div>
-                          <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">إظهار شرح ومعنى الاسم على البطاقات</span>
-                          <span className="text-[11px] text-slate-400">عرض المعنى التفسيري مباشرة تحت الاسم</span>
+                          <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">{t('ui_names_show_meaning', 'إظهار شرح ومعنى الاسم على البطاقات')}</span>
+                          <span className="text-[11px] text-slate-400">{t('ui_names_show_meaning_sub', 'عرض المعنى التفسيري مباشرة تحت الاسم')}</span>
                         </div>
                         <input
                           type="checkbox"
@@ -1809,8 +1810,8 @@ const NamesOfAllahComponent: React.FC = () => {
                         className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between cursor-pointer"
                       >
                         <div>
-                          <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">إظهار تسلسل أرقام الأسماء (1-99)</span>
-                          <span className="text-[11px] text-slate-400">عرض رقم الترتيب فوق كل بطاقة</span>
+                          <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">{t('ui_names_show_number', 'إظهار تسلسل أرقام الأسماء (1-99)')}</span>
+                          <span className="text-[11px] text-slate-400">{t('ui_names_show_number_sub', 'عرض رقم الترتيب فوق كل بطاقة')}</span>
                         </div>
                         <input
                           type="checkbox"
@@ -1823,8 +1824,8 @@ const NamesOfAllahComponent: React.FC = () => {
                       {/* AutoPlay Speed Slider */}
                       <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-slate-800 dark:text-slate-200">سرعة العرض التلقائي (الأفقي):</span>
-                          <span className="text-xs font-mono font-bold text-amber-500">{autoPlaySpeed} ثوانٍ</span>
+                          <span className="text-xs font-black text-slate-800 dark:text-slate-200">{t('ui_names_autoplay_speed', 'سرعة العرض التلقائي (الأفقي):')}</span>
+                          <span className="text-xs font-mono font-bold text-amber-500">{t('ui_seconds_n', '{{count}} ثوانٍ', { count: autoPlaySpeed })}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {[3, 4, 5, 7, 10].map(s => (
@@ -1841,7 +1842,7 @@ const NamesOfAllahComponent: React.FC = () => {
                                   : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                               )}
                             >
-                              {s}ث
+                              {t('ui_seconds_short', '{{count}}ث', { count: s })}
                             </button>
                           ))}
                         </div>
@@ -1871,7 +1872,7 @@ const NamesOfAllahComponent: React.FC = () => {
                     className="text-xs font-black text-rose-500 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
                   >
                     <RotateCcw size={14} />
-                    <span>استعادة الافتراضي</span>
+                    <span>{t('ui_restore_default', 'استعادة الافتراضي')}</span>
                   </button>
 
                   <button
@@ -1881,7 +1882,7 @@ const NamesOfAllahComponent: React.FC = () => {
                     }}
                     className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-400/20 active:scale-95 transition-all cursor-pointer"
                   >
-                    حفظ وتطبيق
+                    {t('ui_save_apply', 'حفظ وتطبيق')}
                   </button>
                 </div>
 
@@ -1914,7 +1915,6 @@ const NamesOfAllahComponent: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0, y: 15 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-[360px] max-h-[85vh] flex flex-col my-auto overflow-hidden shadow-2xl relative z-10 border border-white/20 dark:border-slate-800"
-                dir="rtl"
               >
                 <div className={cn("h-32 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
                   <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
@@ -1930,7 +1930,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-center gap-3 mb-2">
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">قال رسول الله ﷺ</span>
+                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">{t('ui_names_said_prophet', 'قال رسول الله ﷺ')}</span>
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
                     <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30">
@@ -1941,7 +1941,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-center gap-3 mb-2">
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">معنى أحصاها</span>
+                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">{t('ui_names_ahsaha', 'معنى أحصاها')}</span>
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
                     <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/30">
@@ -1977,7 +1977,6 @@ const NamesOfAllahComponent: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0, y: 15 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-[360px] max-h-[85vh] flex flex-col my-auto overflow-hidden shadow-2xl relative z-10 border border-white/20 dark:border-slate-800"
-                dir="rtl"
               >
                 <div className={cn("h-40 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
                   <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
@@ -1994,12 +1993,12 @@ const NamesOfAllahComponent: React.FC = () => {
                   <button 
                     onClick={(e) => handleShare(selectedName, e)}
                     className="absolute top-3 right-3 w-8 h-8 bg-amber-400/20 text-amber-300 rounded-full flex items-center justify-center hover:bg-amber-400/30 transition-all cursor-pointer border border-amber-300/30"
-                    title="مشاركة"
+                    title={t('share', 'مشاركة')}
                   >
                     <Share2 size={16} />
                   </button>
 
-                  <span className="text-[10px] font-mono font-bold text-amber-300/70 mb-1">الاسم #{selectedName.id}</span>
+                  <span className="text-[10px] font-mono font-bold text-amber-300/70 mb-1">{t('ui_names_name_n', 'الاسم #{{id}}', { id: selectedName.id })}</span>
                   
                   <h3 
                     className="text-5xl sm:text-6xl font-black text-amber-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]" 
@@ -2020,7 +2019,7 @@ const NamesOfAllahComponent: React.FC = () => {
                     <div className="flex items-center justify-center gap-3 mb-3">
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                       <div className="bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-xl"><Sparkles size={16} className="text-amber-500" /></div>
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">المعنى والشرح</span>
+                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('ui_names_meaning_and_sharh', 'المعنى والشرح')}</span>
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
 
@@ -2045,7 +2044,7 @@ const NamesOfAllahComponent: React.FC = () => {
                         )}
                       >
                         <Star size={15} className={favoriteIds.includes(selectedName.id) ? "fill-slate-950" : ""} />
-                        <span>{favoriteIds.includes(selectedName.id) ? "في المفضلة" : "إضافة للمفضلة"}</span>
+                        <span>{favoriteIds.includes(selectedName.id) ? t('ui_names_in_favs', 'في المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}</span>
                       </button>
                     </div>
                   </div>
@@ -2077,7 +2076,6 @@ const NamesOfAllahComponent: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0, y: 15 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-[360px] max-h-[85vh] flex flex-col my-auto overflow-hidden shadow-2xl relative z-10 border border-white/20 dark:border-slate-800"
-                dir="rtl"
               >
                 <div className={cn("h-36 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
                   <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
@@ -2094,7 +2092,7 @@ const NamesOfAllahComponent: React.FC = () => {
                     <div className="flex items-center justify-center gap-3 mb-3">
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                       <div className="bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-xl"><BookOpen size={16} className="text-amber-500" /></div>
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">شرح الذكر</span>
+                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('ui_names_dhikr_sharh', 'شرح الذكر')}</span>
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80">
@@ -2128,7 +2126,6 @@ const NamesOfAllahComponent: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0, y: 15 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-[360px] max-h-[85vh] flex flex-col my-auto overflow-hidden shadow-2xl relative z-10 border border-white/20 dark:border-slate-800"
-                dir="rtl"
               >
                 <div className={cn("h-32 bg-gradient-to-br relative flex flex-col items-center justify-center p-4 text-center shrink-0", activeTheme.gradient)}>
                   <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
@@ -2144,7 +2141,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-center gap-3 mb-2">
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">نص الدعاء العظيم</span>
+                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">{t('ui_names_dua_text', 'نص الدعاء العظيم')}</span>
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
                     <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30">
@@ -2158,7 +2155,7 @@ const NamesOfAllahComponent: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-center gap-3 mb-2">
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">أثر هذا الدعاء العظيم</span>
+                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">{t('ui_names_dua_effect', 'أثر هذا الدعاء العظيم')}</span>
                       <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                     </div>
                     <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/30">

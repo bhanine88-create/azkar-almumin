@@ -6,6 +6,25 @@ import { useAppContext } from '../AppContext';
 import { INSPIRATIONS } from '../data/inspirations';
 import { cn } from '../lib/utils';
 
+const SURAH_NUMBERS: Record<string, number> = {
+  'البقرة': 2, 'المائدة': 5, 'الأنعام': 6, 'الأعراف': 7, 'التوبة': 9, 'هود': 11, 'الرعد': 13, 'الحجر': 15,
+  'النحل': 16, 'الفرقان': 25, 'السجدة': 32, 'غافر': 40, 'الشورى': 42, 'الطور': 52, 'الحديد': 57, 'الطلاق': 65,
+  'الضحى': 93, 'الشرح': 94,
+};
+
+/** Localizes a verse reference like "سورة الحديد - 4" for non-Arabic UI languages. */
+export const localizeSurahRef = (
+  source: string,
+  t: (key: string, fallback?: string, params?: Record<string, any>) => string
+): string => {
+  const m = source.match(/^سورة\s+(.+?)\s*[-:]\s*(\d+)$/);
+  if (!m) return source;
+  const num = SURAH_NUMBERS[m[1].trim()];
+  if (!num) return source;
+  const name = t(`ui_surah_${num}`, m[1].trim());
+  return t('ui_surah_ref', 'سورة {{name}} - {{ayah}}', { name, ayah: m[2] });
+};
+
 const DailyAyahDhikrWidgetContent: React.FC = () => {
   const { settings } = useAppContext();
   const { t, isRtl } = useTranslation(settings.appLanguage);
@@ -164,7 +183,7 @@ const DailyAyahDhikrWidgetContent: React.FC = () => {
                       "px-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-90",
                       activeTab === 'ayah' ? "text-emerald-200" : "text-amber-200"
                     )}>
-                      {currentContent.source}
+                      {activeTab === 'ayah' ? localizeSurahRef(currentContent.source, t) : currentContent.source}
                     </p>
                     <div className={cn(
                       "h-px flex-1 max-w-[40px] opacity-30",

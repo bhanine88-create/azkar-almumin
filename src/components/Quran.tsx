@@ -1206,7 +1206,7 @@ export const Quran: React.FC = () => {
                     )}
                   >
                     <BookOpenText size={14} />
-                    فهرس السور
+                    {t('ui_surah_index', 'فهرس السور')}
                   </button>
                   <button
                     onClick={() => setCurrentTab('favorites')}
@@ -1218,7 +1218,7 @@ export const Quran: React.FC = () => {
                     )}
                   >
                     <Heart size={14} className={cn(currentTab === 'favorites' ? "fill-rose-500 text-rose-500" : "")} />
-                    الآيات المفضلة
+                    {t('ui_fav_ayahs', 'الآيات المفضلة')}
                     {progress.quranProgress?.bookmarks && progress.quranProgress.bookmarks.length > 0 && (
                       <span className="bg-rose-500 text-white text-[9px] font-black h-4 min-w-[16px] px-1.5 rounded-full flex items-center justify-center animate-pulse">
                         {progress.quranProgress.bookmarks.length}
@@ -1329,7 +1329,7 @@ export const Quran: React.FC = () => {
                             ) : (
                               <>
                                 <Download size={10} strokeWidth={2.5} />
-                                <span>غير محمل</span>
+                                <span>{t('ui_not_downloaded', 'غير محمل')}</span>
                               </>
                             )}
                           </button>
@@ -1350,7 +1350,7 @@ export const Quran: React.FC = () => {
               ))}
               </div>
             ) : (
-              <div className="max-w-3xl mx-auto px-4 pb-12 space-y-4" dir="rtl">
+              <div className="max-w-3xl mx-auto px-4 pb-12 space-y-4">
                 {(!progress.quranProgress?.bookmarks || progress.quranProgress.bookmarks.length === 0) ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-white dark:bg-slate-800/40 rounded-3xl border border-black/5 dark:border-white/5 p-8 shadow-sm">
                     <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 animate-pulse">

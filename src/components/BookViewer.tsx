@@ -3,9 +3,13 @@ import { Book, ChevronLeft, ChevronRight, Bookmark, BookmarkCheck, List } from '
 import { IBN_HISHAM_BOOK } from '../data/ibnHishamData';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
 export function BookViewer() {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings?.appLanguage || 'ar');
   const [currentChapter, setCurrentChapter] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [savedPage, setSavedPage] = useState<{ chapter: number; page: number } | null>(null);
@@ -74,7 +78,7 @@ export function BookViewer() {
               "p-2 rounded-xl transition-colors",
               showIndex ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30" : "bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
             )}
-            title="الفهرس"
+            title={t('pb_book_index', 'الفهرس')}
           >
             <List size={18} />
           </button>
@@ -86,10 +90,10 @@ export function BookViewer() {
                 ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" 
                 : "bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             )}
-            title="حفظ الصفحة الحالية"
+            title={t('pb_book_save_title', 'حفظ الصفحة الحالية')}
           >
             {isSavedPage ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
-            <span className="hidden sm:inline">{isSavedPage ? 'تم الحفظ' : 'حفظ الصفحة'}</span>
+            <span className="hidden sm:inline">{isSavedPage ? t('pb_book_saved', 'تم الحفظ') : t('pb_book_save', 'حفظ الصفحة')}</span>
           </button>
         </div>
       </div>
@@ -104,7 +108,7 @@ export function BookViewer() {
               exit={{ width: 0, opacity: 0 }}
               className="border-l border-slate-100 dark:border-slate-800 overflow-y-auto pl-4 flex-shrink-0 hidden md:block"
             >
-              <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-wider">الفصول</h3>
+              <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-wider">{t('pb_book_chapters', 'الفصول')}</h3>
               <div className="space-y-1">
                 {IBN_HISHAM_BOOK.map((chapter, idx) => (
                   <button
@@ -151,7 +155,7 @@ export function BookViewer() {
             </button>
             
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              صفحة {currentPage + 1} من {IBN_HISHAM_BOOK[currentChapter].pages.length}
+              {t('pb_book_page_of', 'صفحة {{current}} من {{total}}', { current: currentPage + 1, total: IBN_HISHAM_BOOK[currentChapter].pages.length })}
             </span>
 
             <button

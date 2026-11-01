@@ -88,11 +88,20 @@ const IP_PROVIDERS: (() => Promise<DetectedLocation>)[] = [
   },
 ];
 
-/** City and country in Arabic for these coordinates, when the map service answers. */
+/** The app language saved in settings (the city is named in it), Arabic by default. */
+function appLanguage(): string {
+  try {
+    return JSON.parse(safeLocalStorageGetItem('believer_settings_v31') || '{}').appLanguage || 'ar';
+  } catch {
+    return 'ar';
+  }
+}
+
+/** City and country in the app's language for these coordinates, when the map service answers. */
 async function arabicNames(location: DetectedLocation): Promise<DetectedLocation> {
   try {
     const d = await getJson(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=11&accept-language=ar`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=11&accept-language=${appLanguage()},en`,
       6000
     );
     const a = d.address || {};

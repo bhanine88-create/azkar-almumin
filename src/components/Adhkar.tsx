@@ -2140,8 +2140,7 @@ export const Adhkar: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="fixed left-0 top-0 bottom-0 h-full w-full sm:max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-slate-100 dark:border-slate-800 shadow-[25px_0_60px_-15px_rgba(0,0,0,0.25)] flex flex-col z-10 text-right"
-              dir="rtl"
+              className="fixed left-0 top-0 bottom-0 h-full w-full sm:max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-slate-100 dark:border-slate-800 shadow-[25px_0_60px_-15px_rgba(0,0,0,0.25)] flex flex-col z-10 text-start"
             >
               {/* Sticky Elegant Drawer Header */}
               <div className="flex justify-between items-center px-6 py-5 border-b border-slate-100 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
@@ -2511,13 +2510,13 @@ export const Adhkar: React.FC = () => {
         <div className="flex items-center justify-between text-[11px] font-bold px-3.5 py-1.5 rounded-xl bg-teal-500/10 text-teal-800 dark:text-teal-300 border border-teal-500/20 max-w-xl mx-auto w-full animate-[fadeIn_0.2s_ease-out]">
           <div className="flex items-center gap-1.5">
             <EyeOff size={13} className="text-teal-600 dark:text-teal-400" />
-            <span>إخفاء بطاقات الأذكار المكتملة نشط</span>
+            <span>{t('ui_hide_done_active', 'إخفاء بطاقات الأذكار المكتملة نشط')}</span>
           </div>
           <button
             onClick={() => updateSettings({ adhkarHideCompleted: false })}
             className="text-[10px] font-black underline hover:text-teal-600 dark:hover:text-teal-200 cursor-pointer"
           >
-            إظهار الكل
+            {t('ui_show_all', 'إظهار الكل')}
           </button>
         </div>
       )}
@@ -2526,7 +2525,7 @@ export const Adhkar: React.FC = () => {
       {category === 'prayer' && (
         <div className="w-full flex flex-col gap-4 animate-[fadeIn_0.5s_ease-out] mb-1">
           {/* Pill navigation tab list */}
-          <div className="w-full flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none" dir="rtl">
+          <div className="w-full flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
             {PRAYER_STEPS_DEFINITION.map((step) => {
               const isSelected = activePrayerStep === step.id;
               const progress = stepsProgress[step.id] || { total: 0, completed: 0, percent: 0 };
@@ -2782,7 +2781,7 @@ export const Adhkar: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Aesthetic Interactive Single Controller */}
-                <div className="w-full flex flex-col items-center gap-3 mt-5 px-1" dir="rtl">
+                <div className="w-full flex flex-col items-center gap-3 mt-5 px-1">
                   <div 
                     className="flex items-center justify-between w-full rounded-2xl p-3 border shadow-md backdrop-blur-md transition-all duration-300"
                     style={{
@@ -3036,7 +3035,6 @@ export const Adhkar: React.FC = () => {
                   if (e.target === e.currentTarget) setShowReward(false);
                 }}
                 className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
-                dir="rtl"
               >
                 <motion.div
                   key="adhkar-reward-modal"

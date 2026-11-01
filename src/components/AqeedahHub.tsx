@@ -221,7 +221,7 @@ export const AqeedahHub: React.FC = () => {
       safeLocalStorageSetItem('aqeedah_favorites', JSON.stringify(next));
       return next;
     });
-    showToast(favorites.includes(id) ? 'تمت الإزالة من المفضلة' : 'تمت الإضافة إلى المفضلة');
+    showToast(favorites.includes(id) ? t('ui_creed_fav_removed', 'تمت الإزالة من المفضلة') : t('ui_creed_fav_added', 'تمت الإضافة إلى المفضلة'));
   }, [favorites, showToast]);
 
   // Audio information helper (external listen and download links)
@@ -787,7 +787,7 @@ export const AqeedahHub: React.FC = () => {
                           {renderCategoryIcon(cat.iconName)}
                         </div>
                         <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#feb10b]/15 text-emerald-800 dark:text-[#feb10b] border border-emerald-200 dark:border-[#feb10b]/30">
-                          {cat.badge}
+                          {locCat?.badge || cat.badge}
                         </span>
                       </div>
 
@@ -940,7 +940,7 @@ export const AqeedahHub: React.FC = () => {
                                     handleOpenExternalAudio(audioInfo.listenUrl, locArt.title, audioInfo.label, 'listen', e);
                                   }}
                                   className="p-1.5 rounded-lg text-slate-400 hover:text-[#feb10b] dark:text-emerald-300/60 dark:hover:text-[#feb10b] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                                  title={`استماع خارجي: ${audioInfo.label}`}
+                                  title={t('ui_external_listen', 'استماع خارجي: {{label}}', { label: audioInfo.label })}
                                 >
                                   <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
                                 </a>
@@ -1101,7 +1101,7 @@ export const AqeedahHub: React.FC = () => {
                             <button
                               onClick={() => toggleFavorite(book.id)}
                               className="p-1.5 text-slate-400 hover:text-[#feb10b] dark:text-emerald-400/50 dark:hover:text-[#feb10b] transition-colors"
-                              title={isFav ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
+                              title={isFav ? t('remove_from_favorites', 'إزالة من المفضلة') : t('add_to_favorites', 'إضافة للمفضلة')}
                             >
                               <Bookmark className={cn('w-4 h-4', isFav && 'fill-[#feb10b] text-[#feb10b]')} />
                             </button>
@@ -1114,7 +1114,7 @@ export const AqeedahHub: React.FC = () => {
                                   handleOpenExternalAudio(book.audioListenUrl!, book.title, book.audioSourceLabel || book.title, 'listen', e);
                                 }}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-[#feb10b] dark:text-emerald-400/50 dark:hover:text-[#feb10b] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                                title={`استماع خارجي: ${book.audioSourceLabel || book.title}`}
+                                title={t('ui_external_listen', 'استماع خارجي: {{label}}', { label: book.audioSourceLabel || book.title })}
                               >
                                 <Headphones className="w-4 h-4 text-[#feb10b]" />
                               </a>
@@ -1128,7 +1128,7 @@ export const AqeedahHub: React.FC = () => {
                                   handleOpenExternalAudio(book.audioDownloadUrl!, book.title, book.audioSourceLabel || book.title, 'download', e);
                                 }}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-[#feb10b] dark:text-emerald-400/50 dark:hover:text-[#feb10b] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                                title="تحميل الدرس (خارجي)"
+                                title={t('ui_download_lesson_ext', 'تحميل الدرس (خارجي)')}
                               >
                                 <Download className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                               </a>
@@ -1142,7 +1142,7 @@ export const AqeedahHub: React.FC = () => {
                                 showToast('تم نسخ ومشاركة خلاصة الكتاب');
                               }}
                               className="p-1.5 text-slate-400 hover:text-[#feb10b] dark:text-emerald-400/50 dark:hover:text-[#feb10b] transition-colors"
-                              title="مشاركة"
+                              title={t('share', 'مشاركة')}
                             >
                               <Share2 className="w-4 h-4" />
                             </button>
@@ -1159,7 +1159,7 @@ export const AqeedahHub: React.FC = () => {
 
                         {/* Importance Pill */}
                         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-100 dark:border-white/5 mb-3 text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
-                          <span className="font-black text-[#0d4f37] dark:text-[#feb10b] ml-1">الأهمية والمنزلة:</span>
+                          <span className="font-black text-[#0d4f37] dark:text-[#feb10b] ml-1">{t('ui_book_importance', 'الأهمية والمنزلة:')}</span>
                           {book.importance}
                         </div>
 
@@ -1175,7 +1175,7 @@ export const AqeedahHub: React.FC = () => {
                           ))}
                           {!isExpanded && book.keyTopics.length > 3 && (
                             <span className="text-[10px] text-slate-400 dark:text-emerald-300/50 self-center">
-                              +{book.keyTopics.length - 3} محاور أخرى
+                              {t('ui_book_more_topics', '+{{count}} محاور أخرى', { count: book.keyTopics.length - 3 })}
                             </span>
                           )}
                         </div>
@@ -1195,7 +1195,7 @@ export const AqeedahHub: React.FC = () => {
                               <div>
                                 <h5 className="text-xs font-black text-[#0d4f37] dark:text-[#feb10b] mb-2 flex items-center gap-1.5">
                                   <Layers className="w-3.5 h-3.5" />
-                                  <span>أبرز فوائد أبواب الكتاب:</span>
+                                  <span>{t('ui_book_chapters_benefits', 'أبرز فوائد أبواب الكتاب:')}</span>
                                 </h5>
                                 <div className="space-y-1.5">
                                   {book.chapterHighlights.map((ch, idx) => (
@@ -1212,7 +1212,7 @@ export const AqeedahHub: React.FC = () => {
                             <div>
                               <h5 className="text-xs font-black text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">
                                 <Sparkles className="w-3.5 h-3.5" />
-                                <span>درر وفوائد ذهبية مستخلصة:</span>
+                                <span>{t('ui_book_golden_gems', 'درر وفوائد ذهبية مستخلصة:')}</span>
                               </h5>
                               <div className="space-y-1.5">
                                 {book.goldenGems.map((gem, idx) => (
@@ -1629,7 +1629,7 @@ export const AqeedahHub: React.FC = () => {
                                   handleOpenExternalAudio(audioInfo.listenUrl, locSelArt.title, audioInfo.label, 'listen', e);
                                 }}
                                 className="px-2.5 py-1.5 rounded-xl bg-white dark:bg-emerald-950/50 text-slate-700 dark:text-[#feb10b] border border-slate-200 dark:border-emerald-500/20 hover:border-[#feb10b] flex items-center gap-1.5 transition-colors text-xs font-bold cursor-pointer"
-                                title={`استماع خارجي: ${audioInfo.label}`}
+                                title={t('ui_external_listen', 'استماع خارجي: {{label}}', { label: audioInfo.label })}
                               >
                                 <Headphones className="w-3.5 h-3.5 text-[#feb10b]" />
                                 <span className="hidden sm:inline">{t('external_listen', 'استماع خارجي')}</span>

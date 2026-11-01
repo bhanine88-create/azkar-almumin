@@ -13,16 +13,16 @@ export const DuasHub: React.FC = () => {
 
   const sections = [
     { 
-      title: 'كيف حال قلبك اليوم؟', 
-      subtitle: 'أدعية المشاعر وطِبّ القلوب وسكينة النفس', 
+      title: t('heart_feelings_title', 'كيف حال قلبك اليوم؟'), 
+      subtitle: t('ui_duas_heart_sub', 'أدعية المشاعر وطِبّ القلوب وسكينة النفس'), 
       path: '/heart-feelings', 
       icon: <Heart size={20} />, 
       color: 'from-orange-500 to-rose-600', 
       shadow: 'shadow-lg shadow-orange-500/20' 
     },
     { 
-      title: 'ركن التوبة والاستغفار', 
-      subtitle: 'أدعية الاستغفار وصلاة التوبة', 
+      title: t('istighfar_title', 'ركن التوبة والاستغفار'), 
+      subtitle: t('ui_duas_istighfar_sub', 'أدعية الاستغفار وصلاة التوبة'), 
       path: '/istighfar', 
       icon: <Droplets size={20} />, 
       color: 'from-sky-600 to-teal-800', 

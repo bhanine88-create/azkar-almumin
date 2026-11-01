@@ -205,6 +205,10 @@ export const ProphetBiography: React.FC = () => {
   const { navigate } = useSmartNavigation();
   const { settings, addPoints } = useAppContext();
   const { t } = useTranslation(settings?.appLanguage || 'ar');
+  const fontName = (id: string) => {
+    const f = FONT_OPTIONS.find(x => x.id === id);
+    return f ? t(`pb_font_${f.id}_name`, f.name) : '';
+  };
 
   // Active Tab: 'timeline' (السيرة النبوية), 'virtues' (الشمائل والوصايا), 'ghazwat' (الغزوات), 'quiz' (تحدي السيرة), 'library' (مكتبة السيرة)
   const [activeTab, setActiveTab] = useState<'timeline' | 'virtues' | 'ghazwat' | 'quiz' | 'library'>('timeline');
@@ -324,10 +328,10 @@ export const ProphetBiography: React.FC = () => {
 
   const handleCopyStory = (story: SeerahStory) => {
     const textToCopy = `📖 ${story.title} (${story.periodLabel})\n\n` +
-      `📅 المحطة: ${story.year}\n\n` +
+      `📅 ${t('pb_copy_station', 'المحطة:')} ${story.year}\n\n` +
       `${story.paragraphs.join('\n\n')}\n\n` +
-      `💡 أبرز الدروس المستفادة:\n${story.keyLessons.map(l => `• ${l}`).join('\n')}\n\n` +
-      `تطبيق أذكار المؤمن - السيرة النبوية الشريفة`;
+      `💡 ${t('pb_copy_lessons', 'أبرز الدروس المستفادة:')}\n${story.keyLessons.map(l => `• ${l}`).join('\n')}\n\n` +
+      t('pb_copy_footer', 'تطبيق أذكار المؤمن - السيرة النبوية الشريفة');
 
     copyTextToClipboard(textToCopy);
     setCopied(true);
@@ -393,7 +397,7 @@ export const ProphetBiography: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-right" dir="rtl">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-start">
       {/* Sticky Top Header */}
       <div className="bg-white/80 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/80 sticky top-0 z-30">
         <div className="px-4 py-3.5 flex items-center justify-between">
@@ -404,7 +408,7 @@ export const ProphetBiography: React.FC = () => {
                 {t('home_seerah_title')}
               </h1>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider">
-                حياة المصطفى ﷺ أحداث ودروس وعبر مبسطة
+                {t('pb_header_subtitle', 'حياة المصطفى ﷺ أحداث ودروس وعبر مبسطة')}
               </p>
             </div>
           </div>
@@ -413,11 +417,11 @@ export const ProphetBiography: React.FC = () => {
             <button
               onClick={() => setShowSettingsModal(true)}
               className="px-3 py-2 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 border border-emerald-500/30 rounded-2xl flex items-center gap-1.5 text-xs font-black text-emerald-700 dark:text-emerald-300 transition-all cursor-pointer shadow-sm"
-              title="تخصيص وإعدادات السيرة"
+              title={t('pb_settings_title', 'تخصيص وإعدادات السيرة')}
             >
               <Sliders size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden sm:inline">إعدادات الخط والثيم</span>
-              <span className="sm:hidden">الإعدادات</span>
+              <span className="hidden sm:inline">{t('pb_settings_btn', 'إعدادات الخط والثيم')}</span>
+              <span className="sm:hidden">{t('pb_settings_short', 'الإعدادات')}</span>
             </button>
 
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 shrink-0">
@@ -438,7 +442,7 @@ export const ProphetBiography: React.FC = () => {
             )}
           >
             <BookOpen size={14} />
-            <span>السيرة التفاعلية</span>
+            <span>{t('pb_tab_timeline', 'السيرة التفاعلية')}</span>
           </button>
 
           <button
@@ -451,7 +455,7 @@ export const ProphetBiography: React.FC = () => {
             )}
           >
             <Sparkles size={14} />
-            <span>الشمائل والوصايا</span>
+            <span>{t('pb_tab_virtues', 'الشمائل والوصايا')}</span>
           </button>
 
           <button
@@ -464,7 +468,7 @@ export const ProphetBiography: React.FC = () => {
             )}
           >
             <Sword size={14} />
-            <span>الغزوات والبطولات</span>
+            <span>{t('pb_tab_ghazwat', 'الغزوات والبطولات')}</span>
           </button>
 
           <button
@@ -477,7 +481,7 @@ export const ProphetBiography: React.FC = () => {
             )}
           >
             <Award size={14} />
-            <span>تحدي السيرة</span>
+            <span>{t('pb_tab_quiz', 'تحدي السيرة')}</span>
           </button>
           <button
             onClick={() => setActiveTab('library')}
@@ -489,7 +493,7 @@ export const ProphetBiography: React.FC = () => {
             )}
           >
             <Book size={14} />
-            <span>مكتبة السيرة</span>
+            <span>{t('pb_tab_library', 'مكتبة السيرة')}</span>
           </button>
         </div>
       </div>
@@ -508,9 +512,9 @@ export const ProphetBiography: React.FC = () => {
                 <BookMarked size={16} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-800 dark:text-white">إنجازك في قراءة السيرة</h3>
+                <h3 className="text-sm font-black text-slate-800 dark:text-white">{t('pb_progress_title', 'إنجازك في قراءة السيرة')}</h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">
-                  أكملت {readStoryIds.length} من أصل {PROPHET_BIOGRAPHY_STORIES.length} محطة رئيسية
+                  {t('pb_progress_desc', 'أكملت {{read}} من أصل {{total}} محطة رئيسية', { read: readStoryIds.length, total: PROPHET_BIOGRAPHY_STORIES.length })}
                 </p>
               </div>
             </div>
@@ -538,7 +542,7 @@ export const ProphetBiography: React.FC = () => {
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
                 <input
                   type="text"
-                  placeholder="ابحث عن محطة في السيرة، حدث، أو درس مستفاد..."
+                  placeholder={t('pb_search_placeholder', 'ابحث عن محطة في السيرة، حدث، أو درس مستفاد...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-full bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 focus:border-emerald-500/40 rounded-2xl py-3.5 pr-11 pl-4 text-sm focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none text-slate-800 dark:text-slate-200 placeholder:text-slate-400 font-bold"
@@ -547,7 +551,7 @@ export const ProphetBiography: React.FC = () => {
               <button
                 onClick={() => setShowIndexModal(true)}
                 className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 p-3.5 rounded-2xl flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm group"
-                title="فهرس السيرة النبوية"
+                title={t('pb_index_title', 'فهرس السيرة النبوية')}
               >
                 <List size={20} className="group-hover:scale-110 transition-transform" />
               </button>
@@ -570,7 +574,7 @@ export const ProphetBiography: React.FC = () => {
                     )}
                   >
                     <Icon size={14} />
-                    {cat.label}
+                    {t(`pb_period_${cat.id}`, cat.label)}
                   </button>
                 );
               })}
@@ -581,7 +585,7 @@ export const ProphetBiography: React.FC = () => {
               {filteredStories.length === 0 ? (
                 <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6">
                   <Search size={32} className="mx-auto text-slate-400 mb-2" />
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">لم نجد أي نتائج تطابق البحث</p>
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('pb_no_results', 'لم نجد أي نتائج تطابق البحث')}</p>
                 </div>
               ) : (
                 filteredStories.map((story, idx) => {
@@ -633,7 +637,7 @@ export const ProphetBiography: React.FC = () => {
                               "p-2 rounded-xl transition-all cursor-pointer",
                               isBookmarked ? "text-amber-500 bg-amber-50 dark:bg-amber-950/30" : "text-slate-300 dark:text-slate-600 hover:text-amber-500"
                             )}
-                            title="حفظ في المفضلة"
+                            title={t('pb_save_favorite', 'حفظ في المفضلة')}
                           >
                             <Bookmark size={18} className={cn(isBookmarked && "fill-amber-500")} />
                           </button>
@@ -644,7 +648,7 @@ export const ProphetBiography: React.FC = () => {
                               "p-2 rounded-xl transition-all cursor-pointer",
                               isRead ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30" : "text-slate-300 dark:text-slate-600 hover:text-emerald-500"
                             )}
-                            title={isRead ? "تمت قراءتها" : "تعليم كـ مقروءة"}
+                            title={isRead ? t('pb_already_read', 'تمت قراءتها') : t('pb_mark_read', 'تعليم كـ مقروءة')}
                           >
                             <CheckCircle2 size={18} className={cn(isRead && "fill-emerald-500 text-white")} />
                           </button>
@@ -658,10 +662,10 @@ export const ProphetBiography: React.FC = () => {
                             <button
                               onClick={() => setActiveStory(story)}
                               className="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black transition-all flex items-center gap-1.5 cursor-pointer"
-                              title="التفاصيل التاريخية"
+                              title={t('pb_badge_history_title', 'التفاصيل التاريخية')}
                             >
                               <Landmark size={12} />
-                              <span>تاريخ</span>
+                              <span>{t('pb_badge_history', 'تاريخ')}</span>
                             </button>
                           )}
                           
@@ -669,10 +673,10 @@ export const ProphetBiography: React.FC = () => {
                             <button
                               onClick={() => setActiveStory(story)}
                               className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[10px] font-black transition-all flex items-center gap-1.5 cursor-pointer"
-                              title="سيرة ابن هشام"
+                              title={t('pb_badge_ibn_hisham_title', 'سيرة ابن هشام')}
                             >
                               <ScrollText size={12} />
-                              <span>ابن هشام</span>
+                              <span>{t('pb_badge_ibn_hisham', 'ابن هشام')}</span>
                             </button>
                           )}
 
@@ -680,10 +684,10 @@ export const ProphetBiography: React.FC = () => {
                             <button
                               onClick={() => setActiveStory(story)}
                               className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-black transition-all flex items-center gap-1.5 cursor-pointer"
-                              title="آيات قرآنية مرتبطة"
+                              title={t('pb_badge_verses_title', 'آيات قرآنية مرتبطة')}
                             >
                               <Book size={12} />
-                              <span>قرآن</span>
+                              <span>{t('pb_badge_quran', 'قرآن')}</span>
                             </button>
                           )}
 
@@ -691,10 +695,10 @@ export const ProphetBiography: React.FC = () => {
                             <button
                               onClick={() => setActiveStory(story)}
                               className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-black transition-all flex items-center gap-1.5 cursor-pointer"
-                              title="دروس مستفادة"
+                              title={t('pb_badge_lessons_title', 'دروس مستفادة')}
                             >
                               <Sparkle size={12} />
-                              <span>{story.keyLessons.length} دروس</span>
+                              <span>{t('pb_badge_lessons_count', '{{count}} دروس', { count: story.keyLessons.length })}</span>
                             </button>
                           )}
                         </div>
@@ -703,7 +707,7 @@ export const ProphetBiography: React.FC = () => {
                           onClick={() => setActiveStory(story)}
                           className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700 shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                         >
-                          <span>المحتوى</span>
+                          <span>{t('pb_card_content', 'المحتوى')}</span>
                           <ChevronLeft size={14} />
                         </button>
                       </div>
@@ -721,11 +725,11 @@ export const ProphetBiography: React.FC = () => {
             <div className="bg-gradient-to-r from-teal-800 to-emerald-900 text-white rounded-3xl p-6 shadow-lg relative overflow-hidden">
               <div className="relative z-10 space-y-2">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-wider">
-                  شمائل النبوة
+                  {t('pb_virtues_badge', 'شمائل النبوة')}
                 </span>
-                <h2 className="text-xl font-black">أخلاق الحبيب المصطفى ﷺ وشمائله العطرة</h2>
+                <h2 className="text-xl font-black">{t('pb_virtues_title', 'أخلاق الحبيب المصطفى ﷺ وشمائله العطرة')}</h2>
                 <p className="text-xs text-emerald-100 font-bold leading-relaxed">
-                  تعرف على خُلقه العظيم، معجزاته الباهرة، وصاياه الخالدة، ومحطاته الكبرى.
+                  {t('pb_virtues_desc', 'تعرف على خُلقه العظيم، معجزاته الباهرة، وصاياه الخالدة، ومحطاته الكبرى.')}
                 </p>
               </div>
             </div>
@@ -791,23 +795,23 @@ export const ProphetBiography: React.FC = () => {
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div>
                     <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                      اختبر معلوماتك في السيرة
+                      {t('pb_quiz_title', 'اختبر معلوماتك في السيرة')}
                     </span>
                     <h3 className="text-base font-black text-slate-800 dark:text-white mt-0.5">
-                      السؤال {currentQuizIndex + 1} من {quizQuestions.length}
+                      {t('pb_quiz_question_of', 'السؤال {{current}} من {{total}}', { current: currentQuizIndex + 1, total: quizQuestions.length })}
                     </h3>
                   </div>
 
                   <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-2xl font-black text-xs">
                     <Star size={14} className="fill-amber-400" />
-                    <span>النقاط: {score * 10}</span>
+                    <span>{t('pb_quiz_points', 'النقاط: {{points}}', { points: score * 10 })}</span>
                   </div>
                 </div>
 
                 {/* Question */}
                 <div className="space-y-4">
                   <span className="text-xs font-bold text-slate-400 block">
-                    المحطة: {quizQuestions[currentQuizIndex]?.storyTitle}
+                    {t('pb_quiz_station', 'المحطة: {{title}}', { title: quizQuestions[currentQuizIndex]?.storyTitle })}
                   </span>
                   <h2 className="text-lg font-black text-slate-800 dark:text-white leading-relaxed">
                     {quizQuestions[currentQuizIndex]?.question}
@@ -854,7 +858,7 @@ export const ProphetBiography: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       className="bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-4 text-xs space-y-1"
                     >
-                      <span className="font-black text-emerald-700 dark:text-emerald-400 block">💡 التوضيح الإيماني:</span>
+                      <span className="font-black text-emerald-700 dark:text-emerald-400 block">{t('pb_quiz_explanation', '💡 التوضيح الإيماني:')}</span>
                       <p className="text-slate-600 dark:text-slate-300 leading-relaxed font-bold">
                         {quizQuestions[currentQuizIndex]?.explanation}
                       </p>
@@ -869,7 +873,7 @@ export const ProphetBiography: React.FC = () => {
                       onClick={handleNextQuizQuestion}
                       className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 cursor-pointer"
                     >
-                      <span>{currentQuizIndex < quizQuestions.length - 1 ? "السؤال التالي" : "عرض النتائج والوسام"}</span>
+                      <span>{currentQuizIndex < quizQuestions.length - 1 ? t('pb_quiz_next', 'السؤال التالي') : t('pb_quiz_show_results', 'عرض النتائج والوسام')}</span>
                       <ChevronLeft size={16} />
                     </button>
                   </div>
@@ -888,16 +892,16 @@ export const ProphetBiography: React.FC = () => {
 
                 <div className="space-y-2">
                   <h2 className="text-2xl font-black text-slate-800 dark:text-white">
-                    مبارك! أتممت تحدي السيرة النبوية
+                    {t('pb_quiz_congrats', 'مبارك! أتممت تحدي السيرة النبوية')}
                   </h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">
-                    حصلت على {score} إجابات صحيحة من أصل {quizQuestions.length} أسئلة
+                    {t('pb_quiz_score', 'حصلت على {{score}} إجابات صحيحة من أصل {{total}} أسئلة', { score, total: quizQuestions.length })}
                   </p>
                 </div>
 
                 <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 px-5 py-2.5 rounded-2xl font-black text-sm">
                   <Star size={18} className="fill-emerald-500" />
-                  <span>كسبت {score * 10} نقطة في رصيد التحديات</span>
+                  <span>{t('pb_quiz_earned', 'كسبت {{points}} نقطة في رصيد التحديات', { points: score * 10 })}</span>
                 </div>
 
                 <div className="pt-4 flex justify-center gap-3">
@@ -906,7 +910,7 @@ export const ProphetBiography: React.FC = () => {
                     className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl font-black text-xs hover:bg-slate-200 transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <RotateCcw size={16} />
-                    <span>إعادة التحدي</span>
+                    <span>{t('pb_quiz_retry', 'إعادة التحدي')}</span>
                   </button>
 
                   <button
@@ -914,7 +918,7 @@ export const ProphetBiography: React.FC = () => {
                     className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black text-xs hover:bg-emerald-700 transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <BookOpen size={16} />
-                    <span>العودة لقراءة السيرة</span>
+                    <span>{t('pb_quiz_back', 'العودة لقراءة السيرة')}</span>
                   </button>
                 </div>
               </motion.div>
@@ -939,8 +943,7 @@ export const ProphetBiography: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden text-right"
-              dir="rtl"
+              className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden text-start"
             >
               {/* Modal Header */}
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-10">
@@ -970,7 +973,7 @@ export const ProphetBiography: React.FC = () => {
               <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-850 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs flex-wrap gap-2">
                 {/* Font Size & Family Controls */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-400">حجم الخط:</span>
+                  <span className="text-[10px] font-bold text-slate-400">{t('pb_font_size_label', 'حجم الخط:')}</span>
                   <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700">
                     {FONT_SIZES.map(fs => (
                       <button
@@ -980,7 +983,7 @@ export const ProphetBiography: React.FC = () => {
                           "px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
                           seerahSettings.fontSize === fs.id ? "bg-emerald-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                         )}
-                        title={fs.label}
+                        title={t(`pb_size_${fs.id}`, fs.label)}
                       >
                         {fs.id === 'sm' ? 'A-' : fs.id === '2xl' ? 'A++' : fs.id === 'xl' ? 'A+' : 'A'}
                       </button>
@@ -992,7 +995,7 @@ export const ProphetBiography: React.FC = () => {
                     className="p-1.5 px-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-100 transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold"
                   >
                     <Type size={14} />
-                    <span>{FONT_OPTIONS.find(f => f.id === seerahSettings.fontFamily)?.name || 'الخط'}</span>
+                    <span>{fontName(seerahSettings.fontFamily) || t('pb_font_fallback', 'الخط')}</span>
                   </button>
 
                   {/* Theme Quick Dropdown */}
@@ -1002,11 +1005,11 @@ export const ProphetBiography: React.FC = () => {
                       value={seerahSettings.theme}
                       onChange={(e) => setSeerahSettings(s => ({ ...s, theme: e.target.value as SeerahSettings['theme'] }))}
                       className="bg-transparent text-[11px] font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer py-0.5"
-                      title="اختر ثيم القراءة"
+                      title={t('pb_theme_pick_title', 'اختر ثيم القراءة')}
                     >
-                      {SEERAH_THEMES.map(t => (
-                        <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-                          {t.name}
+                      {SEERAH_THEMES.map(th => (
+                        <option key={th.id} value={th.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                          {t(`pb_theme_${th.id}_name`, th.name)}
                         </option>
                       ))}
                     </select>
@@ -1018,19 +1021,19 @@ export const ProphetBiography: React.FC = () => {
                   <button
                     onClick={() => setShowSettingsModal(true)}
                     className="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 transition-all cursor-pointer flex items-center gap-1 px-2.5 border border-slate-200 dark:border-slate-700"
-                    title="إعدادات القراءة والتنسيق"
+                    title={t('pb_reading_settings_title', 'إعدادات القراءة والتنسيق')}
                   >
                     <Sliders size={14} className="text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-[11px] font-bold hidden sm:inline">تخصيص العرض</span>
+                    <span className="text-[11px] font-bold hidden sm:inline">{t('pb_customize_view', 'تخصيص العرض')}</span>
                   </button>
 
                   <button
                     onClick={() => handleCopyStory(activeStory)}
                     className="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 transition-all cursor-pointer flex items-center gap-1.5 px-3 border border-slate-200 dark:border-slate-700"
-                    title="نسخ القصة"
+                    title={t('pb_copy_story_title', 'نسخ القصة')}
                   >
                     {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
-                    <span className="text-[11px] font-bold">{copied ? 'تم النسخ' : 'نسخ'}</span>
+                    <span className="text-[11px] font-bold">{copied ? t('pb_copied', 'تم النسخ') : t('pb_copy', 'نسخ')}</span>
                   </button>
                 </div>
               </div>
@@ -1081,10 +1084,10 @@ export const ProphetBiography: React.FC = () => {
                     <div className="flex items-center justify-between border-b border-amber-200/60 dark:border-amber-800/50 pb-2">
                       <span className="font-black text-xs text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
                         <BookMarked size={16} className="text-amber-600 dark:text-amber-400" />
-                        📜 توثيق سيرة ابن هشام (عن ابن إسحاق)
+                        {t('pb_ibn_hisham_doc_title', '📜 توثيق سيرة ابن هشام (عن ابن إسحاق)')}
                       </span>
                       <span className="text-[10px] font-extrabold bg-amber-200/60 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-full">
-                        مرجع تاريخي معتمد
+                        {t('pb_ibn_hisham_authentic', 'مرجع تاريخي معتمد')}
                       </span>
                     </div>
                     <p className="text-xs sm:text-sm font-semibold text-amber-950 dark:text-amber-100 leading-relaxed font-serif pt-1">
@@ -1098,7 +1101,7 @@ export const ProphetBiography: React.FC = () => {
                   <div className="bg-blue-50/60 dark:bg-blue-950/20 border border-blue-500/20 p-5 rounded-3xl space-y-3">
                     <h3 className="font-black text-sm text-blue-900 dark:text-blue-300 flex items-center gap-2">
                       <MapPin size={16} className="text-blue-500" />
-                      <span>توثيقات وأعلام ومواقع المحطة (من سيرة ابن هشام):</span>
+                      <span>{t('pb_historical_details_heading', 'توثيقات وأعلام ومواقع المحطة (من سيرة ابن هشام):')}</span>
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
                       {activeStory.historicalDetails.map((detail, dIdx) => (
@@ -1114,7 +1117,7 @@ export const ProphetBiography: React.FC = () => {
                 {/* Hadith Ref if exists */}
                 {activeStory.hadithRef && (
                   <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-500/20 p-4 rounded-2xl text-xs font-bold text-amber-900 dark:text-amber-200 space-y-1">
-                    <span className="font-black text-amber-700 dark:text-amber-400 block">📜 الشاهد الحديثي:</span>
+                    <span className="font-black text-amber-700 dark:text-amber-400 block">{t('pb_hadith_witness', '📜 الشاهد الحديثي:')}</span>
                     <p className="leading-relaxed">{activeStory.hadithRef}</p>
                   </div>
                 )}
@@ -1124,7 +1127,7 @@ export const ProphetBiography: React.FC = () => {
                   <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 p-5 rounded-3xl space-y-3">
                     <h3 className="font-black text-sm text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
                       <Sparkles size={16} className="text-emerald-500" />
-                      <span>أبرز الدروس والعبر المستفادة من المحطة:</span>
+                      <span>{t('pb_lessons_heading', 'أبرز الدروس والعبر المستفادة من المحطة:')}</span>
                     </h3>
 
                     <ul className="space-y-2 text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -1153,14 +1156,14 @@ export const ProphetBiography: React.FC = () => {
                   )}
                 >
                   <CheckCircle2 size={16} />
-                  <span>{readStoryIds.includes(activeStory.id) ? "مكتملة القراءة ✓" : "تعليم كـ مكتملة"}</span>
+                  <span>{readStoryIds.includes(activeStory.id) ? t('pb_mark_completed_done', 'مكتملة القراءة ✓') : t('pb_mark_completed', 'تعليم كـ مكتملة')}</span>
                 </button>
 
                 <button
                   onClick={() => setActiveStory(null)}
                   className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-black text-xs cursor-pointer"
                 >
-                  إغلاق
+                  {t('pb_close', 'إغلاق')}
                 </button>
               </div>
             </motion.div>
@@ -1173,7 +1176,7 @@ export const ProphetBiography: React.FC = () => {
       {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {showIndexModal && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" dir="rtl">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1194,8 +1197,8 @@ export const ProphetBiography: React.FC = () => {
                     <List size={20} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black text-slate-800 dark:text-white">شجرة أحداث السيرة</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">تصفح تفاعلي، طي وتوسيع الفترات التاريخية</p>
+                    <h2 className="text-lg font-black text-slate-800 dark:text-white">{t('pb_tree_title', 'شجرة أحداث السيرة')}</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">{t('pb_tree_subtitle', 'تصفح تفاعلي، طي وتوسيع الفترات التاريخية')}</p>
                   </div>
                 </div>
                 <button
@@ -1213,7 +1216,7 @@ export const ProphetBiography: React.FC = () => {
                   <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={16} />
                   <input
                     type="text"
-                    placeholder="ابحث في شجرة الأحداث، الغزوات، الشخصيات..."
+                    placeholder={t('pb_tree_search_placeholder', 'ابحث في شجرة الأحداث، الغزوات، الشخصيات...')}
                     value={treeSearchQuery}
                     onChange={(e) => setTreeSearchQuery(e.target.value)}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-xl py-2 pr-10 pl-4 text-xs focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 outline-none text-slate-800 dark:text-slate-200 placeholder:text-slate-400 font-bold"
@@ -1239,7 +1242,7 @@ export const ProphetBiography: React.FC = () => {
                       }}
                       className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-black cursor-pointer text-[10px]"
                     >
-                      توسيع الكل
+                      {t('pb_expand_all', 'توسيع الكل')}
                     </button>
                     <button
                       onClick={() => {
@@ -1248,7 +1251,7 @@ export const ProphetBiography: React.FC = () => {
                       }}
                       className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-black cursor-pointer text-[10px]"
                     >
-                      طي الكل
+                      {t('pb_collapse_all', 'طي الكل')}
                     </button>
                   </div>
 
@@ -1256,9 +1259,9 @@ export const ProphetBiography: React.FC = () => {
                   <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 gap-0.5 font-bold font-black">
                     {(['all', 'read', 'unread', 'bookmarked'] as const).map((filter) => {
                       const label = 
-                        filter === 'all' ? 'الكل' : 
-                        filter === 'read' ? 'المقروءة' : 
-                        filter === 'unread' ? 'غير المقروءة' : 'المفضلة';
+                        filter === 'all' ? t('pb_filter_all', 'الكل') : 
+                        filter === 'read' ? t('pb_filter_read', 'المقروءة') : 
+                        filter === 'unread' ? t('pb_filter_unread', 'غير المقروءة') : t('pb_filter_bookmarked', 'المفضلة');
 
                       const isActive = treeFilter === filter;
                       return (
@@ -1338,15 +1341,15 @@ export const ProphetBiography: React.FC = () => {
                             
                             <div className="flex flex-col">
                               <span className="text-xs font-black text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                {category.label}
+                                {t(`pb_period_${category.id}`, category.label)}
                               </span>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">
-                                  {totalInPeriod} محطات
+                                  {t('pb_period_stations_count', '{{count}} محطات', { count: totalInPeriod })}
                                 </span>
                                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                                 <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400/90">
-                                  اكتمل {completionPercentage}%
+                                  {t('pb_period_complete_pct', 'اكتمل {{percent}}%', { percent: completionPercentage })}
                                 </span>
                               </div>
                             </div>
@@ -1472,7 +1475,7 @@ export const ProphetBiography: React.FC = () => {
       {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {showSettingsModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md" dir="rtl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1487,10 +1490,10 @@ export const ProphetBiography: React.FC = () => {
                   </div>
                   <div>
                     <h2 className="text-base font-black text-slate-800 dark:text-white">
-                      إعدادات العرض وتخصيص الخطوط
+                      {t('pb_display_settings_title', 'إعدادات العرض وتخصيص الخطوط')}
                     </h2>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">
-                      تخصيص خطوط وثيمات ونصوص السيرة النبوية الشريفة
+                      {t('pb_display_settings_desc', 'تخصيص خطوط وثيمات ونصوص السيرة النبوية الشريفة')}
                     </p>
                   </div>
                 </div>
@@ -1510,7 +1513,7 @@ export const ProphetBiography: React.FC = () => {
                 <div className="space-y-2">
                   <span className="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                     <Eye size={16} className="text-emerald-600" />
-                    <span>المعاينة الحية المباشرة:</span>
+                    <span>{t('pb_live_preview', 'المعاينة الحية المباشرة:')}</span>
                   </span>
 
                   <div 
@@ -1524,7 +1527,7 @@ export const ProphetBiography: React.FC = () => {
                     <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-2">
                       <span className="font-bold text-xs">محطة: مولد ونشأة النبي ﷺ</span>
                       <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-black", SEERAH_THEMES.find(t => t.id === seerahSettings.theme)?.badgeClass)}>
-                        {FONT_OPTIONS.find(f => f.id === seerahSettings.fontFamily)?.name}
+                        {fontName(seerahSettings.fontFamily)}
                       </span>
                     </div>
 
@@ -1548,7 +1551,7 @@ export const ProphetBiography: React.FC = () => {
                 <div className="space-y-3">
                   <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
                     <Type size={16} className="text-emerald-600" />
-                    <span>اختر خط قراءة السيرة:</span>
+                    <span>{t('pb_choose_font', 'اختر خط قراءة السيرة:')}</span>
                   </span>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -1566,7 +1569,7 @@ export const ProphetBiography: React.FC = () => {
                           )}
                         >
                           <div className="flex items-center justify-between w-full">
-                            <span className="text-xs font-black">{font.name}</span>
+                            <span className="text-xs font-black">{t(`pb_font_${font.id}_name`, font.name)}</span>
                             {isSelected && <Check size={14} className="text-emerald-600 dark:text-emerald-400" />}
                           </div>
                           <p 
@@ -1575,7 +1578,7 @@ export const ProphetBiography: React.FC = () => {
                           >
                             محمد رسول الله ﷺ
                           </p>
-                          <span className="text-[9px] font-bold text-slate-400 block">{font.label}</span>
+                          <span className="text-[9px] font-bold text-slate-400 block">{t(`pb_font_${font.id}_label`, font.label)}</span>
                         </button>
                       );
                     })}
@@ -1586,7 +1589,7 @@ export const ProphetBiography: React.FC = () => {
                 <div className="space-y-3">
                   <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
                     <Type size={16} className="text-emerald-600" />
-                    <span>حجم خط القراءة:</span>
+                    <span>{t('pb_reading_font_size', 'حجم خط القراءة:')}</span>
                   </span>
 
                   <div className="grid grid-cols-5 gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -1603,7 +1606,7 @@ export const ProphetBiography: React.FC = () => {
                               : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                           )}
                         >
-                          {fs.label}
+                          {t(`pb_size_${fs.id}`, fs.label)}
                         </button>
                       );
                     })}
@@ -1614,7 +1617,7 @@ export const ProphetBiography: React.FC = () => {
                 <div className="space-y-3">
                   <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
                     <Type size={16} className="text-emerald-600" />
-                    <span>مسافة التباعد بين الأسطر:</span>
+                    <span>{t('pb_line_spacing', 'مسافة التباعد بين الأسطر:')}</span>
                   </span>
 
                   <div className="grid grid-cols-3 gap-2">
@@ -1631,7 +1634,7 @@ export const ProphetBiography: React.FC = () => {
                               : "bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-emerald-500/40"
                           )}
                         >
-                          {lh.label}
+                          {t(`pb_lh_${lh.id}`, lh.label)}
                         </button>
                       );
                     })}
@@ -1643,20 +1646,20 @@ export const ProphetBiography: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5">
                       <Palette size={16} className="text-emerald-600" />
-                      <span>ثيمات وألوان القراءة المخصصة:</span>
+                      <span>{t('pb_custom_themes', 'ثيمات وألوان القراءة المخصصة:')}</span>
                     </span>
 
                     {/* Dropdown Selector */}
                     <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
-                      <span className="text-[11px] font-bold text-slate-500">القائمة:</span>
+                      <span className="text-[11px] font-bold text-slate-500">{t('pb_list_label', 'القائمة:')}</span>
                       <select
                         value={seerahSettings.theme}
                         onChange={(e) => setSeerahSettings(s => ({ ...s, theme: e.target.value as SeerahSettings['theme'] }))}
                         className="bg-transparent text-xs font-black text-emerald-700 dark:text-emerald-300 focus:outline-none cursor-pointer"
                       >
-                        {SEERAH_THEMES.map(t => (
-                          <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-                            {t.name}
+                        {SEERAH_THEMES.map(th => (
+                          <option key={th.id} value={th.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                            {t(`pb_theme_${th.id}_name`, th.name)}
                           </option>
                         ))}
                       </select>
@@ -1685,8 +1688,8 @@ export const ProphetBiography: React.FC = () => {
                               ✓
                             </span>
                             <div>
-                              <span className="text-xs font-black text-slate-800 dark:text-white block">{theme.name}</span>
-                              <span className="text-[10px] font-bold text-slate-400 block">{theme.desc}</span>
+                              <span className="text-xs font-black text-slate-800 dark:text-white block">{t(`pb_theme_${theme.id}_name`, theme.name)}</span>
+                              <span className="text-[10px] font-bold text-slate-400 block">{t(`pb_theme_${theme.id}_desc`, theme.desc)}</span>
                             </div>
                           </div>
                           {isSelected && <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />}
@@ -1699,7 +1702,7 @@ export const ProphetBiography: React.FC = () => {
                 {/* 5. Display Toggles */}
                 <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <span className="text-xs font-black text-slate-800 dark:text-white block">
-                    مكونات القراءة المعروضة:
+                    {t('pb_display_components', 'مكونات القراءة المعروضة:')}
                   </span>
 
                   <div className="space-y-2">
@@ -1716,7 +1719,7 @@ export const ProphetBiography: React.FC = () => {
                           className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 cursor-pointer hover:bg-slate-100/80 transition-all"
                         >
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                            {toggle.label}
+                            {t(`pb_toggle_${({ showIbnHisham: 'ibn_hisham', showVerses: 'verses', showLessons: 'lessons', showHistoricalDetails: 'historical' } as Record<string, string>)[toggle.key]}`, toggle.label)}
                           </span>
                           <input 
                             type="checkbox"
@@ -1739,7 +1742,7 @@ export const ProphetBiography: React.FC = () => {
                   className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-rose-600 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <RotateCcw size={14} />
-                  <span>الضبط الافتراضي</span>
+                  <span>{t('pb_reset_defaults', 'الضبط الافتراضي')}</span>
                 </button>
 
                 <button
@@ -1747,7 +1750,7 @@ export const ProphetBiography: React.FC = () => {
                   className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-lg shadow-emerald-600/20 transition-all cursor-pointer flex items-center gap-2"
                 >
                   <Check size={16} />
-                  <span>حفظ وتطبيق</span>
+                  <span>{t('pb_save_apply', 'حفظ وتطبيق')}</span>
                 </button>
               </div>
             </motion.div>

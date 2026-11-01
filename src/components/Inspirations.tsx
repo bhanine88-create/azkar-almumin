@@ -7,6 +7,7 @@ import { INSPIRATIONS, Inspiration } from '../data/inspirations';
 import { cn, copyTextToClipboard, shareContent } from '../lib/utils';
 import { useAppContext } from '../AppContext';
 import { useTranslation } from '../i18n';
+import { localizeSurahRef } from './DailyAyahDhikrWidget';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
 
@@ -306,7 +307,7 @@ export const Inspirations: React.FC = () => {
                         </>
                       )}
                       <span className="text-xs font-black tracking-wide text-white">
-                        {currentItem.source}
+                        {currentItem.type === 'verse' ? localizeSurahRef(currentItem.source, t) : currentItem.source}
                       </span>
                     </div>
                   </div>

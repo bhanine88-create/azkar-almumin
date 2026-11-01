@@ -106,7 +106,7 @@ const Library: React.FC = () => {
     {
       to: "/names",
       title: t('names_of_allah') || "أسماء الله الحسنى",
-      subtitle: "٩٩ اسماً مع الشرح والدعاء",
+      subtitle: t('ui_names99_sub', '٩٩ اسماً مع الشرح والدعاء'),
       icon: <Sparkles size={24} />,
       color: "from-[#063b28] via-[#04281b] to-[#021810]",
       shadow: "shadow-lg shadow-emerald-950/50",

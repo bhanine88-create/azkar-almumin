@@ -33,7 +33,7 @@ import { Sun,
   VolumeX,
   Heart,
   Square } from 'lucide-react';
-import { cn, getDayName, getHijriDate, getGregorianDate } from '../lib/utils';
+import { cn, getDayName, getHijriDate, getGregorianDate, getLocaleCode } from '../lib/utils';
 import { useAppContext } from '../AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../i18n';
@@ -91,6 +91,22 @@ export const PrayerTimes: React.FC = () => {
   const { navigate, goBack } = useSmartNavigation();
   const { settings, updateSettings, progress, addWorshipActivity, updateProgress } = useAppContext();
   const { t, currentLang } = useTranslation(settings.appLanguage);
+  const listComma = currentLang === 'ar' || currentLang === 'ur' ? '، ' : ', ';
+  // Localized prayer name for display (PRAYER_NAMES.ar stays the stored identity of a prayer).
+  const pn = (key: string) => t(key.toLowerCase(), PRAYER_NAMES[key]?.ar || key);
+  const nameOf = (arName: string) => {
+    const k = Object.keys(PRAYER_NAMES).find(x => PRAYER_NAMES[x].ar === arName);
+    return k ? pn(k) : arName;
+  };
+  const displayCountry = (c: string) => {
+    const v = (c || '').trim();
+    if (/^[A-Za-z]{2}$/.test(v)) {
+      try {
+        return new Intl.DisplayNames([getLocaleCode(currentLang)], { type: 'region' }).of(v.toUpperCase()) || c;
+      } catch { /* keep raw value */ }
+    }
+    return c;
+  };
   const { activeAdhanId, isAdhanPlaying, toggleAdhan, stopAdhan, stopCurrentAudio, playAdhan } = useGlobalAudio();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -124,7 +140,7 @@ export const PrayerTimes: React.FC = () => {
 
     try {
       setSearching(true);
-      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val.trim())}&count=6&language=ar`);
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val.trim())}&count=6&language=${currentLang || 'ar'}`);
       if (res.ok) {
         const data = await res.json();
         setSearchResults(data.results || []);
@@ -169,7 +185,7 @@ export const PrayerTimes: React.FC = () => {
     window.dispatchEvent(new CustomEvent(PRAYER_LOCATION_EVENT));
 
     setLocationMessage({ 
-      text: `تم بنجاح تحديث الموقع والمواقيت إلى: ${finalCity}، ${finalCountry}`, 
+      text: t('pt_loc_updated', 'تم بنجاح تحديث الموقع والمواقيت إلى: {{city}}، {{country}}', { city: finalCity, country: finalCountry }), 
       type: 'success' 
     });
     setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
@@ -281,6 +297,9 @@ export const PrayerTimes: React.FC = () => {
       const m = cleanMin % 60;
       const isPm = h >= 12;
       const displayH = h % 12 === 0 ? 12 : h % 12;
+      if (currentLang !== 'ar') {
+        return new Intl.DateTimeFormat(getLocaleCode(currentLang), { hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date(2000, 0, 1, h, m));
+      }
       const amPm = isPm ? 'م' : 'ص';
       return `${displayH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${amPm}`;
     };
@@ -313,7 +332,7 @@ export const PrayerTimes: React.FC = () => {
       console.warn("Religious macro times calculation error:", err);
       return null;
     }
-  }, [data]);
+  }, [data, currentLang]);
 
   // Ticker countdown state
   const [timeRemaining, setTimeRemaining] = useState<{
@@ -444,7 +463,7 @@ export const PrayerTimes: React.FC = () => {
           currentLat = "21.4225";
           currentLng = "39.8262";
           tz = "Asia/Riyadh";
-          setLocationMessage({ text: 'لم يتم العثور على المدينة، تم استخدام توقيت مكة المكرمة افتراضياً للعمل بدون إنترنت', type: 'error' });
+          setLocationMessage({ text: t('pt_city_not_found', 'لم يتم العثور على المدينة، تم استخدام توقيت مكة المكرمة افتراضياً للعمل بدون إنترنت'), type: 'error' });
           setTimeout(() => setLocationMessage({ text: '', type: null }), 6000);
         }
       } else if (currUseGPS) {
@@ -586,7 +605,7 @@ export const PrayerTimes: React.FC = () => {
 
     } catch (e: any) {
       console.warn('Prayer times offline calculation failed:', e.message);
-      setLocationMessage({ text: 'حدث خطأ في حساب المواقيت. تأكد من تحديد مدينتك أو الموقع بشكل صحيح.', type: 'error' });
+      setLocationMessage({ text: t('pt_calc_error', 'حدث خطأ في حساب المواقيت. تأكد من تحديد مدينتك أو الموقع بشكل صحيح.'), type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -599,7 +618,7 @@ export const PrayerTimes: React.FC = () => {
   // Handle auto Geolocation detection via GPS
   const detectLocation = async (type: 'ip' | 'gps') => {
     setLocationMessage({ 
-      text: type === 'ip' ? 'جاري تحديد موقعك الجغرافي تلقائياً عبر الإنترنت...' : 'جاري الاتصال بالأقمار الصناعية لتحديد موقعك الجغرافي بدقة عبر GPS...', 
+      text: type === 'ip' ? t('pt_locating_ip', 'جاري تحديد موقعك الجغرافي تلقائياً عبر الإنترنت...') : t('pt_locating_gps', 'جاري الاتصال بالأقمار الصناعية لتحديد موقعك الجغرافي بدقة عبر GPS...'), 
       type: 'loading' 
     });
 
@@ -623,7 +642,7 @@ export const PrayerTimes: React.FC = () => {
             try {
               // Fetch reverse geocoding with zoom=10 to find city and country
               const geoRes = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=11&accept-language=ar,en`
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=11&accept-language=${currentLang || 'ar'},en`
               );
               if (geoRes.ok) {
                 const geoData = await geoRes.json();
@@ -654,16 +673,16 @@ export const PrayerTimes: React.FC = () => {
             await fetchTimes(detectedCity, detectedCountry, method, asrMethod, settings.hijriOffset || 0, true, latitude, longitude);
 
             setLocationMessage({ 
-              text: `تم تحديد الموقع بنجاح! الموقع الحالي: ${detectedCity}، ${detectedCountry}`, 
+              text: t('pt_gps_success', 'تم تحديد الموقع بنجاح! الموقع الحالي: {{city}}، {{country}}', { city: detectedCity, country: detectedCountry }), 
               type: 'success' 
             });
             setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
           },
           (error) => {
             console.warn('Geolocation error:', error);
-            let errMsg = 'تعذر كشف إحداثيات الـ GPS. يرجى تفعيل إذن الموقع الجغرافي بالمتصفح.';
+            let errMsg = t('pt_gps_failed', 'تعذر كشف إحداثيات الـ GPS. يرجى تفعيل إذن الموقع الجغرافي بالمتصفح.');
             if (error.code === error.PERMISSION_DENIED) {
-              errMsg = 'تم رفض إذن تحديد الموقع. يرجى تفعيله من إعدادات المتصفح.';
+              errMsg = t('pt_gps_denied', 'تم رفض إذن تحديد الموقع. يرجى تفعيله من إعدادات المتصفح.');
             }
             setLocationMessage({ text: errMsg, type: 'error' });
             setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
@@ -671,7 +690,7 @@ export const PrayerTimes: React.FC = () => {
           { enableHighAccuracy: true, timeout: 8000 }
         );
       } else {
-        setLocationMessage({ text: 'المتصفح لا يدعم تحديد الموقع الذكي.', type: 'error' });
+        setLocationMessage({ text: t('pt_gps_unsupported', 'المتصفح لا يدعم تحديد الموقع الذكي.'), type: 'error' });
         setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
       }
     } else {
@@ -688,13 +707,13 @@ export const PrayerTimes: React.FC = () => {
         setUseGPS(false);
         await fetchTimes(found.city, found.country, method, asrMethod, settings.hijriOffset || 0, false, found.lat, found.lng);
         setLocationMessage({
-          text: `تم التعرف تلقائياً على مدينتك: ${found.city}، ${found.country}`,
+          text: t('pt_ip_success', 'تم التعرف تلقائياً على مدينتك: {{city}}، {{country}}', { city: found.city, country: found.country }),
           type: 'success'
         });
         setTimeout(() => setLocationMessage({ text: '', type: null }), 5000);
       } else {
         setLocationMessage({
-          text: 'تعذر تحديد الموقع الجغرافي تلقائياً عبر الإنترنت. يمكنك استخدام تحديد الموقع بدقة عبر GPS أو كتابتها يدوياً.',
+          text: t('pt_ip_failed', 'تعذر تحديد الموقع الجغرافي تلقائياً عبر الإنترنت. يمكنك استخدام تحديد الموقع بدقة عبر GPS أو كتابتها يدوياً.'),
           type: 'error'
         });
         setTimeout(() => setLocationMessage({ text: '', type: null }), 6000);
@@ -829,7 +848,7 @@ export const PrayerTimes: React.FC = () => {
       // Dispatch beautiful info toast
       window.dispatchEvent(new CustomEvent('show-toast', { 
         detail: { 
-          message: `تم إلغاء تحديد صلاة ${prayerName}`, 
+          message: t('pt_prayer_unmarked', 'تم إلغاء تحديد صلاة {{prayer}}', { prayer: nameOf(prayerName) }), 
           type: 'info' 
         } 
       }));
@@ -843,16 +862,16 @@ export const PrayerTimes: React.FC = () => {
       
       // Dispatch beautiful success toast with standard encouraging text
       const prayersDuas = [
-        "تقبل الله منكم صالح الأعمال وصلاة مقبولة إن شاء الله",
-        "صلاة مقبولة وذنب مغفور وتجارة لن تبور بإذن الله",
-        "بارك الله في صلاتكم وثبتكم على الحق والهدى",
-        "جعله الله في ميزان حسناتكم ونوراً لكم في الدنيا والآخرة"
+        t('pt_dua_1', 'تقبل الله منكم صالح الأعمال وصلاة مقبولة إن شاء الله'),
+        t('pt_dua_2', 'صلاة مقبولة وذنب مغفور وتجارة لن تبور بإذن الله'),
+        t('pt_dua_3', 'بارك الله في صلاتكم وثبتكم على الحق والهدى'),
+        t('pt_dua_4', 'جعله الله في ميزان حسناتكم ونوراً لكم في الدنيا والآخرة')
       ];
       const randomDua = prayersDuas[Math.floor(Math.random() * prayersDuas.length)];
       
       window.dispatchEvent(new CustomEvent('show-toast', { 
         detail: { 
-          message: `تم تأكيد صلاة ${prayerName} بنجاح! ${randomDua}`, 
+          message: t('pt_prayer_confirmed', 'تم تأكيد صلاة {{prayer}} بنجاح! {{dua}}', { prayer: nameOf(prayerName), dua: randomDua }), 
           type: 'success' 
         } 
       }));
@@ -869,10 +888,10 @@ export const PrayerTimes: React.FC = () => {
     e.preventDefault();
     if (!cityInput.trim()) return;
 
-    setLocationMessage({ text: 'جاري البحث عن إحداثيات المدينة وتحديد التوقيت الدقيق...', type: 'loading' });
+    setLocationMessage({ text: t('pt_searching_city', 'جاري البحث عن إحداثيات المدينة وتحديد التوقيت الدقيق...'), type: 'loading' });
     try {
       const queryStr = `${cityInput.trim()} ${countryInput.trim()}`.trim();
-      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryStr)}&count=1&language=ar`);
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryStr)}&count=1&language=${currentLang || 'ar'}`);
       if (res.ok) {
         const data = await res.json();
         const results = data.results || [];
@@ -900,7 +919,7 @@ export const PrayerTimes: React.FC = () => {
     safeLocalStorageSetItem(LOCATION_SOURCE_KEY, 'manual');
     window.dispatchEvent(new CustomEvent(PRAYER_LOCATION_EVENT));
 
-    setLocationMessage({ text: `تم تحديث الموقع لمطابقة: ${finalCity}`, type: 'success' });
+    setLocationMessage({ text: t('pt_loc_matched', 'تم تحديث الموقع لمطابقة: {{city}}', { city: finalCity }), type: 'success' });
     setTimeout(() => setLocationMessage({ text: '', type: null }), 4000);
   };
 
@@ -944,6 +963,25 @@ export const PrayerTimes: React.FC = () => {
     return fallbackList;
   };
 
+  // Localized weekday / Hijri label of a weekly-planner row (Arabic keeps the API values).
+  const weeklyDayLabels = (dayItem: any) => {
+    if (currentLang === 'ar') {
+      return { weekday: dayItem.date.weekday.ar, hijri: `${dayItem.hijri.day} ${dayItem.hijri.month.ar} ${dayItem.hijri.year}` };
+    }
+    const [dd, mm, yy] = String(dayItem.date.date).split('-').map(Number);
+    const d = new Date(yy, (mm || 1) - 1, dd || 1, 12);
+    const loc = getLocaleCode(currentLang);
+    let weekday = dayItem.date.weekday.ar;
+    let hijri = '';
+    try {
+      weekday = new Intl.DateTimeFormat(loc, { weekday: 'long' }).format(d);
+      const h = new Date(d);
+      h.setDate(h.getDate() + (settings.hijriOffset || 0));
+      hijri = new Intl.DateTimeFormat(loc + '-u-ca-islamic-umalqura-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(h);
+    } catch { /* keep fallback */ }
+    return { weekday, hijri };
+  };
+
   // Highlight themes
   const currentTheme = timeRemaining ? PRAYER_THEMES[timeRemaining.currentPrayerKey] || PRAYER_THEMES['Fajr'] : PRAYER_THEMES['Fajr'];
 
@@ -971,7 +1009,7 @@ export const PrayerTimes: React.FC = () => {
             <button 
               onClick={handleGPSDetect} 
               className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-              title="تحديد الموقع عبر GPS"
+              title={t('pt_gps_title', 'تحديد الموقع عبر GPS')}
             >
               <Compass size={18} className={cn(locationMessage.type === 'loading' && "animate-spin")} />
             </button>
@@ -1011,7 +1049,7 @@ export const PrayerTimes: React.FC = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center p-20 space-y-3">
             <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 font-black">جاري تحديث مواقيت الصلاة بدقة...</p>
+            <p className="text-xs text-slate-400 font-black">{t('pt_updating_times', 'جاري تحديث مواقيت الصلاة بدقة...')}</p>
           </div>
         ) : data ? (
           <>
@@ -1024,11 +1062,11 @@ export const PrayerTimes: React.FC = () => {
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="text-right space-y-1">
                   <div className="flex items-center gap-1.5 justify-end text-[10px] uppercase font-black text-emerald-400 tracking-wider">
-                    <span>{city}، {country}</span>
+                    <span>{city}{listComma}{displayCountry(country)}</span>
                     <MapPin size={11} />
                   </div>
                   <h2 className="text-xl font-black text-amber-200" style={{ fontFamily: "Amiri, serif" }}>
-                    {getDayName(liveTime, currentLang)}، {getHijriDate(liveTime, settings.hijriOffset, currentLang)}
+                    {getDayName(liveTime, currentLang)}{listComma}{getHijriDate(liveTime, settings.hijriOffset, currentLang)}
                   </h2>
                   <p className="text-xs text-slate-300 font-semibold">
                     {getGregorianDate(liveTime, currentLang)}
@@ -1042,7 +1080,7 @@ export const PrayerTimes: React.FC = () => {
                       return liveTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                     })()}
                   </span>
-                  <span className="text-[9px] text-teal-300/80 font-bold uppercase mt-1">توقيت الساعة الحالية</span>
+                  <span className="text-[9px] text-teal-300/80 font-bold uppercase mt-1">{t('pt_current_time', 'توقيت الساعة الحالية')}</span>
                 </div>
               </div>
             </div>
@@ -1066,8 +1104,7 @@ export const PrayerTimes: React.FC = () => {
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-3xl p-5 shadow-xl border relative overflow-hidden text-right transition-all duration-300 bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-950 border-emerald-500/20 text-white"
-                  dir="rtl"
+                  className="rounded-3xl p-5 shadow-xl border relative overflow-hidden text-start transition-all duration-300 bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-950 border-emerald-500/20 text-white"
                 >
                   {/* Visual abstract overlay */}
                   <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
@@ -1078,34 +1115,34 @@ export const PrayerTimes: React.FC = () => {
                     <div className="space-y-1">
                       <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 animate-pulse">
                         <Sparkles size={10} />
-                        <span>الصلاة القادمة المنتظرة</span>
+                        <span>{t('pt_next_prayer_badge', 'الصلاة القادمة المنتظرة')}</span>
                       </span>
                       
                       <h3 className="text-xl font-black text-slate-100 flex items-center gap-2 mt-1">
-                        <span>صلاة {PRAYER_NAMES[bannerPrayerKey]?.ar || bannerPrayerKey}</span>
+                        <span>{t('pt_prayer_named', 'صلاة {{prayer}}', { prayer: pn(bannerPrayerKey) })}</span>
                         <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-lg text-teal-300 bg-teal-500/10">
-                          أذان {prayerTimeStr}
+                          {t('pt_adhan_at', 'أذان {{time}}', { time: prayerTimeStr })}
                         </span>
                       </h3>
                     </div>
 
                     <div className="flex flex-col gap-1 items-start md:items-end text-right">
                       <p className="text-sm md:text-base text-slate-100 font-bold mb-1">
-                        الوقت المتبقي لصلاة {PRAYER_NAMES[bannerPrayerKey]?.ar || bannerPrayerKey} هو
+                        {t('pt_time_left_for', 'الوقت المتبقي لصلاة {{prayer}} هو', { prayer: pn(bannerPrayerKey) })}
                       </p>
-                      <div className="flex flex-wrap items-center gap-1.5 justify-end mt-1 text-lg md:text-xl font-black text-amber-300" dir="rtl">
+                      <div className="flex flex-wrap items-center gap-1.5 justify-end mt-1 text-lg md:text-xl font-black text-amber-300">
                         {timeRemaining.hours > 0 && (
                           <>
                             <span>{timeRemaining.hours}</span>
-                            <span className="text-sm font-bold text-amber-300/80">ساعة</span>
-                            <span className="text-amber-300/50">و</span>
+                            <span className="text-sm font-bold text-amber-300/80">{t('pt_hour', 'ساعة')}</span>
+                            <span className="text-amber-300/50">{t('pt_and', 'و')}</span>
                           </>
                         )}
                         <span>{timeRemaining.minutes}</span>
-                        <span className="text-sm font-bold text-amber-300/80">دقيقة</span>
-                        <span className="text-amber-300/50">و</span>
+                        <span className="text-sm font-bold text-amber-300/80">{t('pt_minute', 'دقيقة')}</span>
+                        <span className="text-amber-300/50">{t('pt_and', 'و')}</span>
                         <span className="text-rose-300">{timeRemaining.seconds}</span>
-                        <span className="text-sm font-bold text-rose-300/80">ثانية</span>
+                        <span className="text-sm font-bold text-rose-300/80">{t('pt_second', 'ثانية')}</span>
                       </div>
                     </div>
                   </div>
@@ -1127,7 +1164,7 @@ export const PrayerTimes: React.FC = () => {
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse-slow shadow-lg shadow-emerald-500/50" />
-                  <span className="text-xs font-black uppercase text-slate-800 dark:text-slate-250 tracking-wider">مواقيت كبسولات ذكية لمدينة {city}</span>
+                  <span className="text-xs font-black uppercase text-slate-800 dark:text-slate-250 tracking-wider">{t('pt_capsules_title', 'مواقيت كبسولات ذكية لمدينة {{city}}', { city })}</span>
                 </div>
                 <button
                   type="button"
@@ -1137,25 +1174,25 @@ export const PrayerTimes: React.FC = () => {
                       await detectLocation(source === 'gps' ? 'gps' : 'ip');
                       return;
                     }
-                    setLocationMessage({ text: 'جاري تحديث مواقيت الصلاة ومزامنتها الآن...', type: 'loading' });
+                    setLocationMessage({ text: t('pt_syncing', 'جاري تحديث مواقيت الصلاة ومزامنتها الآن...'), type: 'loading' });
                     try {
                       await fetchTimes(city, country, method, asrMethod, settings.hijriOffset || 0, useGPS, lat || undefined, lng || undefined);
-                      setLocationMessage({ text: `تم بنجاح تحديث ومزامنة المواقيت لمدينة ${city}!`, type: 'success' });
+                      setLocationMessage({ text: t('pt_sync_success', 'تم بنجاح تحديث ومزامنة المواقيت لمدينة {{city}}!', { city }), type: 'success' });
                       setTimeout(() => setLocationMessage({ text: '', type: null }), 3000);
                     } catch (err) {
-                      setLocationMessage({ text: 'حدث خطأ أثناء التحديث. الرجاء المحاولة مجدداً.', type: 'error' });
+                      setLocationMessage({ text: t('pt_update_error', 'حدث خطأ أثناء التحديث. الرجاء المحاولة مجدداً.'), type: 'error' });
                       setTimeout(() => setLocationMessage({ text: '', type: null }), 4000);
                     }
                   }}
                   className="text-[10px] text-emerald-600 dark:text-emerald-400 font-black bg-emerald-500/10 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-emerald-500/20 active:scale-95 transition-all flex items-center gap-1.5 border border-emerald-500/20 shadow-sm"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>تحديث فوري</span>
+                  <span>{t('pt_refresh_now', 'تحديث فوري')}</span>
                 </button>
               </div>
 
               {/* Grid Layout of capsules - 5 columns on desktop, dynamic on mobile */}
-              <div className="grid grid-cols-5 gap-1.5 sm:gap-2" dir="rtl">
+              <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                 {PRAYER_KEYS.map((key) => {
                   const { ar, icon } = PRAYER_NAMES[key];
                   const isCurrent = timeRemaining?.currentPrayerKey === key;
@@ -1205,7 +1242,7 @@ export const PrayerTimes: React.FC = () => {
 
                       {/* Content */}
                       <div className="flex flex-col items-center justify-center text-center">
-                        <span className="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-widest opacity-80">{ar}</span>
+                        <span className="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-widest opacity-80">{pn(key)}</span>
                         <span className="text-[10px] sm:text-[12px] font-mono font-black tracking-tight mt-0.5">{prayerTime}</span>
                       </div>
 
@@ -1216,11 +1253,11 @@ export const PrayerTimes: React.FC = () => {
                         </span>
                       ) : isCurrent ? (
                         <span className="text-[7px] sm:text-[7.5px] font-black bg-yellow-300 text-emerald-950 px-1 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse mt-1">
-                          الآن
+                          {t('pt_now', 'الآن')}
                         </span>
                       ) : isNext ? (
                         <span className="text-[7px] sm:text-[7.5px] font-black bg-amber-400 text-amber-950 px-1 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse mt-1">
-                          المنتظرة
+                          {t('pt_upcoming', 'المنتظرة')}
                         </span>
                       ) : null}
                     </motion.button>
@@ -1238,7 +1275,7 @@ export const PrayerTimes: React.FC = () => {
                   activeTab === 'today' ? "bg-white dark:bg-slate-800 text-teal-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-400"
                 )}
               >
-                اليوم
+                {t('pt_tab_today', 'اليوم')}
               </button>
               <button 
                 onClick={() => setActiveTab('weekly')}
@@ -1247,7 +1284,7 @@ export const PrayerTimes: React.FC = () => {
                   activeTab === 'weekly' ? "bg-white dark:bg-slate-800 text-teal-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-400"
                 )}
               >
-                المخطط الأسبوعي
+                {t('pt_tab_weekly', 'المخطط الأسبوعي')}
               </button>
               <button 
                 onClick={() => setActiveTab('calibration')}
@@ -1256,7 +1293,7 @@ export const PrayerTimes: React.FC = () => {
                   activeTab === 'calibration' ? "bg-white dark:bg-slate-800 text-teal-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-400"
                 )}
               >
-                المعايرة والدقة
+                {t('pt_tab_calibration', 'المعايرة والدقة')}
               </button>
             </div>
 
@@ -1305,7 +1342,7 @@ export const PrayerTimes: React.FC = () => {
                                   ? "bg-emerald-500 border-emerald-500 text-white" 
                                   : "border-slate-300 dark:border-slate-700 hover:border-emerald-500 text-transparent"
                               )}
-                              title={isDone ? "تمت تأديتها بنجاح" : "تحديد كمكتملة"}
+                              title={isDone ? t('pt_done_title', 'تمت تأديتها بنجاح') : t('pt_mark_done', 'تحديد كمكتملة')}
                             >
                               <CheckCircle2 size={13} className="stroke-[3.5px] text-white" />
                             </button>
@@ -1328,7 +1365,7 @@ export const PrayerTimes: React.FC = () => {
                                   ? "bg-amber-100/40 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/40 text-amber-600 dark:text-amber-400"
                                   : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:text-rose-500"
                               )}
-                              title={isAlertEnabled ? "التنبيه مفعل (اضغط للكتم)" : "التنبيه مكتوم (اضغط للتفعيل)"}
+                              title={isAlertEnabled ? t('pt_alert_on', 'التنبيه مفعل (اضغط للكتم)') : t('pt_alert_off', 'التنبيه مكتوم (اضغط للتفعيل)')}
                             >
                               {isAlertEnabled ? <Bell size={13} /> : <BellOff size={13} />}
                             </button>
@@ -1342,7 +1379,7 @@ export const PrayerTimes: React.FC = () => {
                                   ? "bg-emerald-600 border-emerald-500 text-white animate-pulse"
                                   : "bg-slate-100 dark:bg-slate-800 border-indigo-200 dark:border-slate-700 text-teal-600 dark:text-teal-400 hover:bg-slate-200"
                               )}
-                              title="استماع لتنبيه الأذان المقترح"
+                              title={t('pt_preview_adhan', 'استماع لتنبيه الأذان المقترح')}
                             >
                               <Volume2 size={13} />
                               {activeAdhanId === key && isAdhanPlaying ? (
@@ -1351,7 +1388,7 @@ export const PrayerTimes: React.FC = () => {
                                   <span className="w-0.5 h-3.5 bg-white animate-bounce" style={{ animationDelay: '0.3s' }} />
                                   <span className="w-0.5 h-2.5 bg-white animate-bounce" style={{ animationDelay: '0.5s' }} />
                                 </span>
-                              ) : <span className="hidden min-[400px]:inline">اختبار</span>}
+                              ) : <span className="hidden min-[400px]:inline">{t('pt_test', 'اختبار')}</span>}
                             </button>
                           </div>
 
@@ -1361,16 +1398,16 @@ export const PrayerTimes: React.FC = () => {
                             <div>
                               <div className="flex items-center gap-1.5 justify-end">
                                 <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-extrabold">
-                                  {key === 'Sunrise' ? 'إشراقة' : 'فرض'}
+                                  {key === 'Sunrise' ? t('pt_sunrise_tag', 'إشراقة') : t('pt_fard', 'فرض')}
                                 </span>
                                 <h4 className="text-sm font-black text-slate-800 dark:text-slate-100">
-                                  {ar}
+                                  {pn(key)}
                                 </h4>
                               </div>
                               <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
                                 {(settings.prayerOffsets?.[key] || 0) !== 0 
-                                  ? `تعديل (${settings.prayerOffsets?.[key] > 0 ? '+' : ''}${settings.prayerOffsets?.[key]} د)`
-                                  : 'مواقيت فلكية معتمدة'
+                                  ? t('pt_offset_label', 'تعديل ({{offset}} د)', { offset: `${settings.prayerOffsets?.[key] > 0 ? '+' : ''}${settings.prayerOffsets?.[key]}` })
+                                  : t('pt_astronomical', 'مواقيت فلكية معتمدة')
                                 }
                               </span>
                             </div>
@@ -1404,36 +1441,36 @@ export const PrayerTimes: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Compass className="text-emerald-500" size={18} />
-                        <h3 className="font-black text-xs text-slate-800 dark:text-slate-100">محدد اتجاه القبلة الذكي</h3>
+                        <h3 className="font-black text-xs text-slate-800 dark:text-slate-100">{t('pt_qibla_title', 'محدد اتجاه القبلة الذكي')}</h3>
                       </div>
                       <span className="text-[9px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-black">
-                        {useGPS ? "دقة الـ GPS نشطة" : "موقع الحساب الافتراضي"}
+                        {useGPS ? t('pt_gps_active', 'دقة الـ GPS نشطة') : t('pt_default_calc_location', 'موقع الحساب الافتراضي')}
                       </span>
                     </div>
 
                     <p className="text-[11px] text-slate-400 leading-relaxed text-right">
-                      تم حساب اتجاه الكعبة الشريفة من موقعك تلقائياً وبدقة عالية دون الاتصال بالإنترنت.
+                      {t('pt_qibla_desc', 'تم حساب اتجاه الكعبة الشريفة من موقعك تلقائياً وبدقة عالية دون الاتصال بالإنترنت.')}
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-2">
                       <div className="space-y-2.5 text-right">
                         <div className="p-3 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-950">
-                          <span className="text-[9px] text-slate-400 block font-bold">زاوية القبلة من الشمال:</span>
+                          <span className="text-[9px] text-slate-400 block font-bold">{t('pt_qibla_angle', 'زاوية القبلة من الشمال:')}</span>
                           <span className="text-lg font-black text-slate-800 dark:text-slate-100 font-mono tracking-tight">
-                            {resolvedQiblaAngle}° درجة شمالاً
+                            {t('pt_degrees_north', '{{angle}}° درجة شمالاً', { angle: resolvedQiblaAngle })}
                           </span>
                         </div>
                         
                         <div className="p-3 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-950">
-                          <span className="text-[9px] text-slate-400 block font-bold">المسافة الدقيقة إلى مكة المكرمة:</span>
+                          <span className="text-[9px] text-slate-400 block font-bold">{t('pt_distance_to_mecca', 'المسافة الدقيقة إلى مكة المكرمة:')}</span>
                           <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
-                            {resolvedKaabaDistance.toLocaleString()} كيلومتر (كم)
+                            {t('pt_km', '{{distance}} كيلومتر (كم)', { distance: resolvedKaabaDistance.toLocaleString() })}
                           </span>
                         </div>
                         
                         {/* Interactive Manual adjustment slider for Desktop/gyro-less users */}
                         <div className="p-3 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-950 space-y-1">
-                          <span className="text-[9px] text-slate-400 block font-bold">معايرة البوصلة يدوياً للمحاذاة:</span>
+                          <span className="text-[9px] text-slate-400 block font-bold">{t('pt_calibrate_compass', 'معايرة البوصلة يدوياً للمحاذاة:')}</span>
                           <div className="flex items-center gap-2">
                             <input 
                               type="range"
@@ -1445,7 +1482,7 @@ export const PrayerTimes: React.FC = () => {
                             />
                             <span className="text-[10px] font-mono font-black text-slate-500 w-8 text-left">{simulatedCompassHeading}°</span>
                           </div>
-                          <span className="text-[8px] text-slate-400 block text-right font-semibold">قم بالتمرير لمطابقة زاوية القبلة المقدرة</span>
+                          <span className="text-[8px] text-slate-400 block text-right font-semibold">{t('pt_slide_hint', 'قم بالتمرير لمطابقة زاوية القبلة المقدرة')}</span>
                         </div>
                       </div>
 
@@ -1481,11 +1518,11 @@ export const PrayerTimes: React.FC = () => {
                         {/* Alignment confirmation prompt status */}
                         {Math.abs((resolvedQiblaAngle - simulatedCompassHeading) % 360) < 5 ? (
                           <span className="text-[10px] font-black text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded mt-2 animate-bounce">
-                             أنت الآن بمحاذاة القبلة بالضبط!
+                             {t('pt_aligned', 'أنت الآن بمحاذاة القبلة بالضبط!')}
                           </span>
                         ) : (
                           <span className="text-[9px] text-slate-400 mt-2 font-bold select-none text-center leading-tight">
-                            قم بمحاذاة البوصلة الدائرية للقبلة
+                            {t('pt_align_hint', 'قم بمحاذاة البوصلة الدائرية للقبلة')}
                           </span>
                         )}
                       </div>
@@ -1497,59 +1534,59 @@ export const PrayerTimes: React.FC = () => {
                     <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
                       <div className="flex items-center gap-2">
                         <Sparkles className="text-indigo-500" size={18} />
-                        <h3 className="font-black text-xs text-slate-800 dark:text-slate-100">أوقات النوافل وقيام الليل والسنن</h3>
+                        <h3 className="font-black text-xs text-slate-800 dark:text-slate-100">{t('pt_nafl_title', 'أوقات النوافل وقيام الليل والسنن')}</h3>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-3.5 pt-1.5">
                         <div className="p-3 bg-gradient-to-tr from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-0.5 text-right">
                           <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 flex items-center justify-end gap-1">
-                            <span>ثلث الليل الآخر</span>
+                            <span>{t('pt_last_third', 'ثلث الليل الآخر')}</span>
                             <Moon size={11} />
                           </span>
                           <span className="text-lg font-black text-slate-800 dark:text-slate-200 block font-mono">
                             {religiousMacroTimes.lastThird}
                           </span>
                           <span className="text-[8px] text-slate-400 font-semibold block pt-1">
-                            أفضل وقت للتضرع، الدعاء وقيام الليل
+                            {t('pt_last_third_desc', 'أفضل وقت للتضرع، الدعاء وقيام الليل')}
                           </span>
                         </div>
 
                         <div className="p-3 bg-gradient-to-tr from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-0.5 text-right">
                           <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 flex items-center justify-end gap-1">
-                            <span>منتصف الليل الإسلامي</span>
+                            <span>{t('pt_midnight', 'منتصف الليل الإسلامي')}</span>
                             <Clock size={11} />
                           </span>
                           <span className="text-lg font-black text-slate-800 dark:text-slate-200 block font-mono">
                             {religiousMacroTimes.midnight}
                           </span>
                           <span className="text-[8px] text-slate-400 font-semibold block pt-1">
-                            نهاية الوقت الاختياري والمستحب لصلاة العشاء
+                            {t('pt_midnight_desc', 'نهاية الوقت الاختياري والمستحب لصلاة العشاء')}
                           </span>
                         </div>
 
                         <div className="p-3 bg-gradient-to-tr from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-0.5 text-right">
                           <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 flex items-center justify-end gap-1">
-                            <span>شروق الضحى</span>
+                            <span>{t('pt_duha', 'شروق الضحى')}</span>
                             <Sun size={11} />
                           </span>
                           <span className="text-lg font-black text-slate-800 dark:text-slate-200 block font-mono">
                             {religiousMacroTimes.duha}
                           </span>
                           <span className="text-[8px] text-slate-400 font-semibold block pt-1">
-                            بداية وقت صلاة الضحى (السنن النبوية المباركة)
+                            {t('pt_duha_desc', 'بداية وقت صلاة الضحى (السنن النبوية المباركة)')}
                           </span>
                         </div>
 
                         <div className="p-3 bg-gradient-to-tr from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-0.5 text-right">
                           <span className="text-[10px] font-black text-rose-500 flex items-center justify-end gap-1">
-                            <span>الإمساك الاحتياطي</span>
+                            <span>{t('pt_imsak', 'الإمساك الاحتياطي')}</span>
                             <Sunrise size={11} />
                           </span>
                           <span className="text-lg font-black text-slate-800 dark:text-slate-200 block font-mono">
                             {religiousMacroTimes.imsak}
                           </span>
                           <span className="text-[8px] text-slate-400 font-semibold block pt-1">
-                            قبل الفجر بـ 10 دقائق للتوقف الاحتياطي في أيام الصيام
+                            {t('pt_imsak_desc', 'قبل الفجر بـ 10 دقائق للتوقف الاحتياطي في أيام الصيام')}
                           </span>
                         </div>
                       </div>
@@ -1558,39 +1595,39 @@ export const PrayerTimes: React.FC = () => {
 
                   {/* PROPRIETARY QUICK WORSHIP SHORTCUTS */}
                   <div className="bg-slate-200/40 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800 space-y-2.5">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block text-right pb-1">روابط سريعة لأوراد العبادات المتصلة بالصلاة</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block text-right pb-1">{t('pt_quick_links', 'روابط سريعة لأوراد العبادات المتصلة بالصلاة')}</span>
                     
                     <div className="grid grid-cols-2 gap-2 text-right">
                       <button 
                         onClick={() => navigate('/adhkar/prayer?step=after')}
                         className="p-3 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-850 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-right flex flex-col justify-center transition shadow-sm cursor-pointer"
                       >
-                        <span className="text-xs font-black text-teal-650 dark:text-emerald-400">أذكار بعد الصلاة</span>
-                        <span className="text-[8px] text-slate-400 block pt-0.5">الأوراد النبوية الصحيحة المأثورة</span>
+                        <span className="text-xs font-black text-teal-650 dark:text-emerald-400">{t('pt_after_prayer', 'أذكار بعد الصلاة')}</span>
+                        <span className="text-[8px] text-slate-400 block pt-0.5">{t('pt_after_prayer_desc', 'الأوراد النبوية الصحيحة المأثورة')}</span>
                       </button>
 
                       <button 
                         onClick={() => navigate('/adhkar/prayer?step=adhan')}
                         className="p-3 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-850 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-right flex flex-col justify-center transition shadow-sm cursor-pointer"
                       >
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">أذكار الأذان والمذنب</span>
-                        <span className="text-[8px] text-slate-400 block pt-0.5">متابعة الأذان والصلاة على النبي</span>
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">{t('pt_adhan_azkar', 'أذكار الأذان والمذنب')}</span>
+                        <span className="text-[8px] text-slate-400 block pt-0.5">{t('pt_adhan_azkar_desc', 'متابعة الأذان والصلاة على النبي')}</span>
                       </button>
 
                       <button 
                         onClick={() => navigate('/tasbih')}
                         className="p-3 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-850 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-right flex flex-col justify-center transition shadow-sm cursor-pointer"
                       >
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">المسبحة الإلكترونية</span>
-                        <span className="text-[8px] text-slate-400 block pt-0.5">تسبيح مخصص مدمج بالعداد والاهتزاز</span>
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">{t('pt_tasbih', 'المسبحة الإلكترونية')}</span>
+                        <span className="text-[8px] text-slate-400 block pt-0.5">{t('pt_tasbih_desc', 'تسبيح مخصص مدمج بالعداد والاهتزاز')}</span>
                       </button>
 
                       <button 
                         onClick={() => navigate('/quran')}
                         className="p-3 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-850 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-right flex flex-col justify-center transition shadow-sm cursor-pointer"
                       >
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">المصحف للتلاوة</span>
-                        <span className="text-[8px] text-slate-400 block pt-0.5">سور القرآن الكريم برواية حفص</span>
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">{t('pt_mushaf', 'المصحف للتلاوة')}</span>
+                        <span className="text-[8px] text-slate-400 block pt-0.5">{t('pt_mushaf_desc', 'سور القرآن الكريم برواية حفص')}</span>
                       </button>
                     </div>
                   </div>
@@ -1621,7 +1658,7 @@ export const PrayerTimes: React.FC = () => {
                         <span className={cn(
                           "text-[10px] sm:text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full border bg-white/10 text-white border-white/20 backdrop-blur-sm shadow-sm"
                         )}>
-                          {insight.type === 'verse' ? 'آية قرآنية معبرة' : 'حديث نبوي شريف'}
+                          {insight.type === 'verse' ? t('pt_insight_verse', 'آية قرآنية معبرة') : t('pt_insight_hadith', 'حديث نبوي شريف')}
                         </span>
                         {insight.type === 'verse' ? (
                           <div className="p-1.5 rounded-xl bg-white/10 text-emerald-100 border border-white/15">
@@ -1661,7 +1698,7 @@ export const PrayerTimes: React.FC = () => {
                   <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
                     <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100">
                       <Calendar size={18} className="text-emerald-500" />
-                      <h3 className="font-black text-sm">مخطط مواقيت الصلاة للـ 7 الأيام القادمة</h3>
+                      <h3 className="font-black text-sm">{t('pt_weekly_title', 'مخطط مواقيت الصلاة للـ 7 الأيام القادمة')}</h3>
                     </div>
 
                     <div className="space-y-2.5 overflow-x-auto">
@@ -1674,21 +1711,21 @@ export const PrayerTimes: React.FC = () => {
                           >
                             <div className="flex items-center gap-3 justify-between sm:justify-start">
                               <span className="text-xs font-black text-slate-800 dark:text-slate-100 min-w-[60px]">
-                                {dayItem.date.weekday.ar}
+                                {weeklyDayLabels(dayItem).weekday}
                               </span>
                               <div className="flex flex-col text-right">
                                 <span className="text-[10px] font-mono text-slate-400 font-bold">{dateFormatted}</span>
                                 <span className="text-[9px] text-emerald-600 dark:text-emerald-500 font-black">
-                                  {dayItem.hijri.day} {dayItem.hijri.month.ar} {dayItem.hijri.year}
+                                  {weeklyDayLabels(dayItem).hijri}
                                 </span>
                               </div>
                             </div>
 
                             {/* Individual Prayer Horizontal Strip */}
-                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar pt-1.5 sm:pt-0" dir="rtl">
+                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar pt-1.5 sm:pt-0">
                               {['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map((k) => (
                                 <div key={k} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-850 rounded-full px-3 py-1.5 text-center flex items-center justify-center gap-1.5 shrink-0 shadow-sm border-l-2 border-l-emerald-500">
-                                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-extrabold">{PRAYER_NAMES[k].ar}</span>
+                                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-extrabold">{pn(k)}</span>
                                   <span className="text-xs font-mono font-black text-slate-700 dark:text-slate-200">
                                     {dayItem.timings[k]?.split(' ')[0] || '--:--'}
                                   </span>
@@ -1715,23 +1752,22 @@ export const PrayerTimes: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sliders size={18} className="text-emerald-500" />
-                      <h3 className="font-black text-sm text-slate-800 dark:text-slate-100">معايرة دقيقة وتعديل الدقائق يدوياً</h3>
+                      <h3 className="font-black text-sm text-slate-800 dark:text-slate-100">{t('pt_calib_title', 'معايرة دقيقة وتعديل الدقائق يدوياً')}</h3>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">تعديل فوري</span>
+                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{t('pt_calib_badge', 'تعديل فوري')}</span>
                   </div>
                   
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed text-right">
-                    إذا كانت مواقيت التطبيق تختلف بدقيقة أو أكثر عن مسجدك المحلي، يمكنك مطابقتها بالضبط هنا بزيادة أو نقص دقائق لكل صلاة:
+                    {t('pt_calib_desc', 'إذا كانت مواقيت التطبيق تختلف بدقيقة أو أكثر عن مسجدك المحلي، يمكنك مطابقتها بالضبط هنا بزيادة أو نقص دقائق لكل صلاة:')}
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     {PRAYER_KEYS.map((key) => {
-                      const { ar } = PRAYER_NAMES[key];
                       const currentOffset = (settings.prayerOffsets || {})[key] || 0;
                       return (
                         <div key={key} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100/50 dark:border-slate-950">
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-xs text-slate-700 dark:text-slate-200">{ar}</span>
+                            <span className="font-black text-xs text-slate-700 dark:text-slate-200">{pn(key)}</span>
                             <span className="text-[11px] font-mono font-bold text-slate-400 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded">
                               {data?.timings?.[key]?.split(' ')[0] || '--:--'}
                             </span>
@@ -1747,7 +1783,7 @@ export const PrayerTimes: React.FC = () => {
                               "text-xs font-bold font-mono min-w-[28px] text-center", 
                               currentOffset > 0 ? "text-emerald-500" : currentOffset < 0 ? "text-rose-500" : "text-slate-400"
                             )}>
-                              {currentOffset > 0 ? `+${currentOffset}` : currentOffset} د
+                              {t('pt_min_short', '{{n}} د', { n: currentOffset > 0 ? `+${currentOffset}` : currentOffset })}
                             </span>
                             <button
                               onClick={() => updateOffset(key, 1)}
@@ -1783,12 +1819,12 @@ export const PrayerTimes: React.FC = () => {
               exit={{ scale: 0.95, opacity: 0 }} 
               className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 text-right font-sans" dir="rtl">
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 text-start font-sans">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-600 dark:text-emerald-400">
                     <Settings2 size={18} />
                   </div>
-                  <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">إعدادات مواقيت الصلاة</h2>
+                  <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">{t('pt_settings_title', 'إعدادات مواقيت الصلاة')}</h2>
                 </div>
                 <button 
                   onClick={() => setShowSettings(false)} 
@@ -1798,9 +1834,9 @@ export const PrayerTimes: React.FC = () => {
                 </button>
               </div>
 
-              <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar text-right" dir="rtl">
+              <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar text-start">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase text-slate-400">طريقة إدخال المواقيت</label>
+                  <label className="text-[10px] font-black uppercase text-slate-400">{t('pt_input_mode', 'طريقة إدخال المواقيت')}</label>
                   <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
                     <button 
                       onClick={() => updateSettings({ prayerManualMode: false })} 
@@ -1809,7 +1845,7 @@ export const PrayerTimes: React.FC = () => {
                         !settings.prayerManualMode ? "bg-white dark:bg-slate-700 text-teal-600 dark:text-emerald-400 shadow-sm" : "text-slate-400"
                       )}
                     >
-                      موقع تلقائي / بحث
+                      {t('pt_mode_auto', 'موقع تلقائي / بحث')}
                     </button>
                     <button 
                       onClick={() => updateSettings({ prayerManualMode: true })} 
@@ -1818,7 +1854,7 @@ export const PrayerTimes: React.FC = () => {
                         settings.prayerManualMode ? "bg-white dark:bg-slate-700 text-teal-600 dark:text-emerald-400 shadow-sm" : "text-slate-400"
                       )}
                     >
-                      وضع يدوي بالكامل
+                      {t('pt_mode_manual', 'وضع يدوي بالكامل')}
                     </button>
                   </div>
                 </div>
@@ -1826,26 +1862,26 @@ export const PrayerTimes: React.FC = () => {
                 {!settings.prayerManualMode ? (
                   <div className="space-y-4">
                     {/* Live Location Status Card */}
-                    <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-slate-500/5 dark:from-emerald-950/20 dark:via-slate-900/40 dark:to-slate-900/20 border border-emerald-500/25 dark:border-emerald-500/10 p-4.5 rounded-3xl shadow-[0_4px_20px_rgba(16,185,129,0.05)] text-right" dir="rtl">
+                    <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-slate-500/5 dark:from-emerald-950/20 dark:via-slate-900/40 dark:to-slate-900/20 border border-emerald-500/25 dark:border-emerald-500/10 p-4.5 rounded-3xl shadow-[0_4px_20px_rgba(16,185,129,0.05)] text-start">
                       <div className="absolute -top-6 -left-6 w-20 h-20 bg-emerald-500/15 rounded-full blur-xl pointer-events-none" />
                       <div className="flex items-start justify-between">
                         <div className="space-y-1.5 flex-1 pr-1">
                           <span className="inline-block text-[10px] font-black tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/5 px-2.5 py-0.5 rounded-full border border-emerald-500/20 mb-2">
-                            {useGPS ? "موقع دقيق ونشط عبر الـ GPS" : "موقع حدد تلقائياً عبر الشبكة"}
+                            {useGPS ? t('pt_loc_gps_badge', 'موقع دقيق ونشط عبر الـ GPS') : t('pt_loc_network_badge', 'موقع حدد تلقائياً عبر الشبكة')}
                           </span>
                           
                           <div>
-                            <span className="text-[10px] block font-extrabold text-slate-400">المدينة والدولة المكتشفة:</span>
+                            <span className="text-[10px] block font-extrabold text-slate-400">{t('pt_detected_city_country', 'المدينة والدولة المكتشفة:')}</span>
                             <h4 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 mt-1 flex items-center gap-1.5 leading-none">
                               <MapPin size={16} className="text-emerald-500 shrink-0" />
-                              <span>{city || "غير معروف"} ، {country || "غير معروف"}</span>
+                              <span>{city || t('pt_unknown', 'غير معروف')} ، {displayCountry(country) || t('pt_unknown', 'غير معروف')}</span>
                             </h4>
                           </div>
 
                           <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold pt-2">
                             {useGPS 
-                              ? `إحداثيات الـ GPS: العرض (${lat || '0'})، الطول (${lng || '0'})` 
-                              : "تم كشف التوقيت وحفظ إحداثيات ومواقيت موقعك بدقة عالية."
+                              ? t('pt_gps_coords', 'إحداثيات الـ GPS: العرض ({{lat}})، الطول ({{lng}})', { lat: lat || '0', lng: lng || '0' }) 
+                              : t('pt_loc_saved', 'تم كشف التوقيت وحفظ إحداثيات ومواقيت موقعك بدقة عالية.')
                             }
                           </p>
                         </div>
@@ -1863,7 +1899,7 @@ export const PrayerTimes: React.FC = () => {
 
                     {/* Auto-detect methods trigger row */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-slate-400 block pb-0.5 text-right">خيارات البحث التلقائي الذكي</label>
+                      <label className="text-[10px] font-black uppercase text-slate-400 block pb-0.5 text-right">{t('pt_smart_search_opts', 'خيارات البحث التلقائي الذكي')}</label>
                       <div className="grid grid-cols-2 gap-2.5">
                         <button 
                           type="button"
@@ -1874,7 +1910,7 @@ export const PrayerTimes: React.FC = () => {
                           <span className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-600">
                             <Globe size={14} />
                           </span>
-                          <span className="text-[10px]">البحث بالشبكة (سريع)</span>
+                          <span className="text-[10px]">{t('pt_network_search', 'البحث بالشبكة (سريع)')}</span>
                         </button>
 
                         <button 
@@ -1886,7 +1922,7 @@ export const PrayerTimes: React.FC = () => {
                           <span className="p-1.5 bg-white/10 rounded-lg text-teal-400">
                             <Navigation size={14} className="animate-pulse" />
                           </span>
-                          <span className="text-[10px]">الموقع الدقيق (GPS)</span>
+                          <span className="text-[10px]">{t('pt_precise_gps', 'الموقع الدقيق (GPS)')}</span>
                         </button>
                       </div>
                     </div>
@@ -1894,7 +1930,7 @@ export const PrayerTimes: React.FC = () => {
                     {/* Manual Search Overrides & Autocomplete */}
                     <div className="border border-slate-100 dark:border-slate-800/80 p-3.5 rounded-2xl space-y-3 dark:bg-slate-900/20">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-slate-400 font-extrabold">البحث الذكي عن أي مدينة أو قرية</span>
+                        <span className="text-[10px] text-slate-400 font-extrabold">{t('pt_smart_city_search', 'البحث الذكي عن أي مدينة أو قرية')}</span>
                         <div className="h-[1px] flex-1 bg-slate-100 dark:bg-slate-800 mx-3" />
                       </div>
 
@@ -1905,7 +1941,7 @@ export const PrayerTimes: React.FC = () => {
                           value={searchQuery} 
                           onChange={(e) => handleSearchInputChange(e.target.value)} 
                           className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200/40 dark:border-slate-800 px-3 py-2.5 pr-9 rounded-xl text-xs font-semibold outline-none text-right focus:border-emerald-500/50" 
-                          placeholder="اكتب اسم المدينة هنا (مثال: الرباط، مكة)..." 
+                          placeholder={t('pt_city_placeholder', 'اكتب اسم المدينة هنا (مثال: الرباط، مكة)...')} 
                         />
                         <Search size={14} className="absolute right-3 top-3.5 text-slate-400" />
                         
@@ -1929,7 +1965,7 @@ export const PrayerTimes: React.FC = () => {
                                 className="w-full text-right px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between transition-colors cursor-pointer group"
                               >
                                 <span className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold group-hover:text-emerald-500">
-                                  {item.admin1 ? `${item.admin1}، ` : ''}{item.country || ''}
+                                  {item.admin1 ? `${item.admin1}${listComma}` : ''}{displayCountry(item.country || '')}
                                 </span>
                                 <div className="flex items-center gap-1.5">
                                   <MapPin size={12} className="text-slate-400 group-hover:text-emerald-500" />
@@ -1947,28 +1983,28 @@ export const PrayerTimes: React.FC = () => {
                       <details className="group">
                         <summary className="text-[9px] text-slate-400 font-bold cursor-pointer hover:text-slate-650 dark:hover:text-slate-350 list-none flex items-center gap-1">
                           <span className="transition-transform group-open:rotate-90">◀</span>
-                          تعديل يدوي للإحداثيات والنصوص
+                          {t('pt_manual_edit', 'تعديل يدوي للإحداثيات والنصوص')}
                         </summary>
                         <form onSubmit={handleSearch} className="space-y-3 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1 text-right" dir="rtl">
-                              <label className="text-[8px] font-black uppercase text-slate-400 block pb-0.5">المدينة</label>
+                            <div className="space-y-1 text-start">
+                              <label className="text-[8px] font-black uppercase text-slate-400 block pb-0.5">{t('pt_city', 'المدينة')}</label>
                               <input 
                                 type="text" 
                                 value={cityInput} 
                                 onChange={(e) => setCityInput(e.target.value)} 
                                 className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200/40 dark:border-slate-800 px-3 py-2 rounded-xl text-[11px] font-semibold outline-none text-right focus:border-emerald-500/30" 
-                                placeholder="مثال: Rabat" 
+                                placeholder={t('pt_city_example', 'مثال: Rabat')} 
                               />
                             </div>
-                            <div className="space-y-1 text-right" dir="rtl">
-                              <label className="text-[8px] font-black uppercase text-slate-400 block pb-0.5">الدولة</label>
+                            <div className="space-y-1 text-start">
+                              <label className="text-[8px] font-black uppercase text-slate-400 block pb-0.5">{t('pt_country', 'الدولة')}</label>
                               <input 
                                 type="text" 
                                 value={countryInput} 
                                 onChange={(e) => setCountryInput(e.target.value)} 
                                 className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200/40 dark:border-slate-800 px-3 py-2 rounded-xl text-[11px] font-semibold outline-none text-right focus:border-emerald-500/30" 
-                                placeholder="مثال: Morocco" 
+                                placeholder={t('pt_country_example', 'مثال: Morocco')} 
                               />
                             </div>
                           </div>
@@ -1978,7 +2014,7 @@ export const PrayerTimes: React.FC = () => {
                             className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-2 rounded-xl transition cursor-pointer font-bold text-[10px] flex items-center justify-center gap-1"
                           >
                             <Search size={11} />
-                            تأكيد المدخلات يدوياً
+                            {t('pt_confirm_manual', 'تأكيد المدخلات يدوياً')}
                           </button>
                         </form>
                       </details>
@@ -2017,7 +2053,7 @@ export const PrayerTimes: React.FC = () => {
                   <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl">
                     {PRAYER_KEYS.map(key => (
                       <div key={key} className="space-y-1 text-right">
-                        <label className="text-[9px] text-slate-400 font-bold">{PRAYER_NAMES[key].ar}</label>
+                        <label className="text-[9px] text-slate-400 font-bold">{pn(key)}</label>
                         <input 
                           type="time" 
                           value={settings.prayerManualTimes?.[key] || '00:00'} 
@@ -2139,7 +2175,7 @@ export const PrayerTimes: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles size={14} className="text-amber-500" />
-                    <h3 className="font-black text-xs text-slate-800 dark:text-slate-100">إضافة آيات أو أحاديث مخصصة لك</h3>
+                    <h3 className="font-black text-xs text-slate-800 dark:text-slate-100">{t('pt_add_insight_title', 'إضافة آيات أو أحاديث مخصصة لك')}</h3>
                   </div>
                   <div className="space-y-2">
                     <select 
@@ -2147,13 +2183,13 @@ export const PrayerTimes: React.FC = () => {
                       onChange={(e) => setNewInsightType(e.target.value as any)} 
                       className="w-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold"
                     >
-                      <option value="verse">آية قرآنية</option>
-                      <option value="hadith">حديث نبوي</option>
+                      <option value="verse">{t('pt_verse_option', 'آية قرآنية')}</option>
+                      <option value="hadith">{t('pt_hadith_option', 'حديث نبوي')}</option>
                     </select>
                     <textarea 
                       value={newInsightText} 
                       onChange={(e) => setNewInsightText(e.target.value)} 
-                      placeholder="اكتب الآية أو الحديث الشريف..." 
+                      placeholder={t('pt_insight_text_ph', 'اكتب الآية أو الحديث الشريف...')} 
                       className="w-full bg-white dark:bg-slate-850 border border-slate-100 dark:border-slate-800 px-3 py-2 rounded-xl text-xs font-bold resize-none" 
                       rows={2} 
                     />
@@ -2161,7 +2197,7 @@ export const PrayerTimes: React.FC = () => {
                       type="text" 
                       value={newInsightSource} 
                       onChange={(e) => setNewInsightSource(e.target.value)} 
-                      placeholder="المصدر أو الجزء..." 
+                      placeholder={t('pt_insight_source_ph', 'المصدر أو الجزء...')} 
                       className="w-full bg-white dark:bg-slate-850 border border-slate-100 dark:border-slate-800 px-3 py-2 rounded-xl text-xs font-bold" 
                     />
                     <button 
@@ -2169,7 +2205,7 @@ export const PrayerTimes: React.FC = () => {
                       disabled={!newInsightText.trim() || !newInsightSource.trim()} 
                       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-xs font-bold disabled:opacity-40 transition"
                     >
-                      إضافة إلى قائمتي
+                      {t('pt_add_to_list', 'إضافة إلى قائمتي')}
                     </button>
                   </div>
                 </div>
@@ -2179,7 +2215,7 @@ export const PrayerTimes: React.FC = () => {
                   onClick={() => setShowSettings(false)} 
                   className="w-full bg-slate-800 hover:bg-slate-705 text-white py-3 rounded-2xl text-xs sm:text-sm font-black transition shadow-md cursor-pointer outline-none"
                 >
-                  إغلاق
+                  {t('close', 'إغلاق')}
                 </button>
               </div>
             </motion.div>

@@ -8,7 +8,7 @@ import {  BookOpen, Mic2, CloudDownload, Star,
   ChevronLeft, ChevronRight, Music,  FolderHeart, Loader2,  ListMusic, FileCode, Smartphone, HardDrive,
   ChevronDown, ChevronUp,  Pause, HelpCircle, RefreshCw, Volume2,  BookOpenCheck, ScrollText, HeartPulse, Disc3 , Trash2, ShieldCheck, Play, CheckCircle2, Heart } from 'lucide-react';
 import JSZip from 'jszip';
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode } from '../lib/utils';
 import { useAppContext } from '../AppContext';
 import { useTranslation } from '../i18n';
 import { BackButton } from './ui/BackButton';
@@ -468,9 +468,9 @@ export function AudioLibraryHub() {
 
     if (currentTrack?.id === item.id) {
       if (isPlaying) {
-        useGlobalAudio().pauseTrack();
+        pauseTrack();
       } else {
-        useGlobalAudio().resumeTrack();
+        resumeTrack();
       }
       return;
     }
@@ -526,7 +526,7 @@ export function AudioLibraryHub() {
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
   // Stats
-  const { currentTrack, isPlaying, playTrack } = useGlobalAudio();
+  const { currentTrack, isPlaying, playTrack, pauseTrack, resumeTrack } = useGlobalAudio();
   const [quranMeta, setQuranMeta] = useState<any[]>([]);
   const [lectureMeta, setLectureMeta] = useState<any[]>([]);
   const [isListExpanded, setIsListExpanded] = useState(false);
@@ -544,18 +544,18 @@ export function AudioLibraryHub() {
   };
 
   const formatBagBytesSize = (bytes: number) => {
-    if (!bytes || isNaN(bytes) || bytes <= 0) return '0 ميجابايت';
+    if (!bytes || isNaN(bytes) || bytes <= 0) return t('al_size_zero', '0 ميجابايت');
     const mb = bytes / (1024 * 1024);
-    if (mb < 0.1) return 'أقل من 0.1 م.ب';
-    return `${mb.toFixed(1)} م.ب`;
+    if (mb < 0.1) return t('al_size_less', 'أقل من 0.1 م.ب');
+    return t('al_size_mb', '{{size}} م.ب', { size: mb.toLocaleString(getLocaleCode(settings.appLanguage), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) });
   };
 
   const handlePlayOfflineItem = (item: any, isQuran: boolean) => {
     if (isQuran) {
       playTrack({
         id: `quran-offline-${item.surahNumber}-${item.reciterId}`,
-        title: `سورة ${item.surahName}`,
-        subtitle: `الشيخ ${item.reciterName}`,
+        title: t('al_surah_name', 'سورة {{name}}', { name: item.surahName }),
+        subtitle: t('al_sheikh_prefix', 'الشيخ {{name}}', { name: item.reciterName }),
         audioUrl: item.url,
         type: 'quran',
         reciterId: item.reciterId,
@@ -573,8 +573,8 @@ export function AudioLibraryHub() {
   };
 
   const handleDeleteOfflineItem = async (item: any, isQuran: boolean) => {
-    const itemName = isQuran ? `سورة ${item.surahName}` : item.title;
-    if (window.confirm(`هل أنت متأكد من حذف "${itemName}" من الحقيبة وهاتفك؟`)) {
+    const itemName = isQuran ? t('al_surah_name', 'سورة {{name}}', { name: item.surahName }) : item.title;
+    if (window.confirm(t('al_confirm_delete_item', 'هل أنت متأكد من حذف "{{name}}" من الحقيبة وهاتفك؟', { name: itemName }))) {
       if (isQuran) {
         await audioCacheService.removeCachedAudio(item.url);
       } else {
@@ -609,7 +609,7 @@ export function AudioLibraryHub() {
   const hasResults = filteredReciters.length > 0 || filteredScholars.length > 0 || filteredLectures.length > 0;
 
   // Dynamic Content Generation
-  const greetingMsg = "مرحبا بك";
+  const greetingMsg = t('al_greeting', 'مرحبا بك');
 
   // Feature Random Lectures occasionally
   const featuredReciter = RECITERS[Math.floor(Math.random() * RECITERS.length)];
@@ -628,7 +628,7 @@ export function AudioLibraryHub() {
   }, [isSettingsOpen]);
 
   const clearAllCache = async () => {
-    const confirmed = window.confirm('هل أنت متأكد من حذف جميع الملفات الصوتية المحملة (القرآن والمحاضرات)؟');
+    const confirmed = window.confirm(t('al_confirm_clear_all', 'هل أنت متأكد من حذف جميع الملفات الصوتية المحملة (القرآن والمحاضرات)؟'));
     if (confirmed) {
       await lectureCacheService.clearAllCache();
       audioCacheService.clearAllCache();
@@ -640,7 +640,7 @@ export function AudioLibraryHub() {
 
   const handleExportM3U = () => {
     if (quranMeta.length === 0 && lectureMeta.length === 0) {
-      alert("عذراً، لا توجد أي ملفات صوتية محملة للاستماع إليها وتصديرها حالياً.");
+      alert(t('al_no_audio_m3u', 'عذراً، لا توجد أي ملفات صوتية محملة للاستماع إليها وتصديرها حالياً.'));
       return;
     }
     
@@ -673,7 +673,7 @@ export function AudioLibraryHub() {
       setTimeout(() => setExportSuccess(null), 3000);
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ أثناء تصدير قائمة التشغيل.');
+      alert(t('al_m3u_error', 'حدث خطأ أثناء تصدير قائمة التشغيل.'));
     } finally {
       setIsExportingM3U(false);
     }
@@ -681,12 +681,12 @@ export function AudioLibraryHub() {
 
   const handleExportZip = async () => {
     if (quranMeta.length === 0 && lectureMeta.length === 0) {
-      alert("عذراً، لم تقم بتحميل أي سورة أو درس بعد لتصدير الحقيبة الصوتية.");
+      alert(t('al_no_audio_zip', 'عذراً، لم تقم بتحميل أي سورة أو درس بعد لتصدير الحقيبة الصوتية.'));
       return;
     }
     
     setIsExportingZip(true);
-    setZipProgress({ current: 0, total: quranMeta.length + lectureMeta.length, text: 'جاري البدء في تهيئة الحقيبة الصوتية...' });
+    setZipProgress({ current: 0, total: quranMeta.length + lectureMeta.length, text: t('al_zip_starting', 'جاري البدء في تهيئة الحقيبة الصوتية...') });
     
     try {
       const zip = new JSZip();
@@ -703,7 +703,7 @@ export function AudioLibraryHub() {
         setZipProgress(prev => ({
           ...prev,
           current: processed + 1,
-          text: `أرشفة: سورة ${item.surahName} للمقرئ ${item.reciterName}`
+          text: t('al_zip_archiving_surah', 'أرشفة: سورة {{surah}} للمقرئ {{reciter}}', { surah: item.surahName, reciter: item.reciterName })
         }));
         
         try {
@@ -723,7 +723,7 @@ export function AudioLibraryHub() {
         setZipProgress(prev => ({
           ...prev,
           current: processed + 1,
-          text: `أرشفة: ${item.title}`
+          text: t('al_zip_archiving_item', 'أرشفة: {{title}}', { title: item.title })
         }));
         
         try {
@@ -754,13 +754,13 @@ export function AudioLibraryHub() {
       const indexHtml = generateHTMLOfflineIndex(quranMeta, lectureMeta);
       zip.file("فهرس الحقيبة الصوتي.html", indexHtml);
       
-      setZipProgress(prev => ({ ...prev, text: 'جاري تجميع وضغط الصوتيات MP3 في ملف واحد... يرجى الانتظار.' }));
+      setZipProgress(prev => ({ ...prev, text: t('al_zip_compressing', 'جاري تجميع وضغط الصوتيات MP3 في ملف واحد... يرجى الانتظار.') }));
       
       const zipBlob = await zip.generateAsync({ type: 'blob' }, (metadata) => {
         const percent = Math.round(metadata.percent);
         setZipProgress(prev => ({
           ...prev,
-          text: `جاري ضغط وترتيب الملف الرمزية... ${percent}%`
+          text: t('al_zip_percent', 'جاري ضغط وترتيب الملف الرمزية... {{percent}}%', { percent })
         }));
       });
       
@@ -777,7 +777,7 @@ export function AudioLibraryHub() {
       setTimeout(() => setExportSuccess(null), 3500);
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ أثناء ضغط الصوتيات.');
+      alert(t('al_zip_error', 'حدث خطأ أثناء ضغط الصوتيات.'));
     } finally {
       setIsExportingZip(false);
       setZipProgress({ current: 0, total: 0, text: '' });
@@ -815,8 +815,8 @@ export function AudioLibraryHub() {
                     <SlidersHorizontal size={24} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white">إعدادات المكتبة</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">تخصيص تجربة الاستماع</p>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">{t('al_settings_title', 'إعدادات المكتبة')}</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">{t('al_settings_sub', 'تخصيص تجربة الاستماع')}</p>
                   </div>
                 </div>
                 <button 
@@ -832,7 +832,7 @@ export function AudioLibraryHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <FastForward size={18} className="text-fuchsia-500" />
-                    <span>سرعة التشغيل</span>
+                    <span>{t('al_playback_speed', 'سرعة التشغيل')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[0.75, 1, 1.25, 1.5, 2].map((speed) => (
@@ -857,9 +857,9 @@ export function AudioLibraryHub() {
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <SkipForward size={18} className="text-blue-500" />
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white">التشغيل التلقائي</h4>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white">{t('al_auto_play', 'التشغيل التلقائي')}</h4>
                     </div>
-                    <p className="text-[10px] text-slate-500 font-bold pr-6">تشغيل الحلقة أو السورة التالية تلقائياً</p>
+                    <p className="text-[10px] text-slate-500 font-bold pr-6">{t('al_auto_play_hint', 'تشغيل الحلقة أو السورة التالية تلقائياً')}</p>
                   </div>
                   <button
                     onClick={() => updateSettings({ audioAutoAdvance: !settings.audioAutoAdvance })}
@@ -879,7 +879,7 @@ export function AudioLibraryHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <Timer size={18} className="text-orange-500" />
-                    <span>مؤقت النوم</span>
+                    <span>{t('al_sleep_timer', 'مؤقت النوم')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[0, 15, 30, 45, 60].map((mins) => (
@@ -893,7 +893,7 @@ export function AudioLibraryHub() {
                             : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                         )}
                       >
-                        {mins === 0 ? "إيقاف" : `${mins} د`}
+                        {mins === 0 ? t('al_off', 'إيقاف') : t('al_minutes_short', '{{count}} د', { count: mins })}
                       </button>
                     ))}
                   </div>
@@ -903,7 +903,7 @@ export function AudioLibraryHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <CloudDownload size={18} className="text-teal-500" />
-                    <span>التنزيلات العائمة</span>
+                    <span>{t('al_floating_downloads', 'التنزيلات العائمة')}</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div>
@@ -943,7 +943,7 @@ export function AudioLibraryHub() {
               <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
                  {t('listen', 'استمع')}
               </h1>
-              <p className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400">{greetingMsg}، {t('listen_what_benefits_you', 'استمع لما ينفعك')}</p>
+              <p className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400">{greetingMsg}{isRtl ? '، ' : ', '}{t('listen_what_benefits_you', 'استمع لما ينفعك')}</p>
             </div>
           </div>
           <motion.button 
@@ -1191,7 +1191,7 @@ export function AudioLibraryHub() {
                    { 
                      id: 'quran', 
                      title: t('audio_quran_title'), 
-                     desc: 'تلاوات خاشعة ومصاحف كاملة بأصوات أشهر القراء في العالم الإسلامي مع تنزيل مباشر', 
+                     desc: t('al_quran_desc', 'تلاوات خاشعة ومصاحف كاملة بأصوات أشهر القراء في العالم الإسلامي مع تنزيل مباشر'), 
                      badgeText: t('audio_reciters_count', '40+ قارئاً • مصحف كامل'),
                      icon: BookOpenCheck, 
                      path: '/quran-audio', 
@@ -1204,7 +1204,7 @@ export function AudioLibraryHub() {
                    { 
                      id: 'lectures', 
                      title: t('lectures_lessons_title'), 
-                     desc: 'سلاسل علمية ومواعظ إيمانية لكبار العلماء والمشايخ في التفسير والسيرة والرقائق', 
+                     desc: t('al_lectures_desc', 'سلاسل علمية ومواعظ إيمانية لكبار العلماء والمشايخ في التفسير والسيرة والرقائق'), 
                      badgeText: t('audio_scholars_count', '15+ شيخاً • سلاسل متكاملة'),
                      icon: Mic2, 
                      path: '/lectures-audio', 
@@ -1217,7 +1217,7 @@ export function AudioLibraryHub() {
                    { 
                      id: 'tafsir', 
                      title: t('audio_tafsir_title'), 
-                     desc: 'شرح وتأملات خاشعة لآيات الذكر الحكيم وتفسير السور وغريب القرآن بأصوات العلماء', 
+                     desc: t('al_tafsir_desc', 'شرح وتأملات خاشعة لآيات الذكر الحكيم وتفسير السور وغريب القرآن بأصوات العلماء'), 
                      badgeText: t('tafsir_scholars_count', '10+ كبار علماء التفسير'),
                      icon: ScrollText, 
                      path: '/tafsir-audio', 
@@ -1230,7 +1230,7 @@ export function AudioLibraryHub() {
                    { 
                      id: 'ruqyah', 
                      title: t('audio_ruqyah_title'), 
-                     desc: 'رقية شرعية مطولة وشاملة للتحصين والعلاج وبث السكينة والطمأنينة في البيت والنفس', 
+                     desc: t('al_ruqyah_desc', 'رقية شرعية مطولة وشاملة للتحصين والعلاج وبث السكينة والطمأنينة في البيت والنفس'), 
                      badgeText: t('ruqyah_readers_count', '12+ تلاوة للرقية الشرعية'),
                      icon: ShieldCheck, 
                      path: '/ruqyah-audio', 
@@ -1266,8 +1266,8 @@ export function AudioLibraryHub() {
                      
                      {/* Content Info */}
                      <div className="flex-grow min-w-0 pr-1">
-                       <div className="flex items-center justify-between mb-1.5 gap-2">
-                         <h3 className="text-xl font-black text-white leading-tight drop-shadow-sm flex items-center gap-2">
+                       <div className="flex items-center justify-between flex-wrap mb-1.5 gap-2">
+                         <h3 className="text-xl font-black text-white leading-tight drop-shadow-sm flex items-center gap-2 min-w-0 break-words">
                            {item.title}
                          </h3>
                          
@@ -1276,12 +1276,12 @@ export function AudioLibraryHub() {
                          </span>
                        </div>
 
-                       <p className="font-semibold text-xs leading-relaxed text-slate-300/90 line-clamp-2 mb-3">
+                       <p className="font-semibold text-xs leading-relaxed text-slate-300/90 line-clamp-3 break-words mb-3">
                          {item.desc}
                        </p>
 
                        <div className="flex items-center gap-1.5 text-xs font-black text-white/90 group-hover:text-white transition-colors">
-                         <span>دخول القسم</span>
+                         <span>{t('al_enter_section', 'دخول القسم')}</span>
                          <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
                        </div>
                      </div>
@@ -1303,9 +1303,9 @@ export function AudioLibraryHub() {
                    </div>
                    <div>
                      <span className="text-[9px] bg-teal-500/20 dark:bg-teal-500/30 text-teal-700 dark:text-teal-300 px-2 py-0.5 rounded-full font-black uppercase tracking-wider block w-max mb-1">
-                       ميزة الجيل الذكي
+                       {t('al_smart_badge', 'ميزة الجيل الذكي')}
                      </span>
-                     <h3 className="text-base font-black text-slate-800 dark:text-white leading-tight">الحقيبة الصوتية الذكية للهاتف</h3>
+                     <h3 className="text-base font-black text-slate-800 dark:text-white leading-tight">{t('al_smart_bag_title', 'الحقيبة الصوتية الذكية للهاتف')}</h3>
                    </div>
                  </div>
                  
@@ -1317,7 +1317,7 @@ export function AudioLibraryHub() {
                </div>
 
                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-semibold mb-4">
-                 قم بتجميع وأرشفة كافة السور والدروس الصوتية المحملة حالياً في ملف واحد منظم ذكي (ZIP). الحقيبة تحتوي على مشغل متطور يعمل دون الحاجة لشبكة الإنترنت على الإطلاق، ويمكنك تصدير قائمة تشغيل متوافقة مع جميع مشغلات الهاتف!
+                 {t('al_bag_desc', 'قم بتجميع وأرشفة كافة السور والدروس الصوتية المحملة حالياً في ملف واحد منظم ذكي (ZIP). الحقيبة تحتوي على مشغل متطور يعمل دون الحاجة لشبكة الإنترنت على الإطلاق، ويمكنك تصدير قائمة تشغيل متوافقة مع جميع مشغلات الهاتف!')}
                </p>
 
                {/* Subsections & Interactions */}
@@ -1331,9 +1331,9 @@ export function AudioLibraryHub() {
                    >
                      <div className="flex items-center gap-2">
                        <ListMusic size={15} className="text-teal-500 group-hover:rotate-12 transition-transform" />
-                       <span>عرض محتويات الحقيبة الموسعة</span>
+                       <span>{t('al_view_contents', 'عرض محتويات الحقيبة الموسعة')}</span>
                        <span className="bg-teal-500/10 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400 font-extrabold text-[10px] px-2 py-0.5 rounded-full">
-                         {quranMeta.length + lectureMeta.length} ملفات
+                         {t('al_files_count', '{{count}} ملفات', { count: quranMeta.length + lectureMeta.length })}
                        </span>
                      </div>
                      {isListExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
@@ -1351,8 +1351,8 @@ export function AudioLibraryHub() {
                            {quranMeta.length === 0 && lectureMeta.length === 0 ? (
                              <div className="text-center py-6 text-slate-400 dark:text-slate-500 flex flex-col items-center justify-center gap-2">
                                <HelpCircle size={22} className="text-slate-300 dark:text-slate-600 animate-pulse" />
-                               <p className="text-xs font-bold">حقيبتك ممتلئة بالسكينة لكنها خالية من الملفات الصوتية</p>
-                               <p className="text-[10px] text-slate-400 max-w-[240px] leading-relaxed mx-auto">قم بتنزيل سور من قسم القرآن الكريم أو محاضرات من قسم الدروس لتظهر وتصنف تلقائياً هنا!</p>
+                               <p className="text-xs font-bold">{t('al_empty_bag_title', 'حقيبتك ممتلئة بالسكينة لكنها خالية من الملفات الصوتية')}</p>
+                               <p className="text-[10px] text-slate-400 max-w-[240px] leading-relaxed mx-auto">{t('al_empty_bag_hint', 'قم بتنزيل سور من قسم القرآن الكريم أو محاضرات من قسم الدروس لتظهر وتصنف تلقائياً هنا!')}</p>
                              </div>
                            ) : (
                              <>
@@ -1364,8 +1364,8 @@ export function AudioLibraryHub() {
                                        <BookOpen size={13} />
                                      </div>
                                      <div className="text-right min-w-0">
-                                        <span className="block text-xs font-black text-slate-800 dark:text-slate-200 truncate">سورة {item.surahName}</span>
-                                        <span className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate">الشيخ: {item.reciterName}</span>
+                                        <span className="block text-xs font-black text-slate-800 dark:text-slate-200 truncate">{t('al_surah_name', 'سورة {{name}}', { name: item.surahName })}</span>
+                                        <span className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate">{t('al_sheikh_label', 'الشيخ: {{name}}', { name: item.reciterName })}</span>
                                      </div>
                                    </div>
                                    
@@ -1377,7 +1377,7 @@ export function AudioLibraryHub() {
                                        type="button"
                                        onClick={() => handlePlayOfflineItem(item, true)}
                                        className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 cursor-pointer transition-all active:scale-95"
-                                       title="استماع فوري متصل للبطاقة"
+                                       title={t('al_play_item', 'استماع فوري متصل للبطاقة')}
                                      >
                                        <Play size={11} className="fill-current text-slate-500 dark:text-slate-400" />
                                      </button>
@@ -1387,7 +1387,7 @@ export function AudioLibraryHub() {
                                        type="button"
                                        onClick={() => handleDeleteOfflineItem(item, true)}
                                        className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center text-rose-500 cursor-pointer transition-all active:scale-95"
-                                       title="حذف من الحقيبة"
+                                       title={t('al_delete_from_bag', 'حذف من الحقيبة')}
                                      >
                                        <Trash2 size={11} />
                                      </button>
@@ -1416,7 +1416,7 @@ export function AudioLibraryHub() {
                                        type="button"
                                        onClick={() => handlePlayOfflineItem(item, false)}
                                        className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 cursor-pointer transition-all active:scale-95"
-                                       title="استماع فوري متصل للبطاقة"
+                                       title={t('al_play_item', 'استماع فوري متصل للبطاقة')}
                                      >
                                        <Play size={11} className="fill-current text-slate-500 dark:text-slate-400" />
                                      </button>
@@ -1426,7 +1426,7 @@ export function AudioLibraryHub() {
                                        type="button"
                                        onClick={() => handleDeleteOfflineItem(item, false)}
                                        className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center text-rose-500 cursor-pointer transition-all active:scale-95"
-                                       title="حذف من الحقيبة"
+                                       title={t('al_delete_from_bag', 'حذف من الحقيبة')}
                                      >
                                        <Trash2 size={11} />
                                      </button>
@@ -1450,7 +1450,7 @@ export function AudioLibraryHub() {
                    >
                      <div className="flex items-center gap-2">
                        <HelpCircle size={15} className="text-teal-500 group-hover:rotate-[360deg] transition-all duration-500" />
-                       <span>أين وكيف أستخدم الحقيبة بعد تصديرها؟</span>
+                       <span>{t('al_help_title', 'أين وكيف أستخدم الحقيبة بعد تصديرها؟')}</span>
                      </div>
                      {isHelpExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                    </button>
@@ -1466,15 +1466,15 @@ export function AudioLibraryHub() {
                          <div className="bg-teal-500/[0.01] dark:bg-white/[0.01] border border-teal-500/[0.08] rounded-2xl p-4 pr-5 space-y-3.5 text-xs text-slate-600 dark:text-slate-300 font-semibold leading-relaxed relative">
                            <div className="flex gap-2.5 items-start">
                              <span className="w-5 h-5 shrink-0 bg-teal-500/20 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center font-black text-[10px]">١</span>
-                             <p>ستجد ملفاً مضغوطاً في مجلد التنزيلات بهاتفك باسم <span className="font-extrabold text-teal-600 dark:text-teal-400">أذكار_المؤمن_حقيبة_صوتية.zip</span>.</p>
+                             <p>{t('al_help_1', 'ستجد ملفاً مضغوطاً في مجلد التنزيلات بهاتفك باسم {{file}}.', { file: 'حقيبة_أذكار_المؤمن_الصوتية.zip' })}</p>
                            </div>
                            <div className="flex gap-2.5 items-start">
                              <span className="w-5 h-5 shrink-0 bg-teal-500/20 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center font-black text-[10px]">٢</span>
-                             <p>قم بفك الضغط عنه لتجد المجلدات المنظمة لـ <span className="font-black">سور القرآن</span> و <span className="font-black">المحاضرات</span> ومساراً كاملاً للتشغيل المباشر.</p>
+                             <p>{t('al_help_2', 'قم بفك الضغط عنه لتجد المجلدات المنظمة لـ سور القرآن و المحاضرات ومساراً كاملاً للتشغيل المباشر.')}</p>
                            </div>
                            <div className="flex gap-2.5 items-start">
                              <span className="w-5 h-5 shrink-0 bg-teal-500/20 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center font-black text-[10px]">٣</span>
-                             <p>افتح ملف الفهرس <span className="font-extrabold text-teal-600 dark:text-teal-400">فهرس الحقيبة الصوتي.html</span> المرفق للاستماع عبر واجهة مشغل متكاملة بالمتصفح ودون نت، أو شغل <span className="font-black">M3U</span> عبر مشغلات الصوت مثل VLC.</p>
+                             <p>{t('al_help_3', 'افتح ملف الفهرس {{file}} المرفق للاستماع عبر واجهة مشغل متكاملة بالمتصفح ودون نت، أو شغل M3U عبر مشغلات الصوت مثل VLC.', { file: 'فهرس الحقيبة الصوتي.html' })}</p>
                            </div>
                          </div>
                        </motion.div>
@@ -1503,17 +1503,17 @@ export function AudioLibraryHub() {
                    {isExportingZip ? (
                      <>
                        <Loader2 size={16} className="animate-spin" />
-                       <span className="truncate">جاري تصنيف وضغط الملفات... {zipProgress.current}/{zipProgress.total}</span>
+                       <span className="truncate">{t('al_zip_exporting', 'جاري تصنيف وضغط الملفات... {{current}}/{{total}}', { current: zipProgress.current, total: zipProgress.total })}</span>
                      </>
                    ) : exportSuccess === 'zip' ? (
                      <>
                        <CheckCircle2 size={16} />
-                       <span>تم حفظ الحقيبة بنجاح بمجلد التنزيلات!</span>
+                       <span>{t('al_zip_saved', 'تم حفظ الحقيبة بنجاح بمجلد التنزيلات!')}</span>
                      </>
                    ) : (
                      <>
                        <HardDrive size={16} />
-                       <span>تصدير الحقيبة الصوتية المنظمة (ZIP)</span>
+                       <span>{t('al_export_zip', 'تصدير الحقيبة الصوتية المنظمة (ZIP)')}</span>
                      </>
                    )}
                  </button>
@@ -1540,7 +1540,7 @@ export function AudioLibraryHub() {
                    ) : (
                      <ListMusic size={16} />
                    )}
-                   <span>{exportSuccess === 'm3u' ? 'تم تنزيل قائمة التشغيل بنجاح!' : 'تصدير قائمة تشغيل هاتف ذكية (M3U)'}</span>
+                   <span>{exportSuccess === 'm3u' ? t('al_m3u_saved', 'تم تنزيل قائمة التشغيل بنجاح!') : t('al_export_m3u', 'تصدير قائمة تشغيل هاتف ذكية (M3U)')}</span>
                  </button>
                </div>
 
@@ -1571,7 +1571,7 @@ export function AudioLibraryHub() {
             {/* User Library Actions */}
             <div className="space-y-3 px-1">
                <div className="flex items-center justify-between px-1">
-                 <h2 className="text-sm font-black text-slate-800 dark:text-slate-200">مكتبتي الخاصة</h2>
+                 <h2 className="text-sm font-black text-slate-800 dark:text-slate-200">{t('al_my_library', 'مكتبتي الخاصة')}</h2>
                </div>
                <div className="grid grid-cols-2 gap-3">
                  <button
@@ -1582,8 +1582,8 @@ export function AudioLibraryHub() {
                      <CloudDownload size={22} />
                    </div>
                    <div className="text-right">
-                     <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100">التنزيلات</span>
-                     <span className="text-[10px] font-bold text-slate-500">حفظ دون إنترنت</span>
+                     <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100">{t('al_downloads', 'التنزيلات')}</span>
+                     <span className="text-[10px] font-bold text-slate-500">{t('al_offline_save', 'حفظ دون إنترنت')}</span>
                    </div>
                  </button>
                  
@@ -1595,8 +1595,8 @@ export function AudioLibraryHub() {
                      <Star size={18} className="fill-current" />
                    </div>
                    <div className="text-right">
-                     <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100">المفضلة</span>
-                     <span className="text-[10px] font-bold text-slate-500">محاضرات ومفضلين</span>
+                     <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100">{t('al_favorites', 'المفضلة')}</span>
+                     <span className="text-[10px] font-bold text-slate-500">{t('al_lectures_favs', 'محاضرات ومفضلين')}</span>
                    </div>
                  </button>
                </div>

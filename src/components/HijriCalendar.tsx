@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import { BackButton } from './ui/BackButton';
 import { useAppContext } from '../AppContext';
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode, getHijriMonthNames, getHijriSuffix } from '../lib/utils';
+import { useTranslation } from '../i18n';
 import { useSmartNavigation } from "../lib/navigation";
 
 // Define a structured event interface
@@ -201,22 +202,20 @@ const ISLAMIC_EVENTS: IslamicEvent[] = [
   }
 ];
 
-// Names of Hijri Months
-const HIJRI_MONTHS = [
-  "محرم", "صفر", "ربيع الأول", "ربيع الآخر", 
-  "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", 
-  "رمضان", "شوال", "ذو القعدة", "ذو الحجة"
-];
-
-// Names of Gregorian Months
-const GREGORIAN_MONTHS = [
-  "يناير", "فبراير", "مارس", "أبريل", 
-  "مايو", "يونيو", "يوليو", "أغسطس", 
-  "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
-];
-
-// Weekday Names starting from Sunday (الأحد)
-const WEEKDAYS = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+// Locale-aware helpers (month/weekday names come from Intl / utils)
+const getWeekdayNames = (lang: string): string[] => {
+  const f = new Intl.DateTimeFormat(getLocaleCode(lang), { weekday: 'short' });
+  // 2023-01-01 is a Sunday
+  return Array.from({ length: 7 }, (_, i) => f.format(new Date(2023, 0, 1 + i)));
+};
+const getWeekdayLong = (lang: string, dayIdx: number): string =>
+  new Intl.DateTimeFormat(getLocaleCode(lang), { weekday: 'long' }).format(new Date(2023, 0, 1 + dayIdx));
+const getGregMonthName = (lang: string, monthIdx: number, style: 'long' | 'short' = 'long'): string =>
+  new Intl.DateTimeFormat(getLocaleCode(lang), { month: style }).format(new Date(2023, monthIdx, 1));
+const formatGregorian = (lang: string, d: Date): string => {
+  const base = new Intl.DateTimeFormat(getLocaleCode(lang), { day: 'numeric', month: 'long', year: 'numeric', calendar: 'gregory' }).format(d);
+  return lang === 'ar' ? `${base} م` : base;
+};
 
 // Define the suggested athkar helper
 interface OccasionDhikr {
@@ -442,6 +441,8 @@ const GET_OCCASION_ATHKAR = (eventId: string): OccasionDhikr[] => {
 
 // Component for single dhikr item with individual counter and copy button
 const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dhikr, index }) => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [count, setCount] = useState(0);
   const [copied, setCopied] = useState(false);
 
@@ -495,7 +496,7 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
                 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400" 
                 : "bg-slate-50 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400"
             )}
-            title="نسخ النص"
+            title={t('hc_copy_text', 'نسخ النص')}
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
@@ -504,7 +505,7 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
             <button 
               onClick={handleReset}
               className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
-              title="إعادة ضبط العداد"
+              title={t('hc_reset_counter', 'إعادة ضبط العداد')}
             >
               <RotateCcw size={14} />
             </button>
@@ -512,7 +513,7 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
         </div>
 
         <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-full">
-          العدد المستهدف: {dhikr.target}
+          {t('hc_target_count', 'العدد المستهدف: {{count}}', { count: dhikr.target })}
         </span>
       </div>
 
@@ -522,7 +523,7 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
 
       {dhikr.virtue && (
         <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-normal border-t border-slate-50 dark:border-slate-800/60 pt-2.5 mt-2.5">
-          💡 <span className="font-extrabold text-slate-500 dark:text-slate-400">فضل الذكر:</span> {dhikr.virtue}
+          💡 <span className="font-extrabold text-slate-500 dark:text-slate-400">{t('hc_dhikr_virtue', 'فضل الذكر:')}</span> {dhikr.virtue}
         </p>
       )}
 
@@ -535,7 +536,7 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
             className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black text-xs bg-emerald-500/10 px-4 py-2 rounded-xl"
           >
             <Check size={16} className="stroke-[3]" />
-            <span>تم إتمام الذكر، تقبل الله منك!</span>
+            <span>{t('hc_dhikr_done', 'تم إتمام الذكر، تقبل الله منك!')}</span>
           </motion.div>
         ) : (
           <button
@@ -544,7 +545,7 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
           >
             <span className="flex items-center gap-1.5">
               <span>📿</span>
-              <span>اضغط للتسبيح</span>
+              <span>{t('hc_tap_to_count', 'اضغط للتسبيح')}</span>
             </span>
             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 min-w-[32px] text-left">
               {count} / {dhikr.target}
@@ -557,6 +558,8 @@ const SingleDhikrCard: React.FC<{ dhikr: OccasionDhikr; index: number }> = ({ dh
 };
 
 export const EventAthkarSection: React.FC<{ eventId: string }> = ({ eventId }) => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const athkarList = useMemo(() => GET_OCCASION_ATHKAR(eventId), [eventId]);
 
   if (athkarList.length === 0) return null;
@@ -565,7 +568,7 @@ export const EventAthkarSection: React.FC<{ eventId: string }> = ({ eventId }) =
     <div className="mt-4 space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={16} className="text-emerald-600 dark:text-emerald-400" />
-        <h5 className="font-extrabold text-xs text-slate-700 dark:text-slate-300">أذكار وأدعية مسنونة ومستحبة في هذه المناسبة:</h5>
+        <h5 className="font-extrabold text-xs text-slate-700 dark:text-slate-300">{t('hc_occasion_athkar_title', 'أذكار وأدعية مسنونة ومستحبة في هذه المناسبة:')}</h5>
       </div>
       <div className="space-y-3">
         {athkarList.map((dhikr, idx) => (
@@ -579,7 +582,15 @@ export const EventAthkarSection: React.FC<{ eventId: string }> = ({ eventId }) =
 export const HijriCalendar: React.FC = () => {
   const { navigate } = useSmartNavigation();
   const { settings, updateSettings } = useAppContext();
-  
+  const { t } = useTranslation(settings.appLanguage);
+  const lang = settings.appLanguage || 'ar';
+  const hijriMonths = getHijriMonthNames(lang);
+  const hijriSuffix = getHijriSuffix(lang);
+  const WEEKDAYS = useMemo(() => getWeekdayNames(lang), [lang]);
+  const nf = new Intl.NumberFormat(getLocaleCode(lang));
+  const evText = (ev: IslamicEvent, field: 'name' | 'description' | 'recommendation') =>
+    t(`hc_ev_${ev.id}_${field}`, ev[field] || '');
+
   // View mode state
   const [viewMode, setViewMode] = useState<'hijri' | 'gregorian'>('hijri');
 
@@ -642,8 +653,8 @@ export const HijriCalendar: React.FC = () => {
       hijriDay: iDay,
       hijriMonth: iMonth,
       hijriYear: iYear,
-      gregorianStr: new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' }).format(today.toDate()),
-      dayOfWeekName: WEEKDAYS[today.day()],
+      gregorianStr: formatGregorian(lang, today.toDate()),
+      dayOfWeekName: getWeekdayLong(lang, today.day()),
       events: matchingEvents,
       isWhiteDay,
       isMondayOrThursday
@@ -718,9 +729,9 @@ export const HijriCalendar: React.FC = () => {
           key: `day-${d}`,
           dayNum: d,
           gregorianDay: dayMoment.date(),
-          gregorianMonthName: dayMoment.locale('ar-SA').format('MMM'),
-          gregorianStr: new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' }).format(dayMoment.toDate()),
-          dayOfWeekName: WEEKDAYS[weekdayNum],
+          gregorianMonthName: getGregMonthName(lang, dayMoment.month(), 'short'),
+          gregorianStr: formatGregorian(lang, dayMoment.toDate()),
+          dayOfWeekName: getWeekdayLong(lang, weekdayNum),
           isToday,
           isWhiteDay,
           isMondayOrThursday,
@@ -779,9 +790,9 @@ export const HijriCalendar: React.FC = () => {
           key: `greg-day-${d}`,
           dayNum: d, // main large number is Gregorian day
           hijriDay: hDay,
-          hijriMonthName: HIJRI_MONTHS[hMonth],
-          gregorianStr: new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' }).format(dateObj),
-          dayOfWeekName: WEEKDAYS[weekdayNum],
+          hijriMonthName: hijriMonths[hMonth],
+          gregorianStr: formatGregorian(lang, dateObj),
+          dayOfWeekName: getWeekdayLong(lang, weekdayNum),
           isToday,
           isWhiteDay,
           isMondayOrThursday,
@@ -791,8 +802,8 @@ export const HijriCalendar: React.FC = () => {
             hijriDay: hDay,
             hijriMonth: hMonth,
             hijriYear: hYear,
-            gregorianStr: new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' }).format(dateObj),
-            dayOfWeekName: WEEKDAYS[weekdayNum],
+            gregorianStr: formatGregorian(lang, dateObj),
+            dayOfWeekName: getWeekdayLong(lang, weekdayNum),
             events,
             isWhiteDay,
             isMondayOrThursday
@@ -802,7 +813,7 @@ export const HijriCalendar: React.FC = () => {
     }
     
     return days;
-  }, [currentYear, currentMonth, gregorianYear, gregorianMonth, todayMoment, viewMode, settings.hijriOffset]);
+  }, [currentYear, currentMonth, gregorianYear, gregorianMonth, todayMoment, viewMode, settings.hijriOffset, lang]);
 
   // Handle month navigation
   const prevMonth = () => {
@@ -859,8 +870,8 @@ export const HijriCalendar: React.FC = () => {
       hijriDay: todayMoment.iDate(),
       hijriMonth: todayMoment.iMonth(),
       hijriYear: todayMoment.iYear(),
-      gregorianStr: new Intl.DateTimeFormat('ar-SA', { day: 'numeric', month: 'long', year: 'numeric' }).format(todayMoment.toDate()),
-      dayOfWeekName: WEEKDAYS[todayMoment.day()],
+      gregorianStr: formatGregorian(lang, todayMoment.toDate()),
+      dayOfWeekName: getWeekdayLong(lang, todayMoment.day()),
       events: matchingEvents,
       isWhiteDay: [13, 14, 15].includes(todayMoment.iDate()),
       isMondayOrThursday: todayMoment.day() === 1 || todayMoment.day() === 4
@@ -918,30 +929,30 @@ export const HijriCalendar: React.FC = () => {
       list.push({
         event: ev,
         countdownDays: diffDays,
-        formattedHijri: `${evDay} ${HIJRI_MONTHS[ev.month - 1]} ${evYear} هـ`
+        formattedHijri: `${evDay} ${hijriMonths[ev.month - 1]} ${evYear} ${hijriSuffix}`
       });
     });
     
     // Sort by remaining days
     return list.sort((a, b) => a.countdownDays - b.countdownDays).slice(0, 4);
-  }, [todayMoment]);
+  }, [todayMoment, lang]);
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 pb-16 text-right" dir="rtl">
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 pb-16 text-start">
       {/* Sticky Header */}
       <header className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md py-4 px-4 flex justify-between items-center border-b border-black/5 z-20">
         <div className="flex items-center gap-3">
           <BackButton forceFallback={true} />
           <div>
-            <h1 className="text-xl font-black bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">التقويم الهجري الإسلامي</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">المناسبات والعبادات والمواقيت الإيمانية</p>
+            <h1 className="text-xl font-black bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">{t('hc_title', 'التقويم الهجري الإسلامي')}</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('hc_subtitle', 'المناسبات والعبادات والمواقيت الإيمانية')}</p>
           </div>
         </div>
         <button 
           onClick={jumpToToday}
           className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-xl border border-emerald-500/20 active:scale-95 duration-75"
         >
-          العودة لليوم
+          {t('hc_back_to_today', 'العودة لليوم')}
         </button>
       </header>
 
@@ -954,27 +965,27 @@ export const HijriCalendar: React.FC = () => {
               <AlertCircle size={20} />
             </div>
             <div>
-              <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-100">هل تختلف رؤية الهلال في بلدك؟</h4>
-              <p className="text-[10px] font-bold text-slate-400 leading-normal">تستطيع ضبط التقويم يدوياً بزيادة أو إنقاص الأيام ليتطابق تماماً.</p>
+              <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-100">{t('hc_calib_title', 'هل تختلف رؤية الهلال في بلدك؟')}</h4>
+              <p className="text-[10px] font-bold text-slate-400 leading-normal">{t('hc_calib_desc', 'تستطيع ضبط التقويم يدوياً بزيادة أو إنقاص الأيام ليتطابق تماماً.')}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl border border-black/5">
             <button 
               onClick={() => adjustOffset(-1)} 
               className="w-8 h-8 font-black bg-white dark:bg-slate-950 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg flex items-center justify-center text-xs text-rose-500 shadow-sm cursor-pointer"
-              title="تأخير يوم"
+              title={t('hc_delay_day', 'تأخير يوم')}
             >
-              -١
+              -{nf.format(1)}
             </button>
             <span className="text-xs font-black text-slate-700 dark:text-slate-300 px-2.5 min-w-[50px] text-center">
-              {settings.hijriOffset > 0 ? `+${settings.hijriOffset}` : settings.hijriOffset === 0 ? 'مظبوط' : settings.hijriOffset} يوم
+              {settings.hijriOffset > 0 ? `+${settings.hijriOffset}` : settings.hijriOffset === 0 ? t('hc_offset_exact', 'مظبوط') : settings.hijriOffset} {t('hc_day_unit', 'يوم')}
             </span>
             <button 
               onClick={() => adjustOffset(1)} 
               className="w-8 h-8 font-black bg-white dark:bg-slate-950 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg flex items-center justify-center text-xs text-emerald-600 shadow-sm cursor-pointer"
-              title="تقديم يوم"
+              title={t('hc_advance_day', 'تقديم يوم')}
             >
-              +١
+              +{nf.format(1)}
             </button>
           </div>
         </div>
@@ -994,7 +1005,7 @@ export const HijriCalendar: React.FC = () => {
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             )}
           >
-            عرض بالتقويم الهجري
+            {t('hc_view_hijri', 'عرض بالتقويم الهجري')}
           </button>
           <button
             onClick={() => {
@@ -1008,7 +1019,7 @@ export const HijriCalendar: React.FC = () => {
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             )}
           >
-            عرض بالتقويم الميلادي
+            {t('hc_view_gregorian', 'عرض بالتقويم الميلادي')}
           </button>
         </div>
 
@@ -1019,7 +1030,7 @@ export const HijriCalendar: React.FC = () => {
             <button 
               onClick={nextMonth} 
               className="w-10 h-10 bg-white dark:bg-slate-950 rounded-xl flex items-center justify-center shadow-sm text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
-              title="الشهر القادم"
+              title={t('hc_next_month', 'الشهر القادم')}
             >
               <ChevronRight size={22} />
             </button>
@@ -1027,14 +1038,14 @@ export const HijriCalendar: React.FC = () => {
             <div className="text-center">
               <h2 className="text-lg font-black bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">
                 {viewMode === 'hijri' 
-                  ? `${HIJRI_MONTHS[currentMonth]} ${currentYear} هـ` 
-                  : `${GREGORIAN_MONTHS[gregorianMonth]} ${gregorianYear} م`
+                  ? `${hijriMonths[currentMonth]} ${currentYear} ${hijriSuffix}` 
+                  : `${getGregMonthName(lang, gregorianMonth)} ${gregorianYear}${lang === 'ar' ? ' م' : ''}`
                 }
               </h2>
               <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
                 {viewMode === 'hijri' 
-                  ? `الشهر الهجري رقم ${currentMonth + 1}` 
-                  : `الشهر الميلادي رقم ${gregorianMonth + 1}`
+                  ? t('hc_hijri_month_num', 'الشهر الهجري رقم {{n}}', { n: currentMonth + 1 }) 
+                  : t('hc_gregorian_month_num', 'الشهر الميلادي رقم {{n}}', { n: gregorianMonth + 1 })
                 }
               </p>
             </div>
@@ -1042,7 +1053,7 @@ export const HijriCalendar: React.FC = () => {
             <button 
               onClick={prevMonth} 
               className="w-10 h-10 bg-white dark:bg-slate-950 rounded-xl flex items-center justify-center shadow-sm text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
-              title="الشهر السابق"
+              title={t('hc_prev_month', 'الشهر السابق')}
             >
               <ChevronLeft size={22} />
             </button>
@@ -1050,15 +1061,15 @@ export const HijriCalendar: React.FC = () => {
 
           {/* Weekdays Row */}
           <div className="grid grid-cols-7 gap-1 text-center border-b border-black/5 dark:border-white/5 pb-2">
-            {WEEKDAYS.map(day => (
+            {WEEKDAYS.map((day, wi) => (
               <span 
-                key={day} 
+                key={wi} 
                 className={cn(
                   "text-[10px] font-black text-slate-400 uppercase tracking-widest",
-                  day === "الجمعة" && "text-rose-500/80 dark:text-rose-400/80"
+                  wi === 5 && "text-rose-500/80 dark:text-rose-400/80"
                 )}
               >
-                {day.substring(0, 6)}
+                {day}
               </span>
             ))}
           </div>
@@ -1143,14 +1154,14 @@ export const HijriCalendar: React.FC = () => {
               <div className="flex justify-between items-start border-b border-black/5 dark:border-white/5 pb-4">
                 <div>
                   <h3 className="font-black text-base text-slate-800 dark:text-slate-100">
-                    يوم {selectedDay.dayOfWeekName}
+                    {t('hc_day_title', 'يوم {{day}}', { day: selectedDay.dayOfWeekName })}
                   </h3>
                   <p className="text-xs font-bold text-slate-400 mt-1">
-                    {selectedDay.gregorianStr}م
+                    {selectedDay.gregorianStr}
                   </p>
                 </div>
                 <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-4 py-1.5 rounded-2xl text-sm font-black">
-                  {selectedDay.hijriDay} {HIJRI_MONTHS[selectedDay.hijriMonth]} {selectedDay.hijriYear} هـ
+                  {selectedDay.hijriDay} {hijriMonths[selectedDay.hijriMonth]} {selectedDay.hijriYear} {hijriSuffix}
                 </div>
               </div>
 
@@ -1161,9 +1172,9 @@ export const HijriCalendar: React.FC = () => {
                     <Heart size={16} className="fill-sky-500/10" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-xs text-sky-900 dark:text-sky-300">يُستحب صيام هذا اليوم المبارك!</h4>
+                    <h4 className="font-extrabold text-xs text-sky-900 dark:text-sky-300">{t('hc_fast_recommended', 'يُستحب صيام هذا اليوم المبارك!')}</h4>
                     <p className="text-[10px] font-bold text-sky-700/80 dark:text-sky-400/80 leading-normal mt-0.5">
-                      {selectedDay.isWhiteDay ? 'هذا اليوم من الأيام البيض الثلاثة (١٣، ١٤، ١٥) لشهر قمري مبارك.' : 'صيام يومي الإثنين والخميس سنة مؤكدة عن نبينا محمد ﷺ ترفع فيها الأعمال.'}
+                      {selectedDay.isWhiteDay ? t('hc_white_days_note', 'هذا اليوم من الأيام البيض الثلاثة (١٣، ١٤، ١٥) لشهر قمري مبارك.') : t('hc_mon_thu_note', 'صيام يومي الإثنين والخميس سنة مؤكدة عن نبينا محمد ﷺ ترفع فيها الأعمال.')}
                     </p>
                   </div>
                 </div>
@@ -1176,22 +1187,22 @@ export const HijriCalendar: React.FC = () => {
                     <div key={ev.id} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-black/5 dark:border-white/5 space-y-3">
                       <div className="flex items-center gap-2">
                         <span className={cn("w-2.5 h-2.5 rounded-full", ev.colorClass)} />
-                        <h4 className="font-black text-sm text-slate-800 dark:text-slate-100">{ev.name}</h4>
+                        <h4 className="font-black text-sm text-slate-800 dark:text-slate-100">{evText(ev, 'name')}</h4>
                         <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
-                          مناسبة {ev.type === 'holiday' ? 'إجازة وعيد' : ev.type === 'fasting' ? 'موسم صيام' : 'نفحة روحانية'}
+                          {ev.type === 'holiday' ? t('hc_type_holiday', 'مناسبة إجازة وعيد') : ev.type === 'fasting' ? t('hc_type_fasting', 'مناسبة موسم صيام') : t('hc_type_spiritual', 'مناسبة نفحة روحانية')}
                         </span>
                       </div>
                       
                       <p className="text-xs text-slate-500 leading-relaxed font-bold">
-                        {ev.description}
+                        {evText(ev, 'description')}
                       </p>
 
                       {ev.recommendation && (
                         <div className="bg-emerald-50/50 dark:bg-emerald-950/10 p-3 rounded-xl border border-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold leading-relaxed flex items-start gap-2">
                           <span className="text-emerald-500">💫</span>
                           <div>
-                            <span className="font-black text-[11px] block mb-0.5">التوصية الروحانية والعمل الصالح:</span>
-                            {ev.recommendation}
+                            <span className="font-black text-[11px] block mb-0.5">{t('hc_recommendation_label', 'التوصية الروحانية والعمل الصالح:')}</span>
+                            {evText(ev, 'recommendation')}
                           </div>
                         </div>
                       )}
@@ -1205,7 +1216,7 @@ export const HijriCalendar: React.FC = () => {
                 <div className="text-center py-4">
                   <p className="text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
                     <Bookmark size={14} />
-                    لا توجد مناسبات سنوية عامة في هذا اليوم المحدد، وهو فرصة طيبة للأذكار الدائمة والتقرب إلى الله بفضائل الأعمال.
+                    {t('hc_no_events', 'لا توجد مناسبات سنوية عامة في هذا اليوم المحدد، وهو فرصة طيبة للأذكار الدائمة والتقرب إلى الله بفضائل الأعمال.')}
                   </p>
                 </div>
               )}
@@ -1217,10 +1228,10 @@ export const HijriCalendar: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-md p-6 space-y-4">
           <h3 className="text-base font-black flex items-center gap-2">
             <Sparkles size={18} className="text-emerald-600" />
-            المناسبات والنفحات الإيمانية القادمة
+            {t('hc_upcoming_title', 'المناسبات والنفحات الإيمانية القادمة')}
           </h3>
           <p className="text-[10px] font-bold text-slate-400 leading-normal mb-3">
-            ترقّب مواسم الخيرات واستعد لها روحانياً لتنال عظيم الأجر والمغفرة.
+            {t('hc_upcoming_desc', 'ترقّب مواسم الخيرات واستعد لها روحانياً لتنال عظيم الأجر والمغفرة.')}
           </p>
 
           <div className="space-y-3">
@@ -1232,14 +1243,14 @@ export const HijriCalendar: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <span className={cn("w-3 h-3 rounded-full shrink-0", event.colorClass)} />
                   <div className="text-right">
-                    <h4 className="font-black text-xs text-slate-800 dark:text-slate-100">{event.name}</h4>
+                    <h4 className="font-black text-xs text-slate-800 dark:text-slate-100">{evText(event, 'name')}</h4>
                     <p className="text-[10px] font-bold text-slate-400 mt-0.5">{formattedHijri}</p>
                   </div>
                 </div>
                 
                 <div className="text-left shrink-0">
                   <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-xl border border-emerald-500/10">
-                    متبقي {countdownDays} يوم
+                    {t('hc_remaining_days', 'متبقي {{count}} يوم', { count: countdownDays })}
                   </span>
                 </div>
               </div>

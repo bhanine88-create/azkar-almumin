@@ -269,7 +269,7 @@ const ISTIGHFAR_ITEMS: IstighfarItem[] = [
 
 export const Istighfar: React.FC = () => {
   const { settings } = useAppContext();
-  const { isRtl } = useTranslation(settings.appLanguage);
+  const { t, isRtl } = useTranslation(settings.appLanguage);
   
   // Navigation tabs: 'athkar' (Supplications list & counter), 'salat_tawbah' (Salat al-Tawbah guide & prayers), 'virtues' (Virtues & Hadiths)
   const [mainView, setMainView] = useState<'athkar' | 'salat_tawbah' | 'virtues'>('athkar');
@@ -287,8 +287,6 @@ export const Istighfar: React.FC = () => {
   // Time-based smart contextual reminder
   const [timeContext, setTimeContext] = useState<{ 
     id: string; 
-    title: string; 
-    message: string; 
     icon: any; 
     color: string; 
     bg: string; 
@@ -304,8 +302,6 @@ export const Istighfar: React.FC = () => {
       if (day === 5) {
         setTimeContext({
           id: 'friday',
-          title: 'يوم الجمعة المبارك',
-          message: 'يوم الجمعة عيد الأسبوع وساعة الإجابة، أكثر فيه من الاستغفار وسؤال العفو والصلاة على النبي ﷺ.',
           icon: Heart,
           color: 'text-emerald-300',
           bg: 'bg-emerald-950 border-emerald-800/60 shadow-emerald-950/40',
@@ -314,8 +310,6 @@ export const Istighfar: React.FC = () => {
       } else if (hour >= 2 && hour < 5) {
         setTimeContext({
           id: 'suhoor',
-          title: 'وقت السَّحَر المبارك',
-          message: 'أنت الآن في الثلث الأخير من الليل وقت النزول الإلهي: «وَبِالْأَسْحَارِ هُمْ يَسْتَغْفِرُونَ»، فرصة عظيمة لسيد الاستغفار وركعتي التوبة.',
           icon: Moon,
           color: 'text-indigo-300',
           bg: 'bg-indigo-950 border-indigo-800/60 shadow-indigo-950/40',
@@ -324,8 +318,6 @@ export const Istighfar: React.FC = () => {
       } else if (hour >= 5 && hour < 9) {
         setTimeContext({
           id: 'morning',
-          title: 'إشراقة الصباح وتجديد العهد',
-          message: 'بدأ يومك، وخير ما تستفتح به صحيفتك هو سيد الاستغفار والتوبة الصادقة لتكون في حفظ الله.',
           icon: Sun,
           color: 'text-amber-300',
           bg: 'bg-amber-950 border-amber-800/60 shadow-amber-950/40',
@@ -334,8 +326,6 @@ export const Istighfar: React.FC = () => {
       } else if (hour >= 16 && hour < 20) {
         setTimeContext({
           id: 'evening',
-          title: 'أذكار المساء وختام اليوم',
-          message: 'في المساء، حصّن روحك بالاستغفار العظيم واختم ساعات النهار بطلب المغفرة والرضوان.',
           icon: Clock,
           color: 'text-orange-300',
           bg: 'bg-orange-950 border-orange-800/60 shadow-orange-950/40',
@@ -350,6 +340,25 @@ export const Istighfar: React.FC = () => {
     const interval = setInterval(checkTime, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const timeContextText = timeContext ? ({
+    friday: {
+      title: t('is_fri_title', 'يوم الجمعة المبارك'),
+      message: t('is_fri_msg', 'يوم الجمعة عيد الأسبوع وساعة الإجابة، أكثر فيه من الاستغفار وسؤال العفو والصلاة على النبي ﷺ.'),
+    },
+    suhoor: {
+      title: t('is_suhoor_title', 'وقت السَّحَر المبارك'),
+      message: t('is_suhoor_msg', 'أنت الآن في الثلث الأخير من الليل وقت النزول الإلهي: «وَبِالْأَسْحَارِ هُمْ يَسْتَغْفِرُونَ»، فرصة عظيمة لسيد الاستغفار وركعتي التوبة.'),
+    },
+    morning: {
+      title: t('is_morning_title', 'إشراقة الصباح وتجديد العهد'),
+      message: t('is_morning_msg', 'بدأ يومك، وخير ما تستفتح به صحيفتك هو سيد الاستغفار والتوبة الصادقة لتكون في حفظ الله.'),
+    },
+    evening: {
+      title: t('is_evening_title', 'أذكار المساء وختام اليوم'),
+      message: t('is_evening_msg', 'في المساء، حصّن روحك بالاستغفار العظيم واختم ساعات النهار بطلب المغفرة والرضوان.'),
+    },
+  } as Record<string, { title: string; message: string }>)[timeContext.id] : null;
 
   const handleCount = (id: string, target: number) => {
     setCounts(prev => {
@@ -401,7 +410,7 @@ export const Istighfar: React.FC = () => {
   }, [counts]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-28 text-right select-none" dir="rtl">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-28 text-start select-none" dir={isRtl ? 'rtl' : 'ltr'}>
       
       {/* Top App Bar & Integrated Sticky Navigation Tabs */}
       <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-40 shadow-xs pt-3 pb-2.5 px-3 sm:px-4 transition-all">
@@ -412,10 +421,10 @@ export const Istighfar: React.FC = () => {
               <BackButton />
               <div>
                 <h1 className="text-lg sm:text-xl font-black bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent leading-tight flex items-center gap-1.5 sm:gap-2">
-                  <span>رُكْنُ التَّوْبَةِ وَالِاسْتِغْفَارِ</span>
+                  <span>{t('is_title', 'رُكْنُ التَّوْبَةِ وَالِاسْتِغْفَارِ')}</span>
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-bold">
-                  أدعية الاستغفار المأثورة وصلاة التوبة خطوة بخطوة
+                  {t('is_subtitle', 'أدعية الاستغفار المأثورة وصلاة التوبة خطوة بخطوة')}
                 </p>
               </div>
             </div>
@@ -423,7 +432,7 @@ export const Istighfar: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm font-black flex items-center gap-1.5 shadow-xs whitespace-nowrap">
                 <Droplets size={14} className="text-emerald-500 animate-pulse" />
-                <span>{totalRecited} استغفار</span>
+                <span>{t('is_total_count', '{{count}} استغفار', { count: totalRecited })}</span>
               </div>
             </div>
           </div>
@@ -440,7 +449,7 @@ export const Istighfar: React.FC = () => {
               )}
             >
               <Sparkles size={15} className="hidden min-[400px]:block shrink-0" />
-              <span>صِيَغُ الِاسْتِغْفَارِ</span>
+              <span>{t('is_tab_formulas', 'صِيَغُ الِاسْتِغْفَارِ')}</span>
             </button>
 
             <button
@@ -453,7 +462,7 @@ export const Istighfar: React.FC = () => {
               )}
             >
               <Moon size={15} className="hidden min-[400px]:block shrink-0" />
-              <span>صَلَاةُ التَّوْبَةِ</span>
+              <span>{t('is_tab_tawbah', 'صَلَاةُ التَّوْبَةِ')}</span>
             </button>
 
             <button
@@ -466,7 +475,7 @@ export const Istighfar: React.FC = () => {
               )}
             >
               <Heart size={15} className="hidden min-[400px]:block shrink-0" />
-              <span>فَضَائِلُ التَّوْبَةِ</span>
+              <span>{t('is_tab_virtues', 'فَضَائِلُ التَّوْبَةِ')}</span>
             </button>
           </div>
 
@@ -474,11 +483,11 @@ export const Istighfar: React.FC = () => {
           {mainView === 'athkar' && (
             <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
               {[
-                { id: 'all', name: 'الكل' },
-                { id: 'prophetic', name: 'السنة النبوية' },
-                { id: 'quranic', name: 'القرآن الكريم' },
-                { id: 'salat_tawbah', name: 'صلاة التوبة' },
-                { id: 'major', name: 'الكبائر والوالدين' },
+                { id: 'all', name: t('is_cat_all', 'الكل') },
+                { id: 'prophetic', name: t('is_cat_prophetic', 'السنة النبوية') },
+                { id: 'quranic', name: t('is_cat_quranic', 'القرآن الكريم') },
+                { id: 'salat_tawbah', name: t('is_cat_salat_tawbah', 'صلاة التوبة') },
+                { id: 'major', name: t('is_cat_major', 'الكبائر والوالدين') },
               ].map(cat => (
                 <button
                   key={cat.id}
@@ -526,17 +535,17 @@ export const Istighfar: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                      <span>{timeContext.title}</span>
+                      <span>{timeContextText?.title}</span>
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-white/15 text-white">
-                        وقت فاضل
+                        {t('is_blessed_time', 'وقت فاضل')}
                       </span>
                     </h3>
                     <span className="text-[13px] font-bold text-emerald-300 group-hover:underline">
-                      انتقل للورد المقترح ←
+                      {t('is_go_suggested', 'انتقل للورد المقترح ←')}
                     </span>
                   </div>
                   <p className="text-sm sm:text-base text-white/90 leading-relaxed font-medium">
-                    {timeContext.message}
+                    {timeContextText?.message}
                   </p>
                 </div>
               </div>
@@ -597,7 +606,7 @@ export const Istighfar: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase">
-                          {activeItem.category === 'quranic' ? 'آية قرآنية' : activeItem.category === 'salat_tawbah' ? 'صلاة التوبة' : 'سنة نبوية'}
+                          {activeItem.category === 'quranic' ? t('is_badge_quranic', 'آية قرآنية') : activeItem.category === 'salat_tawbah' ? t('is_cat_salat_tawbah', 'صلاة التوبة') : t('is_badge_prophetic', 'سنة نبوية')}
                         </span>
                         <span className="text-[13px] text-slate-400 font-bold">{activeItem.source}</span>
                       </div>
@@ -613,7 +622,7 @@ export const Istighfar: React.FC = () => {
                       <button
                         onClick={(e) => handleCopyText(activeItem.text, activeItem.id, e)}
                         className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors"
-                        title="نسخ نص الدعاء"
+                        title={t('is_copy_title', 'نسخ نص الدعاء')}
                       >
                         {copiedId === activeItem.id ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                       </button>
@@ -621,7 +630,7 @@ export const Istighfar: React.FC = () => {
                       <button
                         onClick={(e) => resetCount(activeItem.id, e)}
                         className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors"
-                        title="إعادة ضبط العداد"
+                        title={t('is_reset_title', 'إعادة ضبط العداد')}
                       >
                         <RotateCcw size={16} />
                       </button>
@@ -651,7 +660,7 @@ export const Istighfar: React.FC = () => {
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
                   <div className="flex justify-between items-center px-1">
                     <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                      التكرار المطلوب: <span className="font-black text-slate-700 dark:text-slate-200">{activeItem.count} مرة</span>
+                      {t('is_required_label', 'التكرار المطلوب:')} <span className="font-black text-slate-700 dark:text-slate-200">{t('is_times', '{{count}} مرة', { count: activeItem.count })}</span>
                     </span>
                     <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-baseline gap-1">
                       <span>{currentCount}</span>
@@ -683,12 +692,12 @@ export const Istighfar: React.FC = () => {
                     {isCompleted ? (
                       <>
                         <ShieldCheck size={24} className="text-emerald-500" />
-                        <span>تَمَّ الإِنْجَازُ بِحَمْدِ اللهِ</span>
+                        <span>{t('is_done', 'تَمَّ الإِنْجَازُ بِحَمْدِ اللهِ')}</span>
                       </>
                     ) : (
                       <>
                         <Droplets size={22} className="opacity-90 animate-bounce" />
-                        <span>اضْغَطْ لِلِاسْتِغْفَارِ ({currentCount + 1})</span>
+                        <span>{t('is_tap', 'اضْغَطْ لِلِاسْتِغْفَارِ ({{count}})', { count: currentCount + 1 })}</span>
                       </>
                     )}
                   </motion.button>
@@ -700,7 +709,7 @@ export const Istighfar: React.FC = () => {
             <div className="space-y-3 pt-4">
               <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <BookMarked size={18} className="text-emerald-600" />
-                <span>فهرس أدعية الاستغفار والتوبة المختارة</span>
+                <span>{t('is_index_title', 'فهرس أدعية الاستغفار والتوبة المختارة')}</span>
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -733,7 +742,7 @@ export const Istighfar: React.FC = () => {
                         {isDone && (
                           <span className="text-xs font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center gap-1">
                             <CheckCircle2 size={10} />
-                            مكتمل
+                            {t('is_completed', 'مكتمل')}
                           </span>
                         )}
                       </div>
@@ -743,9 +752,9 @@ export const Istighfar: React.FC = () => {
                       </p>
 
                       <div className="flex items-center justify-between text-[13px] font-bold text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <span>العدد: {item.count}</span>
+                        <span>{t('is_count_n', 'العدد: {{count}}', { count: item.count })}</span>
                         <span className="text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform">
-                          فتح وتكرار ←
+                          {t('is_open_repeat', 'فتح وتكرار ←')}
                         </span>
                       </div>
                     </div>
@@ -769,15 +778,15 @@ export const Istighfar: React.FC = () => {
                   <Moon size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black">صَلَاةُ التَّوْبَةِ وَسُنَّتُهَا</h2>
-                  <p className="text-sm text-emerald-200/90 font-bold">ركعتان تغسلان الذنوب وتجددان العهد مع الغفور الرحيم</p>
+                  <h2 className="text-xl sm:text-2xl font-black">{t('is_tp_title', 'صَلَاةُ التَّوْبَةِ وَسُنَّتُهَا')}</h2>
+                  <p className="text-sm text-emerald-200/90 font-bold">{t('is_tp_subtitle', 'ركعتان تغسلان الذنوب وتجددان العهد مع الغفور الرحيم')}</p>
                 </div>
               </div>
 
               <div className="p-4 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 space-y-2">
                 <div className="flex items-center gap-2 text-amber-300 text-sm font-black">
                   <Sparkles size={14} />
-                  <span>دليل مشروعيتها من السنة النبوية الشريفة:</span>
+                  <span>{t('is_tp_proof', 'دليل مشروعيتها من السنة النبوية الشريفة:')}</span>
                 </div>
                 <p className="text-sm sm:text-base text-emerald-100 leading-relaxed font-semibold">
                   عَنْ عَلِيِّ بْنِ أَبِي طَالِبٍ رَضِيَ اللَّهُ عَنْهُ، عَنْ أَبِي بَكْرٍ الصِّدِّيقِ رَضِيَ اللَّهُ عَنْهُ قَالَ: سَمِعْتُ رَسُولَ اللَّهِ ﷺ يَقُولُ:
@@ -795,15 +804,15 @@ export const Istighfar: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
               <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <ShieldCheck size={18} className="text-emerald-600" />
-                <span>أركان وشروط التوبة النصوح الصادقة</span>
+                <span>{t('is_cond_title', 'أركان وشروط التوبة النصوح الصادقة')}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 {[
-                  { num: '١', title: 'الإِقْلَاعُ عَنِ الذَّنْبِ فَوْراً', desc: 'ترك المعصية ومجانبة أسبابها ودواعيها فوراً ابتغاء وجه الله.' },
-                  { num: '٢', title: 'النَّدَمُ الصَّادِقُ عَلَى مَا فَاتَ', desc: 'استشعار عظمة الله والتحسر على التقصير ومخالفة أمره.' },
-                  { num: '٣', title: 'العَزْمُ الأَكِيدُ عَلَى عَدَمِ العَوْدَةِ', desc: 'عقد نية جازمة وصادقة بعدم الرجوع إلى المعصية أبداً.' },
-                  { num: '٤', title: 'رَدُّ المَظَالِمِ إِلَى أَهْلِهَا', desc: 'إذا كان الذنب متعلقاً بحقوق العباد (مال، عرض، مظلمة) فيجب إبراؤها.' },
+                  { num: '١', title: t('is_cond1_title', 'الإِقْلَاعُ عَنِ الذَّنْبِ فَوْراً'), desc: t('is_cond1_desc', 'ترك المعصية ومجانبة أسبابها ودواعيها فوراً ابتغاء وجه الله.') },
+                  { num: '٢', title: t('is_cond2_title', 'النَّدَمُ الصَّادِقُ عَلَى مَا فَاتَ'), desc: t('is_cond2_desc', 'استشعار عظمة الله والتحسر على التقصير ومخالفة أمره.') },
+                  { num: '٣', title: t('is_cond3_title', 'العَزْمُ الأَكِيدُ عَلَى عَدَمِ العَوْدَةِ'), desc: t('is_cond3_desc', 'عقد نية جازمة وصادقة بعدم الرجوع إلى المعصية أبداً.') },
+                  { num: '٤', title: t('is_cond4_title', 'رَدُّ المَظَالِمِ إِلَى أَهْلِهَا'), desc: t('is_cond4_desc', 'إذا كان الذنب متعلقاً بحقوق العباد (مال، عرض، مظلمة) فيجب إبراؤها.') },
                 ].map(cond => (
                   <div key={cond.num} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
                     <div className="flex items-center gap-2">
@@ -826,15 +835,15 @@ export const Istighfar: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <CheckCircle2 size={18} className="text-teal-600" />
-                    <span>كيفية أداء صلاة التوبة (خطوة بخطوة)</span>
+                    <span>{t('is_steps_title', 'كيفية أداء صلاة التوبة (خطوة بخطوة)')}</span>
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-                    اضغط على كل خطوة لتأكيد إتمامها بخشوع
+                    {t('is_steps_hint', 'اضغط على كل خطوة لتأكيد إتمامها بخشوع')}
                   </p>
                 </div>
 
                 <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full">
-                  {completedSteps.length} / 5 خطوات
+                  {t('is_steps_progress', '{{count}} / 5 خطوات', { count: completedSteps.length })}
                 </span>
               </div>
 
@@ -843,32 +852,32 @@ export const Istighfar: React.FC = () => {
                 {[
                   {
                     step: 1,
-                    title: 'الخطوة الأولى: الطهارة وإسباغ الوضوء',
-                    desc: 'قم فتوضأ وضوءاً حسناً سابغاً بنية التطهر من الذنوب والخطايا، مستحضراً خروج الذنوب مع قطرات الماء.',
+                    title: t('is_step1_title', 'الخطوة الأولى: الطهارة وإسباغ الوضوء'),
+                    desc: t('is_step1_desc', 'قم فتوضأ وضوءاً حسناً سابغاً بنية التطهر من الذنوب والخطايا، مستحضراً خروج الذنوب مع قطرات الماء.'),
                     dua: '«أشهد أن لا إله إلا الله وحده لا شريك له، وأشهد أن محمداً عبده ورسوله، اللهم اجعلني من التوابين واجعلني من المتطهرين».'
                   },
                   {
                     step: 2,
-                    title: 'الخطوة الثانية: صلاة ركعتين خاشعتين منفردتين',
-                    desc: 'استقبل القبلة وانوِ صلاة ركعتي التوبة (نافلة مستحبة). صلّهما في خلوة وسكينة دون أن تُحدّث فيهما نفسك بشيء من أمور الدنيا.',
-                    dua: 'تقرأ فيهما الفاتحة وما تيسر لك من القرآن الكريم بخشوع وتدبر.'
+                    title: t('is_step2_title', 'الخطوة الثانية: صلاة ركعتين خاشعتين منفردتين'),
+                    desc: t('is_step2_desc', 'استقبل القبلة وانوِ صلاة ركعتي التوبة (نافلة مستحبة). صلّهما في خلوة وسكينة دون أن تُحدّث فيهما نفسك بشيء من أمور الدنيا.'),
+                    dua: t('is_step2_dua', 'تقرأ فيهما الفاتحة وما تيسر لك من القرآن الكريم بخشوع وتدبر.')
                   },
                   {
                     step: 3,
-                    title: 'الخطوة الثالثة: إطالة السجود والدعاء بالندم',
-                    desc: 'أقرب ما يكون العبد من ربه وهو ساجد. اعترف بضعفك وذنبك وابكِ أو تباكِ بين يدي الله معتذراً نادماً.',
+                    title: t('is_step3_title', 'الخطوة الثالثة: إطالة السجود والدعاء بالندم'),
+                    desc: t('is_step3_desc', 'أقرب ما يكون العبد من ربه وهو ساجد. اعترف بضعفك وذنبك وابكِ أو تباكِ بين يدي الله معتذراً نادماً.'),
                     dua: '«اللهم اغفر لي ذنبي كله دقه وجله وأوله وآخره وعلانيته وسره، ربي إني ظلمت نفسي ظلماً كثيراً فاغفر لي فإنه لا يغفر الذنوب إلا أنت».'
                   },
                   {
                     step: 4,
-                    title: 'الخطوة الرابعة: التسليم والجلوس للاستغفار',
-                    desc: 'بعد التسليم من الصلاة، الزم مصلاك واجلس مستقبلاً القبلة وادعُ بسيد الاستغفار وأدعية التوبة المأثورة.',
+                    title: t('is_step4_title', 'الخطوة الرابعة: التسليم والجلوس للاستغفار'),
+                    desc: t('is_step4_desc', 'بعد التسليم من الصلاة، الزم مصلاك واجلس مستقبلاً القبلة وادعُ بسيد الاستغفار وأدعية التوبة المأثورة.'),
                     dua: '«اللهم أنت ربي لا إله إلا أنت خلقتني وأنا عبدك وأنا على عهدك ووعدك ما استطعت، أبوء لك بنعمتك علي وأبوء لك بذنبي فاغفر لي».'
                   },
                   {
                     step: 5,
-                    title: 'الخطوة الخامسة: الصدقة والاستكثار من العمل الصالح',
-                    desc: 'يُستحب للمصلي بعد صلاة التوبة أن يُعقّبها بصدقة ولو يسيرة وعمل صالح يمحو أثر الذنب (إن الحسنات يذهبن السيئات).',
+                    title: t('is_step5_title', 'الخطوة الخامسة: الصدقة والاستكثار من العمل الصالح'),
+                    desc: t('is_step5_desc', 'يُستحب للمصلي بعد صلاة التوبة أن يُعقّبها بصدقة ولو يسيرة وعمل صالح يمحو أثر الذنب (إن الحسنات يذهبن السيئات).'),
                     dua: '«رب تقبل توبتي، واغسل حوبتي، وأجب دعوتي، وثبت حجتي، واهد قلبي، وسدد لساني، واسلل سخيمة قلبي».'
                   }
                 ].map((item) => {
@@ -928,7 +937,7 @@ export const Istighfar: React.FC = () => {
                   className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/20 active:scale-98 transition-all cursor-pointer"
                 >
                   <ShieldCheck size={20} />
-                  <span>تَسْجِيلُ إِقَامَةِ صَلَاةِ التَّوْبَةِ الآن</span>
+                  <span>{t('is_log_btn', 'تَسْجِيلُ إِقَامَةِ صَلَاةِ التَّوْبَةِ الآن')}</span>
                 </button>
 
                 {tawbahPrayerLogged && (
@@ -937,7 +946,7 @@ export const Istighfar: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-3 p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm font-black text-center"
                   >
-                    تقبل الله توبتك وصالح عملك وغفر ذنبك ورزقك الثبات والسكينة!
+                    {t('is_log_msg', 'تقبل الله توبتك وصالح عملك وغفر ذنبك ورزقك الثبات والسكينة!')}
                   </motion.div>
                 )}
               </div>
@@ -947,21 +956,21 @@ export const Istighfar: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <HelpCircle size={16} className="text-amber-500" />
-                <span>مسائل وأحكام مهمة حول صلاة التوبة</span>
+                <span>{t('is_qa_title', 'مسائل وأحكام مهمة حول صلاة التوبة')}</span>
               </h3>
 
               <div className="space-y-2 text-sm">
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
-                  <p className="font-bold text-slate-900 dark:text-white">س: هل لصلاة التوبة وقت محدد؟</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{t('is_q1', 'س: هل لصلاة التوبة وقت محدد؟')}</p>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    ج: تُشرع صلاة التوبة في أي وقت ليلًا أو نهارًا بمجرد وقوع الذنب، وأفضل أوقاتها الثلث الأخير من الليل (وقت السحر).
+                    {t('is_a1', 'ج: تُشرع صلاة التوبة في أي وقت ليلًا أو نهارًا بمجرد وقوع الذنب، وأفضل أوقاتها الثلث الأخير من الليل (وقت السحر).')}
                   </p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
-                  <p className="font-bold text-slate-900 dark:text-white">س: هل تُعاد صلاة التوبة إذا تكرر الذنب؟</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{t('is_q2', 'س: هل تُعاد صلاة التوبة إذا تكرر الذنب؟')}</p>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    ج: نعم، كلما أذنب العبد شُرع له أن يتوب ويصلي ركعتين، فإن الله تعالى غفور رحيم لا يمل من المغفرة حتى يمل العبد من الاستغفار.
+                    {t('is_a2', 'ج: نعم، كلما أذنب العبد شُرع له أن يتوب ويصلي ركعتين، فإن الله تعالى غفور رحيم لا يمل من المغفرة حتى يمل العبد من الاستغفار.')}
                   </p>
                 </div>
               </div>
@@ -977,7 +986,7 @@ export const Istighfar: React.FC = () => {
             
             {/* Top Ayat banner */}
             <div className="bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 text-white rounded-3xl p-6 shadow-xl space-y-3 text-center border border-amber-400/30">
-              <p className="text-sm uppercase tracking-widest text-amber-200 font-bold">نداء الله الكريم للتائبين</p>
+              <p className="text-sm uppercase tracking-widest text-amber-200 font-bold">{t('is_call_heading', 'نداء الله الكريم للتائبين')}</p>
               <h2 className="text-xl sm:text-2xl font-black leading-relaxed" style={{ fontFamily: "'Amiri', serif" }}>
                 ﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ ۚ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا ۚ إِنَّهُ هُوَ الْغَفُورُ الرَّحِيمُ﴾
               </h2>
@@ -988,37 +997,37 @@ export const Istighfar: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 {
-                  title: 'محبة الله تعالى للتائبين',
+                  title: t('is_virtue1_title', 'محبة الله تعالى للتائبين'),
                   desc: '﴿إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ وَيُحِبُّ الْمُتَطَهِّرِينَ﴾ — توبة العبد تجلب له أعظم وسام وهو محبة خالق الكون.',
                   icon: Heart,
                   color: 'text-rose-500 bg-rose-500/10'
                 },
                 {
-                  title: 'فرح الله العظيم بتوبة عبده',
+                  title: t('is_virtue2_title', 'فرح الله العظيم بتوبة عبده'),
                   desc: 'قال ﷺ: «لَلَّهُ أَشَدُّ فَرَحًا بِتَوْبَةِ عَبْدِهِ حِينَ يَتُوبُ إِلَيْهِ، مِنْ أَحَدِكُمْ كَانَ عَلَى رَاحِلَتِهِ بِأَرْضِ فَلَاةٍ فَانْفَلَتَتْ مِنْهُ...»',
                   icon: Sparkles,
                   color: 'text-amber-500 bg-amber-500/10'
                 },
                 {
-                  title: 'تبديل السيئات حسنات',
+                  title: t('is_virtue3_title', 'تبديل السيئات حسنات'),
                   desc: '﴿إِلَّا مَن تَابَ وَآمَنَ وَعَمِلَ عَمَلًا صَالِحًا فَأُولَٰئِكَ يُبَدِّلُ اللَّهُ سَيِّئَاتِهِمْ حَسَنَاتٍ﴾ — فضل عظيم لا يتصوره عقل!',
                   icon: Star,
                   color: 'text-emerald-500 bg-emerald-500/10'
                 },
                 {
-                  title: 'نزول البركات وسعة الأرزاق',
+                  title: t('is_virtue4_title', 'نزول البركات وسعة الأرزاق'),
                   desc: '﴿فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ إِنَّهُ كَانَ غَفَّارًا * يُرْسِلِ السَّمَاءَ عَلَيْكُم مِّدْرَارًا * وَيُمْدِدْكُم بِأَمْوَالٍ وَبَنِينَ﴾',
                   icon: Droplets,
                   color: 'text-sky-500 bg-sky-500/10'
                 },
                 {
-                  title: 'تفريج الهموم ومخارج الضيق',
+                  title: t('is_virtue5_title', 'تفريج الهموم ومخارج الضيق'),
                   desc: 'قال ﷺ: «مَنْ لَزِمَ الِاسْتِغْفَارَ جَعَلَ اللَّهُ لَهُ مِنْ كُلِّ هَمٍّ فَرَجًا، وَمِنْ كُلِّ ضِيقٍ مَخْرَجًا، وَرَزَقَهُ مِنْ حَيْثُ لَا يَحْتَسِبُ».',
                   icon: ShieldCheck,
                   color: 'text-teal-500 bg-teal-500/10'
                 },
                 {
-                  title: 'الأمان من العذاب وسكينة القلب',
+                  title: t('is_virtue6_title', 'الأمان من العذاب وسكينة القلب'),
                   desc: '﴿وَمَا كَانَ اللَّهُ مُعَذِّبَهُمْ وَهُمْ يَسْتَغْفِرُونَ﴾ — الاستغفار هو صمام الأمان الباقي للبشرية بعد وفاة النبي ﷺ.',
                   icon: Crown,
                   color: 'text-indigo-500 bg-indigo-500/10'
@@ -1042,13 +1051,13 @@ export const Istighfar: React.FC = () => {
             <div className="p-5 rounded-3xl bg-slate-900 text-white space-y-3 border border-slate-800 shadow-lg">
               <h3 className="text-base font-black text-amber-300 flex items-center gap-2">
                 <Flame size={16} />
-                <span>نصائح عملية للتائب والمستغفر</span>
+                <span>{t('is_tips_title', 'نصائح عملية للتائب والمستغفر')}</span>
               </h3>
               <ul className="text-sm text-slate-300 space-y-2 leading-relaxed list-disc list-inside">
-                <li>عاهد نفسك على الاستغفار 100 مرة على الأقل يومياً في طريقك أو فراغك.</li>
-                <li>اجعل سيد الاستغفار وردك الصباحي والمسائي الذي لا تتركه أبداً.</li>
-                <li>إذا زللت بذنب، فبادر مباشرة بركعتي التوبة ولا تسوّف، فالشيطان يرجو تأجيل توبتك.</li>
-                <li>تذكر دائماً أن رحمة الله أوسع من كل ذنوبك، وأن التوبة تجبّ ما قبلها تماماً.</li>
+                <li>{t('is_tip1', 'عاهد نفسك على الاستغفار 100 مرة على الأقل يومياً في طريقك أو فراغك.')}</li>
+                <li>{t('is_tip2', 'اجعل سيد الاستغفار وردك الصباحي والمسائي الذي لا تتركه أبداً.')}</li>
+                <li>{t('is_tip3', 'إذا زللت بذنب، فبادر مباشرة بركعتي التوبة ولا تسوّف، فالشيطان يرجو تأجيل توبتك.')}</li>
+                <li>{t('is_tip4', 'تذكر دائماً أن رحمة الله أوسع من كل ذنوبك، وأن التوبة تجبّ ما قبلها تماماً.')}</li>
               </ul>
             </div>
           </div>

@@ -281,20 +281,20 @@ export const IndependentHadith: React.FC = () => {
       setApiLoading(true);
       fetch('/api/hadiths/tongue-and-patience')
         .then(res => {
-          if (!res.ok) throw new Error('فشل جلب الأحاديث الإضافية');
+          if (!res.ok) throw new Error(t('ih_err_fetch', 'فشل جلب الأحاديث الإضافية'));
           return res.json();
         })
         .then(res => {
           if (res.status === 'success' && Array.isArray(res.data)) {
             setApiHadiths(res.data);
           } else {
-            throw new Error('تنسيق البيانات غير صحيح');
+            throw new Error(t('ih_err_format', 'تنسيق البيانات غير صحيح'));
           }
           setApiLoading(false);
         })
         .catch(err => {
           console.error(err);
-          setApiError(err.message || 'حدث خطأ أثناء تحميل الأحاديث');
+          setApiError(err.message || t('error_loading_data', 'حدث خطأ أثناء تحميل البيانات'));
           setApiLoading(false);
         });
     }
@@ -597,8 +597,8 @@ export const IndependentHadith: React.FC = () => {
                     <BookOpen className="text-white drop-shadow-md" size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">{data.title}</h2>
-                    <p className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-widest mt-0.5">{data.subtitle}</p>
+                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">{t(`ih_title_${categoryId}`, data.title)}</h2>
+                    <p className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-widest mt-0.5">{t(`ih_subtitle_${categoryId}`, data.subtitle)}</p>
                   </div>
                 </div>
               </div>
@@ -620,11 +620,11 @@ export const IndependentHadith: React.FC = () => {
             {/* Sticky Main Collection Switcher Tabs */}
             <div className="relative z-10 flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-1 border-t border-white/15">
               {[
-                { id: 'daily', title: 'حديث اليوم' },
-                { id: 'fadael', title: 'فضائل الأعمال' },
-                { id: 'konooz', title: 'موسوعة الأدعية' },
-                { id: 'quran_duas', title: 'جوامع الدعاء' },
-                { id: 'seerah', title: 'مقتطفات السيرة' },
+                { id: 'daily', title: t('ih_tab_daily', 'حديث اليوم') },
+                { id: 'fadael', title: t('ih_tab_fadael', 'فضائل الأعمال') },
+                { id: 'konooz', title: t('ih_tab_konooz', 'موسوعة الأدعية') },
+                { id: 'quran_duas', title: t('ih_tab_quran_duas', 'جوامع الدعاء') },
+                { id: 'seerah', title: t('ih_tab_seerah', 'مقتطفات السيرة') },
               ].map((sec) => {
                 const isSecActive = categoryId === sec.id;
                 return (
@@ -676,7 +676,7 @@ export const IndependentHadith: React.FC = () => {
                       )}
                     >
                       {isActive && <Sparkles size={12} className="text-slate-950 fill-slate-950" />}
-                      <span>{data.subCategories[key].title}</span>
+                      <span>{t(`ih_sub_${categoryId}_${key}`, data.subCategories[key].title)}</span>
                       <span className={cn(
                         "px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold",
                         isActive ? "bg-slate-950/20 text-slate-950" : "bg-white/15 text-white/80"
@@ -1070,6 +1070,7 @@ export const IndependentHadith: React.FC = () => {
           });
           const activeIndex = sliderIndex >= filteredHadiths.length ? 0 : sliderIndex;
           const currentSlide = filteredHadiths[activeIndex];
+          const slideCategoryLabel = currentSlide?.category === 'tongue' ? t('tongue_evils', currentSlide.categoryLabel) : currentSlide?.category === 'patience' ? t('degrees_of_patience', currentSlide.categoryLabel) : currentSlide?.categoryLabel;
 
           return (
             <div className="relative overflow-hidden rounded-[2.2rem] p-5 sm:p-6 mb-6 shadow-2xl border-2 border-amber-500/10 dark:border-amber-500/20 bg-slate-900/60 dark:bg-slate-950/75 text-white transition-all duration-300">
@@ -1157,7 +1158,7 @@ export const IndependentHadith: React.FC = () => {
                                 ? "bg-rose-400/20 text-rose-300 border-rose-500/30"
                                 : "bg-emerald-400/20 text-emerald-300 border-emerald-500/30"
                             )}>
-                              {currentSlide.categoryLabel}
+                              {slideCategoryLabel}
                             </span>
 
                             {/* Quick Actions (Fav, Voice, Copy, Share) */}
@@ -1216,7 +1217,7 @@ export const IndependentHadith: React.FC = () => {
                                 return (
                                   <button
                                     onClick={async () => {
-                                      const textToCopy = `✨ *${currentSlide.title}* [${currentSlide.categoryLabel}] ✨\n\n"${currentSlide.text}"\n\n📖 المصدر: ${currentSlide.source}\n—\nتمت المشاركة من تطبيق أذكار المؤمن`;
+                                      const textToCopy = `✨ *${currentSlide.title}* [${slideCategoryLabel}] ✨\n\n"${currentSlide.text}"\n\n📖 ${t('ih_source', 'المصدر')}: ${currentSlide.source}\n—\n${t('ih_shared_from', 'تمت المشاركة من تطبيق أذكار المؤمن')}`;
                                       await shareContent(currentSlide.title, textToCopy, window.location.href);
                                       setHadithCopiedId(uniqueCopyId);
                                       setTimeout(() => setHadithCopiedId(null), 2000);
@@ -1325,7 +1326,7 @@ export const IndependentHadith: React.FC = () => {
                               ? "w-4 bg-amber-400" 
                               : "bg-white/20 hover:bg-white/40"
                           )}
-                          title={`الذهاب للشريحة ${i + 1}`}
+                          title={t('ih_goto_slide', 'الذهاب للشريحة {{n}}', { n: i + 1 })}
                         />
                       ))}
                     </div>
@@ -1407,7 +1408,7 @@ export const IndependentHadith: React.FC = () => {
                           <div className={cn("flex items-center gap-1.5 flex-wrap", centered && "justify-center")}>
                             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-400 text-slate-950 shadow-sm border border-amber-300/40 flex items-center gap-1 shrink-0">
                               <BookOpen size={12} className="shrink-0" />
-                              <span>الحديث #{hadith.id || index + 1}</span>
+                              <span>{t('ih_hadith_n', 'الحديث #{{n}}', { n: hadith.id || index + 1 })}</span>
                             </span>
                             {hadith.subtitle && (
                               <span className="text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-sm transition-colors bg-white/15 text-white/95 border-white/20 shrink-0">
@@ -1470,7 +1471,7 @@ export const IndependentHadith: React.FC = () => {
                             type="button"
                             onClick={async (e) => {
                               e.stopPropagation();
-                              const textToShare = `✨ *${hadith.title}* ✨\n\n"${hadith.text}"\n\n📖 المصدر: ${hadith.subtitle || 'السنة المطهرة'}\n—\nتمت المشاركة من تطبيق *أذكار المؤمن azkar almumin*\nزيارة التطبيق: ${window.location.origin}`;
+                              const textToShare = `✨ *${hadith.title}* ✨\n\n"${hadith.text}"\n\n📖 ${t('ih_source', 'المصدر')}: ${hadith.subtitle || t('ih_default_source', 'السنة المطهرة')}\n—\n${t('ih_shared_from', 'تمت المشاركة من تطبيق أذكار المؤمن')}\n${t('ih_visit_app', 'زيارة التطبيق')}: ${window.location.origin}`;
                               await shareContent(hadith.title, textToShare, window.location.href);
                               setHadithCopiedId(hadith.id || index + 1);
                               setTimeout(() => setHadithCopiedId(null), 2000);
@@ -1554,12 +1555,12 @@ export const IndependentHadith: React.FC = () => {
                       )}
 
                       {/* Card Signature Footer */}
-                      <div className="pt-2.5 border-t border-white/15 flex items-center justify-between text-xs text-white/70" dir="rtl">
+                      <div className="pt-2.5 border-t border-white/15 flex items-center justify-between text-xs text-white/70">
                         <span 
                           className="font-rubik font-black italic text-[13px] sm:text-[15px] tracking-wider bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 bg-clip-text text-transparent select-none" 
                           style={{ filter: "drop-shadow(1px 1px 0px #047857) drop-shadow(2px 2px 0px #064e3b)" }}
                         >
-                          أذكار المؤمن
+                          {t('app_name', 'أذكار المؤمن')}
                         </span>
                         <span className="text-[11px] font-black text-white/85 select-none flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -1577,7 +1578,7 @@ export const IndependentHadith: React.FC = () => {
             <>
               {/* Search and Quick Filters Bar (not on the hadith of the day: the card needs the room) */}
               {categoryId !== 'daily' && (
-              <div className="relative mb-3" dir="rtl">
+              <div className="relative mb-3">
                 <div className="relative flex items-center">
                   <Search size={16} className="absolute right-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
                   <input
@@ -1604,12 +1605,12 @@ export const IndependentHadith: React.FC = () => {
 
               {/* View Mode Switcher Toolbar */}
               {rawItems.length > 0 && (
-                <div className="flex items-center justify-between gap-2 px-1 mb-2 flex-nowrap" dir="rtl">
+                <div className="flex items-center justify-between gap-2 px-1 mb-2 flex-nowrap">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
                     <span className="text-xs font-black text-slate-700 dark:text-slate-200 whitespace-nowrap truncate">
                       {items.length} {t('hadith_count_suffix', 'حديث شريف')}
-                      {searchTerm && <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold mr-1">(من {rawItems.length})</span>}
+                      {searchTerm && <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold mr-1">{t('ih_of_total', '(من {{total}})', { total: rawItems.length })}</span>}
                     </span>
                   </div>
 
@@ -1702,7 +1703,7 @@ export const IndependentHadith: React.FC = () => {
               <div>
                 {items.length === 0 ? (
                   showEmpty ? (
-                    <div className="flex flex-col items-center justify-center p-12 text-center bg-white/40 dark:bg-slate-800/25 rounded-2xl border-2 border-dashed border-slate-200/65 dark:border-slate-700/50" dir="rtl">
+                    <div className="flex flex-col items-center justify-center p-12 text-center bg-white/40 dark:bg-slate-800/25 rounded-2xl border-2 border-dashed border-slate-200/65 dark:border-slate-700/50">
                       <Search size={40} className="mb-4 text-slate-400 dark:text-slate-500 animate-pulse" />
                       <p className="font-black text-lg text-slate-700 dark:text-slate-300">{t('no_search_results', 'لم نجد نتائج للبحث')}</p>
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 font-bold max-w-sm leading-relaxed">
@@ -1785,7 +1786,7 @@ export const IndependentHadith: React.FC = () => {
                     </AnimatePresence>
 
                     {/* Focus Mode Navigation & Quick Jump */}
-                    <div className="w-full flex flex-col items-center gap-3 mt-4" dir="rtl" data-html2canvas-ignore>
+                    <div className="w-full flex flex-col items-center gap-3 mt-4" data-html2canvas-ignore>
                       <div className="flex items-center justify-between w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 shadow-md">
                         {/* Previous button */}
                         <button
@@ -1877,7 +1878,7 @@ export const IndependentHadith: React.FC = () => {
                                   ? "w-6 bg-amber-400 shadow-sm" 
                                   : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
                               )}
-                              title={`الذهاب للحديث ${i + 1}`}
+                              title={t('ih_goto_hadith', 'الذهاب للحديث {{n}}', { n: i + 1 })}
                             />
                           ))}
                         </div>

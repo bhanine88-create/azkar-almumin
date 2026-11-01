@@ -60,6 +60,14 @@ const HIJRI_SUFFIX_BY_LANG: Record<string, string> = {
   hi: "हिजरी"
 };
 
+export function getHijriMonthNames(lang: string = 'ar'): string[] {
+  return HIJRI_MONTHS_BY_LANG[lang] || HIJRI_MONTHS_BY_LANG['ar'];
+}
+
+export function getHijriSuffix(lang: string = 'ar'): string {
+  return HIJRI_SUFFIX_BY_LANG[lang] || "AH";
+}
+
 export function getHijriDate(date: Date = new Date(), offset: number = 0, lang: string = 'ar') {
   const m = moment(date);
   if (offset !== 0) {

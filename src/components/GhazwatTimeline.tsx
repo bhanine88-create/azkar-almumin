@@ -2,9 +2,13 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { GHAZWAT_DATA } from '../data/ghazwatData';
 import { cn } from '../lib/utils';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { Crosshair, Map, Shield, Sword, Trophy } from 'lucide-react';
 
 export const GhazwatTimeline: React.FC = () => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings?.appLanguage || 'ar');
   return (
     <div className="space-y-6 pb-12">
       <div className="bg-gradient-to-r from-orange-800 to-rose-900 text-white rounded-3xl p-6 shadow-lg relative overflow-hidden">
@@ -13,11 +17,11 @@ export const GhazwatTimeline: React.FC = () => {
         </div>
         <div className="relative z-10 space-y-2">
           <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-wider">
-            ملاحم وبطولات
+            {t('pb_ghz_badge', 'ملاحم وبطولات')}
           </span>
-          <h2 className="text-xl font-black">غزوات الرسول ﷺ</h2>
+          <h2 className="text-xl font-black">{t('pb_ghz_title', 'غزوات الرسول ﷺ')}</h2>
           <p className="text-xs text-orange-100 font-bold leading-relaxed max-w-md">
-            سجل تاريخي لأبرز المعارك الفاصلة التي خاضها النبي الكريم دفاعاً عن رسالة الإسلام وإرساءً لدعائم الحق والعدل.
+            {t('pb_ghz_desc', 'سجل تاريخي لأبرز المعارك الفاصلة التي خاضها النبي الكريم دفاعاً عن رسالة الإسلام وإرساءً لدعائم الحق والعدل.')}
           </p>
         </div>
       </div>
@@ -66,14 +70,14 @@ export const GhazwatTimeline: React.FC = () => {
                   {/* Muslims */}
                   <div className="p-4 space-y-3 bg-slate-50/30 dark:bg-slate-800/10 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 transition-colors">
                     <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-black mb-2 border-b border-emerald-100 dark:border-emerald-900/50 pb-2">
-                      <Shield size={16} /> المسلمون
+                      <Shield size={16} /> {t('pb_ghz_muslims', 'المسلمون')}
                     </div>
                     <div className="flex justify-between items-center text-xs font-bold">
-                      <span className="text-slate-500 dark:text-slate-400">القيادة:</span>
+                      <span className="text-slate-500 dark:text-slate-400">{t('pb_ghz_leader', 'القيادة:')}</span>
                       <span className="text-slate-800 dark:text-slate-200">{ghazwa.parties.muslims.leader}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs font-bold">
-                      <span className="text-slate-500 dark:text-slate-400">القوة:</span>
+                      <span className="text-slate-500 dark:text-slate-400">{t('pb_ghz_strength', 'القوة:')}</span>
                       <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-lg shadow-sm">
                         {ghazwa.parties.muslims.count}
                       </span>
@@ -86,11 +90,11 @@ export const GhazwatTimeline: React.FC = () => {
                       <Sword size={16} /> {ghazwa.parties.enemy.name}
                     </div>
                     <div className="flex justify-between items-center text-xs font-bold">
-                      <span className="text-slate-500 dark:text-slate-400">القيادة:</span>
+                      <span className="text-slate-500 dark:text-slate-400">{t('pb_ghz_leader', 'القيادة:')}</span>
                       <span className="text-slate-800 dark:text-slate-200">{ghazwa.parties.enemy.leader}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs font-bold">
-                      <span className="text-slate-500 dark:text-slate-400">القوة:</span>
+                      <span className="text-slate-500 dark:text-slate-400">{t('pb_ghz_strength', 'القوة:')}</span>
                       <span className="bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 px-2 py-0.5 rounded-lg shadow-sm">
                         {ghazwa.parties.enemy.count}
                       </span>
@@ -102,7 +106,7 @@ export const GhazwatTimeline: React.FC = () => {
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                   <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200 font-black text-xs shadow-sm">
                     <Trophy size={14} className={ghazwa.color.split(' ')[0].replace('from-', 'text-')} />
-                    <span>النتيجة:</span>
+                    <span>{t('pb_ghz_result', 'النتيجة:')}</span>
                     <span className={ghazwa.color.split(' ')[0].replace('from-', 'text-')}>{ghazwa.result}</span>
                   </div>
                   <p className="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed text-justify">

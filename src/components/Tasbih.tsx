@@ -1587,7 +1587,7 @@ export const Tasbih: React.FC = () => {
         <div className="flex items-center justify-between w-full max-w-sm px-2 mb-4 select-none shrink-0 z-10">
           <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/15 text-white shadow-md">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-            <span className="text-xs font-extrabold text-white/90">إجمالي الجلسة:</span>
+            <span className="text-xs font-extrabold text-white/90">{t('ui_session_total', 'إجمالي الجلسة:')}</span>
             <span className="text-sm font-black text-amber-300 font-digital tracking-wide drop-shadow-sm">{sessionCount}</span>
           </div>
 
@@ -1869,7 +1869,6 @@ export const Tasbih: React.FC = () => {
                       "font-sans text-[11px] sm:text-[12px] font-extrabold leading-none mt-1 animate-fade-in relative z-10 select-none text-center px-1 max-w-[150px] truncate",
                       lcdBacklight ? "text-[#052423]" : "text-[#232422]",
                     )}
-                    dir="rtl"
                   >
                     {activeGoal
                       ? activeGoalSource === "remote"
