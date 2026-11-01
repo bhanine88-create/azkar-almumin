@@ -1,7 +1,7 @@
 import { useTranslation } from '../i18n';
 import { BackButton } from './ui/BackButton';
 import { AppIcon } from './ui/AppIcon';
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../AppContext';
 import { 
@@ -524,6 +524,34 @@ export const IndependentHadith: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [items.length]);
   
+  // With snapping on, the cards scroll inside their own box. Its height is the
+  // space really left under the sticky header and the toolbar: the old fixed
+  // guess (100vh - 215px) ran past the bottom of phone screens, so the card
+  // that snapped into place was cut off.
+  const stickyHeaderRef = useRef<HTMLDivElement | null>(null);
+  const snapBoxRef = useRef<HTMLDivElement | null>(null);
+  const [snapBoxHeight, setSnapBoxHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const box = snapBoxRef.current;
+    if (!snapScrolling || !box) {
+      setSnapBoxHeight(null);
+      return;
+    }
+    let scroller: HTMLElement | null = box.parentElement;
+    while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    const area = scroller || (document.scrollingElement as HTMLElement);
+    const measure = () => {
+      const top = box.getBoundingClientRect().top - area.getBoundingClientRect().top + area.scrollTop;
+      const bottomPad = parseFloat(getComputedStyle(area).paddingBottom) || 0;
+      setSnapBoxHeight(Math.max(260, Math.floor(area.clientHeight - top - bottomPad - 6)));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(area);
+    if (stickyHeaderRef.current) observer.observe(stickyHeaderRef.current);
+    return () => observer.disconnect();
+  }, [snapScrolling, readingMode, categoryId, isGrouped ? currentTab : '']);
+
   const activeThemeKey = userTheme || data.theme;
   const currentTheme = themeStyles[activeThemeKey] || themeStyles['blue'];
 
@@ -550,7 +578,7 @@ export const IndependentHadith: React.FC = () => {
       {/* Phones: header and cards share one hairline, even 3px margin to the screen edges. */}
       <div className="relative z-10 space-y-4 px-[3px] sm:px-5 md:px-6 max-w-5xl mx-auto">
         {/* Sticky Header Container - Title and Category Tabs remain fixed when scrolling */}
-        <div className="sticky top-0 z-40 pt-1 sm:pt-2 pb-1 bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl transition-all duration-300">
+        <div ref={stickyHeaderRef} className="sticky top-0 z-40 pt-1 sm:pt-2 pb-1 bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl transition-all duration-300">
           <div 
             className={cn(
               "relative overflow-hidden rounded-2xl p-3.5 sm:p-4 shadow-xl transition-all duration-300 border border-white/20 flex flex-col gap-2.5",
@@ -1373,8 +1401,8 @@ export const IndependentHadith: React.FC = () => {
                         centered ? "flex-col-reverse items-center" : "justify-between items-start"
                       )}>
                         <div className={cn(
-                          "flex flex-col gap-1 min-w-0",
-                          centered ? "items-center text-center w-full" : "text-right flex-1"
+                          "flex gap-1 min-w-0",
+                          centered ? "flex-row flex-wrap items-center justify-center gap-x-2 text-center w-full" : "flex-col text-right flex-1"
                         )}>
                           <div className={cn("flex items-center gap-1.5 flex-wrap", centered && "justify-center")}>
                             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-400 text-slate-950 shadow-sm border border-amber-300/40 flex items-center gap-1 shrink-0">
@@ -1387,7 +1415,7 @@ export const IndependentHadith: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <h3 className={cn("text-base sm:text-lg font-black leading-snug text-white mt-1 drop-shadow-sm line-clamp-2", centered && "text-center w-full")}>
+                          <h3 className={cn("text-base sm:text-lg font-black leading-snug text-white drop-shadow-sm line-clamp-2", centered ? "text-center" : "mt-1")}>
                             {hadith.title}
                           </h3>
                         </div>
@@ -1507,11 +1535,14 @@ export const IndependentHadith: React.FC = () => {
                       {hadith.explanation && showExplanation && (
                         <div className="mb-3 p-3 sm:p-3.5 rounded-2xl border border-white/15 bg-white/10 dark:bg-black/25 backdrop-blur-sm shadow-inner relative overflow-hidden">
                           <div className={cn("flex gap-2.5", centered ? "flex-col items-center" : "items-start")}>
+                            {!centered && (
                             <div className="mt-0.5 shrink-0 p-1.5 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-300/30">
                               <Sparkles size={13} className="animate-pulse" />
                             </div>
+                            )}
                             <div className={cn("flex-1 min-w-0", centered ? "text-center w-full" : "text-right")}>
                               <h4 className={cn("text-[10px] font-black text-amber-200 mb-0.5 select-none flex items-center gap-1", centered && "justify-center")}>
+                                {centered && <Sparkles size={12} className="text-amber-300 shrink-0" />}
                                 <span>{t('hadith_practical_benefit', 'الفائدة والتوجيه العملي:')}</span>
                               </h4>
                               <p className="text-xs sm:text-[13px] leading-relaxed font-bold text-white/95">
@@ -1544,7 +1575,8 @@ export const IndependentHadith: React.FC = () => {
 
           return (
             <>
-              {/* Search and Quick Filters Bar */}
+              {/* Search and Quick Filters Bar (not on the hadith of the day: the card needs the room) */}
+              {categoryId !== 'daily' && (
               <div className="relative mb-3" dir="rtl">
                 <div className="relative flex items-center">
                   <Search size={16} className="absolute right-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
@@ -1568,19 +1600,20 @@ export const IndependentHadith: React.FC = () => {
                   )}
                 </div>
               </div>
+              )}
 
               {/* View Mode Switcher Toolbar */}
               {rawItems.length > 0 && (
-                <div className="flex items-center justify-between gap-3 px-1 py-1 mb-3" dir="rtl">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                    <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                <div className="flex items-center justify-between gap-2 px-1 mb-2 flex-nowrap" dir="rtl">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-200 whitespace-nowrap truncate">
                       {items.length} {t('hadith_count_suffix', 'حديث شريف')}
                       {searchTerm && <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold mr-1">(من {rawItems.length})</span>}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {/* CSS Snap-Points Toggle */}
                     <button
                       type="button"
@@ -1601,7 +1634,7 @@ export const IndependentHadith: React.FC = () => {
                       title={snapScrolling ? t('snap_scroll_enabled', 'تثبيت البطاقات في مكانها مفعل (CSS Snap Points)') : t('snap_scroll_disabled', 'تفعيل تثبيت البطاقات أثناء التمرير')}
                     >
                       <Magnet size={13} className={snapScrolling ? "text-amber-500 animate-pulse" : "text-slate-400"} />
-                      <span className="text-[11px] sm:text-xs">{t('snap_cards', 'تثبيت البطاقات')}</span>
+                      <span className="hidden min-[430px]:inline text-[11px] sm:text-xs">{t('snap_cards', 'تثبيت البطاقات')}</span>
                       {snapScrolling && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
                     </button>
 
@@ -1860,7 +1893,8 @@ export const IndependentHadith: React.FC = () => {
                         : "grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 items-stretch transition-all duration-300 max-w-5xl mx-auto w-full",
                       snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
                     )}
-                    style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
+                    ref={snapBoxRef}
+                    style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth', ...(snapBoxHeight ? { maxHeight: snapBoxHeight } : {}) } : undefined}
                   >
                     {items.map((hadith: any, index: number) => renderHadithCard(hadith, index, false))}
                   </div>
@@ -1871,7 +1905,8 @@ export const IndependentHadith: React.FC = () => {
                       "flex flex-col gap-3.5 sm:gap-5 max-w-5xl mx-auto w-full transition-all duration-300",
                       snapScrolling && "hadith-snap-container snap-y snap-mandatory overflow-y-auto max-h-[calc(100vh-215px)] sm:max-h-[calc(100vh-235px)] py-2 custom-scrollbar-modern scroll-pt-3 sm:scroll-pt-4 overscroll-contain"
                     )}
-                    style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' } : undefined}
+                    ref={snapBoxRef}
+                    style={snapScrolling ? { scrollSnapType: 'y mandatory', scrollBehavior: 'smooth', ...(snapBoxHeight ? { maxHeight: snapBoxHeight } : {}) } : undefined}
                   >
                     {items.map((hadith: any, index: number) => renderHadithCard(hadith, index, false))}
                   </div>
