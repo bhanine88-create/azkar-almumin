@@ -41,6 +41,8 @@ const LAZY_LOCALES: Record<string, () => Promise<{ default: LocaleBundle }>> = {
   ms: () => import('./i18n/locales/ms.json'),
   de: () => import('./i18n/locales/de.json'),
   es: () => import('./i18n/locales/es.json'),
+  ru: () => import('./i18n/locales/ru.json'),
+  hi: () => import('./i18n/locales/hi.json'),
 };
 
 /**
@@ -138,7 +140,7 @@ i18n.on('languageChanged', (lng) => {
 
 // Spelled out rather than derived from `translations`, which is now a growing
 // runtime map and would widen this to `string`.
-export type LanguageCode = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'bn' | 'ms' | 'de' | 'es';
+export type LanguageCode = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'bn' | 'ms' | 'de' | 'es' | 'ru' | 'hi';
 export type TranslationKey = keyof typeof ar;
 
 /**

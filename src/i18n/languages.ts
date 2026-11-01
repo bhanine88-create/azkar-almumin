@@ -1,5 +1,5 @@
 export interface LanguageMeta {
-  id: 'ar' | 'fr' | 'en' | 'ur' | 'id' | 'bn' | 'tr' | 'ms' | 'de' | 'es';
+  id: 'ar' | 'fr' | 'en' | 'ur' | 'id' | 'bn' | 'tr' | 'ms' | 'de' | 'es' | 'ru' | 'hi';
   name: string;
   nativeName: string;
   flag: string;
@@ -18,5 +18,7 @@ export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
   { id: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩', dir: 'ltr', region: 'South Asia' },
   { id: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾', dir: 'ltr', region: 'Southeast Asia' },
   { id: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', dir: 'ltr', region: 'Europe' },
-  { id: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', dir: 'ltr', region: 'Global' }
+  { id: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', dir: 'ltr', region: 'Global' },
+  { id: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', dir: 'ltr', region: 'Europe/Central Asia' },
+  { id: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', dir: 'ltr', region: 'South Asia' }
 ];

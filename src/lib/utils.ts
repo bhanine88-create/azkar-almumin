@@ -23,6 +23,8 @@ export function getLocaleCode(lang: string = 'ar'): string {
     case 'ms': return 'ms-MY';
     case 'ur': return 'ur-PK';
     case 'bn': return 'bn-BD';
+    case 'ru': return 'ru-RU';
+    case 'hi': return 'hi-IN';
     case 'ar':
     default: return 'ar-SA';
   }
@@ -38,7 +40,9 @@ const HIJRI_MONTHS_BY_LANG: Record<string, string[]> = {
   id: ["Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Sya'ban", "Ramadhan", "Syawal", "Dzulqa'dah", "Dzulhijjah"],
   ms: ["Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rejab", "Sya'ban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah"],
   ur: ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", "جمادى الأولى", "جمادى الثانية", "رجب", "شعبان", "رمضان", "شوال", "ذوالقعدة", "ذوالحجة"],
-  bn: ["মুহাররম", "সফর", "রবীউল আউয়াল", "রবীউস সানী", "জমাদিউল আউয়াল", "জমাদিউস সানী", "রজব", "শা'বান", "রমজান", "শাওয়াল", "জুলক্বাদা", "জুলহিজ্জা"]
+  bn: ["মুহাররম", "সফর", "রবীউল আউয়াল", "রবীউস সানী", "জমাদিউল আউয়াল", "জমাদিউস সানী", "রজব", "শা'বান", "রমজান", "শাওয়াল", "জুলক্বাদা", "জুলহিজ্জা"],
+  ru: ["Мухаррам", "Сафар", "Раби аль-авваль", "Раби ас-сани", "Джумада аль-уля", "Джумада ас-сания", "Раджаб", "Шаабан", "Рамадан", "Шавваль", "Зуль-када", "Зуль-хиджа"],
+  hi: ["मुहर्रम", "सफ़र", "रबीउल अव्वल", "रबीउस सानी", "जुमादल ऊला", "जुमादस सानिया", "रजब", "शाबान", "रमज़ान", "शव्वाल", "ज़ुल-क़ादा", "ज़ुल-हिज्जा"]
 };
 
 const HIJRI_SUFFIX_BY_LANG: Record<string, string> = {
@@ -51,7 +55,9 @@ const HIJRI_SUFFIX_BY_LANG: Record<string, string> = {
   de: "AH",
   id: "H",
   ms: "H",
-  bn: "হিজরী"
+  bn: "হিজরী",
+  ru: "г. х.",
+  hi: "हिजरी"
 };
 
 export function getHijriDate(date: Date = new Date(), offset: number = 0, lang: string = 'ar') {
@@ -115,7 +121,9 @@ const LEVEL_RANKS: Record<string, string[]> = {
   id: ["Pemula", "Tekun", "Penghayat", "Taat", "Ahli Ibadah", "Awab", "Muhsin", "Muqarrab"],
   ms: ["Pemula", "Tekun", "Penghayat", "Taat", "Ahli Ibadah", "Awab", "Muhsin", "Muqarrab"],
   ur: ["مبتدی", "مواظب", "ذاکر", "قانت", "عابد", "اواب", "محسن", "مقرب"],
-  bn: ["শিক্ষানবিস", "নিয়মিত", "জিকিরকারী", "অনুগত", "আবেদ", "তাওবাকারী", "মুহসিন", "মুকাররব"]
+  bn: ["শিক্ষানবিস", "নিয়মিত", "জিকিরকারী", "অনুগত", "আবেদ", "তাওবাকারী", "মুহসিন", "মুকাররব"],
+  ru: ["Новичок", "Постоянный", "Поминающий", "Покорный", "Поклоняющийся", "Кающийся", "Мухсин", "Приближённый"],
+  hi: ["शुरुआती", "नियमित", "ज़ाकिर", "आज्ञाकारी", "आबिद", "तौबा करने वाला", "मुहसिन", "मुक़र्रब"]
 };
 
 export function getLevelRank(level: number, lang: string = 'ar') {

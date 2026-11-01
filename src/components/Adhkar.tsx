@@ -9,7 +9,7 @@ import { playNotificationChimeSound } from '../lib/sounds';
 import { useAppContext } from '../AppContext';
 import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { ChallengeCategory } from '../challengesData';
-import { cn, shareContent, triggerHaptic } from '../lib/utils';
+import { cn, getLocaleCode, shareContent, triggerHaptic } from '../lib/utils';
 import { Dhikr } from '../types';
 import { useTranslation } from '../i18n';
 import { useSmartNavigation } from "../lib/navigation";
@@ -1024,16 +1024,21 @@ export const Adhkar: React.FC = () => {
     const mins = Math.floor(totalSecs / 60);
     const secs = totalSecs % 60;
     
-    if (settings.appLanguage === 'fr') {
-      const parts = [];
-      if (mins > 0) parts.push(`${mins} minute${mins > 1 ? 's' : ''}`);
-      if (secs > 0) parts.push(`${secs} seconde${secs > 1 ? 's' : ''}`);
-      return parts.join(' et ');
-    } else if (settings.appLanguage === 'en') {
-      const parts = [];
-      if (mins > 0) parts.push(`${mins} minute${mins > 1 ? 's' : ''}`);
-      if (secs > 0) parts.push(`${secs} second${secs > 1 ? 's' : ''}`);
-      return parts.join(' and ');
+    const lang = settings.appLanguage || 'ar';
+    if (lang !== 'ar') {
+      // Every other language from the platform's own unit names: only English
+      // and French were spelled out here, and the other eight showed Arabic.
+      const locale = getLocaleCode(lang);
+      const unit = (value: number, name: 'minute' | 'second') =>
+        new Intl.NumberFormat(locale, { style: 'unit', unit: name, unitDisplay: 'long' }).format(value);
+      const parts: string[] = [];
+      if (mins > 0) parts.push(unit(mins, 'minute'));
+      if (secs > 0 || mins === 0) parts.push(unit(secs, 'second'));
+      try {
+        return new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(parts);
+      } catch {
+        return parts.join(' ');
+      }
     } else {
       let mPhrase = '';
       if (mins === 1) mPhrase = 'دقيقة واحدة';
@@ -1089,29 +1094,12 @@ export const Adhkar: React.FC = () => {
   }, [currentCategory, category, activePrayerStep, stepItems, counts]);
 
   const readingSpeedRate = React.useMemo(() => {
-    if (settings.appLanguage === 'fr') {
-      if (secondsElapsed < 10) return "Début du voyage de l'évocation 🌟";
-      const estimatedSecs = estimatedReadingTimeMinutes * 60;
-      const ratio = secondsElapsed / estimatedSecs;
-      if (ratio < 0.3) return "Vitesse excellente et grande énergie ⚡";
-      if (ratio >= 0.3 && ratio <= 1.2) return "Récitation sereine et méditation équilibrée 🌸";
-      return "Humilité totale, sérénité et méditation profonde 💎";
-    } else if (settings.appLanguage === 'en') {
-      if (secondsElapsed < 10) return "Beginning of the dhikr journey 🌟";
-      const estimatedSecs = estimatedReadingTimeMinutes * 60;
-      const ratio = secondsElapsed / estimatedSecs;
-      if (ratio < 0.3) return "Excellent speed and great energy ⚡";
-      if (ratio >= 0.3 && ratio <= 1.2) return "Serene recitation and contemplation 🌸";
-      return "Total humility, serenity and deep contemplation 💎";
-    } else {
-      if (secondsElapsed < 10) return "بداية رحلة الذكر 🌟";
-      const estimatedSecs = estimatedReadingTimeMinutes * 60;
-      const ratio = secondsElapsed / estimatedSecs;
-      if (ratio < 0.3) return "سرعة ممتازة ونشاط فائق ⚡";
-      if (ratio >= 0.3 && ratio <= 1.2) return "ترتيل هادئ وتدبر متزن 🌸";
-      return "خشوع تام وسكينة وتأمل عميق 💎";
-    }
-  }, [secondsElapsed, estimatedReadingTimeMinutes, settings.appLanguage]);
+    if (secondsElapsed < 10) return t('reading_speed_start', 'بداية رحلة الذكر 🌟');
+    const ratio = secondsElapsed / (estimatedReadingTimeMinutes * 60);
+    if (ratio < 0.3) return t('reading_speed_fast', 'سرعة ممتازة ونشاط فائق ⚡');
+    if (ratio <= 1.2) return t('reading_speed_balanced', 'ترتيل هادئ وتدبر متزن 🌸');
+    return t('reading_speed_deep', 'خشوع تام وسكينة وتأمل عميق 💎');
+  }, [secondsElapsed, estimatedReadingTimeMinutes, t]);
 
 
 

@@ -1851,5 +1851,19 @@
   "mushaf_open_mode_label": "Sureleri aç:",
   "mushaf_open_mode_pages": "Mushaf sayfası",
   "mushaf_open_mode_text": "Metin olarak",
-  "reminder_overlay_desc": "Sabah ve akşam zikirleri vaktinde hatırlatma kartı, uygulama kapalıyken bile her ekranın üzerinde \"Şimdi oku\" düğmesiyle görünür. Bu izin olmadan yalnızca bildirim görünür."
+  "reminder_overlay_desc": "Sabah ve akşam zikirleri vaktinde hatırlatma kartı, uygulama kapalıyken bile her ekranın üzerinde \"Şimdi oku\" düğmesiyle görünür. Bu izin olmadan yalnızca bildirim görünür.",
+  "app_name_full": "Ezkâr el-Mümin uygulaması",
+  "browse_adhkar": "Zikirlere göz at",
+  "empty_favorites_desc": "Henüz hiç zikir kaydetmediniz. Okurken herhangi bir zikirdeki kalp ❤️ simgesine dokunun; hızlı erişim için burada saklanır.",
+  "favorites_hub_hint": "Okurken herhangi bir zikir kartındaki kalbe ❤️ dokunarak sevdiğiniz zikirleri kaydedin; burada görünecekler.",
+  "lesson": "Ders",
+  "playing_now_badge": "Şimdi okunuyor",
+  "quick_favorite_adhkar": "Kaydettiğiniz zikirler",
+  "show_evidence_and_sharh": "Delilleri ve geniş şerhi göster",
+  "stop_sound_btn": "Sesi durdur",
+  "view_all": "Tümünü gör",
+  "reading_speed_start": "Zikir yolculuğunun başlangıcı 🌟",
+  "reading_speed_fast": "Mükemmel hız ve yüksek enerji ⚡",
+  "reading_speed_balanced": "Sakin okuyuş ve dengeli tefekkür 🌸",
+  "reading_speed_deep": "Tam huşu, huzur ve derin tefekkür 💎"
 }

@@ -114,7 +114,9 @@ export const QuranAdvancedSearch: React.FC<{ isOpen: boolean; onClose: () => voi
           tr: 'tr.ates',
           ms: 'ms.basmeih',
           de: 'de.aburida',
-          es: 'es.bornez'
+          es: 'es.bornez',
+          ru: 'ru.kuliev',
+          hi: 'hi.hindi'
         };
         edition = langMap[settings.appLanguage] || 'en.sahih';
       }

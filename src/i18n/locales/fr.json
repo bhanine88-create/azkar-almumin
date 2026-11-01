@@ -1851,5 +1851,19 @@
   "mushaf_open_mode_label": "Ouvrir les sourates :",
   "mushaf_open_mode_pages": "En pages du Mushaf",
   "mushaf_open_mode_text": "En texte",
-  "reminder_overlay_desc": "À l'heure des adhkar du matin et du soir, la carte de rappel s'affiche par-dessus n'importe quel écran, même appli fermée, avec un bouton « Lire maintenant ». Sans cette autorisation, seule la notification s'affiche."
+  "reminder_overlay_desc": "À l'heure des adhkar du matin et du soir, la carte de rappel s'affiche par-dessus n'importe quel écran, même appli fermée, avec un bouton « Lire maintenant ». Sans cette autorisation, seule la notification s'affiche.",
+  "app_name_full": "Application Azkar Almumin",
+  "browse_adhkar": "Parcourir les invocations",
+  "empty_favorites_desc": "Vous n'avez encore enregistré aucune invocation. Touchez le cœur ❤️ d'une invocation pendant la lecture pour la retrouver ici rapidement.",
+  "favorites_hub_hint": "Enregistrez vos invocations préférées en touchant le cœur ❤️ sur une carte pendant la lecture ; elles apparaîtront ici.",
+  "lesson": "Leçon",
+  "playing_now_badge": "En cours",
+  "quick_favorite_adhkar": "Vos invocations enregistrées",
+  "show_evidence_and_sharh": "Afficher les preuves et l'explication détaillée",
+  "stop_sound_btn": "Arrêter le son",
+  "view_all": "Tout voir",
+  "reading_speed_start": "Début du voyage de l'évocation 🌟",
+  "reading_speed_fast": "Vitesse excellente et grande énergie ⚡",
+  "reading_speed_balanced": "Récitation sereine et méditation équilibrée 🌸",
+  "reading_speed_deep": "Humilité totale, sérénité et méditation profonde 💎"
 }

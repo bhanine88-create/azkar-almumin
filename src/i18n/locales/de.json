@@ -1851,5 +1851,19 @@
   "mushaf_open_mode_label": "Suren öffnen:",
   "mushaf_open_mode_pages": "Als Mushaf-Seiten",
   "mushaf_open_mode_text": "Als Text",
-  "reminder_overlay_desc": "Zur Zeit der Morgen- und Abend-Adhkar erscheint die Erinnerungskarte über jedem Bildschirm, auch bei geschlossener App, mit der Schaltfläche „Jetzt lesen“. Ohne diese Berechtigung erscheint nur die Benachrichtigung."
+  "reminder_overlay_desc": "Zur Zeit der Morgen- und Abend-Adhkar erscheint die Erinnerungskarte über jedem Bildschirm, auch bei geschlossener App, mit der Schaltfläche „Jetzt lesen“. Ohne diese Berechtigung erscheint nur die Benachrichtigung.",
+  "app_name_full": "Azkar-Almumin-App",
+  "browse_adhkar": "Adhkar durchsuchen",
+  "empty_favorites_desc": "Du hast noch keine Adhkar gespeichert. Tippe beim Lesen auf das Herz ❤️ eines Dhikr, um ihn hier schnell wiederzufinden.",
+  "favorites_hub_hint": "Speichere deine liebsten Adhkar mit dem Herz ❤️ auf einer Dhikr-Karte beim Lesen; sie erscheinen dann hier.",
+  "lesson": "Lektion",
+  "playing_now_badge": "Läuft gerade",
+  "quick_favorite_adhkar": "Deine gespeicherten Adhkar",
+  "show_evidence_and_sharh": "Belege und ausführliche Erläuterung zeigen",
+  "stop_sound_btn": "Ton stoppen",
+  "view_all": "Alle anzeigen",
+  "reading_speed_start": "Beginn der Dhikr-Reise 🌟",
+  "reading_speed_fast": "Ausgezeichnetes Tempo und viel Energie ⚡",
+  "reading_speed_balanced": "Ruhige Rezitation und ausgewogene Besinnung 🌸",
+  "reading_speed_deep": "Völlige Demut, Ruhe und tiefe Besinnung 💎"
 }

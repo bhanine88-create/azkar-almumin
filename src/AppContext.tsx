@@ -8,6 +8,7 @@ import { currentFirebaseUser, loadFirebase, loadFirebaseWhenIdle } from './lib/f
 import { safeLocalStorageSetItem, safeLocalStorageGetItem, safeLocalStorageRemoveItem, safeLocalStorageLength, safeLocalStorageKey, safeLocalStorageClear, STORAGE_KEYS, readFirstStored, safeJsonParse } from './utils/storage';
 import { storageManager } from './services/storageManager';
 import i18n, { updateDocumentDirection, changeAppLanguage } from './i18n';
+import { SUPPORTED_LANGUAGES } from './i18n/languages';
 import { loadAllDownloadedFontsOnStartup } from './services/fontService';
 import { adhkarNotificationController } from './services/adhkarNotificationController';
 
@@ -256,6 +257,19 @@ export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+/** The first of the phone's preferred languages that the app supports, else Arabic. */
+function detectDeviceLanguage(): NonNullable<AppSettings['appLanguage']> {
+  const supported = new Set<string>(SUPPORTED_LANGUAGES.map(l => l.id));
+  const preferred = typeof navigator !== 'undefined'
+    ? (navigator.languages?.length ? navigator.languages : [navigator.language])
+    : [];
+  for (const tag of preferred) {
+    const base = String(tag || '').toLowerCase().split(/[-_]/)[0];
+    if (supported.has(base)) return base as NonNullable<AppSettings['appLanguage']>;
+  }
+  return 'ar';
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Run cleanup and start low-priority background mushaf download once on mount
   useEffect(() => {
@@ -489,7 +503,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // A fresh install already has the v31 defaults. Without this flag the
     // upgrade above would run on the second launch and wipe the first session.
     safeLocalStorageSetItem('believer_settings_v31_official', 'true');
-    const { updatedSettings: guaranteedDefaults } = adhkarNotificationController.ensureDefaultsActive(defaultSettings);
+    // First launch: start in the phone's language when the app supports it.
+    // Arabic otherwise; the user can change it at any time in Settings.
+    const { updatedSettings: guaranteedDefaults } = adhkarNotificationController.ensureDefaultsActive({
+      ...defaultSettings,
+      appLanguage: detectDeviceLanguage(),
+    });
     return guaranteedDefaults;
   });
 

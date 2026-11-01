@@ -193,7 +193,7 @@ export interface AppSettings {
   _triggerSunnahReminder?: number; // Internal trigger for testing
   sunnahReminderEnabled?: boolean;
   sunnahReminderTime?: string;
-  appLanguage?: 'ar' | 'fr' | 'en' | 'ur' | 'id' | 'bn' | 'tr' | 'ms' | 'de' | 'es'; // Global app language
+  appLanguage?: 'ar' | 'fr' | 'en' | 'ur' | 'id' | 'bn' | 'tr' | 'ms' | 'de' | 'es' | 'ru' | 'hi'; // Global app language
   prayerRingtone?: string;
   morningAdhkarRingtone?: string;
   eveningAdhkarRingtone?: string;

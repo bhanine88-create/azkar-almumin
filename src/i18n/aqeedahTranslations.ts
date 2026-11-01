@@ -67,6 +67,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Tres Principios',
       subtitle: 'Conocimiento de Allah, de Su religión y de Su Profeta Muhammad ﷺ',
       badge: 'Gran Texto'
+    },
+    ru: {
+      title: 'Разъяснение «Трёх основ»',
+      shortTitle: 'Три основы',
+      subtitle: 'Познание Аллаха, Его религии — ислама — с доказательствами и Его Пророка Мухаммада ﷺ',
+      badge: 'Великий текст'
+    },
+    hi: {
+      title: 'तीन बुनियादी उसूलों की शरह',
+      shortTitle: 'तीन उसूल',
+      subtitle: 'अल्लाह, उसके दीन इस्लाम (दलीलों के साथ) और उसके नबी मुहम्मद ﷺ की मअरिफ़त',
+      badge: 'अज़ीम मत्न'
     }
   },
   qawaid_arbaa: {
@@ -123,6 +135,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Cuatro Reglas',
       subtitle: 'Comprender el Tauhid de los Profetas frente al Shirk',
       badge: 'Reglas del Tauhid'
+    },
+    ru: {
+      title: 'Четыре правила таухида',
+      shortTitle: 'Четыре правила',
+      subtitle: 'Понимание таухида пророков и отличие от ширка многобожников',
+      badge: 'Правила таухида'
+    },
+    hi: {
+      title: 'तौहीद के चार क़ायदे',
+      shortTitle: 'चार क़ायदे',
+      subtitle: 'नबियों की तौहीद और मुशरिकों के शिर्क के फ़र्क़ को समझना',
+      badge: 'तौहीद के क़ायदे'
     }
   },
   kitab_tawheed: {
@@ -179,6 +203,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Libro del Tauhid',
       subtitle: 'El derecho de Allah sobre Sus siervos y prevención del Shirk',
       badge: 'Derecho de Allah'
+    },
+    ru: {
+      title: 'Китаб ат-Таухид («Книга единобожия»)',
+      shortTitle: 'Книга таухида',
+      subtitle: 'Право Аллаха на рабов, достоинства таухида и предостережение от ширка',
+      badge: 'Право Аллаха'
+    },
+    hi: {
+      title: 'किताबुत-तौहीद (एकेश्वरवाद की किताब)',
+      shortTitle: 'किताबुत-तौहीद',
+      subtitle: 'बंदों पर अल्लाह का हक़, तौहीद की फ़ज़ीलतें और शिर्क से चेतावनी',
+      badge: 'अल्लाह का हक़'
     }
   },
   kashf_shubuhat: {
@@ -235,6 +271,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Disipación de Dudas',
       subtitle: 'Refutación de dudas sobre la súplica y la intercesión',
       badge: 'Escudo del Tauhid'
+    },
+    ru: {
+      title: 'Кашф аш-шубухат («Устранение сомнений»)',
+      shortTitle: 'Устранение сомнений',
+      subtitle: 'Опровержение сомнений о мольбе, заступничестве и сути ширка',
+      badge: 'Щит таухида'
+    },
+    hi: {
+      title: 'कश्फ़ुश-शुबुहात (संदेहों का निवारण)',
+      shortTitle: 'संदेहों का निवारण',
+      subtitle: 'दुआ, सिफ़ारिश और शिर्क की हक़ीक़त के बारे में संदेहों का खंडन',
+      badge: 'तौहीद की ढाल'
     }
   },
   usool_sittah: {
@@ -291,6 +339,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Seis Fundamentos',
       subtitle: 'Grandes principios aclarados en el Corán explicados por Ibn Baz',
       badge: 'Explicación Ibn Baz'
+    },
+    ru: {
+      title: 'Разъяснение «Шести основ» шейха Ибн База',
+      shortTitle: 'Шесть основ',
+      subtitle: 'Великие принципы, ясно изложенные в Коране, в разъяснении шейха Ибн База',
+      badge: 'Разъяснение Ибн База'
+    },
+    hi: {
+      title: 'शैख़ इब्ने बाज़ द्वारा छह बुनियादों की शरह',
+      shortTitle: 'छह बुनियादें',
+      subtitle: 'क़ुरआन में स्पष्ट बताए गए महान उसूल, शैख़ इब्ने बाज़ की व्याख्या के साथ',
+      badge: 'इब्ने बाज़ की शरह'
     }
   },
   aqeedah_wasitiyyah: {
@@ -347,6 +407,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Al-Wasitiyyah',
       subtitle: 'Fundamentos de Ahlus-Sunnah sobre los Nombres y Atributos Divinos',
       badge: 'Credo Principal'
+    },
+    ru: {
+      title: '«Аль-Акыда аль-Васытыййа» Ибн Теймии',
+      shortTitle: 'Аль-Васытыййа',
+      subtitle: 'Основы ахлю-сунна валь-джама’а об именах, атрибутах Аллаха и об Ахирате',
+      badge: 'Основа акыды'
+    },
+    hi: {
+      title: 'इब्ने तैमिय्यह की अल-अक़ीदा अल-वासितिय्यह',
+      shortTitle: 'अल-वासितिय्यह',
+      subtitle: 'अल्लाह के नामों, सिफ़ात और आख़िरत के बारे में अहले सुन्नत वल जमाअत के उसूल',
+      badge: 'बुनियादी अक़ीदा'
     }
   },
   tahawiyyah_lumaa: {
@@ -403,6 +475,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Tahawiyyah y Lumaa',
       subtitle: 'Obras de credo del Imam At-Tahawi e Ibn Qudamah',
       badge: 'Textos Salaf'
+    },
+    ru: {
+      title: 'Тексты первых учёных («Тахавийя» и «Лум’ат аль-и’тикад»)',
+      shortTitle: 'Тахавийя и Лум’а',
+      subtitle: 'Вехи акыды имама ат-Тахави и Ибн Кудамы аль-Макдиси',
+      badge: 'Тексты салафов'
+    },
+    hi: {
+      title: 'शुरुआती उलमा के मत्न (तहावियह और लुम्अतुल-ऐतिक़ाद)',
+      shortTitle: 'तहावियह और लुम्अह',
+      subtitle: 'इमाम तहावी और इब्ने क़ुदामा अल-मक़दिसी के अक़ीदे की अहम किताबें',
+      badge: 'सलफ़ के मत्न'
     }
   },
   heart_purification: {
@@ -459,6 +543,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Purificación del Corazón',
       subtitle: 'Cura de enfermedades espirituales, paciencia, gratitud y sinceridad',
       badge: 'Medicina del Corazón'
+    },
+    ru: {
+      title: 'Очищение сердец и духовные болезни',
+      shortTitle: 'Очищение сердец',
+      subtitle: 'Исцеление духовных недугов, терпение, благодарность и избегание больших грехов',
+      badge: 'Лекарство сердец'
+    },
+    hi: {
+      title: 'दिलों की सफ़ाई और रूहानी बीमारियाँ',
+      shortTitle: 'दिलों की सफ़ाई',
+      subtitle: 'रूहानी बीमारियों का इलाज, सब्र, शुक्र और कबीरा गुनाहों से बचना',
+      badge: 'दिलों की दवा'
     }
   },
   books_library: {
@@ -515,6 +611,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Resúmenes de Libros',
       subtitle: 'Resúmenes y guías de lectura de los libros de Tauhid',
       badge: 'Biblioteca'
+    },
+    ru: {
+      title: 'Библиотека основных книг по акыде и духовному воспитанию',
+      shortTitle: 'Краткое содержание книг',
+      subtitle: 'Краткие изложения, главные выводы и путеводители по важным исламским книгам',
+      badge: 'Библиотека акыды'
+    },
+    hi: {
+      title: 'अक़ीदा और रूहानियत की अहम किताबों की लाइब्रेरी',
+      shortTitle: 'किताबों का सार',
+      subtitle: 'अहम इस्लामी किताबों के ख़ुलासे, मुख्य फ़ायदे और रहनुमाई',
+      badge: 'अक़ीदे की लाइब्रेरी'
     }
   },
   pillars: {
@@ -571,6 +679,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Pilares de la Fe',
       subtitle: 'Los seis pilares fundamentales del credo islámico',
       badge: 'Base Sólida'
+    },
+    ru: {
+      title: 'Шесть столпов веры (иман)',
+      shortTitle: 'Столпы веры',
+      subtitle: 'Шесть основных столпов исламской акыды и веры',
+      badge: 'Прочный фундамент'
+    },
+    hi: {
+      title: 'ईमान के छह अरकान',
+      shortTitle: 'ईमान के अरकान',
+      subtitle: 'इस्लामी अक़ीदे और ईमान के छह बुनियादी अरकान',
+      badge: 'मज़बूत बुनियाद'
     }
   },
   nullifiers: {
@@ -627,6 +747,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Preservar el Tauhid',
       subtitle: 'Protección contra el Shirk, las innovaciones y anuladores de la fe',
       badge: 'Protección'
+    },
+    ru: {
+      title: 'Аннулирующие ислам и предостережение от ширка',
+      shortTitle: 'Сохранение таухида',
+      subtitle: 'Защита от ширка, нововведений и того, что разрушает веру',
+      badge: 'Врата защиты'
+    },
+    hi: {
+      title: 'इस्लाम तोड़ने वाली चीज़ें और शिर्क से चेतावनी',
+      shortTitle: 'तौहीद की हिफ़ाज़त',
+      subtitle: 'शिर्क, बिदअतों और ईमान को बातिल करने वाली चीज़ों से हिफ़ाज़त',
+      badge: 'हिफ़ाज़त का दरवाज़ा'
     }
   },
   names_attributes: {
@@ -683,6 +815,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Nombres y Atributos',
       subtitle: 'Significados nobles y adorar a Allah a través de Sus Nombres',
       badge: 'Conocer a Allah'
+    },
+    ru: {
+      title: 'Познание прекрасных имён и атрибутов Аллаха',
+      shortTitle: 'Имена и атрибуты',
+      subtitle: 'Благородные смыслы, правила утверждения и поклонение Аллаху через них',
+      badge: 'Познание Аллаха'
+    },
+    hi: {
+      title: 'अल्लाह के असमा-ए-हुस्ना और सिफ़ात को समझना',
+      shortTitle: 'नाम और सिफ़ात',
+      subtitle: 'नेक मआनी, इस्बात के उसूल और उनके ज़रिए अल्लाह की इबादत',
+      badge: 'अल्लाह की मअरिफ़त'
     }
   },
   contemporary_issues: {
@@ -739,6 +883,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Firmeza en la Fe',
       subtitle: 'Firmeza en tiempos de dudas y respuestas fundamentadas',
       badge: 'Certeza'
+    },
+    ru: {
+      title: 'Современные вопросы веры и стойкость',
+      shortTitle: 'Стойкость',
+      subtitle: 'Твёрдость во времена сомнений, благие ожидания и обоснованные ответы',
+      badge: 'Убеждённость'
+    },
+    hi: {
+      title: 'मौजूदा दौर के ईमानी मसाइल और साबित-क़दमी',
+      shortTitle: 'साबित-क़दमी',
+      subtitle: 'संदेहों के दौर में दृढ़ता, अच्छा गुमान और ठोस जवाब',
+      badge: 'यक़ीन'
     }
   },
   salaf_quotes: {
@@ -795,6 +951,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Joyas Salaf',
       subtitle: 'Palabras doradas de los Compañeros e Imames sobre el Tauhid',
       badge: 'Vía Salaf'
+    },
+    ru: {
+      title: 'Жемчужины и изречения праведных предшественников (салаф)',
+      shortTitle: 'Жемчужины салафов',
+      subtitle: 'Золотые слова сподвижников и имамов о таухиде',
+      badge: 'Путь салафов'
+    },
+    hi: {
+      title: 'सलफ़े सालिहीन के क़ीमती अक़वाल',
+      shortTitle: 'सलफ़ के मोती',
+      subtitle: 'तौहीद के बारे में सहाबा और इमामों के सुनहरे अक़वाल',
+      badge: 'सलफ़ का रास्ता'
     }
   },
   quick_cards: {
@@ -851,6 +1019,18 @@ export const CATEGORY_TRANSLATIONS: Record<string, Record<string, AqeedahCategor
       shortTitle: 'Tarjetas de Beneficios',
       subtitle: 'Principios concisos diseñados para compartir rápidamente',
       badge: 'Beneficios Rápidos'
+    },
+    ru: {
+      title: 'Краткие карточки пользы по акыде для рассылки',
+      shortTitle: 'Карточки пользы',
+      subtitle: 'Краткие принципы веры для быстрой отправки в соцсетях',
+      badge: 'Быстрая польза'
+    },
+    hi: {
+      title: 'शेयर करने के लिए अक़ीदे के छोटे फ़ायदे-कार्ड',
+      shortTitle: 'फ़ायदा कार्ड',
+      subtitle: 'सोशल मीडिया पर जल्दी शेयर के लिए ईमान के संक्षिप्त उसूल',
+      badge: 'फ़ौरी फ़ायदे'
     }
   }
 };
@@ -868,6 +1048,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Six Principes - Ibn Baz',
       text: 'Le Tawhid consiste à vouer l’adoration exclusivement à Allah. Diriger les invocations aux morts est une association (Shirk).',
       authorOrSource: 'Explication des Six Principes par Cheikh Ibn Baz'
+    },
+    ru: {
+      title: 'Первая основа: искренность в религии',
+      badge: 'Шесть основ — Ибн База',
+      text: '«Воистину, Аллаху принадлежит чистая религия». Таухид — это обращение только к Аллаху с мольбой, надеждой и обетами. Обращать это к умершим — многобожие, а не уважение.',
+      authorOrSource: 'Разъяснение «Шести основ» шейха Ибн База'
+    },
+    hi: {
+      title: 'पहली बुनियाद: दीन में इख़लास',
+      badge: 'छह बुनियादें — इब्ने बाज़',
+      text: '«सुन लो! ख़ालिस दीन अल्लाह ही के लिए है।» तौहीद यह है कि दुआ, उम्मीद और मन्नतों में सिर्फ़ अल्लाह को ख़ास किया जाए। इन्हें मुर्दों की तरफ़ फेरना शिर्क है, एहतराम नहीं।',
+      authorOrSource: 'शैख़ इब्ने बाज़ की शरह: छह बुनियादें'
     }
   },
   'card-usool-2': {
@@ -882,6 +1074,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Six Principes - Ibn Baz',
       text: 'L’union ordonnée est le rassemblement autour du Livre d’Allah et de la Sunnah. Les divisions affaiblissent les musulmans.',
       authorOrSource: 'Explication des Six Principes par Cheikh Ibn Baz'
+    },
+    ru: {
+      title: 'Вторая основа: держаться за единство',
+      badge: 'Шесть основ — Ибн База',
+      text: 'Предписанное единство — это единство на основе Книги Аллаха и Сунны Его Посланника ﷺ. Разобщённость и сектантство губят силу мусульман.',
+      authorOrSource: 'Разъяснение «Шести основ» шейха Ибн База'
+    },
+    hi: {
+      title: 'दूसरी बुनियाद: इत्तिहाद को थामना',
+      badge: 'छह बुनियादें — इब्ने बाज़',
+      text: 'जिस इत्तिहाद का हुक्म है वह अल्लाह की किताब और उसके रसूल ﷺ की सुन्नत पर एक होना है। फूट और फ़िरक़ापरस्ती मुसलमानों की ताक़त बर्बाद कर देती है।',
+      authorOrSource: 'शैख़ इब्ने बाज़ की शरह: छह बुनियादें'
     }
   },
   'card-usool-3': {
@@ -890,6 +1094,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Six Foundations - Ibn Baz',
       text: 'Obeying Muslim rulers in good deeds ensures safety and prevents bloodshed. Gentle advice in private and praying for their guidance is the way of the Salaf.',
       authorOrSource: 'Explanation of Six Foundations by Sheikh Ibn Baz'
+    },
+    ru: {
+      title: 'Третья основа: слушать и повиноваться',
+      badge: 'Шесть основ — Ибн База',
+      text: 'Повиновение мусульманским правителям в благом обеспечивает безопасность и предотвращает кровопролитие. Мягкий совет наедине и мольба об их наставлении — путь салафов.',
+      authorOrSource: 'Разъяснение «Шести основ» шейха Ибн База'
+    },
+    hi: {
+      title: 'तीसरी बुनियाद: सुनना और इताअत करना',
+      badge: 'छह बुनियादें — इब्ने बाज़',
+      text: 'नेक कामों में मुस्लिम हुक्मरानों की इताअत अमन क़ायम रखती है और ख़ून-ख़राबे से बचाती है। तन्हाई में नरमी से नसीहत करना और उनकी हिदायत की दुआ करना सलफ़ का तरीक़ा है।',
+      authorOrSource: 'शैख़ इब्ने बाज़ की शरह: छह बुनियादें'
     }
   },
   'card-1': {
@@ -904,6 +1120,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Règle de Foi',
       text: 'Nous affirmons pour Allah ce qu’Il a affirmé pour Lui-même sans altération, ni reniement, ni comparaison: «Il n’y a rien qui Lui ressemble; et C’est Lui l’Audient, le Clairvoyant».',
       authorOrSource: 'Consensus d’Ahlus-Sunnah'
+    },
+    ru: {
+      title: 'Золотое правило об атрибутах Аллаха',
+      badge: 'Принцип акыды',
+      text: 'Мы утверждаем для Аллаха то, что Он утвердил для Себя в Своей Книге и устами Своего Посланника ﷺ, без искажения, отрицания, выяснения «как» и уподобления: «Нет ничего подобного Ему, и Он — Слышащий, Видящий».',
+      authorOrSource: 'Консенсус ахлю-сунна валь-джама’а'
+    },
+    hi: {
+      title: 'अल्लाह की सिफ़ात में सुनहरा उसूल',
+      badge: 'अक़ीदे का उसूल',
+      text: 'हम अल्लाह के लिए वही साबित करते हैं जो उसने अपनी किताब में और अपने रसूल ﷺ की ज़बान से अपने लिए साबित किया, बिना तहरीफ़, इनकार, कैफ़ियत पूछने और मिसाल देने के: «उस जैसी कोई चीज़ नहीं और वह सुनने वाला, देखने वाला है।»',
+      authorOrSource: 'अहले सुन्नत वल जमाअत का इज्माअ'
     }
   },
   'card-2': {
@@ -918,6 +1146,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Foi au Destin',
       text: 'Ce qui t’est destiné ne manquait pas de t’atteindre. Les plumes se sont levées et les pages ont séché. Sois rassuré, tout décret d’Allah est un bien.',
       authorOrSource: 'Hadith du Prophète'
+    },
+    ru: {
+      title: 'Секрет душевного покоя',
+      badge: 'Плод веры в кадар',
+      text: 'То, что постигло тебя, не могло миновать тебя, а то, что миновало тебя, не могло постигнуть тебя. Перья подняты, а свитки высохли. Будь спокоен: решение Аллаха — благо для тебя.',
+      authorOrSource: 'Хадис Пророка ﷺ'
+    },
+    hi: {
+      title: 'दिल के सुकून का राज़',
+      badge: 'तक़दीर पर ईमान का फल',
+      text: 'जो तुम्हें पहुँचा वह तुमसे चूकने वाला न था और जो तुमसे चूक गया वह तुम्हें मिलने वाला न था। क़लम उठा लिए गए और सहीफ़े सूख गए। मुत्मइन रहो, अल्लाह का फ़ैसला तुम्हारे लिए बेहतर है।',
+      authorOrSource: 'हदीसे नबवी'
     }
   },
   'card-3': {
@@ -926,6 +1166,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Prophetic Dua',
       text: '“O Allah, I seek refuge in You from knowingly associating anything with You, and I ask Your forgiveness for that which I do not know.” Recite it daily to protect your monotheism.',
       authorOrSource: 'Al-Adab Al-Mufrad by Al-Bukhari'
+    },
+    ru: {
+      title: 'Щит от ширка',
+      badge: 'Мольба Пророка ﷺ',
+      text: '«О Аллах, я прибегаю к Тебе от того, чтобы я сознательно придавал Тебе сотоварищей, и прошу у Тебя прощения за то, чего не знаю». Читай её каждый день, чтобы защитить свой таухид.',
+      authorOrSource: '«Аль-Адаб аль-муфрад» аль-Бухари'
+    },
+    hi: {
+      title: 'शिर्क से ढाल',
+      badge: 'नबवी दुआ',
+      text: '«ऐ अल्लाह! मैं इससे तेरी पनाह माँगता हूँ कि जानते-बूझते तेरे साथ किसी को शरीक करूँ और जो मैं नहीं जानता उसकी तुझसे माफ़ी चाहता हूँ।» अपनी तौहीद की हिफ़ाज़त के लिए रोज़ इसे पढ़ें।',
+      authorOrSource: 'अल-अदबुल-मुफ़रद, इमाम बुख़ारी'
     }
   },
   'card-4': {
@@ -934,6 +1186,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Pillars of Worship',
       text: 'Allah accepts no deed unless two conditions are met: Complete sincerity for Allah alone without ostentation, and complete compliance with the guidance of the Prophet ﷺ without innovation.',
       authorOrSource: 'Tafsir Ibn Kathir (Surah Al-Kahf: 110)'
+    },
+    ru: {
+      title: 'Два условия принятия деяний',
+      badge: 'Столпы поклонения',
+      text: 'Аллах не принимает деяние, пока не выполнены два условия: полная искренность только ради Аллаха без показухи и полное следование руководству Пророка ﷺ без нововведений.',
+      authorOrSource: 'Тафсир Ибн Касира (сура «Аль-Кахф», 110)'
+    },
+    hi: {
+      title: 'आमाल की क़ुबूलियत की दो शर्तें',
+      badge: 'इबादत के सुतून',
+      text: 'अल्लाह कोई अमल उस वक़्त तक क़ुबूल नहीं करता जब तक दो शर्तें पूरी न हों: सिर्फ़ अल्लाह के लिए पूरा इख़लास बिना दिखावे के, और बिना बिदअत के नबी ﷺ के तरीक़े की पूरी पैरवी।',
+      authorOrSource: 'तफ़सीर इब्ने कसीर (सूरह अल-कहफ़: 110)'
     }
   },
   'card-5': {
@@ -942,6 +1206,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Understanding Tawakkul',
       text: 'Tawakkul is the action of the heart, while taking means is the action of the limbs. A believer pursues all permissible means while trusting only in the Lord of all means.',
       authorOrSource: 'Imam Ahmad ibn Hanbal'
+    },
+    ru: {
+      title: 'Истинное упование на Аллаха (таваккуль)',
+      badge: 'Понимание таваккуля',
+      text: 'Таваккуль — действие сердца, а принятие мер — действие органов тела. Верующий использует все дозволенные средства, уповая лишь на Господа всех средств.',
+      authorOrSource: 'Имам Ахмад ибн Ханбаль'
+    },
+    hi: {
+      title: 'अल्लाह पर सच्चा भरोसा (तवक्कुल)',
+      badge: 'तवक्कुल की समझ',
+      text: 'तवक्कुल दिल का अमल है और असबाब अपनाना अंगों का अमल। मोमिन तमाम जाइज़ असबाब अपनाता है और भरोसा सिर्फ़ असबाब के रब पर रखता है।',
+      authorOrSource: 'इमाम अहमद बिन हंबल'
     }
   },
   'card-6': {
@@ -950,6 +1226,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Firmness of Heart',
       text: 'When whispered doubts attack your faith: immediately seek refuge in Allah, stop dwelling on them, say “I believe in Allah and His Messengers”, and know that hating the whisper is pure faith.',
       authorOrSource: 'Sahih Muslim'
+    },
+    ru: {
+      title: 'Преодоление шайтанских шёпотов (васвас)',
+      badge: 'Твёрдость сердца',
+      text: 'Когда сомнения-шёпоты нападают на твою веру: немедленно прибегни к защите Аллаха, не зацикливайся на них, скажи «Я уверовал в Аллаха и Его посланников» и знай, что ненависть к этому шёпоту — чистый иман.',
+      authorOrSource: 'Сахих Муслим'
+    },
+    hi: {
+      title: 'शैतानी वसवसों पर क़ाबू पाना',
+      badge: 'दिल की मज़बूती',
+      text: 'जब वसवसे आपके ईमान पर हमला करें: फ़ौरन अल्लाह की पनाह माँगें, उनमें उलझना छोड़ दें, कहें «मैं अल्लाह और उसके रसूलों पर ईमान लाया» और जान लें कि वसवसे से नफ़रत ख़ालिस ईमान है।',
+      authorOrSource: 'सहीह मुस्लिम'
     }
   },
   'card-7': {
@@ -958,6 +1246,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Knowing Allah',
       text: 'Al-Lateef (The Subtle, The Most Gentle), when He wills to save you, directs causes from where you never expect; turning a prison into a kingdom and the river into a rescue for an infant. Trust His gentle kindness.',
       authorOrSource: 'Ibn Al-Qayyim'
+    },
+    ru: {
+      title: 'Величие имени Аллаха «Аль-Латыф»',
+      badge: 'Познание Аллаха',
+      text: 'Аль-Латыф (Тонко Знающий, Милостивый), когда желает спасти тебя, направляет причины оттуда, откуда ты не ожидаешь: превращает темницу в царство, а реку — в спасение для младенца. Уповай на Его тонкую милость.',
+      authorOrSource: 'Ибн аль-Каййим'
+    },
+    hi: {
+      title: 'अल्लाह के नाम अल-लतीफ़ की अज़मत',
+      badge: 'अल्लाह की मअरिफ़त',
+      text: 'अल-लतीफ़ (बारीक-बीन, निहायत मेहरबान) जब तुम्हें बचाना चाहता है तो वहाँ से असबाब पैदा करता है जहाँ से तुम सोच भी नहीं सकते; क़ैदख़ाने को सल्तनत और दरिया को शीरख़ार बच्चे की नजात बना देता है। उसकी लतीफ़ मेहरबानी पर भरोसा रखो।',
+      authorOrSource: 'इब्नुल-क़य्यिम'
     }
   },
   'card-8': {
@@ -966,6 +1266,18 @@ export const QUICK_CARD_TRANSLATIONS: Record<string, Record<string, Partial<Aqee
       badge: 'Gems of Salaf',
       text: '“The Sunnah is Noah’s Ark; whoever embarks upon it is saved, and whoever stays behind drowns.” Holding fast to the way of the Prophet ﷺ and his Companions is safety in times of trials.',
       authorOrSource: 'Imam Malik ibn Anas'
+    },
+    ru: {
+      title: 'Ковчег спасения',
+      badge: 'Жемчужины салафов',
+      text: '«Сунна — это ковчег Нуха: кто взошёл на него, тот спасся, а кто отстал, тот утонул». Держаться пути Пророка ﷺ и его сподвижников — безопасность во времена испытаний.',
+      authorOrSource: 'Имам Малик ибн Анас'
+    },
+    hi: {
+      title: 'नजात की कश्ती',
+      badge: 'सलफ़ के मोती',
+      text: '«सुन्नत नूह की कश्ती की तरह है; जो इस पर सवार हुआ बच गया और जो पीछे रह गया डूब गया।» फ़ित्नों के दौर में नबी ﷺ और सहाबा के तरीक़े को थामना ही सलामती है।',
+      authorOrSource: 'इमाम मालिक बिन अनस'
     }
   }
 };
@@ -986,6 +1298,22 @@ export const SALAF_QUOTE_TRANSLATIONS: Record<string, Record<string, Partial<Aqe
       era: 'Imam de Médine',
       quote: 'L’Istawa est connu, le comment est inconcevable, y croire est obligatoire et questionner sur le comment est une innovation.',
       theme: 'Noms et Attributs'
+    },
+    ru: {
+      scholar: 'Имам Малик ибн Анас',
+      title: 'Как Аллах утвердился над Троном (истиваʼ)',
+      era: 'Имам Медины',
+      quote: '«Истиваʼ (утверждение над Троном) известно, способ его непостижим, вера в него обязательна, а вопрос о способе — нововведение».',
+      context: 'Когда один человек спросил, как Аллах утвердился над Своим Троном.',
+      theme: 'Имена и атрибуты'
+    },
+    hi: {
+      scholar: 'इमाम मालिक बिन अनस',
+      title: 'अल्लाह का अर्श पर इस्तिवा कैसे है',
+      era: 'मदीना के इमाम',
+      quote: '«इस्तिवा (अर्श पर बुलंद होना) मालूम है, उसकी कैफ़ियत अक़्ल से परे है, उस पर ईमान लाना वाजिब है और उसकी कैफ़ियत पूछना बिदअत है।»',
+      context: 'जब एक आदमी ने पूछा कि अल्लाह अपने अर्श पर कैसे बुलंद हुआ।',
+      theme: 'नाम और सिफ़ात'
     }
   },
   'quote-2': {
@@ -996,6 +1324,22 @@ export const SALAF_QUOTE_TRANSLATIONS: Record<string, Record<string, Partial<Aqe
       quote: 'Religion consists only of the Book of Allah, the Sunnah of His Messenger ﷺ, and the traditions of the Companions. Avoid innovations for every innovation is misguidance.',
       context: 'Stance during the trial of the creation of the Quran.',
       theme: 'Adhering to Sunnah'
+    },
+    ru: {
+      scholar: 'Имам Ахмад ибн Ханбаль',
+      title: 'Терпение и стойкость в Сунне',
+      era: 'Имам ахлю-сунна',
+      quote: '«Религия состоит лишь из Книги Аллаха, Сунны Его Посланника ﷺ и преданий сподвижников. Остерегайтесь нововведений, ибо всякое нововведение — заблуждение».',
+      context: 'Позиция во время испытания о сотворённости Корана.',
+      theme: 'Следование Сунне'
+    },
+    hi: {
+      scholar: 'इमाम अहमद बिन हंबल',
+      title: 'सुन्नत पर सब्र और साबित-क़दमी',
+      era: 'अहले सुन्नत के इमाम',
+      quote: '«दीन सिर्फ़ अल्लाह की किताब, उसके रसूल ﷺ की सुन्नत और सहाबा के आसार का नाम है। बिदअतों से बचो, क्योंकि हर बिदअत गुमराही है।»',
+      context: 'ख़ल्क़े क़ुरआन की आज़माइश के दौरान उनका मौक़िफ़।',
+      theme: 'सुन्नत की पाबंदी'
     }
   },
   'quote-3': {
@@ -1005,6 +1349,20 @@ export const SALAF_QUOTE_TRANSLATIONS: Record<string, Record<string, Partial<Aqe
       era: 'Ascetic Scholar of Haramain',
       quote: 'Action must be sincere and correct. If it is sincere but not correct, it is not accepted; if correct but not sincere, it is not accepted—until it is both sincere (for Allah) and correct (upon Sunnah).',
       theme: 'Purification & Sincerity'
+    },
+    ru: {
+      scholar: 'Фудайль ибн Ияд',
+      title: 'Искренность и правильность деяний',
+      era: 'Подвижник-учёный двух Харамов',
+      quote: '«Деяние должно быть искренним и правильным. Если оно искренне, но неправильно — не принимается; если правильно, но неискренне — не принимается, пока не будет и искренним (ради Аллаха), и правильным (по Сунне)».',
+      theme: 'Очищение и искренность'
+    },
+    hi: {
+      scholar: 'फ़ुज़ैल बिन इयाज़',
+      title: 'आमाल में इख़लास और दुरुस्तगी',
+      era: 'हरमैन के ज़ाहिद आलिम',
+      quote: '«अमल ख़ालिस भी होना चाहिए और दुरुस्त भी। ख़ालिस हो मगर दुरुस्त न हो तो क़ुबूल नहीं; दुरुस्त हो मगर ख़ालिस न हो तो क़ुबूल नहीं — जब तक वह ख़ालिस (अल्लाह के लिए) और दुरुस्त (सुन्नत के मुताबिक़) दोनों न हो।»',
+      theme: 'तज़किया और इख़लास'
     }
   },
   'quote-4': {
@@ -1014,6 +1372,20 @@ export const SALAF_QUOTE_TRANSLATIONS: Record<string, Record<string, Partial<Aqe
       era: 'Doctor of Hearts',
       quote: 'In the heart there is a loneliness that can only be removed by intimacy with Allah, a sadness that can only be relieved by the joy of knowing Him, and a poverty that can only be enriched by devotion to Him.',
       theme: 'Medicine of Hearts'
+    },
+    ru: {
+      scholar: 'Ибн аль-Каййим аль-Джаузиййа',
+      title: 'Величие таухида в сердце',
+      era: 'Врач сердец',
+      quote: '«В сердце есть одиночество, которое устраняется только близостью с Аллахом, печаль, которую снимает лишь радость познания Его, и нищета, которую обогащает лишь преданность Ему».',
+      theme: 'Лекарство сердец'
+    },
+    hi: {
+      scholar: 'इब्नुल-क़य्यिम अल-जौज़िय्यह',
+      title: 'दिल में तौहीद की अज़मत',
+      era: 'दिलों के तबीब',
+      quote: '«दिल में एक तन्हाई है जो सिर्फ़ अल्लाह से उन्स से दूर होती है, एक ग़म है जो सिर्फ़ उसकी मअरिफ़त की ख़ुशी से मिटता है और एक मुफ़लिसी है जो सिर्फ़ उसकी इबादत से दौलत में बदलती है।»',
+      theme: 'दिलों की दवा'
     }
   }
 };

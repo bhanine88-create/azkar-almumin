@@ -1851,5 +1851,19 @@
   "mushaf_open_mode_label": "Buka surah:",
   "mushaf_open_mode_pages": "Halaman Mushaf",
   "mushaf_open_mode_text": "Sebagai teks",
-  "reminder_overlay_desc": "Pada waktu zikir pagi dan petang, kad peringatan muncul di atas mana-mana skrin, walaupun aplikasi ditutup, dengan butang \"Baca sekarang\". Tanpa kebenaran ini hanya pemberitahuan yang muncul."
+  "reminder_overlay_desc": "Pada waktu zikir pagi dan petang, kad peringatan muncul di atas mana-mana skrin, walaupun aplikasi ditutup, dengan butang \"Baca sekarang\". Tanpa kebenaran ini hanya pemberitahuan yang muncul.",
+  "app_name_full": "Aplikasi Azkar Almumin",
+  "browse_adhkar": "Lihat zikir",
+  "empty_favorites_desc": "Anda belum menyimpan sebarang zikir. Ketik ikon hati ❤️ pada zikir semasa membacanya untuk menyimpannya di sini.",
+  "favorites_hub_hint": "Simpan zikir kegemaran anda dengan mengetik ikon hati ❤️ pada kad zikir semasa membaca; ia akan muncul di sini.",
+  "lesson": "Kuliah",
+  "playing_now_badge": "Sedang berkumandang",
+  "quick_favorite_adhkar": "Zikir yang anda simpan",
+  "show_evidence_and_sharh": "Tunjuk dalil dan huraian penuh",
+  "stop_sound_btn": "Hentikan bunyi",
+  "view_all": "Lihat semua",
+  "reading_speed_start": "Permulaan perjalanan zikir 🌟",
+  "reading_speed_fast": "Kelajuan cemerlang dan semangat tinggi ⚡",
+  "reading_speed_balanced": "Bacaan tenang dan renungan seimbang 🌸",
+  "reading_speed_deep": "Khusyuk sepenuhnya, tenang dan renungan mendalam 💎"
 }

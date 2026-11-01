@@ -1851,5 +1851,19 @@
   "mushaf_open_mode_label": "Abrir suras:",
   "mushaf_open_mode_pages": "En páginas del Mushaf",
   "mushaf_open_mode_text": "Como texto",
-  "reminder_overlay_desc": "A la hora de los adhkar de la mañana y de la tarde, la tarjeta de recordatorio aparece sobre cualquier pantalla, incluso con la app cerrada, con un botón «Leer ahora». Sin este permiso solo aparece la notificación."
+  "reminder_overlay_desc": "A la hora de los adhkar de la mañana y de la tarde, la tarjeta de recordatorio aparece sobre cualquier pantalla, incluso con la app cerrada, con un botón «Leer ahora». Sin este permiso solo aparece la notificación.",
+  "app_name_full": "App Azkar Almumin",
+  "browse_adhkar": "Explorar adhkar",
+  "empty_favorites_desc": "Aún no has guardado ningún dhikr. Toca el corazón ❤️ de cualquier dhikr mientras lo lees para tenerlo aquí a mano.",
+  "favorites_hub_hint": "Guarda tus adhkar favoritos tocando el corazón ❤️ en cualquier tarjeta mientras lees; aparecerán aquí.",
+  "lesson": "Lección",
+  "playing_now_badge": "Sonando ahora",
+  "quick_favorite_adhkar": "Tus adhkar guardados",
+  "show_evidence_and_sharh": "Ver pruebas y explicación completa",
+  "stop_sound_btn": "Detener sonido",
+  "view_all": "Ver todo",
+  "reading_speed_start": "Comienzo del viaje del dhikr 🌟",
+  "reading_speed_fast": "Velocidad excelente y gran energía ⚡",
+  "reading_speed_balanced": "Recitación serena y reflexión equilibrada 🌸",
+  "reading_speed_deep": "Humildad total, serenidad y reflexión profunda 💎"
 }
