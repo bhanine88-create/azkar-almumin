@@ -1344,7 +1344,12 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button 
-                    onClick={() => setIsLanguageModalOpen(true)}
+                    onClick={() => {
+                      // The drawer sits above the modal: close it, or the
+                      // language list opens hidden underneath.
+                      setIsDrawerOpen(false);
+                      setIsLanguageModalOpen(true);
+                    }}
                     className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
                     title={t('language', 'اللغة')}
                   >
