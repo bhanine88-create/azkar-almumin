@@ -140,7 +140,7 @@ export const Home: React.FC = () => {
               {/* Vibrant Glow Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-green-300/50 to-transparent pointer-events-none opacity-90 mix-blend-overlay" />
 
-              <div className="flex flex-col text-right relative z-10">
+              <div className="flex flex-col text-start relative z-10">
                 <span className="text-[17px] font-black tracking-tight leading-none drop-shadow-md mb-0.5 text-white whitespace-nowrap">{getHijriDate(today, settings.hijriOffset, currentLang)}</span>
                 <div className="flex items-center gap-1.5 opacity-90">
                   <div className="w-1 h-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,1)]" />
@@ -237,7 +237,7 @@ export const Home: React.FC = () => {
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shadow-inner border border-white/20">
                 <BookOpen size={20} className="drop-shadow-md" />
               </div>
-              <div className="text-right">
+              <div className="text-start">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-white font-black text-sm tracking-tight drop-shadow-md">متابعة القراءة</span>
                   <div className="px-1.5 py-0.5 rounded bg-emerald-400/30 border border-emerald-300/30 text-[9px] font-bold text-white flex items-center gap-1">
@@ -314,14 +314,14 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
     triggerHaptic('light');
     navigate('/quran');
   }}
-  className="navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-amber-600 via-amber-700 to-yellow-900 shadow-xl shadow-amber-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
+  className="navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-amber-600 via-amber-700 to-yellow-900 shadow-xl shadow-amber-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none text-start"
           >
   {/* Decorative Elements */}
   <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
   <div className="absolute -top-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
 
   <div className="relative min-h-[88px] py-3 flex items-center justify-between gap-3 px-4 sm:px-7 text-white">
-    <div className="min-w-0 flex flex-col text-right">
+    <div className="min-w-0 flex flex-col text-start">
       <div className="flex items-center gap-2.5 mb-0.5">
         <BookOpenText size={20} className="text-amber-200" />
         <h3 className="font-black text-xl sm:text-2xl drop-shadow-lg tracking-tight">{t('mushaf_title')}</h3>
@@ -348,7 +348,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
     triggerHaptic('light');
     navigate('/audio-library');
   }}
-  className={cn("navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-fuchsia-500 via-pink-600 to-rose-700 shadow-xl shadow-fuchsia-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
+  className={cn("navigation-card w-full relative block min-h-[88px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-fuchsia-500 via-pink-600 to-rose-700 shadow-xl shadow-fuchsia-900/30 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-start" : "text-left")}
           >
   {/* Decorative Elements */}
   <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
@@ -356,7 +356,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
   <div className="absolute -bottom-10 -right-10 w-32 h-32 text-fuchsia-400/20 rounded-full card-glow group-hover:scale-150 transition-transform duration-700" />
 
   <div className={cn("relative min-h-[88px] py-3 flex items-center justify-between gap-3 px-4 sm:px-7 text-white", isRtl ? "flex-row" : "flex-row-reverse")}>
-    <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
+    <div className={cn("min-w-0 flex flex-col", isRtl ? "text-start" : "text-left")}>
       <div className="flex items-center gap-2.5 mb-0.5">
         <AudioLines size={20} className="text-fuchsia-200" />
         <h3 className="font-black text-xl sm:text-2xl drop-shadow-lg tracking-tight">{t('audio_library')}</h3>
@@ -383,7 +383,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
     triggerHaptic('light');
     navigate('/adhkar/morning');
   }}
-  className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-orange-400/50 shadow-xl shadow-red-500/20 group cursor-pointer outline-none text-right"
+  className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-orange-400/50 shadow-xl shadow-red-500/20 group cursor-pointer outline-none text-start"
           >
   <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600" />
   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -400,7 +400,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
     triggerHaptic('light');
     navigate('/adhkar/evening');
   }}
-  className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-indigo-500/20 shadow-xl shadow-indigo-900/40 group cursor-pointer outline-none text-right"
+  className="navigation-card relative block min-h-[76px] rounded-2xl overflow-hidden transition-all duration-300 border border-indigo-500/20 shadow-xl shadow-indigo-900/40 group cursor-pointer outline-none text-start"
           >
   <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900" />
   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -424,7 +424,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
         >
           <button
   onClick={() => navigate('/prayer-times')}
-  className="navigation-card w-full relative block min-h-[84px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-900 shadow-xl shadow-teal-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
+  className="navigation-card w-full relative block min-h-[84px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-900 shadow-xl shadow-teal-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-start"
           >
   {/* Decorative Elements */}
   <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
@@ -432,7 +432,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
   <div className="absolute top-0 left-0 w-24 h-24 text-black/20 rounded-full card-glow" />
 
   <div className="relative min-h-[84px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white">
-    <div className="min-w-0 flex flex-col text-right">
+    <div className="min-w-0 flex flex-col text-start">
       <div className="flex items-center gap-2 mb-0.5">
         <Clock size={16} className="text-teal-200" />
         <h3 className="font-black text-xl drop-shadow-md">{t('prayer_times_card_title')}</h3>
@@ -454,7 +454,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
         <div className="grid grid-cols-2 gap-3 px-1 h-full">
           <button
   onClick={() => navigate('/names')}
-  className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-orange-400/20 shadow-xl shadow-orange-900/10 group bg-gradient-to-br from-orange-400 via-orange-600 to-red-800 dark:from-orange-800 dark:via-red-900 dark:to-red-950 cursor-pointer outline-none text-right"
+  className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-orange-400/20 shadow-xl shadow-orange-900/10 group bg-gradient-to-br from-orange-400 via-orange-600 to-red-800 dark:from-orange-800 dark:via-red-900 dark:to-red-950 cursor-pointer outline-none text-start"
           >
   <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
   <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
@@ -471,7 +471,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
 
           <button
   onClick={() => navigate('/compass')}
-  className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-indigo-400/20 shadow-xl shadow-indigo-900/10 group bg-gradient-to-br from-indigo-600 via-blue-700 to-slate-900 dark:from-indigo-900 dark:via-indigo-950 dark:to-slate-950 cursor-pointer outline-none text-right"
+  className="navigation-card relative block min-h-[110px] rounded-2xl overflow-hidden transition-all duration-500 border border-indigo-400/20 shadow-xl shadow-indigo-900/10 group bg-gradient-to-br from-indigo-600 via-blue-700 to-slate-900 dark:from-indigo-900 dark:via-indigo-950 dark:to-slate-950 cursor-pointer outline-none text-start"
           >
   <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
   <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-white/60 shadow-sm z-10" />
@@ -513,13 +513,13 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
         >
           <button
   onClick={() => navigate('/khatma')}
-  className="navigation-card w-full relative block min-h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 shadow-xl shadow-indigo-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-right"
+  className="navigation-card w-full relative block min-h-[110px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 shadow-xl shadow-indigo-900/20 group overflow-hidden border border-white/10 cursor-pointer outline-none text-start"
           >
   <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
   <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
 
   <div className="relative min-h-[110px] py-3 flex items-center justify-between gap-3 px-4 sm:px-6 text-white">
-    <div className="min-w-0 flex flex-col text-right">
+    <div className="min-w-0 flex flex-col text-start">
       <div className="flex items-center gap-2 mb-0.5">
         <BookOpen size={18} className="text-indigo-200" />
         <h3 className="font-black text-xl drop-shadow-md">{t('khatma')}</h3>
@@ -546,7 +546,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
     triggerHaptic('light');
     navigate('/hijri-calendar');
   }}
-  className={cn("navigation-card w-full relative block min-h-[90px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-800 via-teal-900 to-emerald-950 shadow-xl shadow-emerald-950/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-right" : "text-left")}
+  className={cn("navigation-card w-full relative block min-h-[90px] rounded-2xl transition-all duration-300 bg-gradient-to-br from-emerald-800 via-teal-900 to-emerald-950 shadow-xl shadow-emerald-950/20 group overflow-hidden border border-white/10 cursor-pointer outline-none", isRtl ? "text-start" : "text-left")}
           >
   <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
   <div className="absolute -bottom-10 -left-10 w-32 h-32 text-white/10 rounded-full card-glow" />
@@ -556,7 +556,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
       <div className="w-12 h-12 shrink-0 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transform transition-all duration-300 active:scale-[0.85] active:opacity-70">
         <Calendar size={24} className="text-emerald-200 drop-shadow-lg" />
       </div>
-      <div className={cn("min-w-0 flex flex-col", isRtl ? "text-right" : "text-left")}>
+      <div className={cn("min-w-0 flex flex-col", isRtl ? "text-start" : "text-left")}>
         <div className="flex items-center gap-2 mb-0.5 flex-wrap">
           <h3 className="font-black text-lg sm:text-xl drop-shadow-md text-white">{t('hijri_calendar_card_title')}</h3>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-[10px] font-bold text-emerald-100">
@@ -592,7 +592,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
           }}
           className={cn(
   "navigation-card w-full relative overflow-hidden min-h-[76px] rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 p-4 flex flex-wrap gap-3 items-center justify-between border border-white/10 shadow-lg shadow-purple-950/30 group transition-all outline-none cursor-pointer",
-  isRtl ? "text-right" : "text-left"
+  isRtl ? "text-start" : "text-left"
           )}
         >
           <div className="absolute inset-0 opacity-10 bg-[url('/images/arabesque.png')]" />
@@ -600,7 +600,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
   <div className="w-12 h-12 shrink-0 bg-purple-500/20 rounded-xl flex items-center justify-center shadow-md border border-purple-400/30 group-hover:scale-105 transition-transform duration-300">
     <BarChart3 size={24} className="text-purple-200 drop-shadow-md" />
   </div>
-  <div className={isRtl ? "text-right" : "text-left"}>
+  <div className={isRtl ? "text-start" : "text-left"}>
     <h3 className="text-sm md:text-base font-black text-white leading-tight">
       {t('adhkar_commitment_stats')}
     </h3>
@@ -627,14 +627,14 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
       >
         <button
           onClick={() => navigate('/challenges')}
-          className={cn("navigation-card w-full relative overflow-hidden min-h-[90px] rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-4 flex flex-wrap gap-3 items-center justify-between border border-white/10 shadow-lg shadow-indigo-50/20 group transition-all outline-none", isRtl ? "text-right" : "text-left")}
+          className={cn("navigation-card w-full relative overflow-hidden min-h-[90px] rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-4 flex flex-wrap gap-3 items-center justify-between border border-white/10 shadow-lg shadow-indigo-50/20 group transition-all outline-none", isRtl ? "text-start" : "text-left")}
         >
           <div className="absolute inset-0 bg-[url('/images/arabesque.png')] opacity-10 mix-blend-overlay" />
           <div className={cn("flex items-center gap-3 relative z-10", isRtl ? "flex-row" : "flex-row-reverse")}>
   <div className="w-14 h-14 shrink-0 bg-white/20 rounded-2xl flex items-center justify-center shadow-lg border border-white/30 group-hover:rotate-12 transition-transform duration-500">
     <Zap size={28} className="text-amber-300 fill-amber-300/30" />
   </div>
-  <div className={isRtl ? "text-right" : "text-left"}>
+  <div className={isRtl ? "text-start" : "text-left"}>
     <h3 className="text-lg font-black text-white dark:text-white leading-tight">{t('challenges_nav')}</h3>
     <p className="text-[10px] text-indigo-100 font-bold uppercase tracking-widest">{t('challenges_card_desc')}</p>
   </div>
@@ -670,7 +670,7 @@ const HomeWidgetCard = React.memo<HomeWidgetCardProps>(({ id, t, navigate, isRtl
     <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30 shrink-0 shadow-inner group-hover:scale-110 transition-transform">
       <HandHeart size={26} className="animate-pulse" />
     </div>
-    <div className="min-w-0 text-right">
+    <div className="min-w-0 text-start">
       <div className="flex items-center gap-2 mb-0.5">
         <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shrink-0">
           {t('sadaqah_badge')}

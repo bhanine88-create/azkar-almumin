@@ -3674,5 +3674,11 @@
   "ui_surah_111": "अल-मसद",
   "ui_surah_112": "अल-इख़लास",
   "ui_surah_113": "अल-फ़लक़",
-  "ui_surah_114": "अन-नास"
+  "ui_surah_114": "अन-नास",
+  "nav_home": "होम",
+  "nav_adhkar": "अज़कार",
+  "nav_quran": "क़ुरआन",
+  "nav_library": "पुस्तकालय",
+  "nav_tasbih": "तस्बीह",
+  "nav_settings": "सेटिंग्स"
 }

@@ -3674,5 +3674,11 @@
   "ui_surah_111": "المسد",
   "ui_surah_112": "الإخلاص",
   "ui_surah_113": "الفلق",
-  "ui_surah_114": "الناس"
+  "ui_surah_114": "الناس",
+  "nav_home": "ہوم",
+  "nav_adhkar": "اذکار",
+  "nav_quran": "قرآن",
+  "nav_library": "لائبریری",
+  "nav_tasbih": "تسبیح",
+  "nav_settings": "ترتیبات"
 }

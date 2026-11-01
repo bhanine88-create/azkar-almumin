@@ -3674,5 +3674,11 @@
   "ui_surah_111": "Al-Masad",
   "ui_surah_112": "Al-Ikhlas",
   "ui_surah_113": "Al-Falaq",
-  "ui_surah_114": "An-Nas"
+  "ui_surah_114": "An-Nas",
+  "nav_home": "Ana Sayfa",
+  "nav_adhkar": "Zikirler",
+  "nav_quran": "Kur'an",
+  "nav_library": "Kitaplık",
+  "nav_tasbih": "Tesbih",
+  "nav_settings": "Ayarlar"
 }

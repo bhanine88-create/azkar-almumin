@@ -1859,37 +1859,37 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
               "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800"
             )}>
               <div className="max-w-2xl md:max-w-4xl mx-auto px-1 min-[360px]:px-3 sm:px-4 md:px-8 pt-1.5 flex justify-between items-center w-full">
-                <NavItem to="/"icon={<Home size={22} />} label={t('home')} onPreload={() => preloadRoute('/')} onClick={() => {
+                <NavItem to="/"icon={<Home size={22} />} label={t('nav_home', t('home'))} onPreload={() => preloadRoute('/')} onClick={() => {
                 const destIndex = swipeableTabs.indexOf('/');
                 if (currentIndex !== -1 && destIndex !== -1 && destIndex !== currentIndex) {
                   setSwipeDirection(isRtl ? (destIndex < currentIndex ? 1 : -1) : (destIndex > currentIndex ? 1 : -1));
                 } else { setSwipeDirection(0); }
               }} />
-              <NavItem to="/adhkar" icon={<Sunrise size={22} />} label={t('adhkar')} onPreload={() => preloadRoute('/adhkar')} onClick={() => {
+              <NavItem to="/adhkar" icon={<Sunrise size={22} />} label={t('nav_adhkar', t('adhkar'))} onPreload={() => preloadRoute('/adhkar')} onClick={() => {
                 const destIndex = swipeableTabs.indexOf('/adhkar');
                 if (currentIndex !== -1 && destIndex !== -1 && destIndex !== currentIndex) {
                   setSwipeDirection(isRtl ? (destIndex < currentIndex ? 1 : -1) : (destIndex > currentIndex ? 1 : -1));
                 } else { setSwipeDirection(0); }
               }} />
-              <NavItem to="/quran" icon={<BookOpen size={22} />} label={t('quran')} onPreload={() => preloadRoute('/quran')} onClick={() => {
+              <NavItem to="/quran" icon={<BookOpen size={22} />} label={t('nav_quran', t('quran'))} onPreload={() => preloadRoute('/quran')} onClick={() => {
                 const destIndex = swipeableTabs.indexOf('/quran');
                 if (currentIndex !== -1 && destIndex !== -1 && destIndex !== currentIndex) {
                   setSwipeDirection(isRtl ? (destIndex < currentIndex ? 1 : -1) : (destIndex > currentIndex ? 1 : -1));
                 } else { setSwipeDirection(0); }
               }} />
-              <NavItem to="/library" icon={<LayoutGrid size={22} />} label={t('library')} onPreload={() => preloadRoute('/library')} onClick={() => {
+              <NavItem to="/library" icon={<LayoutGrid size={22} />} label={t('nav_library', t('library'))} onPreload={() => preloadRoute('/library')} onClick={() => {
                 const destIndex = swipeableTabs.indexOf('/library');
                 if (currentIndex !== -1 && destIndex !== -1 && destIndex !== currentIndex) {
                   setSwipeDirection(isRtl ? (destIndex < currentIndex ? 1 : -1) : (destIndex > currentIndex ? 1 : -1));
                 } else { setSwipeDirection(0); }
               }} />
-              <NavItem to="/tasbih" icon={<Fingerprint size={22} />} label={t('tasbih')} onPreload={() => preloadRoute('/tasbih')} onClick={() => {
+              <NavItem to="/tasbih" icon={<Fingerprint size={22} />} label={t('nav_tasbih', t('tasbih'))} onPreload={() => preloadRoute('/tasbih')} onClick={() => {
                 const destIndex = swipeableTabs.indexOf('/tasbih');
                 if (currentIndex !== -1 && destIndex !== -1 && destIndex !== currentIndex) {
                   setSwipeDirection(isRtl ? (destIndex < currentIndex ? 1 : -1) : (destIndex > currentIndex ? 1 : -1));
                 } else { setSwipeDirection(0); }
               }} />
-              <NavItem to="/settings" icon={<Settings size={22} />} label={t('settings')} onPreload={() => preloadRoute('/settings')} onClick={() => setSwipeDirection(0)} />
+              <NavItem to="/settings" icon={<Settings size={22} />} label={t('nav_settings', t('settings'))} onPreload={() => preloadRoute('/settings')} onClick={() => setSwipeDirection(0)} />
               </div>
             </motion.nav>
           )}

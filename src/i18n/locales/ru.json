@@ -3674,5 +3674,11 @@
   "ui_surah_111": "Аль-Масад",
   "ui_surah_112": "Аль-Ихлас",
   "ui_surah_113": "Аль-Фалак",
-  "ui_surah_114": "Ан-Нас"
+  "ui_surah_114": "Ан-Нас",
+  "nav_home": "Главная",
+  "nav_adhkar": "Азкары",
+  "nav_quran": "Коран",
+  "nav_library": "Разделы",
+  "nav_tasbih": "Тасбих",
+  "nav_settings": "Опции"
 }
