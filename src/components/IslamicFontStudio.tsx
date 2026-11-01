@@ -27,6 +27,7 @@ import {
 } from '../services/fontService';
 import { useQuranSettings } from '../context/QuranSettingsContext';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 interface IslamicFontStudioProps {
   isOpen?: boolean;
@@ -50,6 +51,15 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
 }) => {
   const { fontFamily: quranFont, setFontFamily: setQuranFont } = useQuranSettings();
   const { settings, updateSettings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
+
+  const fontName = (font: IslamicFont) => {
+    if (font.id === 'uthmanic-hafs') return t('fs_font_uthmanic_hafs_name', font.name);
+    if (settings.appLanguage === 'ar') return font.name;
+    const m = font.name.match(/\(([^)]+)\)/);
+    return m ? m[1] : font.name;
+  };
+  const fontDesc = (font: IslamicFont) => t(`fs_font_${font.id.replace(/-/g, '_')}_desc`, font.description);
 
   const triggerHaptic = (_type?: string) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -93,10 +103,10 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
       triggerHaptic('success');
       const updated = getDownloadedFontIds();
       setDownloadedIds(updated);
-      showToast(`تم تنزيل وتثبيت ${font.name} بنجاح!`);
+      showToast(t('fs_toast_downloaded', 'تم تنزيل وتثبيت {{name}} بنجاح!', { name: fontName(font) }));
     } else {
       triggerHaptic('error');
-      showToast(`عذراً، تعذر تنزيل ${font.name}. يرجى التحقق من الاتصال.`);
+      showToast(t('fs_toast_download_failed', 'عذراً، تعذر تنزيل {{name}}. يرجى التحقق من الاتصال.', { name: fontName(font) }));
     }
   };
 
@@ -109,38 +119,39 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
     triggerHaptic('light');
     setQuranFont(font.fontFamily);
     document.documentElement.style.setProperty('--quran-font', `"${font.fontFamily}"`);
-    showToast(`تم تطبيق ${font.name} لقراءة القرآن الكريم`);
+    showToast(t('fs_toast_applied_quran', 'تم تطبيق {{name}} لقراءة القرآن الكريم', { name: fontName(font) }));
   };
 
   const handleApplyToAdhkar = (font: IslamicFont) => {
     triggerHaptic('light');
     updateSettings({ adhkarFontFamily: font.fontFamily });
     document.documentElement.style.setProperty('--adhkar-font', `"${font.fontFamily}"`);
-    showToast(`تم تطبيق ${font.name} لنصوص الأذكار والأدعية`);
+    showToast(t('fs_toast_applied_adhkar', 'تم تطبيق {{name}} لنصوص الأذكار والأدعية', { name: fontName(font) }));
   };
 
   const handleApplyToApp = (font: IslamicFont) => {
     triggerHaptic('light');
     updateSettings({ fontFamily: font.fontFamily });
     document.documentElement.style.setProperty('--app-font', `"${font.fontFamily}"`);
-    showToast(`تم تطبيق ${font.name} كالخط الرئيسي للتطبيق`);
+    showToast(t('fs_toast_applied_app', 'تم تطبيق {{name}} كالخط الرئيسي للتطبيق', { name: fontName(font) }));
   };
 
   const filteredFonts = CURATED_ISLAMIC_FONTS.filter(font => {
     const matchesCategory = activeCategory === 'all' || font.category === activeCategory;
-    const matchesQuery = font.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const q = searchQuery.toLowerCase();
+    const matchesQuery = font.name.toLowerCase().includes(q) || fontName(font).toLowerCase().includes(q) ||
                          font.designer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         font.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         font.description.toLowerCase().includes(q) || fontDesc(font).toLowerCase().includes(q);
     return matchesCategory && matchesQuery;
   });
 
   const categories = useMemo(() => [
-    { id: 'all', label: 'الكل', count: CURATED_ISLAMIC_FONTS.length },
-    { id: 'quranic', label: 'عثماني وقرآني', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'quranic').length },
-    { id: 'kufi', label: 'خطوط كوفية', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'kufi').length },
-    { id: 'naskh_ruqaa', label: 'رقعة ونسخ', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'naskh_ruqaa').length },
-    { id: 'modern', label: 'حديث وعرض', count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'modern').length }
-  ], []);
+    { id: 'all', label: t('fs_cat_all', 'الكل'), count: CURATED_ISLAMIC_FONTS.length },
+    { id: 'quranic', label: t('fs_cat_quranic', 'عثماني وقرآني'), count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'quranic').length },
+    { id: 'kufi', label: t('fs_cat_kufi', 'خطوط كوفية'), count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'kufi').length },
+    { id: 'naskh_ruqaa', label: t('fs_cat_naskh_ruqaa', 'رقعة ونسخ'), count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'naskh_ruqaa').length },
+    { id: 'modern', label: t('fs_cat_modern', 'حديث وعرض'), count: CURATED_ISLAMIC_FONTS.filter(f => f.category === 'modern').length }
+  ], [settings.appLanguage]);
 
   if (!isOpen && !standalonePage) return null;
 
@@ -154,10 +165,10 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
             <div>
               <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
                 <Type size={16} className="text-teal-600 dark:text-teal-400" />
-                <span>مكتبة الخطوط والخط العربي</span>
+                <span>{t('fs_title', 'مكتبة الخطوط والخط العربي')}</span>
               </h1>
               <p className="text-[10px] sm:text-[11px] font-bold text-teal-600 dark:text-teal-400">
-                استوديو الخطوط الإسلامية والزخرفة
+                {t('fs_subtitle', 'استوديو الخطوط الإسلامية والزخرفة')}
               </p>
             </div>
           </div>
@@ -167,7 +178,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
               <button
                 onClick={onClose}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-                title="إغلاق"
+                title={t('fs_close', 'إغلاق')}
               >
                 <X size={18} />
               </button>
@@ -208,18 +219,18 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
 
           {/* Search Input */}
           <div className="relative w-full sm:w-56 shrink-0">
-            <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="بحث عن خط أو خطاط..."
-              className="w-full pr-8 pl-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-900 dark:text-white text-xs font-bold placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
+              placeholder={t('fs_search_placeholder', 'بحث عن خط أو خطاط...')}
+              className="w-full ps-8 pe-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-900 dark:text-white text-xs font-bold placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
             />
             {searchQuery !== '' && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 hover:text-rose-500 transition-colors"
+                className="absolute inset-y-0 end-0 pe-2.5 flex items-center text-slate-400 hover:text-rose-500 transition-colors"
               >
                 <X size={14} />
               </button>
@@ -235,13 +246,13 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-black">
               <Sparkles size={14} className="animate-pulse" />
-              <span>استوديو الخطوط الإسلامية والزخرفة</span>
+              <span>{t('fs_subtitle', 'استوديو الخطوط الإسلامية والزخرفة')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
-              مكتبة الخطوط والخط العربي
+              {t('fs_title', 'مكتبة الخطوط والخط العربي')}
             </h2>
             <p className="text-xs sm:text-sm text-teal-100/80 font-bold max-w-xl leading-relaxed">
-              اختر ونزّل خطك المفضل من نخبة الخطوط القرآنية والعثمانية والكوفية لإضفاء جمال وإحساس إيماني فريد على قراءة آيات المصحف الشريف والأذكار.
+              {t('fs_banner_desc', 'اختر ونزّل خطك المفضل من نخبة الخطوط القرآنية والعثمانية والكوفية لإضفاء جمال وإحساس إيماني فريد على قراءة آيات المصحف الشريف والأذكار.')}
             </p>
           </div>
         </div>
@@ -267,10 +278,10 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
         <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2 text-teal-400 font-black text-sm">
             <Palette size={18} />
-            <span>معاينة النص الحي المخصص</span>
+            <span>{t('fs_live_preview', 'معاينة النص الحي المخصص')}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 font-bold">حجم الخط: {sampleFontSize}px</span>
+            <span className="text-xs text-white/60 font-bold">{t('fs_font_size', 'حجم الخط: {{size}}px', { size: sampleFontSize })}</span>
             <input
               type="range"
               min={16}
@@ -288,13 +299,13 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
             type="text"
             value={customSampleText}
             onChange={(e) => setCustomSampleText(e.target.value)}
-            placeholder="اكتب أي آية قرآنية أو ذكر لمعاينتها بجميع الخطوط..."
+            placeholder={t('fs_sample_placeholder', 'اكتب أي آية قرآنية أو ذكر لمعاينتها بجميع الخطوط...')}
             className="w-full p-3.5 rounded-2xl bg-black/40 border border-white/15 text-white placeholder-white/40 text-sm font-bold focus:outline-none focus:border-teal-400/60 transition-colors"
           />
 
           {/* Quick Preset Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-            <span className="text-[11px] font-black text-white/50 shrink-0 pl-1">نماذج سريعة:</span>
+            <span className="text-[11px] font-black text-white/50 shrink-0 ps-1">{t('fs_quick_samples', 'نماذج سريعة:')}</span>
             {SAMPLE_PRESETS.map((p, idx) => (
               <button
                 key={idx}
@@ -309,7 +320,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                     : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white"
                 )}
               >
-                {p.label}
+                {t(`fs_preset_${idx}`, p.label)}
               </button>
             ))}
           </div>
@@ -344,19 +355,19 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-black text-white">{font.name}</h3>
+                      <h3 className="text-lg font-black text-white">{fontName(font)}</h3>
                       <span className="px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-[10px] font-black">
-                        {font.categoryLabel}
+                        {t(`fs_cat_${font.category}`, font.categoryLabel)}
                       </span>
                     </div>
                     <p className="text-[11px] text-white/50 font-bold mt-0.5">{font.designer}</p>
                   </div>
 
                   {/* Size / Status Badge */}
-                  <div className="text-left shrink-0">
+                  <div className="text-end shrink-0">
                     {font.isBuiltIn ? (
                       <span className="text-[10px] font-black text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full border border-amber-500/30">
-                        مدمج بالنظام
+                        {t('fs_builtin', 'مدمج بالنظام')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-black text-white/60 bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
@@ -367,7 +378,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                 </div>
 
                 <p className="text-xs text-white/70 font-bold leading-relaxed line-clamp-2">
-                  {font.description}
+                  {fontDesc(font)}
                 </p>
 
                 {/* Active Usage Badges */}
@@ -375,19 +386,19 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                   {isQuranActive && (
                     <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black flex items-center gap-1">
                       <BookOpen size={12} />
-                      <span>الخط الحالي للقرآن</span>
+                      <span>{t('fs_current_quran', 'الخط الحالي للقرآن')}</span>
                     </span>
                   )}
                   {isAdhkarActive && (
                     <span className="px-2.5 py-1 rounded-xl bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] font-black flex items-center gap-1">
                       <HeartHandshake size={12} />
-                      <span>الخط الحالي للأذكار</span>
+                      <span>{t('fs_current_adhkar', 'الخط الحالي للأذكار')}</span>
                     </span>
                   )}
                   {isAppActive && (
                     <span className="px-2.5 py-1 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-black flex items-center gap-1">
                       <Type size={12} />
-                      <span>الخط الرئيسي للتطبيق</span>
+                      <span>{t('fs_current_app', 'الخط الرئيسي للتطبيق')}</span>
                     </span>
                   )}
                 </div>
@@ -413,7 +424,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                         <div className="flex items-center justify-between text-xs font-black text-teal-300">
                           <span className="flex items-center gap-1.5">
                             <RefreshCw size={14} className="animate-spin" />
-                            <span>جاري تنزيل الخط...</span>
+                            <span>{t('fs_downloading', 'جاري تنزيل الخط...')}</span>
                           </span>
                           <span>{currentProgress}%</span>
                         </div>
@@ -431,7 +442,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                         className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-teal-950/50 transition-all cursor-pointer active:scale-95"
                       >
                         <Download size={16} />
-                        <span>تنزيل وتثبيت الخط ({font.sizeKb} KB)</span>
+                        <span>{t('fs_download_install', 'تنزيل وتثبيت الخط ({{size}} KB)', { size: font.sizeKb })}</span>
                       </button>
                     )}
                   </div>
@@ -447,7 +458,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                       )}
                     >
                       <BookOpen size={14} />
-                      <span>للقرآن</span>
+                      <span>{t('fs_for_quran', 'للقرآن')}</span>
                     </button>
 
                     <button
@@ -460,7 +471,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                       )}
                     >
                       <HeartHandshake size={14} />
-                      <span>للأذكار</span>
+                      <span>{t('fs_for_adhkar', 'للأذكار')}</span>
                     </button>
 
                     <button
@@ -473,7 +484,7 @@ export const IslamicFontStudio: React.FC<IslamicFontStudioProps> = ({
                       )}
                     >
                       <Type size={14} />
-                      <span>للتطبيق</span>
+                      <span>{t('fs_for_app', 'للتطبيق')}</span>
                     </button>
                   </div>
                 )}

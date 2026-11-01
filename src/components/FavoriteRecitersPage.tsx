@@ -5,6 +5,7 @@ import { Star, Mic2, ChevronLeft, Search } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { RECITERS } from '../reciters';
 import { cn } from '../lib/utils';
+import { useTranslation } from '../i18n';
 import { BackButton } from './ui/BackButton';
 import { EmptyStatePlaceholder } from './EmptyStatePlaceholder';
 import { smartReciterMatch } from '../lib/arabicSearch';
@@ -12,7 +13,8 @@ import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
 
 export const FavoriteRecitersPage: React.FC = () => {
   const navigate = useNavigate();
-  const { progress, toggleReciterFavorite } = useAppContext();
+  const { progress, toggleReciterFavorite, settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [searchQuery, setSearchQuery] = React.useState('');
 
   React.useEffect(() => {
@@ -32,10 +34,10 @@ export const FavoriteRecitersPage: React.FC = () => {
             <BackButton />
             <div>
               <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                القراء المفضلون ({favoriteReciters.length})
+                {t('qa_fav_reciters_title', 'القراء المفضلون ({{count}})', { count: favoriteReciters.length })}
                 <Star size={18} className="text-amber-500 fill-current" />
               </h1>
-              <p className="text-[10px] font-bold text-slate-500">قائمة قرائك المختارين</p>
+              <p className="text-[10px] font-bold text-slate-500">{t('qa_fav_reciters_list_desc', 'قائمة قرائك المختارين')}</p>
             </div>
           </div>
         </div>
@@ -50,7 +52,7 @@ export const FavoriteRecitersPage: React.FC = () => {
             </div>
             <input
               type="text"
-              placeholder="البحث في المفضلين..."
+              placeholder={t('la_fav_search', 'البحث في المفضلين...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 pr-11 pl-4 rounded-2xl text-sm font-bold bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
@@ -76,7 +78,7 @@ export const FavoriteRecitersPage: React.FC = () => {
                     </span>
                     <Mic2 size={20} />
                   </div>
-                  <div className="text-right">
+                  <div className="text-start">
                     <h3 className="font-black text-slate-900 dark:text-white text-base">{r.name}</h3>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{r.style}</span>
                   </div>
@@ -99,17 +101,17 @@ export const FavoriteRecitersPage: React.FC = () => {
           </div>
         ) : (
           <EmptyStatePlaceholder
-            title={searchQuery ? "لا توجد نتائج بحث" : "لم تضف أي قراء بعد"}
+            title={searchQuery ? t('la_no_search_results', 'لا توجد نتائج بحث') : t('qa_no_fav_reciters_yet', 'لم تضف أي قراء بعد')}
             description={searchQuery 
-              ? "جرب البحث بكلمة أخرى أو عرض القائمة كاملة" 
-              : "يمكنك إضافة القراء المفضلين عن طريق الضغط على زر النجمة في صفحة القرآن الكريم"}
+              ? t('la_try_other_search', 'جرب البحث بكلمة أخرى أو عرض القائمة كاملة') 
+              : t('qa_fav_reciters_hint', 'يمكنك إضافة القراء المفضلين عن طريق الضغط على زر النجمة في صفحة القرآن الكريم')}
             variant="empty"
             action={!searchQuery ? (
               <button
                 onClick={() => navigate('/quran-audio')}
                 className="px-8 py-3 bg-teal-600 text-white font-black rounded-2xl shadow-lg shadow-teal-600/30 hover:bg-teal-700 transition-colors"
               >
-                تصفح القراء
+                {t('qa_browse_reciters', 'تصفح القراء')}
               </button>
             ) : undefined}
           />

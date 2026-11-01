@@ -5,6 +5,7 @@ import { Star, Mic2, ChevronLeft, Search } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { SCHOLARS } from '../data/lectures';
 import { cn } from '../lib/utils';
+import { useTranslation } from '../i18n';
 import { BackButton } from './ui/BackButton';
 import { EmptyStatePlaceholder } from './EmptyStatePlaceholder';
 import { smartScholarMatch } from '../lib/arabicSearch';
@@ -12,7 +13,8 @@ import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
 
 export const FavoriteScholarsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { progress, toggleScholarFavorite } = useAppContext();
+  const { progress, toggleScholarFavorite, settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [searchQuery, setSearchQuery] = React.useState('');
 
   React.useEffect(() => {
@@ -32,10 +34,10 @@ export const FavoriteScholarsPage: React.FC = () => {
             <BackButton />
             <div>
               <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                الشيوخ المفضلون ({favoriteScholars.length})
+                {t('la_fav_scholars_title', 'الشيوخ المفضلون ({{count}})', { count: favoriteScholars.length })}
                 <Star size={18} className="text-amber-500 fill-current" />
               </h1>
-              <p className="text-[10px] font-bold text-slate-500">قائمة شيوخك ودعاتك المفضلين</p>
+              <p className="text-[10px] font-bold text-slate-500">{t('la_fav_scholars_desc', 'قائمة شيوخك ودعاتك المفضلين')}</p>
             </div>
           </div>
         </div>
@@ -50,7 +52,7 @@ export const FavoriteScholarsPage: React.FC = () => {
             </div>
             <input
               type="text"
-              placeholder="البحث في المفضلين..."
+              placeholder={t('la_fav_search', 'البحث في المفضلين...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 pr-11 pl-4 rounded-2xl text-sm font-bold bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 outline-none focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
@@ -76,9 +78,9 @@ export const FavoriteScholarsPage: React.FC = () => {
                     </span>
                     <Mic2 size={24} />
                   </div>
-                  <div className="text-right">
+                  <div className="text-start">
                     <h3 className="font-black text-slate-900 dark:text-white text-base">{s.name}</h3>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.series.length} سلسلة</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('la_series_short', '{{count}} سلسلة', { count: s.series.length })}</span>
                   </div>
                 </div>
 
@@ -99,17 +101,17 @@ export const FavoriteScholarsPage: React.FC = () => {
           </div>
         ) : (
           <EmptyStatePlaceholder
-            title={searchQuery ? "لا توجد نتائج بحث" : "لم تضف أي شيوخ بعد"}
+            title={searchQuery ? t('la_no_search_results', 'لا توجد نتائج بحث') : t('la_no_fav_scholars_yet', 'لم تضف أي شيوخ بعد')}
             description={searchQuery 
-              ? "جرب البحث بكلمة أخرى أو عرض القائمة كاملة" 
-              : "يمكنك إضافة الشيوخ المفضلين عن طريق الضغط على زر النجمة في قسم المحاضرات"}
+              ? t('la_try_other_search', 'جرب البحث بكلمة أخرى أو عرض القائمة كاملة') 
+              : t('la_fav_scholars_hint', 'يمكنك إضافة الشيوخ المفضلين عن طريق الضغط على زر النجمة في قسم المحاضرات')}
             variant="empty"
             action={!searchQuery ? (
               <button
                 onClick={() => navigate('/lectures-audio')}
                 className="px-8 py-3 bg-fuchsia-600 text-white font-black rounded-2xl shadow-lg shadow-fuchsia-600/30 hover:bg-fuchsia-700 transition-colors"
               >
-                تصفح الشيوخ
+                {t('la_browse_scholars', 'تصفح الشيوخ')}
               </button>
             ) : undefined}
           />

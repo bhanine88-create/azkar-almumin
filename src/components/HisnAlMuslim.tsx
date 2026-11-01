@@ -6,10 +6,14 @@ import {} from 'react-router-dom';
 import { hisnAlMuslim } from '../data/hisnAlMuslim';
 import { useSmartNavigation } from "../lib/navigation";
 import { triggerHaptic } from '../lib/utils';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 
 export const HisnAlMuslim: React.FC = () => {
   const { navigate, goBack } = useSmartNavigation();
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const touchStartX = React.useRef<number>(0);
@@ -77,8 +81,8 @@ export const HisnAlMuslim: React.FC = () => {
       <div className="flex items-center gap-3 mb-6">
         <BackButton />
         <div>
-          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">حصن المسلم</h2>
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">أذكار وأدعية بالشرح</p>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{t('hisn_al_muslim', 'حصن المسلم')}</h2>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{t('u2_hisn_subtitle', 'أذكار وأدعية بالشرح')}</p>
         </div>
       </div>
 
@@ -93,7 +97,7 @@ export const HisnAlMuslim: React.FC = () => {
           >
             <button
               onClick={() => setExpandedId(expandedId === category.id ? null : category.id)}
-              className="w-full p-4 flex items-center justify-between text-right"
+              className="w-full p-4 flex items-center justify-between text-start"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-md">
@@ -127,13 +131,13 @@ export const HisnAlMuslim: React.FC = () => {
                         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
                           <div className="flex items-center gap-2 mb-3 text-blue-600 dark:text-blue-400">
                             <BookOpen size={24} />
-                            <h4 className="font-black text-base sm:text-lg">الشرح والفضل:</h4>
+                            <h4 className="font-black text-base sm:text-lg">{t('u2_hisn_explain', 'الشرح والفضل:')}</h4>
                           </div>
                           <p className="text-slate-950 dark:text-slate-100 font-black leading-relaxed text-base sm:text-lg mb-4">
                             {dhikr.explanation}
                           </p>
                           <div className="text-sm text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-900 inline-block px-3 py-1.5 rounded-lg transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
-                            المرجع: {dhikr.reference}
+                            {t('u2_hisn_reference', 'المرجع:')} {dhikr.reference}
                           </div>
                         </div>
 

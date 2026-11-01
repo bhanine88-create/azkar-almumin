@@ -4,22 +4,24 @@ import { Sparkles, Heart, BrainCircuit, Activity, CloudRain, Sun, Compass, Refre
 import { BackButton } from './ui/BackButton';
 import { useAppContext } from '../AppContext';
 import { cn } from '../lib/utils';
+import { useTranslation } from '../i18n';
 import Markdown from 'react-markdown';
 
 export const SpiritualAdvisor: React.FC = () => {
   const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [selectedState, setSelectedState] = useState<string>('');
   const [customInput, setCustomInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
 
   const EMOTIONS = [
-    { id: 'حزن وضيق', label: 'حزن وضيق', icon: <CloudRain size={18} />, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' },
-    { id: 'فتور إيماني', label: 'فتور إيماني', icon: <Activity size={18} />, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700' },
-    { id: 'تشتت وقلق', label: 'تشتت وقلق', icon: <BrainCircuit size={18} />, color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
-    { id: 'شكر ورضا', label: 'شكر ورضا', icon: <Sun size={18} />, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
-    { id: 'ضعف وعجز', label: 'ضعف وعجز', icon: <Heart size={18} />, color: 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800' },
-    { id: 'أبحث عن التوجيه', label: 'أبحث عن التوجيه', icon: <Compass size={18} />, color: 'bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400 border-teal-200 dark:border-teal-800' },
+    { id: 'حزن وضيق', label: t('u2_sa_emo_sad', 'حزن وضيق'), icon: <CloudRain size={18} />, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' },
+    { id: 'فتور إيماني', label: t('u2_sa_emo_dull', 'فتور إيماني'), icon: <Activity size={18} />, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700' },
+    { id: 'تشتت وقلق', label: t('u2_sa_emo_anxious', 'تشتت وقلق'), icon: <BrainCircuit size={18} />, color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
+    { id: 'شكر ورضا', label: t('u2_sa_emo_grateful', 'شكر ورضا'), icon: <Sun size={18} />, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
+    { id: 'ضعف وعجز', label: t('u2_sa_emo_weak', 'ضعف وعجز'), icon: <Heart size={18} />, color: 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800' },
+    { id: 'أبحث عن التوجيه', label: t('u2_sa_emo_guidance', 'أبحث عن التوجيه'), icon: <Compass size={18} />, color: 'bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400 border-teal-200 dark:border-teal-800' },
   ];
 
   const handleGenerate = async () => {
@@ -43,7 +45,7 @@ export const SpiritualAdvisor: React.FC = () => {
       setAiResponse(data.text);
     } catch (err) {
       console.error(err);
-      setAiResponse('عذراً، لم نتمكن من الوصول للمستشار في الوقت الحالي. حاول مرة أخرى.');
+      setAiResponse(t('u2_sa_error', 'عذراً، لم نتمكن من الوصول للمستشار في الوقت الحالي. حاول مرة أخرى.'));
     } finally {
       setIsLoading(false);
     }
@@ -63,9 +65,9 @@ export const SpiritualAdvisor: React.FC = () => {
           <div>
             <h1 className="text-xl font-black bg-gradient-to-r from-teal-600 to-emerald-700 bg-clip-text text-transparent flex items-center gap-2">
               <Sparkles size={20} className="text-teal-600" />
-              المستشار الإيماني الذكي
+              {t('u2_sa_title', 'المستشار الإيماني الذكي')}
             </h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">موجّهك الروحي بالذكاء الاصطناعي</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('u2_sa_subtitle', 'موجّهك الروحي بالذكاء الاصطناعي')}</p>
           </div>
         </div>
       </header>
@@ -87,8 +89,8 @@ export const SpiritualAdvisor: React.FC = () => {
                   <Heart size={32} />
                 </div>
                 
-                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">كيف تجد قلبك اليوم؟</h2>
-                <p className="text-sm text-slate-500 font-bold mb-8">دع الذكاء الاصطناعي يرشدك بآيات وأحاديث تناسب حالتك</p>
+                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">{t('u2_sa_how_heart', 'كيف تجد قلبك اليوم؟')}</h2>
+                <p className="text-sm text-slate-500 font-bold mb-8">{t('u2_sa_how_desc', 'دع الذكاء الاصطناعي يرشدك بآيات وأحاديث تناسب حالتك')}</p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 relative z-10">
                   {EMOTIONS.map(emotion => (
@@ -116,14 +118,14 @@ export const SpiritualAdvisor: React.FC = () => {
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageSquare size={16} className="text-slate-400" />
-                    <label className="text-xs font-bold text-slate-500 uppercase">أو صف شعورك بدقة</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase">{t('u2_sa_describe', 'أو صف شعورك بدقة')}</label>
                   </div>
                   <textarea
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
-                    placeholder="مثال: أشعر بضيق شديد بسبب ضغوط العمل وأريد ما يطمئن قلبي..."
+                    placeholder={t('u2_sa_describe_ph', 'مثال: أشعر بضيق شديد بسبب ضغوط العمل وأريد ما يطمئن قلبي...')}
                     className="w-full h-24 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl resize-none outline-none focus:border-teal-500 transition-colors text-sm font-bold placeholder:font-normal"
-                    dir="rtl"
+                    dir="auto"
                   />
                 </div>
 
@@ -136,7 +138,7 @@ export const SpiritualAdvisor: React.FC = () => {
                   )}
                 >
                   <Sparkles size={20} />
-                  استشر الذكاء الاصطناعي
+                  {t('u2_sa_consult_btn', 'استشر الذكاء الاصطناعي')}
                 </button>
               </div>
             </motion.div>
@@ -153,8 +155,8 @@ export const SpiritualAdvisor: React.FC = () => {
                 <BrainCircuit size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-teal-600 animate-pulse" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-2">جاري استشارة النور...</h3>
-                <p className="text-sm text-slate-500 font-bold">يتم الآن تحليل مشاعرك وجمع الآيات والأحاديث المناسبة</p>
+                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-2">{t('u2_sa_loading_title', 'جاري استشارة النور...')}</h3>
+                <p className="text-sm text-slate-500 font-bold">{t('u2_sa_loading_desc', 'يتم الآن تحليل مشاعرك وجمع الآيات والأحاديث المناسبة')}</p>
               </div>
             </motion.div>
           ) : (
@@ -172,8 +174,8 @@ export const SpiritualAdvisor: React.FC = () => {
                       <Sparkles size={24} />
                     </div>
                     <div>
-                      <h3 className="font-black text-lg text-slate-800 dark:text-slate-100">توجيهك الروحي</h3>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">مستشار أذكار المؤمن</p>
+                      <h3 className="font-black text-lg text-slate-800 dark:text-slate-100">{t('u2_sa_result_title', 'توجيهك الروحي')}</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">{t('u2_sa_result_sub', 'مستشار أذكار المؤمن')}</p>
                     </div>
                   </div>
                   <button onClick={reset} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full hover:bg-slate-200 transition-colors">
@@ -191,7 +193,7 @@ export const SpiritualAdvisor: React.FC = () => {
                 className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl font-black hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
               >
                 <ArrowRight size={18} />
-                استشارة جديدة
+                {t('u2_sa_new', 'استشارة جديدة')}
               </button>
             </motion.div>
           )}

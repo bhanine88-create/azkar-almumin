@@ -24,6 +24,7 @@ import { BackButton } from './ui/BackButton';
 import { QUIZ_CATEGORIES, QUIZ_QUESTIONS, QuizCategory, QuizQuestion } from '../data/quizData';
 import { playCorrectSound, playWrongSound, playCompletionSound } from '../lib/sounds';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 const iconMap: Record<string, any> = {
   History,
@@ -37,6 +38,11 @@ const iconMap: Record<string, any> = {
 
 export const IslamicQuiz: React.FC = () => {
   const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
+  const catTitle = (id: string | null | undefined) => {
+    const c = QUIZ_CATEGORIES.find(x => x.id === id);
+    return c ? t(`sq_quizcat_${c.id}`, c.title) : '';
+  };
   const initialTimer = settings.quizTimerDuration || 20;
   const [selectedCategory, setSelectedCategory] = useState<QuizCategory | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
@@ -183,7 +189,7 @@ export const IslamicQuiz: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-right" dir="rtl">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-start">
       {/* Header */}
       <div className="bg-white/80 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/80 sticky top-0 z-30">
         <div className="px-4 py-3.5 flex items-center justify-between">
@@ -195,22 +201,22 @@ export const IslamicQuiz: React.FC = () => {
                 onClick={() => setSelectedCategory(null)}
                 className="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl flex items-center justify-center transition-colors cursor-pointer"
               >
-                <ArrowRight size={20} />
+                <ArrowRight size={20} className="ltr:rotate-180" />
               </button>
             ) : (
               <button 
                 onClick={resetQuiz}
                 className="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl flex items-center justify-center transition-colors cursor-pointer"
               >
-                <ArrowRight size={20} />
+                <ArrowRight size={20} className="ltr:rotate-180" />
               </button>
             )}
             <div>
               <h1 className="text-xl font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 bg-clip-text text-transparent leading-tight">
-                اختبر معلوماتك
+                {t('quiz_title', 'اختبر معلوماتك')}
               </h1>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider">
-                مسابقات واختبارات إسلامية
+                {t('quiz_subtitle', 'مسابقات واختبارات إسلامية')}
               </p>
             </div>
           </div>
@@ -238,9 +244,9 @@ export const IslamicQuiz: React.FC = () => {
                   <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md mb-4 border border-white/20">
                     <Award size={26} className="text-white drop-shadow-sm" />
                   </div>
-                  <h2 className="text-2xl font-black mb-2">تحدي المعرفة الإسلامية</h2>
+                  <h2 className="text-2xl font-black mb-2">{t('sq_quiz_hero_title', 'تحدي المعرفة الإسلامية')}</h2>
                   <p className="text-emerald-100/90 text-sm font-medium leading-relaxed max-w-[90%]">
-                    اختبر معلوماتك في مجالات إسلامية متنوعة، واكتسب معرفة جديدة مع كل سؤال. اختر القسم المفضل وابدأ التحدي.
+                    {t('sq_quiz_hero_desc', 'اختبر معلوماتك في مجالات إسلامية متنوعة، واكتسب معرفة جديدة مع كل سؤال. اختر القسم المفضل وابدأ التحدي.')}
                   </p>
                 </div>
               </div>
@@ -259,18 +265,18 @@ export const IslamicQuiz: React.FC = () => {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleStartCategory(category.id)}
-                      className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200/50 dark:border-slate-800 shadow-sm hover:shadow-md transition-all text-right flex flex-col gap-3 group outline-none cursor-pointer"
+                      className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200/50 dark:border-slate-800 shadow-sm hover:shadow-md transition-all text-start flex flex-col gap-3 group outline-none cursor-pointer"
                     >
                       <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 bg-gradient-to-br shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform", category.color)}>
                         <Icon size={22} />
                       </div>
                       <div>
                         <h3 className="font-black text-slate-800 dark:text-white text-[15px] sm:text-base mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                          {category.title}
+                          {t(`sq_quizcat_${category.id}`, category.title)}
                         </h3>
                         <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-                          {questionCount} سؤال
+                          {t('sq_questions_count', '{{count}} سؤال', { count: questionCount })}
                         </p>
                       </div>
                     </motion.button>
@@ -288,9 +294,9 @@ export const IslamicQuiz: React.FC = () => {
               className="space-y-6"
             >
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 text-center border border-slate-200/50 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                <h2 className="text-xl font-black mb-2">اختر مستوى الصعوبة</h2>
+                <h2 className="text-xl font-black mb-2">{t('sq_choose_level', 'اختر مستوى الصعوبة')}</h2>
                 <p className="text-slate-500 text-sm font-medium">
-                  حدد المستوى المناسب لمعلوماتك لبدء الاختبار
+                  {t('sq_choose_level_desc', 'حدد المستوى المناسب لمعلوماتك لبدء الاختبار')}
                 </p>
               </div>
               <div className="flex flex-col gap-4">
@@ -300,9 +306,9 @@ export const IslamicQuiz: React.FC = () => {
                   onClick={() => handleStartDifficulty('easy')}
                   className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 p-6 rounded-3xl border border-emerald-200 dark:border-emerald-800 flex items-center justify-between group"
                 >
-                  <div className="text-right">
-                    <h3 className="font-black text-lg mb-1">مبتدئ</h3>
-                    <p className="text-sm font-medium opacity-80">أسئلة أساسية ومعلومات عامة مبسطة</p>
+                  <div className="text-start">
+                    <h3 className="font-black text-lg mb-1">{t('sq_level_easy', 'مبتدئ')}</h3>
+                    <p className="text-sm font-medium opacity-80">{t('sq_level_easy_desc', 'أسئلة أساسية ومعلومات عامة مبسطة')}</p>
                   </div>
                   <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Scroll size={24} />
@@ -315,9 +321,9 @@ export const IslamicQuiz: React.FC = () => {
                   onClick={() => handleStartDifficulty('medium')}
                   className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 p-6 rounded-3xl border border-blue-200 dark:border-blue-800 flex items-center justify-between group"
                 >
-                  <div className="text-right">
-                    <h3 className="font-black text-lg mb-1">متوسط</h3>
-                    <p className="text-sm font-medium opacity-80">أسئلة تحتاج إلى تفكير ومعرفة جيدة</p>
+                  <div className="text-start">
+                    <h3 className="font-black text-lg mb-1">{t('sq_level_medium', 'متوسط')}</h3>
+                    <p className="text-sm font-medium opacity-80">{t('sq_level_medium_desc', 'أسئلة تحتاج إلى تفكير ومعرفة جيدة')}</p>
                   </div>
                   <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Compass size={24} />
@@ -330,9 +336,9 @@ export const IslamicQuiz: React.FC = () => {
                   onClick={() => handleStartDifficulty('hard')}
                   className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 p-6 rounded-3xl border border-purple-200 dark:border-purple-800 flex items-center justify-between group"
                 >
-                  <div className="text-right">
-                    <h3 className="font-black text-lg mb-1">متقدم</h3>
-                    <p className="text-sm font-medium opacity-80">أسئلة دقيقة وتفصيلية للمتعمقين</p>
+                  <div className="text-start">
+                    <h3 className="font-black text-lg mb-1">{t('sq_level_hard', 'متقدم')}</h3>
+                    <p className="text-sm font-medium opacity-80">{t('sq_level_hard_desc', 'أسئلة دقيقة وتفصيلية للمتعمقين')}</p>
                   </div>
                   <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <History size={24} />
@@ -362,22 +368,22 @@ export const IslamicQuiz: React.FC = () => {
                 </motion.div>
                 
                 <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">
-                  اكتمل التحدي!
+                  {t('sq_challenge_done', 'اكتمل التحدي!')}
                 </h2>
                 <p className="text-slate-500 dark:text-slate-400 mb-6 font-medium">
-                  لقد أجبت على جميع الأسئلة في قسم {QUIZ_CATEGORIES.find(c => c.id === selectedCategory)?.title}
+                  {t('sq_challenge_done_desc', 'لقد أجبت على جميع الأسئلة في قسم {{category}}', { category: catTitle(selectedCategory) })}
                 </p>
                 
                 <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl w-full mb-8">
                   <div className="flex-1">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-1">النقاط</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-1">{t('sq_points_label', 'النقاط')}</p>
                     <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
                       {score}
                     </div>
                   </div>
                   <div className="w-px h-12 bg-slate-200 dark:bg-slate-700" />
                   <div className="flex-1">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-1">النتيجة</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-1">{t('sq_result_label', 'النتيجة')}</p>
                     <div className="text-3xl font-black text-blue-600 dark:text-blue-400 flex items-center justify-center gap-1">
                       <span>{correctAnswersCount}</span>
                       <span className="text-lg text-slate-400">/ {filteredQuestions.length}</span>
@@ -390,14 +396,14 @@ export const IslamicQuiz: React.FC = () => {
                     onClick={resetQuiz}
                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-2xl font-black text-sm transition-all shadow-md shadow-emerald-600/20 active:scale-95"
                   >
-                    أقسام أخرى
+                    {t('sq_other_sections', 'أقسام أخرى')}
                   </button>
                   <button
                     onClick={() => { if (selectedDifficulty) handleStartDifficulty(selectedDifficulty); }}
                     className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3.5 rounded-2xl font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
                     <RotateCcw size={16} />
-                    إعادة
+                    {t('sq_restart', 'إعادة')}
                   </button>
                 </div>
               </div>
@@ -431,7 +437,7 @@ export const IslamicQuiz: React.FC = () => {
               <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200/60 dark:border-slate-800">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-xl">
                   <Award size={16} />
-                  <span className="text-xs font-black">{score} نقطة</span>
+                  <span className="text-xs font-black">{t('sq_points_n', '{{count}} نقطة', { count: score })}</span>
                 </div>
                 
                 {streak > 1 && (
@@ -441,7 +447,7 @@ export const IslamicQuiz: React.FC = () => {
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 rounded-xl"
                   >
                     <Flame size={16} className={streak > 2 ? 'animate-pulse' : ''} />
-                    <span className="text-xs font-black">{streak} متتالية</span>
+                    <span className="text-xs font-black">{t('sq_streak_n', '{{count}} متتالية', { count: streak })}</span>
                   </motion.div>
                 )}
 
@@ -452,17 +458,17 @@ export const IslamicQuiz: React.FC = () => {
                     : "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
                 )}>
                   <Timer size={16} />
-                  <span className="text-xs font-black">{timeLeft} ث</span>
+                  <span className="text-xs font-black">{t('sq_seconds_short', '{{count}} ث', { count: timeLeft })}</span>
                 </div>
               </div>
 
               {/* Question Card */}
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-md border border-slate-200/60 dark:border-slate-800">
                 <span className="inline-block px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase tracking-wider mb-4 border border-emerald-100 dark:border-emerald-800/50">
-                  {QUIZ_CATEGORIES.find(c => c.id === selectedCategory)?.title}
+                  {catTitle(selectedCategory)}
                 </span>
                 
-                <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white leading-snug mb-8">
+                <h3 dir="rtl" className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white leading-snug mb-8">
                   {currentQuestion.question}
                 </h3>
 
@@ -490,6 +496,7 @@ export const IslamicQuiz: React.FC = () => {
                     return (
                       <motion.button
                         key={idx}
+                        dir="rtl"
                         layout
                         disabled={showStatus}
                         onClick={() => handleAnswerSelect(idx)}
@@ -510,7 +517,7 @@ export const IslamicQuiz: React.FC = () => {
                             : {}
                         }
                         className={cn(
-                          "w-full text-right p-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between gap-3 font-bold text-sm sm:text-base outline-none",
+                          "w-full text-start p-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between gap-3 font-bold text-sm sm:text-base outline-none",
                           btnClass,
                           !showStatus && "cursor-pointer hover:-translate-y-0.5 active:scale-[0.98]"
                         )}
@@ -539,9 +546,9 @@ export const IslamicQuiz: React.FC = () => {
                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-2xl p-4 mb-6">
                           <h4 className="flex items-center gap-2 font-black text-blue-800 dark:text-blue-300 text-sm mb-2">
                             <Lightbulb size={16} />
-                            معلومة
+                            {t('sq_info', 'معلومة')}
                           </h4>
-                          <p className="text-blue-700 dark:text-blue-200 text-sm leading-relaxed font-medium">
+                          <p dir="rtl" className="text-blue-700 dark:text-blue-200 text-sm leading-relaxed font-medium">
                             {currentQuestion.explanation}
                           </p>
                         </div>
@@ -551,8 +558,8 @@ export const IslamicQuiz: React.FC = () => {
                         onClick={handleNextQuestion}
                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98] cursor-pointer outline-none"
                       >
-                        {currentQuestionIndex < filteredQuestions.length - 1 ? 'السؤال التالي' : 'عرض النتيجة'}
-                        <ChevronRight size={20} />
+                        {currentQuestionIndex < filteredQuestions.length - 1 ? t('sq_next_question', 'السؤال التالي') : t('sq_show_result', 'عرض النتيجة')}
+                        <ChevronRight size={20} className="rtl:rotate-180" />
                       </button>
                     </motion.div>
                   )}

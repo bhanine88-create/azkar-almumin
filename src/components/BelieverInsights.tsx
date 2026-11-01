@@ -32,6 +32,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '../lib/utils';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { useSmartNavigation } from "../lib/navigation";
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
@@ -425,6 +426,8 @@ interface SortableItemProps {
 }
 
 const SortableHabitItem = ({ habit, isDone, type, localTheme, themeMode, onToggle, onOpenDetails }: SortableItemProps) => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const {
     attributes,
     listeners,
@@ -543,7 +546,7 @@ const SortableHabitItem = ({ habit, isDone, type, localTheme, themeMode, onToggl
                 {habit.title}
               </h4>
               {habit.isMajorSin && !isDone && (
-                <span className="px-1.5 py-0.5 rounded-lg bg-red-100 dark:bg-red-900/50 text-[9px] font-black text-red-600 dark:text-red-300 uppercase animate-pulse">كبيرة</span>
+                <span className="px-1.5 py-0.5 rounded-lg bg-red-100 dark:bg-red-900/50 text-[9px] font-black text-red-600 dark:text-red-300 uppercase animate-pulse">{t('bi_major_badge', 'كبيرة')}</span>
               )}
             </div>
             <p className={cn("text-[13px] line-clamp-1 font-medium leading-tight", 
@@ -590,7 +593,8 @@ const SortableHabitItem = ({ habit, isDone, type, localTheme, themeMode, onToggl
 
 export const BelieverInsights: React.FC = () => {
   const { navigate, goBack } = useSmartNavigation();
-  const { progress, addQuranLog, updateQuranGoal, updateLastRead, incrementBaqiyatSalihat } = useAppContext();
+  const { settings, progress, addQuranLog, updateQuranGoal, updateLastRead, incrementBaqiyatSalihat } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [localTheme, setLocalTheme] = useState<LocalTheme>(() => {
     return (safeLocalStorageGetItem('believer_local_theme_v2') as LocalTheme) || 'default';
   });
@@ -730,8 +734,8 @@ export const BelieverInsights: React.FC = () => {
  const habit: Habit = {
  id: Date.now().toString(),
  title: newHabit.title,
- description: newHabit.description || 'عادة مخصصة',
- impact: newHabit.impact || 'تزكية للنفس وتقرب إلى الله',
+ description: newHabit.description || t('bi_default_description', 'عادة مخصصة'),
+ impact: newHabit.impact || t('bi_default_impact', 'تزكية للنفس وتقرب إلى الله'),
  type: targetType as any,
  icon: targetType === 'good' ? <Plus size={24} /> : targetType === 'sunnah' ? <Star size={24} /> : targetType === 'worship' ? <Plus size={24} /> : targetType === 'bad' ? <Trash2 size={24} /> : targetType === 'role_model' ? <Users size={24} /> : <RotateCcw size={24} />
  };
@@ -812,13 +816,13 @@ export const BelieverInsights: React.FC = () => {
   currentTheme.headerText,
   "text-amber-400"
  )}>
-  بصائر المؤمن
+  {t('bi_title', 'بصائر المؤمن')}
  </h1>
  <p className={cn(
   "text-[10px] font-black uppercase tracking-[0.25em] drop-shadow-[0_0_10px_rgba(251,191,36,0.4)] opacity-95",
   currentTheme.headerSubtext,
   "text-amber-300/90"
- )}>أبواب الخير وتزكية النفس</p>
+ )}>{t('bi_subtitle', 'أبواب الخير وتزكية النفس')}</p>
  </div>
  </div>
  <div className="flex items-center gap-2">
@@ -863,14 +867,14 @@ export const BelieverInsights: React.FC = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className={cn("font-black text-lg sm:text-xl leading-tight truncate", currentTheme.dashboardTitle)}>
-                بناء الشخصية
+                {t('bi_character_building', 'بناء الشخصية')}
               </h3>
               <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
                 {totalProgress}%
               </span>
             </div>
             <p className={cn("text-[10px] font-bold uppercase tracking-wider opacity-80 truncate", currentTheme.dashboardSubtitle)}>
-              مستوى التزكية الحالي
+              {t('bi_current_level', 'مستوى التزكية الحالي')}
             </p>
           </div>
         </div>
@@ -883,10 +887,10 @@ export const BelieverInsights: React.FC = () => {
               ? "bg-white/10 border-white/15 text-white/90 hover:bg-white/15" 
               : "bg-black/5 border-black/10 text-slate-700 hover:bg-black/10"
           )}
-          title={isDashboardExpanded ? "إخفاء التفاصيل" : "عرض التفاصيل"}
+          title={isDashboardExpanded ? t('bi_hide_details', 'إخفاء التفاصيل') : t('bi_show_details', 'عرض التفاصيل')}
         >
           <span className="text-[11px]">
-            {isDashboardExpanded ? "موجز" : "تفاصيل"}
+            {isDashboardExpanded ? t('bi_brief', 'موجز') : t('bi_details', 'تفاصيل')}
           </span>
           {isDashboardExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
@@ -906,8 +910,8 @@ export const BelieverInsights: React.FC = () => {
           />
         </div>
         <div className={cn("flex justify-between text-[10px] font-black uppercase tracking-tighter opacity-70", currentTheme.dashboardSubtitle)}>
-          <span>بداية الطريق</span>
-          <span>كمال التزكية</span>
+          <span>{t('bi_path_start', 'بداية الطريق')}</span>
+          <span>{t('bi_path_end', 'كمال التزكية')}</span>
         </div>
       </div>
 
@@ -923,12 +927,12 @@ export const BelieverInsights: React.FC = () => {
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {[
-                { label: "العبادات", done: completedWorship, total: worshipHabits.length, color: "text-sky-300 border-sky-500/20 bg-sky-500/10" },
-                { label: "الخير", done: completedGood, total: goodHabits.length, color: "text-emerald-300 border-emerald-500/20 bg-emerald-500/10" },
-                { label: "السنن", done: completedSunnah, total: sunnahHabits.length, color: "text-teal-300 border-teal-500/20 bg-teal-500/10" },
-                { label: "التوبة", done: completedRepentance, total: repentanceHabits.length, color: "text-amber-300 border-amber-500/20 bg-amber-500/10" },
-                { label: "القدوة الحسنة", done: completedRoleModel, total: roleModelHabits.length, color: "text-indigo-300 border-indigo-500/20 bg-indigo-500/10" },
-                { label: "الشر", done: completedBad, total: badHabits.length, color: "text-red-300 border-red-500/20 bg-red-500/10" },
+                { label: t('bi_cat_worship', 'العبادات'), done: completedWorship, total: worshipHabits.length, color: "text-sky-300 border-sky-500/20 bg-sky-500/10" },
+                { label: t('bi_short_good', 'الخير'), done: completedGood, total: goodHabits.length, color: "text-emerald-300 border-emerald-500/20 bg-emerald-500/10" },
+                { label: t('bi_short_sunnah', 'السنن'), done: completedSunnah, total: sunnahHabits.length, color: "text-teal-300 border-teal-500/20 bg-teal-500/10" },
+                { label: t('bi_cat_repentance', 'التوبة'), done: completedRepentance, total: repentanceHabits.length, color: "text-amber-300 border-amber-500/20 bg-amber-500/10" },
+                { label: t('bi_cat_role_model', 'القدوة الحسنة'), done: completedRoleModel, total: roleModelHabits.length, color: "text-indigo-300 border-indigo-500/20 bg-indigo-500/10" },
+                { label: t('bi_short_bad', 'الشر'), done: completedBad, total: badHabits.length, color: "text-red-300 border-red-500/20 bg-red-500/10" },
               ].map((stat, i) => {
                 const pct = stat.total > 0 ? Math.round((stat.done / stat.total) * 100) : 0;
                 return (
@@ -1012,17 +1016,17 @@ export const BelieverInsights: React.FC = () => {
  ) : null}
  <BookOpen size={28} className="relative z-10" />
  </div>
- <div className="text-right">
+ <div className="text-start">
  <h3 className={cn("font-black text-lg", themeMode === 'dark' || dailyWird ? "text-white" : "text-slate-900")}>
- الورد اليومي
+ {t('bi_daily_wird', 'الورد اليومي')}
  </h3>
  <div className="flex items-center gap-2">
  <p className={cn("text-xs font-bold", dailyWird ? "text-indigo-100" : (themeMode === 'dark' ? "text-white/60" : "text-slate-500"))}>
- {dailyWird ? `تم إنجاز ${quranDailyProgress}% من وردك` : "هل قرأت وردك اليوم؟"}
+ {dailyWird ? t('bi_wird_done', 'تم إنجاز {{pct}}% من وردك', { pct: quranDailyProgress }) : t('bi_wird_ask', 'هل قرأت وردك اليوم؟')}
  </p>
  {dailyWird && (
  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 font-black">
- {todayTotalPages} صفحة
+ {t('bi_pages_count', '{{count}} صفحة', { count: todayTotalPages })}
  </span>
  )}
  </div>
@@ -1057,9 +1061,9 @@ export const BelieverInsights: React.FC = () => {
  <div className="flex items-center justify-between">
  <h3 className={cn("font-black text-lg flex items-center gap-2", themeMode === 'dark' ? "text-white" : "text-slate-900")}>
  <Sparkles size={20} className="text-amber-500" />
- الباقيات الصالحات
+ {t('bi_baqiyat', 'الباقيات الصالحات')}
  </h3>
- <span className={cn("text-[10px] font-black uppercase tracking-widest", themeMode === 'dark' ? "text-white/60" : "text-slate-500")}>أذكار اليوم</span>
+ <span className={cn("text-[10px] font-black uppercase tracking-widest", themeMode === 'dark' ? "text-white/60" : "text-slate-500")}>{t('bi_todays_adhkar', 'أذكار اليوم')}</span>
  </div>
  
  <div className="grid grid-cols-2 gap-3">
@@ -1113,9 +1117,9 @@ export const BelieverInsights: React.FC = () => {
             <BookOpen size={30} className="text-white drop-shadow-lg" />
           </div>
          <div>
-           <h3 className="text-2xl font-black tracking-tight text-right drop-shadow-sm">أبواب الخير</h3>
+           <h3 className="text-2xl font-black tracking-tight text-start drop-shadow-sm">{t('bi_cat_good', 'أبواب الخير')}</h3>
            <div className="flex items-center gap-2.5 mt-1.5 justify-end">
-             <span className="text-[11px] font-black text-emerald-100 order-2">{completedGood}/{goodHabits.length} مكتمل</span>
+             <span className="text-[11px] font-black text-emerald-100 order-2">{t('bi_completed_count', '{{done}}/{{total}} مكتمل', { done: completedGood, total: goodHabits.length })}</span>
              <div className="h-2 w-28 bg-black/20 rounded-full overflow-hidden order-1 border border-white/10">
                <motion.div 
                  initial={{ width: 0 }}
@@ -1180,9 +1184,9 @@ export const BelieverInsights: React.FC = () => {
             <Shield size={30} className="text-white drop-shadow-lg" />
           </div>
          <div>
-           <h3 className="text-2xl font-black tracking-tight text-right drop-shadow-sm">أبواب الشر</h3>
+           <h3 className="text-2xl font-black tracking-tight text-start drop-shadow-sm">{t('bi_cat_bad', 'أبواب الشر')}</h3>
            <div className="flex items-center gap-2.5 mt-1.5 justify-end">
-             <span className="text-[11px] font-black text-red-100 order-2">{completedBad}/{badHabits.length} مكتمل</span>
+             <span className="text-[11px] font-black text-red-100 order-2">{t('bi_completed_count', '{{done}}/{{total}} مكتمل', { done: completedBad, total: badHabits.length })}</span>
              <div className="h-2 w-28 bg-black/20 rounded-full overflow-hidden order-1 border border-white/10">
                <motion.div 
                  initial={{ width: 0 }}
@@ -1247,9 +1251,9 @@ export const BelieverInsights: React.FC = () => {
              <Star size={30} className="text-white drop-shadow-lg" />
            </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-right drop-shadow-sm">العبادات</h3>
+            <h3 className="text-2xl font-black tracking-tight text-start drop-shadow-sm">{t('bi_cat_worship', 'العبادات')}</h3>
             <div className="flex items-center gap-2.5 mt-1.5 justify-end">
-              <span className="text-[11px] font-black text-sky-100 order-2">{completedWorship}/{worshipHabits.length} مكتمل</span>
+              <span className="text-[11px] font-black text-sky-100 order-2">{t('bi_completed_count', '{{done}}/{{total}} مكتمل', { done: completedWorship, total: worshipHabits.length })}</span>
               <div className="h-2 w-28 bg-black/20 rounded-full overflow-hidden order-1 border border-white/10">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -1315,9 +1319,9 @@ export const BelieverInsights: React.FC = () => {
              <RotateCcw size={30} className="text-white drop-shadow-lg" />
            </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-right drop-shadow-sm">التوبة</h3>
+            <h3 className="text-2xl font-black tracking-tight text-start drop-shadow-sm">{t('bi_cat_repentance', 'التوبة')}</h3>
             <div className="flex items-center gap-2.5 mt-1.5 justify-end">
-              <span className="text-[11px] font-black text-amber-100 order-2">{completedRepentance}/{repentanceHabits.length} مكتمل</span>
+              <span className="text-[11px] font-black text-amber-100 order-2">{t('bi_completed_count', '{{done}}/{{total}} مكتمل', { done: completedRepentance, total: repentanceHabits.length })}</span>
               <div className="h-2 w-28 bg-black/20 rounded-full overflow-hidden order-1 border border-white/10">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -1383,9 +1387,9 @@ export const BelieverInsights: React.FC = () => {
              <Sparkles size={30} className="text-white drop-shadow-lg" />
            </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-right drop-shadow-sm">النوافل والسنن</h3>
+            <h3 className="text-2xl font-black tracking-tight text-start drop-shadow-sm">{t('bi_cat_sunnah', 'النوافل والسنن')}</h3>
             <div className="flex items-center gap-2.5 mt-1.5 justify-end">
-              <span className="text-[11px] font-black text-teal-100 order-2">{completedSunnah}/{sunnahHabits.length} مكتمل</span>
+              <span className="text-[11px] font-black text-teal-100 order-2">{t('bi_completed_count', '{{done}}/{{total}} مكتمل', { done: completedSunnah, total: sunnahHabits.length })}</span>
               <div className="h-2 w-28 bg-black/20 rounded-full overflow-hidden order-1 border border-white/10">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -1451,9 +1455,9 @@ export const BelieverInsights: React.FC = () => {
             <Users size={30} className="text-white drop-shadow-lg" />
           </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-right drop-shadow-sm">القدوة الحسنة</h3>
+            <h3 className="text-2xl font-black tracking-tight text-start drop-shadow-sm">{t('bi_cat_role_model', 'القدوة الحسنة')}</h3>
             <div className="flex items-center gap-2.5 mt-1.5 justify-end">
-              <span className="text-[11px] font-black text-indigo-100 order-2">{completedRoleModel}/{roleModelHabits.length} مكتمل</span>
+              <span className="text-[11px] font-black text-indigo-100 order-2">{t('bi_completed_count', '{{done}}/{{total}} مكتمل', { done: completedRoleModel, total: roleModelHabits.length })}</span>
               <div className="h-2 w-28 bg-black/20 rounded-full overflow-hidden order-1 border border-white/10">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -1529,35 +1533,35 @@ export const BelieverInsights: React.FC = () => {
  className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-6"
  >
  <div className="space-y-2 text-center">
- <h3 className="text-xl font-black text-slate-900 dark:text-white">إضافة باب جديد</h3>
- <p className="text-sm text-slate-500">أضف عادة مخصصة تريد تتبعها</p>
+ <h3 className="text-xl font-black text-slate-900 dark:text-white">{t('bi_add_new_title', 'إضافة باب جديد')}</h3>
+ <p className="text-sm text-slate-500">{t('bi_add_new_desc', 'أضف عادة مخصصة تريد تتبعها')}</p>
  </div>
  
  <div className="space-y-4">
- <div className="space-y-1.5 text-right">
- <label className="text-xs font-black text-slate-500">اختر القسم المناسب:</label>
+ <div className="space-y-1.5 text-start">
+ <label className="text-xs font-black text-slate-500">{t('bi_choose_section', 'اختر القسم المناسب:')}</label>
  <select 
  value={habitCategory} 
  onChange={e => setHabitCategory(e.target.value as any)}
  className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-850 dark:text-white"
  >
- <option value="good">أبواب الخير</option>
- <option value="bad">أبواب الشر</option>
- <option value="worship">العبادات</option>
- <option value="repentance">التوبة</option>
- <option value="sunnah">النوافل والسنن</option>
- <option value="role_model">القدوة الحسنة</option>
+ <option value="good">{t('bi_cat_good', 'أبواب الخير')}</option>
+ <option value="bad">{t('bi_cat_bad', 'أبواب الشر')}</option>
+ <option value="worship">{t('bi_cat_worship', 'العبادات')}</option>
+ <option value="repentance">{t('bi_cat_repentance', 'التوبة')}</option>
+ <option value="sunnah">{t('bi_cat_sunnah', 'النوافل والسنن')}</option>
+ <option value="role_model">{t('bi_cat_role_model', 'القدوة الحسنة')}</option>
  </select>
  </div>
  <input 
  type="text" 
- placeholder="عنوان الباب (مثلاً: الصبر)"
+ placeholder={t('bi_title_placeholder', 'عنوان الباب (مثلاً: الصبر)')}
  value={newHabit.title}
  onChange={e => setNewHabit({...newHabit, title: e.target.value})}
  className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold"
  />
  <textarea 
- placeholder="وصف مختصر..."
+ placeholder={t('bi_desc_placeholder', 'وصف مختصر...')}
  value={newHabit.description}
  onChange={e => setNewHabit({...newHabit, description: e.target.value})}
  className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold h-24 resize-none"
@@ -1569,13 +1573,13 @@ export const BelieverInsights: React.FC = () => {
  onClick={() => setIsAddingHabit(false)}
  className="flex-1 py-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-black text-sm"
  >
- إلغاء
+ {t('cancel', 'إلغاء')}
  </button>
  <button 
  onClick={addHabit}
  className="flex-1 py-4 rounded-2xl bg-emerald-600 text-white font-black text-sm shadow-lg shadow-emerald-600/20"
  >
- إضافة
+ {t('add', 'إضافة')}
  </button>
  </div>
  </motion.div>
@@ -1605,8 +1609,8 @@ export const BelieverInsights: React.FC = () => {
  >
  <div className="flex justify-between items-center mb-6">
  <div>
- <h3 className={cn("text-xl font-black", "text-slate-900 dark:text-white")}>الإعدادات</h3>
- <p className={cn("text-xs", "text-slate-500")}>تخصيص تجربة بصائر المؤمن</p>
+ <h3 className={cn("text-xl font-black", "text-slate-900 dark:text-white")}>{t('settings', 'الإعدادات')}</h3>
+ <p className={cn("text-xs", "text-slate-500")}>{t('bi_settings_desc', 'تخصيص تجربة بصائر المؤمن')}</p>
  </div>
  <button 
  onClick={() => setIsSettingsOpen(false)} 
@@ -1627,8 +1631,8 @@ export const BelieverInsights: React.FC = () => {
  <Sparkles size={20} />
  </div>
  <div>
- <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>ثيم القسم</h4>
- <p className={cn("text-[10px]", "text-slate-500")}>اختر مظهراً يناسب ذوقك</p>
+ <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>{t('bi_section_theme', 'ثيم القسم')}</h4>
+ <p className={cn("text-[10px]", "text-slate-500")}>{t('bi_section_theme_desc', 'اختر مظهراً يناسب ذوقك')}</p>
  </div>
  </div>
  
@@ -1650,7 +1654,7 @@ export const BelieverInsights: React.FC = () => {
  localTheme === theme.id 
  ? "text-emerald-700 dark:text-emerald-400"
  : "text-slate-500"
- )}>{theme.name}</span>
+ )}>{t('bi_theme_' + theme.id, theme.name)}</span>
  </button>
  ))}
  </div>
@@ -1667,14 +1671,14 @@ export const BelieverInsights: React.FC = () => {
                   <BookOpen size={20} />
                 </div>
                 <div>
-                  <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>خط بطاقة الآيات والأحاديث</h4>
-                  <p className={cn("text-[10px]", "text-slate-500")}>تخصيص نوع وحجم خط البطاقات والمشاركة</p>
+                  <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>{t('bi_quote_font_title', 'خط بطاقة الآيات والأحاديث')}</h4>
+                  <p className={cn("text-[10px]", "text-slate-500")}>{t('bi_quote_font_desc', 'تخصيص نوع وحجم خط البطاقات والمشاركة')}</p>
                 </div>
               </div>
 
               {/* Font Family Selector */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">نوع الخط:</span>
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">{t('bi_font_type', 'نوع الخط:')}</span>
                 <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar scrollbar-none snap-x">
                   {FONTS_LIST.map((font) => (
                     <button
@@ -1696,18 +1700,18 @@ export const BelieverInsights: React.FC = () => {
 
               {/* Font Size Selector */}
               <div className="flex items-center justify-between gap-4 border-t border-slate-100 dark:border-slate-800 pt-3">
-                <div className="flex flex-col text-right">
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">حجم خط الآيات والأحاديث:</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">انقر للتكبير والتصغير</span>
+                <div className="flex flex-col text-start">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{t('bi_font_size', 'حجم خط الآيات والأحاديث:')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">{t('bi_tap_to_resize', 'انقر للتكبير والتصغير')}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <button
                     onClick={() => setQuoteFontSize(Math.max(16, quoteFontSize - 2))}
                     disabled={quoteFontSize <= 16}
                     className="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold hover:border-teal-500/30 active:scale-95 transition-all disabled:opacity-40 shadow-sm"
-                    title="تصغير الخط"
+                    title={t('bi_decrease_font', 'تصغير الخط')}
                   >
-                    أ-
+                    {t('bi_font_minus', 'أ-')}
                   </button>
                   <span className="text-xs font-black font-mono text-slate-800 dark:text-slate-200 min-w-[40px] text-center">
                     {quoteFontSize}px
@@ -1716,9 +1720,9 @@ export const BelieverInsights: React.FC = () => {
                     onClick={() => setQuoteFontSize(Math.min(36, quoteFontSize + 2))}
                     disabled={quoteFontSize >= 36}
                     className="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold hover:border-teal-500/30 active:scale-95 transition-all disabled:opacity-40 shadow-sm"
-                    title="تكبير الخط"
+                    title={t('bi_increase_font', 'تكبير الخط')}
                   >
-                    أ+
+                    {t('bi_font_plus', 'أ+')}
                   </button>
                 </div>
               </div>
@@ -1734,8 +1738,8 @@ export const BelieverInsights: React.FC = () => {
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>ترتيب أبواب الخير</h4>
-                  <p className={cn("text-[10px]", "text-slate-500")}>تخصيص ترتيب البطاقات حسب رغبتك</p>
+                  <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>{t('bi_order_good', 'ترتيب أبواب الخير')}</h4>
+                  <p className={cn("text-[10px]", "text-slate-500")}>{t('bi_order_desc', 'تخصيص ترتيب البطاقات حسب رغبتك')}</p>
                 </div>
               </div>
               
@@ -1793,8 +1797,8 @@ export const BelieverInsights: React.FC = () => {
                   <Layers size={20} />
                 </div>
                 <div>
-                  <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>ترتيب أبواب الشر</h4>
-                  <p className={cn("text-[10px]", "text-slate-500")}>تخصيص ترتيب البطاقات حسب رغبتك</p>
+                  <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>{t('bi_order_bad', 'ترتيب أبواب الشر')}</h4>
+                  <p className={cn("text-[10px]", "text-slate-500")}>{t('bi_order_desc', 'تخصيص ترتيب البطاقات حسب رغبتك')}</p>
                 </div>
               </div>
               
@@ -1852,11 +1856,11 @@ export const BelieverInsights: React.FC = () => {
  <Bell size={20} />
  </div>
  <div>
- <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>التذكير اليومي</h4>
- <p className={cn("text-[10px]", "text-slate-500")}>تنبيه لمراجعة البصائر</p>
+ <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>{t('bi_daily_reminder', 'التذكير اليومي')}</h4>
+ <p className={cn("text-[10px]", "text-slate-500")}>{t('bi_daily_reminder_desc', 'تنبيه لمراجعة البصائر')}</p>
  </div>
  </div>
- <span className="text-[9px] font-black bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-full">قريباً</span>
+ <span className="text-[9px] font-black bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-full">{t('bi_soon', 'قريباً')}</span>
  </div>
 
  {/* Setting Item: Display Mode (Mock) */}
@@ -1869,8 +1873,8 @@ export const BelieverInsights: React.FC = () => {
  <Layout size={20} />
  </div>
  <div>
- <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>المظهر المدمج</h4>
- <p className={cn("text-[10px]", "text-slate-500")}>تصغير حجم البطاقات</p>
+ <h4 className={cn("font-bold text-sm", "text-slate-900 dark:text-white")}>{t('bi_compact', 'المظهر المدمج')}</h4>
+ <p className={cn("text-[10px]", "text-slate-500")}>{t('bi_compact_desc', 'تصغير حجم البطاقات')}</p>
  </div>
  </div>
  <div className="w-10 h-6 bg-slate-200 dark:bg-slate-700 rounded-full relative cursor-not-allowed">
@@ -1888,8 +1892,8 @@ export const BelieverInsights: React.FC = () => {
  <RotateCcw size={20} />
  </div>
  <div>
- <h4 className="font-bold text-sm text-rose-600 dark:text-rose-400">تصفير الإنجازات</h4>
- <p className="text-[10px] text-rose-500/70">مسح جميع العادات المكتسبة</p>
+ <h4 className="font-bold text-sm text-rose-600 dark:text-rose-400">{t('bi_reset_title', 'تصفير الإنجازات')}</h4>
+ <p className="text-[10px] text-rose-500/70">{t('bi_reset_desc', 'مسح جميع العادات المكتسبة')}</p>
  </div>
  </div>
  <button 
@@ -1908,7 +1912,7 @@ export const BelieverInsights: React.FC = () => {
  confirmReset ? "bg-rose-600 text-white shadow-lg shadow-rose-600/20" : "bg-rose-200 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300"
  )}
  >
- {confirmReset ? "تأكيد؟" : "تصفير"}
+ {confirmReset ? t('bi_confirm_q', 'تأكيد؟') : t('reset', 'تصفير')}
  </button>
  </div>
 
@@ -1921,7 +1925,7 @@ export const BelieverInsights: React.FC = () => {
  {/* Habit Details Popup */}
  <AnimatePresence>
  {selectedHabit && (
- <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 text-right" dir="rtl">
+ <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 text-start">
  <motion.div
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
@@ -1957,10 +1961,10 @@ export const BelieverInsights: React.FC = () => {
      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/10 mt-2">
        <Sparkles size={10} className="text-white animate-pulse" />
        <span className="text-white/90 text-[10px] font-black uppercase tracking-widest leading-none">
-       {selectedHabit.type === 'good' ? 'باب خير' : 
-        selectedHabit.type === 'repentance' ? 'توبة وإنابة' :
-        selectedHabit.type === 'sunnah' || selectedHabit.type === 'worship' ? 'نافلة وسنة' :
-        selectedHabit.isMajorSin ? 'من الكبائر' : 'باب سيئة'}
+       {selectedHabit.type === 'good' ? t('bi_type_good', 'باب خير') :
+        selectedHabit.type === 'repentance' ? t('bi_type_repentance', 'توبة وإنابة') :
+        selectedHabit.type === 'sunnah' || selectedHabit.type === 'worship' ? t('bi_type_sunnah', 'نافلة وسنة') :
+        selectedHabit.isMajorSin ? t('bi_type_major', 'من الكبائر') : t('bi_type_bad', 'باب سيئة')}
        </span>
      </div>
    </div>
@@ -1979,7 +1983,7 @@ export const BelieverInsights: React.FC = () => {
  <div className="space-y-3">
  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
    <div className="w-1 h-3 bg-indigo-500 rounded-full" />
-   تعريف الباب
+   {t('bi_define', 'تعريف الباب')}
  </h4>
  <p className="text-[15px] text-slate-700 dark:text-slate-200 font-bold leading-relaxed pr-3">
  {selectedHabit.description}
@@ -1989,7 +1993,7 @@ export const BelieverInsights: React.FC = () => {
  <div className="space-y-4">
  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
    <div className={cn("w-1 h-3 rounded-full", selectedHabit.type === 'good' ? "bg-emerald-500" : "bg-rose-500")} />
-   الأثر الإيماني والثمرة
+   {t('bi_fruit', 'الأثر الإيماني والثمرة')}
  </h4>
  <div className="p-5 rounded-[1.5rem] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-slate-200/50 dark:border-slate-800 shadow-inner group overflow-hidden relative">
    <div className="absolute top-0 right-0 w-2 h-full bg-indigo-500/10" />
@@ -2012,7 +2016,7 @@ export const BelieverInsights: React.FC = () => {
    <div className="space-y-3">
      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
        <div className="w-1 h-3 bg-teal-500 rounded-full" />
-       تفاصيل إضافية
+       {t('bi_more', 'تفاصيل إضافية')}
      </h4>
      <p className="text-[13px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed pr-3">
        {selectedHabit.details}
@@ -2026,12 +2030,12 @@ export const BelieverInsights: React.FC = () => {
  {customHabits.some(h => h.id === selectedHabit.id) && (
  <button 
  onClick={() => {
-   if (confirm("هل أنت متأكد من حذف هذه العادة المخصصة؟")) {
+   if (confirm(t('bi_confirm_delete_custom', 'هل أنت متأكد من حذف هذه العادة المخصصة؟'))) {
      deleteHabit(selectedHabit.id);
    }
  }}
  className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center justify-center transform transition-all duration-75 active:scale-[0.85] active:opacity-70"
- title="حذف العادة"
+ title={t('bi_delete_habit', 'حذف العادة')}
  >
  <Trash2 size={24} />
  </button>
@@ -2054,12 +2058,12 @@ export const BelieverInsights: React.FC = () => {
  {completedHabits.includes(selectedHabit.id) ? (
  <>
  <RotateCcw size={20} className="animate-spin-slow" />
- إلغاء الإنجاز
+ {t('bi_undo_done', 'إلغاء الإنجاز')}
  </>
  ) : (
  <>
  <CheckCircle2 size={20} />
- {selectedHabit.type === 'good' || selectedHabit.type === 'repentance' || selectedHabit.type === 'sunnah' || selectedHabit.type === 'worship' ? 'تم الاكتساب' : 'تم التخلص'}
+ {selectedHabit.type === 'good' || selectedHabit.type === 'repentance' || selectedHabit.type === 'sunnah' || selectedHabit.type === 'worship' ? t('bi_acquired', 'تم الاكتساب') : t('bi_eliminated', 'تم التخلص')}
  </>
  )}
  </button>

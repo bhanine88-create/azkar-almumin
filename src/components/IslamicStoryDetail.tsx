@@ -29,6 +29,7 @@ import { BackButton } from './ui/BackButton';
 import { shareContent } from '../lib/utils';
 import { ISLAMIC_STORIES } from '../data/islamicStories';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
 const CATEGORIES = [
@@ -44,16 +45,17 @@ const getCategoryDetails = (categoryId: string) => {
   return CATEGORIES.find(c => c.id === categoryId) || CATEGORIES[0];
 };
 
-const getReadingTime = (text: string) => {
+const getReadingTime = (text: string, t: (k: string, d?: string, p?: any) => string) => {
   const words = text.trim().split(/\s+/).length;
   const minutes = Math.max(1, Math.ceil(words / 180));
-  return `${minutes} دقيقة`;
+  return t('sq_minutes', '{{count}} دقيقة', { count: minutes });
 };
 
 export const IslamicStoryDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { toggleFavoriteUnified, progress, addPoints } = useAppContext();
+  const { toggleFavoriteUnified, progress, addPoints, settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
 
   // Font size state
   const [fontSize, setFontSize] = useState<number>(20); // default 20px for high readability
@@ -125,17 +127,17 @@ export const IslamicStoryDetail: React.FC = () => {
 
   if (!story) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center" dir="rtl">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-400 mb-4">
           <BookOpen size={32} />
         </div>
-        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">القصة غير موجودة</h2>
-        <p className="text-slate-500 dark:text-slate-400 mb-6 font-bold">عذراً، لم نتمكن من العثور على القصة التي تبحث عنها.</p>
+        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">{t('sq_not_found_title', 'القصة غير موجودة')}</h2>
+        <p className="text-slate-500 dark:text-slate-400 mb-6 font-bold">{t('sq_not_found_desc', 'عذراً، لم نتمكن من العثور على القصة التي تبحث عنها.')}</p>
         <button
           onClick={() => navigate('/stories')}
           className="bg-amber-500 hover:bg-amber-400 text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-amber-500/20 cursor-pointer"
         >
-          العودة لقائمة القصص
+          {t('sq_back_to_list', 'العودة لقائمة القصص')}
         </button>
       </div>
     );
@@ -143,11 +145,11 @@ export const IslamicStoryDetail: React.FC = () => {
 
   const categoryDetails = getCategoryDetails(story.category);
   const Icon = categoryDetails.icon;
-  const readingTime = getReadingTime(story.content);
+  const readingTime = getReadingTime(story.content, t);
 
   // Share story
   const handleShare = async () => {
-    const text = `📖 *${story.title}*\n\nاقرأ هذه القصة الملهمة وغيرها من السير والقصص الإسلامية عبر تطبيق أذكار المؤمن.\n\nرابط القصة:`;
+    const text = t('sq_share_text', '📖 *{{title}}*\n\nاقرأ هذه القصة الملهمة وغيرها من السير والقصص الإسلامية عبر تطبيق أذكار المؤمن.\n\nرابط القصة:', { title: story.title });
     await shareContent(story.title, text, window.location.href);
   };
 
@@ -252,14 +254,14 @@ export const IslamicStoryDetail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-right" dir="rtl">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 text-start">
       
       {/* Sticky Top Header */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-150 dark:border-slate-800">
         <div className="px-4 py-3.5 flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-1">
             <BackButton />
-            <span className="text-xs font-black text-slate-400 dark:text-slate-500 hidden sm:inline">تفاصيل القصة</span>
+            <span className="text-xs font-black text-slate-400 dark:text-slate-500 hidden sm:inline">{t('sq_story_details', 'تفاصيل القصة')}</span>
           </div>
 
           {/* Scroll progress bar */}
@@ -274,7 +276,7 @@ export const IslamicStoryDetail: React.FC = () => {
                 onClick={() => setFontSize(prev => Math.max(16, prev - 2))}
                 disabled={fontSize <= 16}
                 className="p-1.5 text-xs font-black text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white disabled:opacity-30 cursor-pointer"
-                title="تصغير الخط"
+                title={t('sq_font_decrease', 'تصغير الخط')}
               >
                 أ-
               </button>
@@ -283,7 +285,7 @@ export const IslamicStoryDetail: React.FC = () => {
                 onClick={() => setFontSize(prev => Math.min(28, prev + 2))}
                 disabled={fontSize >= 28}
                 className="p-1.5 text-xs font-black text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white disabled:opacity-30 cursor-pointer"
-                title="تكبير الخط"
+                title={t('sq_font_increase', 'تكبير الخط')}
               >
                 أ+
               </button>
@@ -296,7 +298,7 @@ export const IslamicStoryDetail: React.FC = () => {
                   id: story.id,
                   type: 'story',
                   title: story.title,
-                  subtitle: getCategoryDetails(story.category).label,
+                  subtitle: t(`sq_cat_${story.category}`, getCategoryDetails(story.category).label),
                   route: `/stories/${story.id}`
                 });
               }}
@@ -306,7 +308,7 @@ export const IslamicStoryDetail: React.FC = () => {
                   ? "bg-rose-50 dark:bg-rose-950/30 text-rose-500 shadow-sm border border-rose-500/10" 
                   : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-500 dark:text-slate-400"
               )}
-              title="أضف للمفضلة"
+              title={t('sq_add_favorite', 'أضف للمفضلة')}
             >
               <Heart size={18} className={isFavorite ? "fill-current" : ""} />
             </button>
@@ -315,7 +317,7 @@ export const IslamicStoryDetail: React.FC = () => {
             <button 
               onClick={handleShare}
               className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors text-slate-500 dark:text-slate-400 active:scale-90 cursor-pointer"
-              title="مشاركة القصة"
+              title={t('sq_share_story', 'مشاركة القصة')}
             >
               <Share2 size={18} />
             </button>
@@ -331,21 +333,21 @@ export const IslamicStoryDetail: React.FC = () => {
         <div className="max-w-4xl mx-auto relative z-10 space-y-4">
           <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-xs font-black shadow-sm border border-white/10 uppercase">
             <Icon size={12} />
-            {categoryDetails.label}
+            {t(`sq_cat_${story.category}`, categoryDetails.label)}
           </span>
           
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight drop-shadow-md text-right">
+          <h1 dir="rtl" className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight drop-shadow-md text-start">
             {story.title}
           </h1>
 
           <div className="flex flex-wrap items-center gap-3 text-white/90 text-xs font-bold pt-2">
             <span className="flex items-center gap-1.5 bg-black/10 px-3 py-1.5 rounded-xl backdrop-blur-sm">
               <Clock size={13} />
-              <span>وقت القراءة: {readingTime}</span>
+              <span>{t('sq_reading_time', 'وقت القراءة: {{time}}', { time: readingTime })}</span>
             </span>
             <span className="flex items-center gap-1.5 bg-black/10 px-3 py-1.5 rounded-xl backdrop-blur-sm">
               <BookOpenText size={13} />
-              <span>عدد الكلمات: {story.content.trim().split(/\s+/).length} كلمة</span>
+              <span>{t('sq_word_count', 'عدد الكلمات: {{count}} كلمة', { count: story.content.trim().split(/\s+/).length })}</span>
             </span>
           </div>
         </div>
@@ -359,8 +361,8 @@ export const IslamicStoryDetail: React.FC = () => {
               <Volume2 size={20} />
             </div>
             <div>
-              <h4 className="text-sm font-black text-slate-800 dark:text-white leading-tight">القارئ الصوتي الذكي</h4>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">استمع إلى تلاوة القصة بالصوت العربي الطبيعي</p>
+              <h4 className="text-sm font-black text-slate-800 dark:text-white leading-tight">{t('sq_smart_reader', 'القارئ الصوتي الذكي')}</h4>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">{t('sq_smart_reader_desc', 'استمع إلى تلاوة القصة بالصوت العربي الطبيعي')}</p>
             </div>
           </div>
 
@@ -370,10 +372,10 @@ export const IslamicStoryDetail: React.FC = () => {
               <button
                 onClick={handleSpeechStop}
                 className="p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 text-rose-500 transition-all text-xs font-black flex items-center gap-1 cursor-pointer"
-                title="إيقاف التشغيل"
+                title={t('sq_stop_playback', 'إيقاف التشغيل')}
               >
                 <RotateCcw size={14} />
-                <span>إيقاف</span>
+                <span>{t('sq_stop', 'إيقاف')}</span>
               </button>
             )}
 
@@ -389,12 +391,12 @@ export const IslamicStoryDetail: React.FC = () => {
               {isSpeaking && !isPaused ? (
                 <>
                   <Pause size={14} />
-                  <span>إيقاف مؤقت</span>
+                  <span>{t('sq_pause', 'إيقاف مؤقت')}</span>
                 </>
               ) : (
                 <>
                   <Play size={14} />
-                  <span>{isPaused ? "استئناف" : "استمع الآن"}</span>
+                  <span>{isPaused ? t('sq_resume', 'استئناف') : t('sq_listen_now', 'استمع الآن')}</span>
                 </>
               )}
             </button>
@@ -403,7 +405,7 @@ export const IslamicStoryDetail: React.FC = () => {
             <button
               onClick={handleTtsSpeedToggle}
               className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-extrabold hover:bg-slate-200 cursor-pointer"
-              title="تغيير سرعة القراءة"
+              title={t('sq_change_speed', 'تغيير سرعة القراءة')}
             >
               {ttsSpeed}x
             </button>
@@ -424,8 +426,8 @@ export const IslamicStoryDetail: React.FC = () => {
               className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4.5 rounded-2xl text-center shadow-lg flex flex-col items-center justify-center gap-2"
             >
               <Award size={32} className="text-amber-300 animate-bounce" />
-              <h4 className="text-lg font-black">تهانينا! لقد أتممت قراءة القصة بنجاح</h4>
-              <p className="text-xs text-emerald-50 font-bold">تمت إضافة +30 نقطة إيمانية إلى رصيدك وزيادة مستوى تقدمك!</p>
+              <h4 className="text-lg font-black">{t('sq_congrats', 'تهانينا! لقد أتممت قراءة القصة بنجاح')}</h4>
+              <p className="text-xs text-emerald-50 font-bold">{t('sq_points_added', 'تمت إضافة +30 نقطة إيمانية إلى رصيدك وزيادة مستوى تقدمك!')}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -438,7 +440,7 @@ export const IslamicStoryDetail: React.FC = () => {
         >
           {/* Main paragraphs */}
           <div 
-            className="text-slate-800 dark:text-slate-100 leading-relaxed font-bold tracking-wide text-right whitespace-pre-line"
+            className="text-slate-800 dark:text-slate-100 leading-relaxed font-bold tracking-wide text-start whitespace-pre-line" dir="rtl"
             style={{ 
               fontSize: `${fontSize}px`, 
               lineHeight: 1.8,
@@ -475,15 +477,15 @@ export const IslamicStoryDetail: React.FC = () => {
 
           {/* Interactive Mark as Completed Button */}
           <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-right">
-              <h5 className="text-sm font-black text-slate-700 dark:text-slate-300">هل أكملت القراءة؟</h5>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">اضغط لتسجيل قراءة القصة والحصول على نقاط المكافأة</p>
+            <div className="text-start">
+              <h5 className="text-sm font-black text-slate-700 dark:text-slate-300">{t('sq_finished_q', 'هل أكملت القراءة؟')}</h5>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">{t('sq_finished_hint', 'اضغط لتسجيل قراءة القصة والحصول على نقاط المكافأة')}</p>
             </div>
 
             {isCompleted ? (
               <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-black px-5 py-3 rounded-2xl border border-emerald-500/10 text-xs shadow-inner">
                 <Check size={16} className="stroke-[3]" />
-                <span>تم إتمام القراءة وجني المكافأة</span>
+                <span>{t('sq_completed_done', 'تم إتمام القراءة وجني المكافأة')}</span>
               </div>
             ) : (
               <button
@@ -491,7 +493,7 @@ export const IslamicStoryDetail: React.FC = () => {
                 className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-6 py-4 rounded-2xl font-black text-xs shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <BookmarkCheck size={16} />
-                <span>إتمام القراءة (+30 نقطة)</span>
+                <span>{t('sq_complete_btn', 'إتمام القراءة (+30 نقطة)')}</span>
               </button>
             )}
           </div>

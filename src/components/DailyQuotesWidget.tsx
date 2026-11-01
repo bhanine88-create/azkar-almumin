@@ -4,6 +4,9 @@ import download from 'downloadjs';
 import { Share2, Download, Quote, ChevronRight, ChevronLeft, Image as ImageIcon, Type } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
+import { localizeSurahRef } from './DailyAyahDhikrWidget';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
 
 
@@ -245,6 +248,8 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
   setFontSize: propSetFontSize,
   onOpenSettings
 }) => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -456,11 +461,11 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
         
         // Also copy text and show beautiful toast!
         try {
-          await navigator.clipboard.writeText(`"${currentQuote.text}"\n— ${currentQuote.source}`);
+          await navigator.clipboard.writeText(`"${currentQuote.text}"\n— ${localizeSurahRef(currentQuote.source, t)}`);
         } catch (e) {
           console.error(e);
         }
-        setToastMessage("تم نسخ النص وتحميل البطاقة بنجاح!");
+        setToastMessage(t('u2_dq_copied_downloaded', 'تم نسخ النص وتحميل البطاقة بنجاح!'));
         setTimeout(() => setToastMessage(null), 3000);
       }
     } finally {
@@ -481,13 +486,13 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
 
       // Fallback actions: copy text
       try {
-        await navigator.clipboard.writeText(`"${currentQuote.text}"\n— ${currentQuote.source}`);
+        await navigator.clipboard.writeText(`"${currentQuote.text}"\n— ${localizeSurahRef(currentQuote.source, t)}`);
       } catch (e) {
         console.error(e);
       }
       
       // Show toast for feedback
-      setToastMessage("تم تحضير البطاقة للمشاركة!");
+      setToastMessage(t('u2_dq_prepared', 'تم تحضير البطاقة للمشاركة!'));
       setTimeout(() => setToastMessage(null), 3000);
 
       try {
@@ -498,7 +503,7 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
           
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
-              title: 'بصائر المؤمن - اقتباس اليوم',
+              title: t('u2_dq_share_title', 'بصائر المؤمن - اقتباس اليوم'),
               text: currentQuote.text,
               files: [file],
             });
@@ -530,7 +535,7 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
           <button 
             onClick={handlePrev} 
             className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 active:scale-90 transition-all border border-white/10 pointer-events-auto"
-            title="السابق"
+            title={t('previous', 'السابق')}
           >
             <ChevronRight size={16} />
           </button>
@@ -539,7 +544,7 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
           <button 
             onClick={handleNext} 
             className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 active:scale-90 transition-all border border-white/10 pointer-events-auto"
-            title="التالي"
+            title={t('next', 'التالي')}
           >
             <ChevronLeft size={16} />
           </button>
@@ -605,7 +610,7 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
                   <div className="flex items-center gap-2 w-full justify-center">
                     <div className="h-[1px] w-8 bg-current opacity-30" />
                     <span className={cn("text-xs font-bold transition-all duration-300", themeStyles.sourceColor)}>
-                      {currentQuote.source}
+                      {localizeSurahRef(currentQuote.source, t)}
                     </span>
                     <div className="h-[1px] w-8 bg-current opacity-30" />
                   </div>
@@ -633,16 +638,16 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
               <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
                 <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
                   <Type size={16} className="text-teal-500" />
-                  <span className="text-xs font-black">تنسيق ونمط الخط للبطاقة</span>
+                  <span className="text-xs font-black">{t('u2_dq_style_title', 'تنسيق ونمط الخط للبطاقة')}</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                  تخصيص البطاقة للمشاركة والتنزيل
+                  {t('u2_dq_style_sub', 'تخصيص البطاقة للمشاركة والتنزيل')}
                 </span>
               </div>
 
               {/* Font Family List */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">نوع الخط:</span>
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">{t('u2_dq_font_type', 'نوع الخط:')}</span>
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none snap-x">
                   {FONTS_LIST.map((font) => (
                     <button
@@ -664,18 +669,18 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
 
               {/* Font Size Adjuster */}
               <div className="flex items-center justify-between gap-4 pt-1">
-                <div className="flex flex-col text-right">
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">حجم الخط:</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">انقر للتكبير والتصغير</span>
+                <div className="flex flex-col text-start">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{t('u2_dq_font_size', 'حجم الخط:')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">{t('u2_dq_font_size_hint', 'انقر للتكبير والتصغير')}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <button
                     onClick={() => setFontSize(prev => Math.max(16, prev - 2))}
                     disabled={fontSize <= 16}
                     className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold hover:border-teal-500/30 active:scale-95 transition-all disabled:opacity-40 shadow-sm"
-                    title="تصغير الخط"
+                    title={t('u2_dq_font_smaller', 'تصغير الخط')}
                   >
-                    أ-
+                    {t('u2_dq_glyph_minus', 'أ-')}
                   </button>
                   <span className="text-xs font-black font-mono text-slate-800 dark:text-slate-200 min-w-[40px] text-center">
                     {fontSize}px
@@ -684,9 +689,9 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
                     onClick={() => setFontSize(prev => Math.min(36, prev + 2))}
                     disabled={fontSize >= 36}
                     className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold hover:border-teal-500/30 active:scale-95 transition-all disabled:opacity-40 shadow-sm"
-                    title="تكبير الخط"
+                    title={t('u2_dq_font_larger', 'تكبير الخط')}
                   >
-                    أ+
+                    {t('u2_dq_glyph_plus', 'أ+')}
                   </button>
                 </div>
               </div>
@@ -703,7 +708,7 @@ export const DailyQuotesWidget: React.FC<DailyQuotesWidgetProps> = ({
           className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl py-2.5 px-6 font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 shadow-md shadow-teal-600/10"
         >
           {isSharing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Share2 size={16} />}
-          مشاركة الصورة
+          {t('u2_dq_share_image', 'مشاركة الصورة')}
         </button>
         <button 
           onClick={handleDownload}

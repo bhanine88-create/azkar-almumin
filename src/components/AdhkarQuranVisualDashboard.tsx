@@ -50,6 +50,7 @@ import {
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { useTranslation } from '../i18n';
+import { getLocaleCode } from '../lib/utils';
 import { BackButton } from './ui/BackButton';
 import { cn } from '../lib/utils';
 import { useSmartNavigation } from '../lib/navigation';
@@ -74,10 +75,9 @@ interface DayDataPoint {
 }
 
 // Sample fallback data generator to showcase rich charts if user is new
-const generateSampleHistory = (daysCount: number, isRtl: boolean): DayDataPoint[] => {
+const generateSampleHistory = (daysCount: number, lang: string): DayDataPoint[] => {
   const points: DayDataPoint[] = [];
-  const weekdaysAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-  const weekdaysEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayFmt = new Intl.DateTimeFormat(getLocaleCode(lang), { weekday: 'short' });
 
   for (let i = daysCount - 1; i >= 0; i--) {
     const d = new Date();
@@ -95,7 +95,7 @@ const generateSampleHistory = (daysCount: number, isRtl: boolean): DayDataPoint[
 
     points.push({
       date: d.toISOString().split('T')[0],
-      dayName: isRtl ? weekdaysAR[dayOfWeek] : weekdaysEN[dayOfWeek],
+      dayName: dayFmt.format(d),
       shortDate: `${d.getDate()}/${d.getMonth() + 1}`,
       adhkarCompletionRate: Math.round((count / 4) * 100),
       completedAdhkarCount: count,
@@ -112,13 +112,12 @@ const generateSampleHistory = (daysCount: number, isRtl: boolean): DayDataPoint[
 };
 
 // Custom Chart Tooltip with glass styling and high readability
-const CustomDashboardTooltip = React.memo(({ active, payload, label, isRtl }: any) => {
+const CustomDashboardTooltip = React.memo(({ active, payload, label, t }: any) => {
   if (active && payload && payload.length) {
     const data: DayDataPoint = payload[0]?.payload || {};
     return (
       <div 
-        className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-700/60 shadow-2xl text-white text-right space-y-2 min-w-[200px]"
-        dir={isRtl ? 'rtl' : 'ltr'}
+        className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-700/60 shadow-2xl text-white text-start space-y-2 min-w-[200px]"
       >
         <div className="flex items-center justify-between border-b border-slate-700/50 pb-1.5">
           <span className="text-xs font-black text-emerald-400">{label || data.dayName}</span>
@@ -130,7 +129,7 @@ const CustomDashboardTooltip = React.memo(({ active, payload, label, isRtl }: an
           <div className="flex items-center justify-between gap-3 text-amber-300">
             <span className="flex items-center gap-1.5">
               <Sunrise size={13} className="text-amber-400" />
-              <span>{isRtl ? 'التزام الأذكار' : 'Adhkar Rate'}:</span>
+              <span>{t('st_vis_adhkar_rate', 'التزام الأذكار')}:</span>
             </span>
             <span className="font-black text-white">{data.adhkarCompletionRate}%</span>
           </div>
@@ -139,10 +138,10 @@ const CustomDashboardTooltip = React.memo(({ active, payload, label, isRtl }: an
           <div className="flex items-center justify-between gap-3 text-teal-300">
             <span className="flex items-center gap-1.5">
               <BookOpen size={13} className="text-teal-400" />
-              <span>{isRtl ? 'تلاوة القرآن' : 'Quran Recited'}:</span>
+              <span>{t('st_vis_quran_recited', 'تلاوة القرآن')}:</span>
             </span>
             <span className="font-black text-white">
-              {data.quranPages} {isRtl ? 'صفحة' : 'pages'}
+              {data.quranPages} {t('st_vis_pages', 'صفحة')}
             </span>
           </div>
 
@@ -151,7 +150,7 @@ const CustomDashboardTooltip = React.memo(({ active, payload, label, isRtl }: an
             <div className="flex items-center justify-between gap-3 text-cyan-300">
               <span className="flex items-center gap-1.5">
                 <Zap size={13} className="text-cyan-400" />
-                <span>{isRtl ? 'التسبيح' : 'Tasbih'}:</span>
+                <span>{t('tasbih_label', 'التسبيح')}:</span>
               </span>
               <span className="font-black text-white">{data.tasbihCount}</span>
             </div>
@@ -162,22 +161,22 @@ const CustomDashboardTooltip = React.memo(({ active, payload, label, isRtl }: an
         <div className="pt-1.5 border-t border-slate-700/50 flex flex-wrap gap-1">
           {data.hasMorning && (
             <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[9px] font-bold">
-              {isRtl ? 'الصباح' : 'Morning'}
+              {t('morning_label', 'الصباح')}
             </span>
           )}
           {data.hasEvening && (
             <span className="px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 text-[9px] font-bold">
-              {isRtl ? 'المساء' : 'Evening'}
+              {t('evening_label', 'المساء')}
             </span>
           )}
           {data.hasSleep && (
             <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[9px] font-bold">
-              {isRtl ? 'النوم' : 'Sleep'}
+              {t('st_vis_sleep', 'النوم')}
             </span>
           )}
           {data.hasWaking && (
             <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">
-              {isRtl ? 'الاستيقاظ' : 'Waking'}
+              {t('waking_up_title', 'الاستيقاظ')}
             </span>
           )}
         </div>
@@ -194,7 +193,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
   });
 
   const { progress, settings, markCategoryCompleted, addQuranLog } = useAppContext();
-  const { isRtl } = useTranslation(settings.appLanguage);
+  const { t, isRtl } = useTranslation(settings.appLanguage);
   const { navigate } = useSmartNavigation();
 
   // State controls
@@ -229,13 +228,12 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
   // Build DayDataPoints from AppContext progress
   const chartData = useMemo<DayDataPoint[]>(() => {
     if (useSampleData) {
-      return generateSampleHistory(daysCount, isRtl);
+      return generateSampleHistory(daysCount, settings.appLanguage);
     }
 
     const points: DayDataPoint[] = [];
     const dailyStats = progress.dailyStats || {};
-    const weekdaysAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const weekdaysEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayFmt = new Intl.DateTimeFormat(getLocaleCode(settings.appLanguage), { weekday: 'short' });
 
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
@@ -244,7 +242,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
       const stats = dailyStats[dateStr] || { adhkar: [], quran: 0, tasbih: 0 };
 
       const dayOfWeek = d.getDay();
-      const dayName = isRtl ? weekdaysAR[dayOfWeek] : weekdaysEN[dayOfWeek];
+      const dayName = dayFmt.format(d);
       const shortDate = `${d.getDate()}/${d.getMonth() + 1}`;
 
       const adhkarList = stats.adhkar || [];
@@ -283,7 +281,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
     }
 
     return points;
-  }, [useSampleData, daysCount, isRtl, progress.dailyStats, progress.quranProgress]);
+  }, [useSampleData, daysCount, settings.appLanguage, progress.dailyStats, progress.quranProgress]);
 
   // Aggregate Key Statistics
   const aggregatedStats = useMemo(() => {
@@ -335,25 +333,26 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
     const total = morning + evening + sleep + waking;
     if (total === 0) {
       return [
-        { name: isRtl ? 'الصباح' : 'Morning', value: 1, color: '#f59e0b', count: 0 },
-        { name: isRtl ? 'المساء' : 'Evening', value: 1, color: '#6366f1', count: 0 },
-        { name: isRtl ? 'النوم' : 'Sleep', value: 1, color: '#8b5cf6', count: 0 },
-        { name: isRtl ? 'الاستيقاظ' : 'Waking', value: 1, color: '#10b981', count: 0 },
+        { name: t('morning_label', 'الصباح'), value: 1, color: '#f59e0b', count: 0 },
+        { name: t('evening_label', 'المساء'), value: 1, color: '#6366f1', count: 0 },
+        { name: t('st_vis_sleep', 'النوم'), value: 1, color: '#8b5cf6', count: 0 },
+        { name: t('waking_up_title', 'الاستيقاظ'), value: 1, color: '#10b981', count: 0 },
       ];
     }
 
     return [
-      { name: isRtl ? 'أذكار الصباح' : 'Morning', value: morning, color: '#f59e0b', count: morning },
-      { name: isRtl ? 'أذكار المساء' : 'Evening', value: evening, color: '#6366f1', count: evening },
-      { name: isRtl ? 'أذكار النوم' : 'Sleep', value: sleep, color: '#8b5cf6', count: sleep },
-      { name: isRtl ? 'أذكار الاستيقاظ' : 'Waking', value: waking, color: '#10b981', count: waking },
+      { name: t('morning', 'أذكار الصباح'), value: morning, color: '#f59e0b', count: morning },
+      { name: t('evening', 'أذكار المساء'), value: evening, color: '#6366f1', count: evening },
+      { name: t('st_vis_sleep_2', 'أذكار النوم'), value: sleep, color: '#8b5cf6', count: sleep },
+      { name: t('st_vis_waking', 'أذكار الاستيقاظ'), value: waking, color: '#10b981', count: waking },
     ];
-  }, [chartData, isRtl]);
+  }, [chartData, settings.appLanguage, t]);
 
   // Weekday Frequency Comparison Data (Sun-Sat average)
   const weekdayFrequency = useMemo(() => {
-    const daysMapAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const daysMapEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayFmt = new Intl.DateTimeFormat(getLocaleCode(settings.appLanguage), { weekday: 'short' });
+    // 2023-01-01 was a Sunday
+    const daysMap = [0, 1, 2, 3, 4, 5, 6].map(i => dayFmt.format(new Date(2023, 0, 1 + i)));
 
     const summary = [0, 1, 2, 3, 4, 5, 6].map(idx => {
       const matching = chartData.filter(d => {
@@ -365,7 +364,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
       const count = Math.max(1, matching.length);
 
       return {
-        day: isRtl ? daysMapAR[idx] : daysMapEN[idx],
+        day: daysMap[idx],
         avgQuran: Math.round((quranSum / count) * 10) / 10,
         avgAdhkar: Math.round((adhkarSum / count) * 10) / 10,
         frequencyRate: Math.round(((quranSum + (adhkarSum * 2.5)) / (count * 15)) * 100)
@@ -373,7 +372,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
     });
 
     return summary;
-  }, [chartData, isRtl]);
+  }, [chartData, settings.appLanguage, t]);
 
   // Radial Gauge Data for Khatma & Daily Goals
   const radialGaugeData = useMemo(() => {
@@ -384,27 +383,26 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
 
     return [
       {
-        name: isRtl ? 'الختمة العامة' : 'Khatma',
+        name: t('st_vis_khatma', 'الختمة العامة'),
         value: khatmaPercent || 15,
         fill: '#059669', // Emerald
       },
       {
-        name: isRtl ? 'ورد القرآن اليومي' : 'Daily Quran',
+        name: t('st_vis_daily_quran', 'ورد القرآن اليومي'),
         value: quranDailyPercent || (isViewingSample ? 70 : 0),
         fill: '#0d9488', // Teal
       },
       {
-        name: isRtl ? 'أوراد الأذكار' : 'Adhkar Goal',
+        name: t('st_vis_adhkar_goal', 'أوراد الأذكار'),
         value: todayData.adhkarCompletionRate || (isViewingSample ? 75 : 0),
         fill: '#f59e0b', // Amber
       }
     ];
-  }, [chartData, progress.quranProgress, aggregatedStats, isRtl, isViewingSample]);
+  }, [chartData, progress.quranProgress, aggregatedStats, settings.appLanguage, t, isViewingSample]);
 
   // Weekly Comparison Data (Current Week vs Previous Week)
   const weeklyComparisonData = useMemo(() => {
-    const daysMapAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const daysMapEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayFmt = new Intl.DateTimeFormat(getLocaleCode(settings.appLanguage), { weekday: 'short' });
 
     const comparison = [];
     const getCompletedCount = (adhkarList: string[]) => {
@@ -440,29 +438,29 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
       
       comparison.push({
         dayIndex: i,
-        dayName: isRtl ? daysMapAR[dayOfWeek] : daysMapEN[dayOfWeek],
+        dayName: dayFmt.format(currentDay),
         currentWeek: currCount,
         previousWeek: prevCount,
       });
     }
     return comparison;
-  }, [progress.dailyStats, isRtl, useSampleData]);
+  }, [progress.dailyStats, settings.appLanguage, useSampleData]);
 
   // Handler for Quick Logging Actions
   const handleQuickAddQuran = (pages: number) => {
     addQuranLog({ amount: pages, unit: 'page' });
-    setQuickActionSuccess(isRtl ? `تم تسجيل قراءة ${pages} صفحة بنجاح!` : `Logged ${pages} pages!`);
+    setQuickActionSuccess(t('st_vis_logged_pages', 'تم تسجيل قراءة {{pages}} صفحة بنجاح!', { pages }));
     setTimeout(() => setQuickActionSuccess(null), 3000);
   };
 
   const handleQuickCompleteAdhkar = (category: string, title: string) => {
     markCategoryCompleted(category);
-    setQuickActionSuccess(isRtl ? `تم إتمام ${title} بنجاح!` : `Completed ${title}!`);
+    setQuickActionSuccess(t('st_vis_completed_title', 'تم إتمام {{title}} بنجاح!', { title }));
     setTimeout(() => setQuickActionSuccess(null), 3000);
   };
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 font-sans pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 font-sans pb-16">
       {/* Sticky Header with Actions */}
       <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 py-3.5 px-4 shadow-xs">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
@@ -471,10 +469,10 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
             <div>
               <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span>{isRtl ? 'لوحة متابعة الأذكار والقرآن' : 'Devotion & Quran Analytics'}</span>
+                <span>{t('st_vis_devotion_quran_analytics', 'لوحة متابعة الأذكار والقرآن')}</span>
               </h1>
               <p className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400">
-                {isRtl ? 'تحليل بصري وتكرار الأوراد اليومية والتلاوة' : 'Visual progress and frequency tracking'}
+                {t('st_vis_visual_progress_and_frequency_tracking', 'تحليل بصري وتكرار الأوراد اليومية والتلاوة')}
               </p>
             </div>
           </div>
@@ -488,11 +486,11 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                 ? "bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300"
                 : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
             )}
-            title={isRtl ? 'تبديل بين البيانات الفعلية والتجريبية' : 'Toggle sample demo data'}
+            title={t('st_vis_toggle_sample_demo_data', 'تبديل بين البيانات الفعلية والتجريبية')}
           >
             <Sparkles size={13} className={useSampleData ? "text-amber-500 animate-spin" : "text-slate-400"} />
-            <span className="hidden sm:inline">{useSampleData ? (isRtl ? 'معاينة تجريبية نشطة' : 'Demo Mode Active') : (isRtl ? 'عرض بيانات تجريبية' : 'Sample Data')}</span>
-            <span className="sm:hidden">{useSampleData ? 'تجريبي' : 'عينة'}</span>
+            <span className="hidden sm:inline">{useSampleData ? (t('st_vis_demo_mode_active', 'معاينة تجريبية نشطة')) : (t('st_vis_sample_data', 'عرض بيانات تجريبية'))}</span>
+            <span className="sm:hidden">{useSampleData ? t('st_vis_demo_short', 'تجريبي') : t('st_vis_sample_short', 'عينة')}</span>
           </button>
         </div>
       </header>
@@ -513,7 +511,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                 <CheckCircle2 size={16} />
                 <span>{quickActionSuccess}</span>
               </div>
-              <span className="text-[10px] opacity-80">{isRtl ? 'تم تحديث المخططات مباشرة' : 'Charts updated'}</span>
+              <span className="text-[10px] opacity-80">{t('st_vis_charts_updated', 'تم تحديث المخططات مباشرة')}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -523,13 +521,13 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between text-amber-800 dark:text-amber-200 text-xs">
             <div className="flex items-center gap-2">
               <Info size={16} className="text-amber-600 shrink-0" />
-              <span>{isRtl ? 'أنت تشاهد حالياً بيانات ورسوم توضيحية تجريبية لاستعراض التحليلات. يمكنك العودة لبياناتك بالضغط على الزر أعلاه.' : 'Viewing sample data demonstration. Click Sample Data to toggle back.'}</span>
+              <span>{t('st_vis_viewing_sample_data_demonstration_click', 'أنت تشاهد حالياً بيانات ورسوم توضيحية تجريبية لاستعراض التحليلات. يمكنك العودة لبياناتك بالضغط على الزر أعلاه.')}</span>
             </div>
             <button 
               onClick={() => setUseSampleData(false)}
               className="px-2.5 py-1 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shrink-0"
             >
-              {isRtl ? 'بياناتي' : 'My Data'}
+              {t('st_vis_my_data', 'بياناتي')}
             </button>
           </div>
         )}
@@ -539,11 +537,11 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           {/* Time Range Selector */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
             {(['7d', '14d', '30d'] as TimeRange[]).map((range) => {
-              const labels: Record<TimeRange, { ar: string; en: string }> = {
-                '7d': { ar: '7 أيام', en: '7 Days' },
-                '14d': { ar: '14 يوماً', en: '14 Days' },
-                '30d': { ar: '30 يوماً', en: '30 Days' },
-                'all': { ar: 'الكل', en: 'All' }
+              const labels: Record<TimeRange, string> = {
+                '7d': t('st_vis_range_7d', '7 أيام'),
+                '14d': t('st_vis_range_14d', '14 يوماً'),
+                '30d': t('st_vis_range_30d', '30 يوماً'),
+                'all': t('all', 'الكل')
               };
               const active = timeRange === range;
               return (
@@ -557,7 +555,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   )}
                 >
-                  {isRtl ? labels[range].ar : labels[range].en}
+                  {labels[range]}
                 </button>
               );
             })}
@@ -566,9 +564,9 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           {/* Focus Mode Selector */}
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
             {[
-              { id: 'all', nameAr: 'المجمل', nameEn: 'Combined', icon: <Layers size={13} /> },
-              { id: 'adhkar', nameAr: 'الأذكار', nameEn: 'Adhkar', icon: <Sunrise size={13} /> },
-              { id: 'quran', nameAr: 'القرآن', nameEn: 'Quran', icon: <BookOpen size={13} /> },
+              { id: 'all', name: t('st_vis_combined', 'المجمل'), icon: <Layers size={13} /> },
+              { id: 'adhkar', name: t('adhkar', 'الأذكار'), icon: <Sunrise size={13} /> },
+              { id: 'quran', name: t('quran', 'القرآن'), icon: <BookOpen size={13} /> },
             ].map((tab) => {
               const active = focusMode === tab.id;
               return (
@@ -583,7 +581,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                   )}
                 >
                   {tab.icon}
-                  <span>{isRtl ? tab.nameAr : tab.nameEn}</span>
+                  <span>{tab.name}</span>
                 </button>
               );
             })}
@@ -595,7 +593,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           {/* Card 1: Consistency Score */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">{isRtl ? 'معدل الانتظام' : 'Consistency'}</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">{t('st_vis_consistency', 'معدل الانتظام')}</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <Activity size={16} />
               </div>
@@ -606,7 +604,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
               </div>
               <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
                 <TrendingUp size={12} />
-                <span>{aggregatedStats.activeDaysCount} {isRtl ? `من أصل ${daysCount} أيام نشطة` : `of ${daysCount} active days`}</span>
+                <span>{aggregatedStats.activeDaysCount} {t('st_vis_of_active_days', 'من أصل {{days}} أيام نشطة', { days: daysCount })}</span>
               </div>
             </div>
           </div>
@@ -614,17 +612,17 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           {/* Card 2: Quran Pages Recited */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">{isRtl ? 'صفحات القرآن' : 'Quran Recited'}</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">{t('st_vis_quran_recited_2', 'صفحات القرآن')}</span>
               <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                 <BookOpen size={16} />
               </div>
             </div>
             <div>
               <div className="text-2xl font-black text-slate-900 dark:text-white">
-                {aggregatedStats.totalQuranPages} <span className="text-xs font-bold text-slate-400">{isRtl ? 'صفحة' : 'pages'}</span>
+                {aggregatedStats.totalQuranPages} <span className="text-xs font-bold text-slate-400">{t('st_vis_pages', 'صفحة')}</span>
               </div>
               <div className="text-[11px] font-bold text-teal-600 dark:text-teal-400 mt-0.5">
-                {isRtl ? `معدل ${aggregatedStats.avgQuranDaily} صفحة/يوم` : `${aggregatedStats.avgQuranDaily} pages/day avg`}
+                {t('st_vis_pages_per_day_avg', 'معدل {{n}} صفحة/يوم', { n: aggregatedStats.avgQuranDaily })}
               </div>
             </div>
           </div>
@@ -632,17 +630,17 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           {/* Card 3: Adhkar Completion Sessions */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">{isRtl ? 'جلسات الأذكار' : 'Adhkar Completed'}</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">{t('st_vis_adhkar_completed', 'جلسات الأذكار')}</span>
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                 <Sunrise size={16} />
               </div>
             </div>
             <div>
               <div className="text-2xl font-black text-slate-900 dark:text-white">
-                {aggregatedStats.totalAdhkarCompleted} <span className="text-xs font-bold text-slate-400">{isRtl ? 'ورد' : 'sessions'}</span>
+                {aggregatedStats.totalAdhkarCompleted} <span className="text-xs font-bold text-slate-400">{t('st_vis_sessions', 'ورد')}</span>
               </div>
               <div className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
-                {isRtl ? `التزام بنسبة ${aggregatedStats.avgAdhkarRate}%` : `${aggregatedStats.avgAdhkarRate}% adherence`}
+                {t('st_vis_adherence_pct', 'التزام بنسبة {{n}}%', { n: aggregatedStats.avgAdhkarRate })}
               </div>
             </div>
           </div>
@@ -650,7 +648,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           {/* Card 4: Devotion Streak */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-              <span className="text-[11px] font-bold uppercase tracking-wider">{isRtl ? 'سلسلة الاستمرار' : 'Active Streak'}</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">{t('st_vis_active_streak', 'سلسلة الاستمرار')}</span>
               <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center">
                 <Flame size={16} />
               </div>
@@ -658,10 +656,10 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
             <div>
               <div className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                 <span>{aggregatedStats.streak}</span>
-                <span className="text-xs font-bold text-slate-400">{isRtl ? 'أيام متتالية' : 'days'}</span>
+                <span className="text-xs font-bold text-slate-400">{t('st_vis_days', 'أيام متتالية')}</span>
               </div>
               <div className="text-[11px] font-bold text-orange-600 dark:text-orange-400 mt-0.5">
-                {isRtl ? `أفضل إنجاز: ${aggregatedStats.bestStreak} يوم` : `Best: ${aggregatedStats.bestStreak} days`}
+                {t('st_vis_best_days', 'أفضل إنجاز: {{n}} يوم', { n: aggregatedStats.bestStreak })}
               </div>
             </div>
           </div>
@@ -674,10 +672,10 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
               <div>
                 <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <Activity size={18} className="text-emerald-500" />
-                  <span>{isRtl ? 'مسار التقدم والتكرار اليومي' : 'Daily Progress & Recitation Trajectory'}</span>
+                  <span>{t('st_vis_daily_progress_recitation_trajectory', 'مسار التقدم والتكرار اليومي')}</span>
                 </h3>
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isRtl ? 'مقارنة تلاوة صفحات القرآن مع نسبة إتمام الأوراد اليومية' : 'Comparison of Quran pages recited and daily Adhkar completion rate'}
+                  {t('st_vis_comparison_of_quran_pages_recited_and_da', 'مقارنة تلاوة صفحات القرآن مع نسبة إتمام الأوراد اليومية')}
                 </p>
               </div>
 
@@ -686,13 +684,13 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                 {(focusMode === 'all' || focusMode === 'quran') && (
                   <div className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
                     <div className="w-3 h-3 rounded-md bg-teal-500" />
-                    <span>{isRtl ? 'صفحات القرآن' : 'Quran Pages'}</span>
+                    <span>{t('st_vis_quran_recited_2', 'صفحات القرآن')}</span>
                   </div>
                 )}
                 {(focusMode === 'all' || focusMode === 'adhkar') && (
                   <div className="flex items-center gap-1.5 text-amber-500">
                     <div className="w-3 h-3 rounded-md bg-amber-500" />
-                    <span>{isRtl ? 'نسبة الأذكار %' : 'Adhkar %'}</span>
+                    <span>{t('st_vis_adhkar', 'نسبة الأذكار %')}</span>
                   </div>
                 )}
               </div>
@@ -743,7 +741,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                     unit="%"
                   />
 
-                  <Tooltip content={<CustomDashboardTooltip isRtl={isRtl} />} />
+                  <Tooltip content={<CustomDashboardTooltip t={t} />} />
 
                   {/* Target Goal Line for Quran */}
                   <ReferenceLine 
@@ -753,7 +751,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                     strokeDasharray="4 4" 
                     strokeWidth={1.5}
                     label={{
-                      value: isRtl ? `الهدف: ${aggregatedStats.dailyGoalQuran} ص` : `Goal: ${aggregatedStats.dailyGoalQuran}p`,
+                      value: t('st_vis_goal_pages_short', 'الهدف: {{n}} ص', { n: aggregatedStats.dailyGoalQuran }),
                       fill: '#059669',
                       fontSize: 10,
                       fontWeight: 700,
@@ -797,21 +795,21 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
               <div>
                 <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <Activity size={18} className="text-blue-500" />
-                  <span>{isRtl ? 'تطور الأذكار المقروءة (مقارنة أسبوعية)' : 'Read Adhkar Evolution (Weekly Comparison)'}</span>
+                  <span>{t('st_vis_read_adhkar_evolution_weekly_comparison', 'تطور الأذكار المقروءة (مقارنة أسبوعية)')}</span>
                 </h3>
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isRtl ? 'مقارنة إتمام جلسات الأذكار خلال هذا الأسبوع بالأسبوع الماضي' : 'Comparing Adhkar sessions completed this week vs last week'}
+                  {t('st_vis_comparing_adhkar_sessions_completed_this', 'مقارنة إتمام جلسات الأذكار خلال هذا الأسبوع بالأسبوع الماضي')}
                 </p>
               </div>
 
               <div className="flex items-center gap-3 text-xs font-bold">
                 <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
                   <div className="w-3 h-3 rounded-md bg-blue-500" />
-                  <span>{isRtl ? 'هذا الأسبوع' : 'This Week'}</span>
+                  <span>{t('st_vis_this_week', 'هذا الأسبوع')}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-400">
                   <div className="w-3 h-3 rounded-md bg-slate-300 dark:bg-slate-700" />
-                  <span>{isRtl ? 'الأسبوع الماضي' : 'Last Week'}</span>
+                  <span>{t('st_vis_last_week', 'الأسبوع الماضي')}</span>
                 </div>
               </div>
             </div>
@@ -835,8 +833,8 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                   />
                   <Tooltip 
                     formatter={(val: any, name: any) => [
-                      `${val} ${isRtl ? 'أوراد' : 'sessions'}`,
-                      name === 'currentWeek' ? (isRtl ? 'هذا الأسبوع' : 'This Week') : (isRtl ? 'الأسبوع الماضي' : 'Last Week')
+                      `${val} ${t('st_vis_sessions_2', 'أوراد')}`,
+                      name === 'currentWeek' ? (t('st_vis_this_week', 'هذا الأسبوع')) : (t('st_vis_last_week', 'الأسبوع الماضي'))
                     ]}
                     contentStyle={{ 
                       backgroundColor: '#0f172a', 
@@ -879,10 +877,10 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
             <div>
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Sunrise size={18} className="text-amber-500" />
-                <span>{isRtl ? 'توزيع الأذكار حسب الوقت' : 'Adhkar Sessions Distribution'}</span>
+                <span>{t('st_vis_adhkar_sessions_distribution', 'توزيع الأذكار حسب الوقت')}</span>
               </h3>
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                {isRtl ? 'نسبة الإتمام لكل نوع من الأوراد اليومية الأساسية' : 'Completed sessions across 4 main categories'}
+                {t('st_vis_completed_sessions_across_4_main_categor', 'نسبة الإتمام لكل نوع من الأوراد اليومية الأساسية')}
               </p>
             </div>
 
@@ -901,7 +899,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(val: any, name: any) => [`${val} ${isRtl ? 'جلسة' : 'sessions'}`, name]}
+                    formatter={(val: any, name: any) => [`${val} ${t('st_vis_sessions_3', 'جلسة')}`, name]}
                     contentStyle={{ 
                       backgroundColor: '#0f172a', 
                       borderColor: '#334155', 
@@ -917,7 +915,7 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
               {/* Center Donut Label */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-xl font-black text-slate-900 dark:text-white">{aggregatedStats.totalAdhkarCompleted}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">{isRtl ? 'جلسة مكتملة' : 'Total'}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">{t('st_vis_total', 'جلسة مكتملة')}</span>
               </div>
             </div>
 
@@ -940,10 +938,10 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
             <div>
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Trophy size={18} className="text-emerald-500" />
-                <span>{isRtl ? 'مقياس إنجاز الأهداف والختمة' : 'Goals & Khatma Gauge'}</span>
+                <span>{t('st_vis_goals_khatma_gauge', 'مقياس إنجاز الأهداف والختمة')}</span>
               </h3>
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                {isRtl ? 'نسبة التقدم نحو ختم المصحف والأهداف اليومية' : 'Progress toward full Khatma and daily goals'}
+                {t('st_vis_progress_toward_full_khatma_and_daily_go', 'نسبة التقدم نحو ختم المصحف والأهداف اليومية')}
               </p>
             </div>
 
@@ -985,21 +983,21 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
               <div className="flex items-center justify-between p-1.5 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-200">
                 <span className="font-bold flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-                  {isRtl ? 'ختمة المصحف الشريف (604 ص)' : 'Quran Khatma (604 pages)'}
+                  {t('st_vis_quran_khatma_604_pages', 'ختمة المصحف الشريف (604 ص)')}
                 </span>
                 <span className="font-black">{Math.round(((aggregatedStats.totalPagesReadOverall % 604) / 604) * 100)}%</span>
               </div>
               <div className="flex items-center justify-between p-1.5 rounded-xl bg-teal-500/10 text-teal-800 dark:text-teal-200">
                 <span className="font-bold flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />
-                  {isRtl ? 'الورد القرآني اليومي' : 'Daily Quran Goal'}
+                  {t('st_vis_daily_quran_goal', 'الورد القرآني اليومي')}
                 </span>
                 <span className="font-black">{radialGaugeData[1].value}%</span>
               </div>
               <div className="flex items-center justify-between p-1.5 rounded-xl bg-amber-500/10 text-amber-800 dark:text-amber-200">
                 <span className="font-bold flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  {isRtl ? 'أوراد الأذكار الأساسية' : 'Daily Adhkar Completion'}
+                  {t('st_vis_daily_adhkar_completion', 'أوراد الأذكار الأساسية')}
                 </span>
                 <span className="font-black">{radialGaugeData[2].value}%</span>
               </div>
@@ -1012,10 +1010,10 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
           <div>
             <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
               <CalendarCheck2 size={18} className="text-teal-500" />
-              <span>{isRtl ? 'وتيرة التكرار عبر أيام الأسبوع' : 'Recitation & Devotion Frequency by Weekday'}</span>
+              <span>{t('st_vis_recitation_devotion_frequency_by_weekday', 'وتيرة التكرار عبر أيام الأسبوع')}</span>
             </h3>
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {isRtl ? 'تحديد الأيام الأكثر نشاطاً في قراءة القرآن والمواظبة على الأذكار' : 'Identifies your peak devotion days (e.g. Friday Quran recitation surge)'}
+              {t('st_vis_identifies_your_peak_devotion_days_e_g_f', 'تحديد الأيام الأكثر نشاطاً في قراءة القرآن والمواظبة على الأذكار')}
             </p>
           </div>
 
@@ -1036,8 +1034,8 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                 />
                 <Tooltip 
                   formatter={(val: any, name: any) => [
-                    name === 'avgQuran' ? `${val} ${isRtl ? 'صفحة' : 'pages'}` : `${val} ${isRtl ? 'أوراد' : 'sessions'}`,
-                    name === 'avgQuran' ? (isRtl ? 'متوسط صفحات القرآن' : 'Avg Quran Pages') : (isRtl ? 'متوسط أوراد الأذكار' : 'Avg Adhkar')
+                    name === 'avgQuran' ? `${val} ${t('st_vis_pages', 'صفحة')}` : `${val} ${t('st_vis_sessions_2', 'أوراد')}`,
+                    name === 'avgQuran' ? (t('st_vis_avg_quran_pages', 'متوسط صفحات القرآن')) : (t('st_vis_avg_adhkar', 'متوسط أوراد الأذكار'))
                   ]}
                   contentStyle={{ 
                     backgroundColor: '#0f172a', 
@@ -1063,8 +1061,8 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
                 <Zap size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black">{isRtl ? 'تسجيل سريع وتحديث مباشر للوحة' : 'Quick Devotion Log'}</h3>
-                <p className="text-xs text-emerald-200/80">{isRtl ? 'سجل وردك اليومي لتحديث الرسم البياني فوراً' : 'Log your reading to see charts update immediately'}</p>
+                <h3 className="text-base font-black">{t('st_vis_quick_devotion_log', 'تسجيل سريع وتحديث مباشر للوحة')}</h3>
+                <p className="text-xs text-emerald-200/80">{t('st_vis_log_your_reading_to_see_charts_update_im', 'سجل وردك اليومي لتحديث الرسم البياني فوراً')}</p>
               </div>
             </div>
           </div>
@@ -1074,26 +1072,26 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
             <div className="bg-black/20 p-3.5 rounded-2xl border border-white/10 space-y-2">
               <span className="text-xs font-bold text-teal-300 flex items-center gap-1.5">
                 <BookOpen size={14} />
-                {isRtl ? 'تلاوة سريعة للقرآن' : 'Add Quran Reading'}
+                {t('st_vis_add_quran_reading', 'تلاوة سريعة للقرآن')}
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleQuickAddQuran(1)}
                   className="flex-1 py-2 bg-teal-600/60 hover:bg-teal-600 text-white font-black text-xs rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs"
                 >
-                  +1 {isRtl ? 'صفحة' : 'page'}
+                  +1 {t('st_vis_pages', 'صفحة')}
                 </button>
                 <button
                   onClick={() => handleQuickAddQuran(5)}
                   className="flex-1 py-2 bg-teal-600/60 hover:bg-teal-600 text-white font-black text-xs rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs"
                 >
-                  +5 {isRtl ? 'صفحات' : 'pages'}
+                  +5 {t('st_vis_pages_2', 'صفحات')}
                 </button>
                 <button
                   onClick={() => handleQuickAddQuran(20)}
                   className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs"
                 >
-                  +1 {isRtl ? 'جزء' : 'Juz'}
+                  +1 {t('juz', 'جزء')}
                 </button>
               </div>
             </div>
@@ -1102,22 +1100,22 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
             <div className="bg-black/20 p-3.5 rounded-2xl border border-white/10 space-y-2">
               <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <Sunrise size={14} />
-                {isRtl ? 'إتمام ورد الأذكار' : 'Complete Adhkar'}
+                {t('st_vis_complete_adhkar', 'إتمام ورد الأذكار')}
               </span>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => handleQuickCompleteAdhkar('morning', isRtl ? 'أذكار الصباح' : 'Morning Adhkar')}
+                  onClick={() => handleQuickCompleteAdhkar('morning', t('morning', 'أذكار الصباح'))}
                   className="py-2 px-2 bg-amber-500/30 hover:bg-amber-500 text-amber-200 hover:text-white font-black text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
                 >
                   <Sun size={12} />
-                  <span>{isRtl ? 'الصباح' : 'Morning'}</span>
+                  <span>{t('morning_label', 'الصباح')}</span>
                 </button>
                 <button
-                  onClick={() => handleQuickCompleteAdhkar('evening', isRtl ? 'أذكار المساء' : 'Evening Adhkar')}
+                  onClick={() => handleQuickCompleteAdhkar('evening', t('evening', 'أذكار المساء'))}
                   className="py-2 px-2 bg-indigo-500/30 hover:bg-indigo-500 text-indigo-200 hover:text-white font-black text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
                 >
                   <Sunset size={12} />
-                  <span>{isRtl ? 'المساء' : 'Evening'}</span>
+                  <span>{t('evening_label', 'المساء')}</span>
                 </button>
               </div>
             </div>
@@ -1128,19 +1126,15 @@ export const AdhkarQuranVisualDashboard: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
             <Sparkles size={14} />
-            <span>{isRtl ? 'قبسات وبشائر الاستمرارية' : 'Spiritual Trajectory & Encouragement'}</span>
+            <span>{t('st_vis_spiritual_trajectory_encouragement', 'قبسات وبشائر الاستمرارية')}</span>
           </div>
 
           <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 text-xs sm:text-sm leading-relaxed space-y-2">
             <p className="font-semibold text-emerald-700 dark:text-emerald-400">
-              {isRtl 
-                ? `وفقاً لمعدل تلاوتك الحالي (${aggregatedStats.avgQuranDaily} صفحة يومياً)، من المتوقع بإذن الله إتمام ختمتك المباركة القادمة خلال قرابة ${aggregatedStats.estimatedDaysToKhatma} يوماً.`
-                : `Based on your current pace (${aggregatedStats.avgQuranDaily} pages/day), you are projected to complete your next Quran Khatma in approximately ${aggregatedStats.estimatedDaysToKhatma} days.`}
+              {t('st_vis_khatma_projection', 'وفقاً لمعدل تلاوتك الحالي ({{pages}} صفحة يومياً)، من المتوقع بإذن الله إتمام ختمتك المباركة القادمة خلال قرابة {{days}} يوماً.', { pages: aggregatedStats.avgQuranDaily, days: aggregatedStats.estimatedDaysToKhatma })}
             </p>
             <p className="text-slate-500 dark:text-slate-400 text-xs italic">
-              {isRtl
-                ? 'قال رسول الله ﷺ: «أَحَبُّ الأَعْمَالِ إِلَى اللهِ أَدْوَمُهَا وَإِنْ قَلَّ» — داوم على قليل تسعد بكثيره في ميزانك.'
-                : 'The Prophet ﷺ said: "The most beloved of deeds to Allah are those that are most consistent, even if they are small."'}
+              {t('st_vis_consistency_hadith_note', 'قال رسول الله ﷺ: «أَحَبُّ الأَعْمَالِ إِلَى اللهِ أَدْوَمُهَا وَإِنْ قَلَّ» — داوم على قليل تسعد بكثيره في ميزانك.')}
             </p>
           </div>
         </div>

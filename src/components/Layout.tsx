@@ -688,7 +688,7 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     ? "bg-white/10 text-white border-white/20 hover:bg-white/20" 
                     : "bg-white/90 dark:bg-slate-900 border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm hover:scale-105 duration-75 active:scale-[0.85] active:opacity-70"
                 )}
-                title="القائمة الرئيسية"
+                title={t('u2_main_menu', 'القائمة الرئيسية')}
               >
                 <Menu size={19} className="relative z-10" />
               </button>
@@ -1314,7 +1314,7 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
               onPointerDown={() => { drawerDraggedRef.current = false; }}
               role="dialog"
               aria-modal="true"
-              aria-label="القائمة الرئيسية"
+              aria-label={t('u2_main_menu', 'القائمة الرئيسية')}
               className={cn(
                 "relative w-72 max-w-[85vw] h-full shadow-2xl z-50 flex flex-col overflow-hidden main-menu-container select-none",
                 currentSidebarTheme.bg,
@@ -1547,10 +1547,10 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     <div className="space-y-4">
                       <h4 className="text-[11px] font-black text-emerald-400 uppercase tracking-widest px-1 flex items-center gap-2">
                         <LayoutGrid size={14} />
-                        تخصيص الواجهة الرئيسية
+                        {t('u2_drawer_customize_home', 'تخصيص الواجهة الرئيسية')}
                       </h4>
                       <p className="text-[10px] text-white/50 px-1 leading-relaxed">
-                        اسحب لتغيير ترتيب الأقسام، واضغط على الأيقونة للإخفاء/الإظهار
+                        {t('u2_drawer_customize_home_hint', 'اسحب لتغيير ترتيب الأقسام، واضغط على الأيقونة للإخفاء/الإظهار')}
                       </p>
                       
                       <Reorder.Group 
@@ -1622,20 +1622,20 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                             { to: "/", name: t('home'), icon: <Home size={18} />, color: "text-emerald-400 bg-emerald-950/40" },
                             { to: "/adhkar", name: t('adhkar'), icon: <Sunrise size={18} />, color: "text-amber-400 bg-amber-950/40" },
                             { to: "/quran", name: t('quran_mushaf'), icon: <BookOpen size={18} />, color: "text-teal-400 bg-teal-950/40" },
-                            { to: "/adhkar-quran-dashboard", name: "لوحة متابعة الأذكار والقرآن", icon: <BarChart3 size={18} />, color: "text-emerald-400 bg-emerald-950/40" },
+                            { to: "/adhkar-quran-dashboard", name: t('u2_drawer_dashboard', 'لوحة متابعة الأذكار والقرآن'), icon: <BarChart3 size={18} />, color: "text-emerald-400 bg-emerald-950/40" },
                             { to: "/audio-library", name: t('audio_library'), icon: <Headphones size={18} />, color: "text-indigo-400 bg-indigo-950/40" },
                           ]
                         },
                         {
                           category: t('nav_cat_worship'),
                           items: [
-                            { to: "/istighfar", name: "ركن التوبة والاستغفار وصلاة التوبة", icon: <Droplets size={18} />, color: "text-sky-400 bg-sky-950/40" },
+                            { to: "/istighfar", name: t('u2_drawer_istighfar', 'ركن التوبة والاستغفار وصلاة التوبة'), icon: <Droplets size={18} />, color: "text-sky-400 bg-sky-950/40" },
                             { to: "/tasbih", name: t('tasbihNav'), icon: <Fingerprint size={18} />, color: "text-cyan-400 bg-cyan-950/40" },
                             { to: "/duas", name: t('prophetic_duas'), icon: <Heart size={18} />, color: "text-rose-400 bg-rose-950/40" },
                             { to: "/prayer-times", name: t('prayer_times_title'), icon: <Clock size={18} />, color: "text-pink-400 bg-pink-950/40" },
                             { to: "/compass", name: t('qibla_direction'), icon: <Compass size={18} />, color: "text-blue-400 bg-blue-950/40" },
                             { to: "/khatma", name: t('khatma'), icon: <Book size={18} />, color: "text-teal-400 bg-teal-950/40" },
-                            { to: "/sadaqah-jariyah", name: "مشروع الصدقة الجارية", icon: <HandHeart size={18} />, color: "text-emerald-400 bg-emerald-950/40" },
+                            { to: "/sadaqah-jariyah", name: t('sadaqah_title', 'مشروع الصدقة الجارية'), icon: <HandHeart size={18} />, color: "text-emerald-400 bg-emerald-950/40" },
                           ]
                         },
                         {
@@ -1721,7 +1721,7 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     <Globe size={13} className="text-emerald-400 animate-pulse" />
                     {t('setting_social' as any) || 'تابعنا على مواقع التواصل'}
                   </span>
-                  <span className="text-[9px] text-white/40 font-bold">تطبيق أذكار المؤمن</span>
+                  <span className="text-[9px] text-white/40 font-bold">{t('u2_drawer_app_caption', 'تطبيق أذكار المؤمن')}</span>
                 </div>
 
                 {/* Social Buttons 4-Column Modern Grid */}
@@ -1731,12 +1731,12 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex flex-col items-center justify-center p-2 rounded-xl bg-blue-600/15 border border-blue-500/25 hover:bg-blue-600 hover:border-blue-500 transition-all duration-300 shadow-sm active:scale-95 cursor-pointer"
-                    title="فيسبوك - Facebook"
+                    title={t('social_facebook', 'فيسبوك')}
                   >
                     <div className="w-7 h-7 rounded-lg bg-blue-600/30 group-hover:bg-white/20 flex items-center justify-center text-blue-400 group-hover:text-white transition-colors">
                       <Facebook size={16} />
                     </div>
-                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">فيسبوك</span>
+                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">{t('social_facebook', 'فيسبوك')}</span>
                   </a>
 
                   <a
@@ -1744,12 +1744,12 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex flex-col items-center justify-center p-2 rounded-xl bg-pink-500/15 border border-pink-500/25 hover:bg-gradient-to-tr hover:from-purple-600 hover:via-pink-500 hover:to-amber-500 hover:border-transparent transition-all duration-300 shadow-sm active:scale-95 cursor-pointer"
-                    title="انستجرام - Instagram"
+                    title={t('social_instagram', 'انستجرام')}
                   >
                     <div className="w-7 h-7 rounded-lg bg-pink-500/30 group-hover:bg-white/20 flex items-center justify-center text-pink-400 group-hover:text-white transition-colors">
                       <Instagram size={16} />
                     </div>
-                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">انستجرام</span>
+                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">{t('social_instagram', 'انستجرام')}</span>
                   </a>
 
                   <a
@@ -1757,12 +1757,12 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-900 hover:border-slate-600 transition-all duration-300 shadow-sm active:scale-95 cursor-pointer"
-                    title="تويتر - Twitter / X"
+                    title={t('social_twitter', 'تويتر')}
                   >
                     <div className="w-7 h-7 rounded-lg bg-slate-700/50 group-hover:bg-white/20 flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
                       <Twitter size={16} />
                     </div>
-                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">تويتر</span>
+                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">{t('social_twitter', 'تويتر')}</span>
                   </a>
 
                   <a
@@ -1770,12 +1770,12 @@ const { progress, settings, isCategoryCompleted, adhkarData, setNotified, update
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex flex-col items-center justify-center p-2 rounded-xl bg-cyan-500/15 border border-cyan-500/25 hover:bg-cyan-500 hover:border-cyan-400 transition-all duration-300 shadow-sm active:scale-95 cursor-pointer"
-                    title="تيلجرام - Telegram"
+                    title={t('social_telegram', 'تيلجرام')}
                   >
                     <div className="w-7 h-7 rounded-lg bg-cyan-500/30 group-hover:bg-white/20 flex items-center justify-center text-cyan-400 group-hover:text-white transition-colors">
                       <Send size={15} className="-ml-0.5" />
                     </div>
-                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">تيلجرام</span>
+                    <span className="text-[9.5px] font-black text-white/90 group-hover:text-white mt-1.5 truncate w-full text-center">{t('social_telegram', 'تيلجرام')}</span>
                   </a>
                 </div>
 

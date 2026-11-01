@@ -44,9 +44,47 @@ import {
 } from 'recharts';
 import { useAppContext } from '../AppContext';
 import { useSmartNavigation } from "../lib/navigation";
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode } from '../lib/utils';
+import { useTranslation, getLanguageDirection } from '../i18n';
 import { BackButton } from './ui/BackButton';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem } from "../utils/storage";
+
+const AR_STATS: Record<string, string> = {
+  banner_title: "لوحة المتابعة الشاملة (أذكار + قرآن بالتكرار والرسوم)",
+  banner_desc: "تحليل بصري دقيق مع إمكانية التبديل بين الأيام ونسب التكرار",
+      title: "إحصائيات الأذكار",
+      subtitle: "تحليل ومتابعة الالتزام بالأوراد اليومية",
+      daily_goal: "الهدف اليومي",
+      goal_unit: "أوراد يومياً",
+      weekly_activity: "معدل النشاط الأسبوعي",
+      weekly_activity_desc: "تتبع نشاطك اليومي على مدار الأسبوع لتحقيق الاستمرارية",
+      daily_activity: "معدل النشاط اليومي",
+      performance_breakdown: "تحليل إتمام الأوراد اليومية",
+      performance_breakdown_desc: "توزيع الأوراد التي أتممتها بنجاح لكل يوم من أيام الأسبوع",
+      distribution_title: "توزيع الأذكار المكتملة حسب الوقت",
+      distribution_desc: "النسبة المئوية لإتمام كل نوع من الأذكار مقارنة بالآخر",
+      total_sessions: "إجمالي جلسات الذكر",
+      current_streak: "السلسلة الحالية",
+      best_streak: "أفضل سلسلة",
+      general_adherence: "معدل الالتزام العام",
+      days: "أيام",
+      session_unit: "جلسة",
+      morning: "الصباح",
+      evening: "المساء",
+      sleep: "النوم",
+      waking: "الاستيقاظ",
+      adherence_rate: "نسبة الالتزام",
+      completed_goal: "أنجزت هدفك اليومي!",
+      not_completed_goal: "واصل القراءة لتصل لهدفك اليومي",
+      insights_title: "قبسات تحليلية وتوصيات إيمانية",
+      insight_high_adherence: "ما شاء الله! التزامك بالأذكار رائع جداً هذا الأسبوع. واصل هذا الأثر المبارك لحفظ قلبك ويومك.",
+      insight_mid_adherence: "أداء طيب! ركّز على قراءة أذكار المساء بانتظام لتكمل يومك بالسكينة التامة وتزيد من معدل التزامك.",
+      insight_low_adherence: "خطوة بخطوة! حاول البدء بتثبيت ورد واحد يومياً (مثال: أذكار الصباح) والالتزام به لمدة أسبوع.",
+      insight_time_tip: "نصيحة: تفعيل التنبيهات المخصصة في الإعدادات سيساعدك على تذكر أورادك في أوقاتها الفضيلة.",
+      active_streak_msg: "أنت على طريق الطاعة والذكر المستمر!",
+      week_tab: "الأسبوع الحالي",
+      month_tab: "الشهر الحالي"
+};
 
 export const AdhkarStats: React.FC = () => {
   const { progress, settings } = useAppContext();
@@ -57,97 +95,10 @@ export const AdhkarStats: React.FC = () => {
     return saved ? parseInt(saved, 10) : 2; // Default goal: 2 categories completed per day
   });
 
-  const isRTL = settings.appLanguage === 'ar';
+  const isRTL = getLanguageDirection(settings.appLanguage) === 'rtl';
 
-  const t = (key: string): string => {
-    const translations: Record<string, Record<string, string>> = {
-      ar: {
-        title: "إحصائيات الأذكار",
-        subtitle: "تحليل ومتابعة الالتزام بالأوراد اليومية",
-        daily_goal: "الهدف اليومي",
-        goal_unit: "أوراد يومياً",
-        weekly_activity: "معدل النشاط الأسبوعي",
-        weekly_activity_desc: "تتبع نشاطك اليومي على مدار الأسبوع لتحقيق الاستمرارية",
-        daily_activity: "معدل النشاط اليومي",
-        daily_activity_desc: "مدى تقدمك نحو إتمام وردك اليومي",
-        weekly_adherence: "معدل الالتزام بالأذكار عبر الأسبوع",
-        weekly_adherence_desc: "نسبة الالتزام اليومية بناءً على إتمام الأذكار الأربعة الأساسية (الصباح، المساء، النوم، الاستيقاظ)",
-        performance_breakdown: "تحليل إتمام الأوراد اليومية",
-        performance_breakdown_desc: "توزيع الأوراد التي أتممتها بنجاح لكل يوم من أيام الأسبوع",
-        distribution_title: "توزيع الأذكار المكتملة حسب الوقت",
-        distribution_desc: "النسبة المئوية لإتمام كل نوع من الأذكار مقارنة بالآخر",
-        total_sessions: "إجمالي جلسات الذكر",
-        current_streak: "السلسلة الحالية",
-        best_streak: "أفضل سلسلة",
-        general_adherence: "معدل الالتزام العام",
-        days: "أيام",
-        session_unit: "جلسة",
-        morning: "الصباح",
-        evening: "المساء",
-        sleep: "النوم",
-        waking: "الاستيقاظ",
-        adherence_rate: "نسبة الالتزام",
-        completed_goal: "أنجزت هدفك اليومي!",
-        not_completed_goal: "واصل القراءة لتصل لهدفك اليومي",
-        insights_title: "قبسات تحليلية وتوصيات إيمانية",
-        insight_high_adherence: "ما شاء الله! التزامك بالأذكار رائع جداً هذا الأسبوع. واصل هذا الأثر المبارك لحفظ قلبك ويومك.",
-        insight_mid_adherence: "أداء طيب! ركّز على قراءة أذكار المساء بانتظام لتكمل يومك بالسكينة التامة وتزيد من معدل التزامك.",
-        insight_low_adherence: "خطوة بخطوة! حاول البدء بتثبيت ورد واحد يومياً (مثال: أذكار الصباح) والالتزام به لمدة أسبوع.",
-        insight_time_tip: "نصيحة: تفعيل التنبيهات المخصصة في الإعدادات سيساعدك على تذكر أورادك في أوقاتها الفضيلة.",
-        goal_saved: "تم حفظ هدفك اليومي الجديد!",
-        stat_summary: "ملخص الإنجاز الروحاني",
-        active_streak_msg: "أنت على طريق الطاعة والذكر المستمر!",
-        clear_data: "تحديث البيانات",
-        week_tab: "الأسبوع الحالي",
-        month_tab: "الشهر الحالي",
-        no_data: "لا توجد بيانات كافية لعرضها بعد. ابدأ بقراءة الأذكار لتسجيل تقدمك!"
-      },
-      en: {
-        title: "Adhkar Statistics",
-        subtitle: "Analyze and track your daily devotion patterns",
-        daily_goal: "Daily Goal",
-        goal_unit: "sessions/day",
-        weekly_activity: "Weekly Activity Rate",
-        weekly_activity_desc: "Track your daily activity throughout the week to build consistency",
-        daily_activity: "Daily Activity Rate",
-        daily_activity_desc: "Your progress towards completing your daily devotion",
-        weekly_adherence: "Weekly Devotion Adherence",
-        weekly_adherence_desc: "Daily completion rate based on the 4 essential Adhkar categories (Morning, Evening, Sleep, Waking)",
-        performance_breakdown: "Daily Performance Breakdown",
-        performance_breakdown_desc: "Distribution of completed Adhkar sessions for each day of the week",
-        distribution_title: "Completed Adhkar Distribution",
-        distribution_desc: "Percentage of completed Adhkar types compared to each other",
-        total_sessions: "Total Sessions Completed",
-        current_streak: "Current Streak",
-        best_streak: "Best Streak",
-        general_adherence: "Overall Adherence",
-        days: "days",
-        session_unit: "sessions",
-        morning: "Morning",
-        evening: "Evening",
-        sleep: "Sleep",
-        waking: "Waking",
-        adherence_rate: "Adherence Rate",
-        completed_goal: "You completed your daily goal!",
-        not_completed_goal: "Keep reading to reach your daily goal",
-        insights_title: "Analytical Insights & Spiritual Guidance",
-        insight_high_adherence: "Masha'Allah! Your adherence is outstanding this week. Keep up this blessed habit to safeguard your heart.",
-        insight_mid_adherence: "Great progress! Focus on building consistency with Evening Adhkar to maintain peace throughout the day.",
-        insight_low_adherence: "Step by step! Try to establish just one steady habit first (e.g. Morning Adhkar) and stick to it for a week.",
-        insight_time_tip: "Tip: Enabling customized notifications in settings will help you remember your Adhkar at their premium times.",
-        goal_saved: "Your daily goal has been updated!",
-        stat_summary: "Spiritual Achievement Summary",
-        active_streak_msg: "You are on a beautiful path of continuous remembrance!",
-        clear_data: "Refresh Data",
-        week_tab: "Current Week",
-        month_tab: "Current Month",
-        no_data: "Not enough data recorded yet. Start reciting Adhkar to log your progress!"
-      }
-    };
-    const lang = settings.appLanguage || 'ar';
-    const dict = translations[lang] || (lang === 'ar' ? translations.ar : translations.en);
-    return dict[key] || translations.ar[key] || key;
-  };
+  const { t: tr } = useTranslation(settings.appLanguage);
+  const t = (key: string): string => tr(`st_stats_${key}`, AR_STATS[key] ?? key);
 
   const changeGoal = (newGoal: number) => {
     setDailyGoal(newGoal);
@@ -218,18 +169,11 @@ export const AdhkarStats: React.FC = () => {
       // Adherence percentage for the day: completed out of 4 core Adhkar categories
       const dailyAdherenceRate = Math.round((completedCount / 4) * 100);
 
-      // Day Names translation
-      const weekdaysAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-      const weekdaysEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const dayLabel = isRTL ? weekdaysAR[d.getDay()] : weekdaysEN[d.getDay()];
+      const dayLabel = new Intl.DateTimeFormat(getLocaleCode(settings.appLanguage), { weekday: 'short' }).format(d);
 
       items.push({
         date: dateStr,
         dayLabel: dayLabel,
-        'Morning / الصباح': hasMorning,
-        'Evening / المساء': hasEvening,
-        'Sleep / النوم': hasSleep,
-        'Waking / الاستيقاظ': hasWaking,
         completedSessions: completedCount,
         adherence: dailyAdherenceRate,
       });
@@ -250,7 +194,7 @@ export const AdhkarStats: React.FC = () => {
       totalStatsCount: totalAdhkarSessionsCount,
       adherencePercentage: overallAdherenceRate
     };
-  }, [progress.dailyStats, progress.completedAdhkar, activeRange, dailyGoal, isRTL]);
+  }, [progress.dailyStats, progress.completedAdhkar, activeRange, dailyGoal, settings.appLanguage]);
 
   // Determine which insight card to show based on devotion rate
   const getInsights = () => {
@@ -282,7 +226,7 @@ export const AdhkarStats: React.FC = () => {
   const bestStreak = progress.streak?.best || 0;
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans" >
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 py-4 px-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -310,13 +254,13 @@ export const AdhkarStats: React.FC = () => {
           onClick={() => navigate('/adhkar-quran-dashboard')}
           className="w-full p-3.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl flex items-center justify-between shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer"
         >
-          <div className="flex items-center gap-3 text-right">
+          <div className="flex items-center gap-3 text-start">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
               <BarChart3 size={20} className="text-white" />
             </div>
             <div>
-              <p className="text-xs font-black text-white">{isRTL ? 'لوحة المتابعة الشاملة (أذكار + قرآن بالتكرار والرسوم)' : 'Unified Devotion & Recitation Dashboard'}</p>
-              <p className="text-[10px] text-emerald-100/90">{isRTL ? 'تحليل بصري دقيق مع إمكانية التبديل بين الأيام ونسب التكرار' : 'Comprehensive visual charts and frequency curves'}</p>
+              <p className="text-xs font-black text-white">{t('banner_title')}</p>
+              <p className="text-[10px] text-emerald-100/90">{t('banner_desc')}</p>
             </div>
           </div>
           <ChevronLeft size={18} className={cn("text-white", !isRTL && "rotate-180")} />
@@ -739,7 +683,7 @@ export const AdhkarStats: React.FC = () => {
           transition={{ delay: 0.25 }}
           className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-[2.5rem] shadow-xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6"
         >
-          <div className="space-y-3 flex-1 text-center md:text-right">
+          <div className="space-y-3 flex-1 text-center md:text-start">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
               <Target size={14} className="text-teal-400" />
               <span className="text-[10px] font-black tracking-widest uppercase text-teal-300">{t('daily_activity')}</span>

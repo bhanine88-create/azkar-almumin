@@ -41,9 +41,9 @@ export const SadaqahJariyah: React.FC = () => {
   const handleShareApp = async (customMessage?: string) => {
     const shareUrl = getAppShareUrl();
     const defaultText = customMessage || 
-      `🌱 *مشروع الصدقة الجارية - تطبيق أذكار المؤمن*\n\nتطبيق إسلامي كامل بدون إعلانات احتساباً لوجه الله تعالى: قرآن كريم، أذكار، رقية شرعية، ومحاضرات صوتية.\n\nانشره بين أهلك وأحبابك ليكون لك صدقة جارية ونورٌ يدوم بإذن الله.\n\nرابط التطبيق المباشر:\n${shareUrl}`;
+      t('sj_msg_app', '🌱 *مشروع الصدقة الجارية - تطبيق أذكار المؤمن*\n\nتطبيق إسلامي كامل بدون إعلانات احتساباً لوجه الله تعالى: قرآن كريم، أذكار، رقية شرعية، ومحاضرات صوتية.\n\nانشره بين أهلك وأحبابك ليكون لك صدقة جارية ونورٌ يدوم بإذن الله.\n\nرابط التطبيق المباشر:\n{{url}}', { url: shareUrl });
 
-    await shareContent('أذكار المؤمن - مشروع الصدقة الجارية', defaultText, shareUrl);
+    await shareContent(t('sj_share_title', 'أذكار المؤمن - مشروع الصدقة الجارية'), defaultText, shareUrl);
   };
 
   const copyToClipboard = (text: string, sectionId: string) => {
@@ -60,7 +60,7 @@ export const SadaqahJariyah: React.FC = () => {
   const handleWhatsAppShare = (customMessage?: string) => {
     const shareUrl = getAppShareUrl();
     const text = customMessage || 
-      `🌱 *مشروع الصدقة الجارية - تطبيق أذكار المؤمن*\n\nتطبيق إسلامي جامع بدون إعلانات للقرآن والأذكار والرقية والمحاضرات.\n\nساهم في نشر الخير واحتسب ثوابه ليكون لك صدقة جارية:\n${shareUrl}`;
+      t('sj_msg_wa', '🌱 *مشروع الصدقة الجارية - تطبيق أذكار المؤمن*\n\nتطبيق إسلامي جامع بدون إعلانات للقرآن والأذكار والرقية والمحاضرات.\n\nساهم في نشر الخير واحتسب ثوابه ليكون لك صدقة جارية:\n{{url}}', { url: shareUrl });
     
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
@@ -68,13 +68,13 @@ export const SadaqahJariyah: React.FC = () => {
   const getDedicationTitle = () => {
     switch (dedicationType) {
       case 'parents':
-        return 'عن الوالدين الكرام (حفظهما الله أو رحمهما)';
+        return t('sj_card_parents', 'عن الوالدين الكرام (حفظهما الله أو رحمهما)');
       case 'deceased':
-        return 'عن روح المتوفى (رحمه الله)';
+        return t('sj_card_deceased', 'عن روح المتوفى (رحمه الله)');
       case 'self':
-        return 'عن النفس والأهل';
+        return t('sj_card_self', 'عن النفس والأهل');
       case 'general':
-        return 'صدقة جارية عامة للمسلمين والمسلمات';
+        return t('sj_card_general', 'صدقة جارية عامة للمسلمين والمسلمات');
     }
   };
 
@@ -99,14 +99,14 @@ export const SadaqahJariyah: React.FC = () => {
           <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-400/30 shadow-inner">
             <Sparkles size={14} className="text-emerald-300 animate-pulse" />
             <span className="text-[11px] font-black text-emerald-200 tracking-wide">
-              مشروع لوجه الله تعالى • بدون إعلانات
+              {t('sj_badge', 'مشروع لوجه الله تعالى • بدون إعلانات')}
             </span>
           </div>
 
           <button
             onClick={() => handleShareApp()}
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-emerald-200 hover:text-white border border-white/10 transition-all cursor-pointer shadow-sm shrink-0"
-            title="مشاركة المشروع"
+            title={t('sj_share_project', 'مشاركة المشروع')}
           >
             <Share2 size={18} />
           </button>
@@ -114,15 +114,15 @@ export const SadaqahJariyah: React.FC = () => {
 
         <div className="relative z-10 max-w-2xl mx-auto text-center space-y-4">
           <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight drop-shadow-md">
-            مشروع الصدقة الجارية
+            {t('sj_title', 'مشروع الصدقة الجارية')}
           </h1>
 
           <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium max-w-lg mx-auto drop-shadow-sm">
-            نحسب هذا التطبيق ومحتواه من القرآن والأذكار والرقية والمحاضرات صدقةً جارية خالصة، ينمو أجرها مع كل تلاوة وذكر ونشر.
+            {t('sj_intro', 'نحسب هذا التطبيق ومحتواه من القرآن والأذكار والرقية والمحاضرات صدقةً جارية خالصة، ينمو أجرها مع كل تلاوة وذكر ونشر.')}
           </p>
 
           {/* Noble Hadith Box */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 text-right relative overflow-hidden shadow-lg mt-4">
+          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 text-right relative overflow-hidden shadow-lg mt-4" dir="rtl">
             <div className="flex items-start gap-3">
               <ScrollText size={24} className="text-amber-300 shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -153,10 +153,10 @@ export const SadaqahJariyah: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
-                  انشر الخير وتشارك الأجر
+                  {t('sj_spread_title', 'انشر الخير وتشارك الأجر')}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  بضغطة زر واحدة قد يهتدي بك شخص أو يذكر الله بسببك
+                  {t('sj_spread_desc', 'بضغطة زر واحدة قد يهتدي بك شخص أو يذكر الله بسببك')}
                 </p>
               </div>
             </div>
@@ -168,7 +168,7 @@ export const SadaqahJariyah: React.FC = () => {
               className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 active:scale-[0.98] transition-all"
             >
               <Share2 size={18} />
-              <span>مشاركة التطبيق المباشر</span>
+              <span>{t('sj_share_app_live', 'مشاركة التطبيق المباشر')}</span>
             </button>
 
             <button
@@ -176,7 +176,7 @@ export const SadaqahJariyah: React.FC = () => {
               className="w-full py-3.5 px-4 rounded-2xl bg-emerald-700/10 dark:bg-emerald-500/20 hover:bg-emerald-700/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-black text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
             >
               <MessageCircle size={18} className="text-emerald-600 dark:text-emerald-400" />
-              <span>إرسال عبر واتساب</span>
+              <span>{t('sj_whatsapp', 'إرسال عبر واتساب')}</span>
             </button>
           </div>
 
@@ -192,12 +192,12 @@ export const SadaqahJariyah: React.FC = () => {
               {copiedSection === 'link' ? (
                 <>
                   <Check size={14} className="text-emerald-500 dark:text-emerald-400" />
-                  <span>تم النسخ</span>
+                  <span>{t('sj_copied', 'تم النسخ')}</span>
                 </>
               ) : (
                 <>
                   <Copy size={14} />
-                  <span>نسخ الرابط</span>
+                  <span>{t('sj_copy_link', 'نسخ الرابط')}</span>
                 </>
               )}
             </button>
@@ -212,10 +212,10 @@ export const SadaqahJariyah: React.FC = () => {
             </div>
             <div>
               <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
-                تخصيص وإهداء ثواب الصدقة الجارية
+                {t('sj_dedicate_title', 'تخصيص وإهداء ثواب الصدقة الجارية')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                اكتب اسمك أو اسم والديك أو فقيدك لتوليد بطاقة إهداء ومشاركتها
+                {t('sj_dedicate_desc', 'اكتب اسمك أو اسم والديك أو فقيدك لتوليد بطاقة إهداء ومشاركتها')}
               </p>
             </div>
           </div>
@@ -224,14 +224,14 @@ export const SadaqahJariyah: React.FC = () => {
           <div className="space-y-3 pt-1">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                نوع الإهداء والنية:
+                {t('sj_type_label', 'نوع الإهداء والنية:')}
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'deceased', label: 'روح متوفى' },
-                  { id: 'parents', label: 'الوالدين' },
-                  { id: 'self', label: 'النفس والأهل' },
-                  { id: 'general', label: 'صدقة عامة' },
+                  { id: 'deceased', label: t('sj_type_deceased', 'روح متوفى') },
+                  { id: 'parents', label: t('sj_type_parents', 'الوالدين') },
+                  { id: 'self', label: t('sj_type_self', 'النفس والأهل') },
+                  { id: 'general', label: t('sj_type_general', 'صدقة عامة') },
                 ].map(type => (
                   <button
                     key={type.id}
@@ -251,13 +251,13 @@ export const SadaqahJariyah: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                الاسم أو الإهداء المقترن بالنية:
+                {t('sj_name_label', 'الاسم أو الإهداء المقترن بالنية:')}
               </label>
               <input
                 type="text"
                 value={dedicationName}
                 onChange={(e) => setDedicationName(e.target.value)}
-                placeholder="مثال: المرحوم عبد الله بن أحمد / أبي وأمي الغاليين"
+                placeholder={t('sj_name_placeholder', 'مثال: المرحوم عبد الله بن أحمد / أبي وأمي الغاليين')}
                 className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
@@ -274,7 +274,7 @@ export const SadaqahJariyah: React.FC = () => {
                 </div>
 
                 <h3 className="text-lg font-black text-white drop-shadow">
-                  {dedicationName.trim() ? dedicationName : 'إهداء صدقة جارية'}
+                  {dedicationName.trim() ? dedicationName : t('sj_card_default_name', 'إهداء صدقة جارية')}
                 </h3>
 
                 <p className="text-xs text-amber-200/90 leading-relaxed max-w-md mx-auto italic font-semibold">
@@ -282,7 +282,7 @@ export const SadaqahJariyah: React.FC = () => {
                 </p>
 
                 <div className="pt-2 text-[10px] text-amber-300/70 font-bold border-t border-amber-500/20">
-                  تطبيق أذكار المؤمن • صدقة جارية لله تعالى
+                  {t('sj_card_footer', 'تطبيق أذكار المؤمن • صدقة جارية لله تعالى')}
                 </div>
               </div>
             </div>
@@ -290,14 +290,14 @@ export const SadaqahJariyah: React.FC = () => {
             {/* Share Dedication Card Button */}
             <button
               onClick={() => {
-                const nameText = dedicationName.trim() ? `عن: ${dedicationName}` : '';
-                const message = `🌱 *بطاقة إهداء ثواب صدقة جارية*\n\nنسأل الله تعالى أن يجعل هذا العمل المبارك وحفظ القرآن والأذكار صدقةً جارية ${nameText}.\n\nشاركونا الأجر عبر تطبيق أذكار المؤمن:\n${getAppShareUrl()}`;
+                const nameText = dedicationName.trim() ? t('sj_msg_card_for', 'عن: {{name}}', { name: dedicationName }) : '';
+                const message = t('sj_msg_card', '🌱 *بطاقة إهداء ثواب صدقة جارية*\n\nنسأل الله تعالى أن يجعل هذا العمل المبارك وحفظ القرآن والأذكار صدقةً جارية {{nameText}}.\n\nشاركونا الأجر عبر تطبيق أذكار المؤمن:\n{{url}}', { nameText, url: getAppShareUrl() });
                 handleShareApp(message);
               }}
               className="w-full py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 active:scale-[0.98] transition-all mt-2"
             >
               <Send size={16} />
-              <span>مشاركة بطاقة الإهداء مع الأهل والأصدقاء</span>
+              <span>{t('sj_share_card_btn', 'مشاركة بطاقة الإهداء مع الأهل والأصدقاء')}</span>
             </button>
           </div>
         </div>
@@ -310,10 +310,10 @@ export const SadaqahJariyah: React.FC = () => {
             </div>
             <div>
               <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
-                كيف يتحول تطبيقك لصدقة جارية مستمرة؟
+                {t('sj_pillars_title', 'كيف يتحول تطبيقك لصدقة جارية مستمرة؟')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                أعمال بسيطة مضاعفة الأجر يمكنك القيام بها يومياً
+                {t('sj_pillars_desc', 'أعمال بسيطة مضاعفة الأجر يمكنك القيام بها يومياً')}
               </p>
             </div>
           </div>
@@ -323,31 +323,31 @@ export const SadaqahJariyah: React.FC = () => {
               {
                 icon: BookOpen,
                 color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-                title: 'تلاوة وسماع القرآن',
-                desc: 'كل حرف يُقرأ أو يُسمع في التطبيق يكتب لك به عشر حسنات، وتتسع الدائرة مع كل مستمع جديد.'
+                title: t('sj_pillar1_title', 'تلاوة وسماع القرآن'),
+                desc: t('sj_pillar1_desc', 'كل حرف يُقرأ أو يُسمع في التطبيق يكتب لك به عشر حسنات، وتتسع الدائرة مع كل مستمع جديد.')
               },
               {
                 icon: Volume2,
                 color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-                title: 'نشر الأذكار والرقية الشرعية',
-                desc: 'مشاركة أذكار الصباح والمساء والرقية الشرعية للتحصين يورثك أجر المعين على الخير.'
+                title: t('sj_pillar2_title', 'نشر الأذكار والرقية الشرعية'),
+                desc: t('sj_pillar2_desc', 'مشاركة أذكار الصباح والمساء والرقية الشرعية للتحصين يورثك أجر المعين على الخير.')
               },
               {
                 icon: Users,
                 color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
-                title: 'تعليم الناشئة والأهل',
-                desc: 'تثبيت التطبيق في هواتف أطفالك وأهلك يعود عليك بحسنات استمرار ذكرهم لله.'
+                title: t('sj_pillar3_title', 'تعليم الناشئة والأهل'),
+                desc: t('sj_pillar3_desc', 'تثبيت التطبيق في هواتف أطفالك وأهلك يعود عليك بحسنات استمرار ذكرهم لله.')
               },
               {
                 icon: ShieldCheck,
                 color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/20',
-                title: 'تطوع بالدعاء والملاحظات',
-                desc: 'دعاؤك لجميع القائمين والمستفيدين، وإرسال ملاحظاتك يساهم في تحسين الخدمة لوجه الله.'
+                title: t('sj_pillar4_title', 'تطوع بالدعاء والملاحظات'),
+                desc: t('sj_pillar4_desc', 'دعاؤك لجميع القائمين والمستفيدين، وإرسال ملاحظاتك يساهم في تحسين الخدمة لوجه الله.')
               }
             ].map((pillar, idx) => (
               <div 
                 key={idx}
-                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800 space-y-2 text-right"
+                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800 space-y-2 text-start"
               >
                 <div className="flex items-center gap-2.5">
                   <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center border", pillar.color)}>
@@ -373,10 +373,10 @@ export const SadaqahJariyah: React.FC = () => {
             </div>
             <div>
               <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
-                مقترحات عملية لنشر الصدقة الجارية
+                {t('sj_ideas_title', 'مقترحات عملية لنشر الصدقة الجارية')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                خطوات مجربة لرفع الأثر ونشر النفع في مجتمعك
+                {t('sj_ideas_desc', 'خطوات مجربة لرفع الأثر ونشر النفع في مجتمعك')}
               </p>
             </div>
           </div>
@@ -385,23 +385,23 @@ export const SadaqahJariyah: React.FC = () => {
             {[
               {
                 num: '1',
-                title: 'إنشاء مجموعة أذكار عائلية',
-                text: 'أنشئ مجموعة واتساب أو تلغرام عائلية وشارك فيها رابط أذكار الصباح والمساء يومياً.'
+                title: t('sj_idea1_title', 'إنشاء مجموعة أذكار عائلية'),
+                text: t('sj_idea1_text', 'أنشئ مجموعة واتساب أو تلغرام عائلية وشارك فيها رابط أذكار الصباح والمساء يومياً.')
               },
               {
                 num: '2',
-                title: 'تثبيت التطبيق لكبار السن في العائلة',
-                text: 'ساعد الوالدين وكبار السن في تثبيت التطبيق وتفعيل خاصية الأذكار الصوتية السهلة.'
+                title: t('sj_idea2_title', 'تثبيت التطبيق لكبار السن في العائلة'),
+                text: t('sj_idea2_text', 'ساعد الوالدين وكبار السن في تثبيت التطبيق وتفعيل خاصية الأذكار الصوتية السهلة.')
               },
               {
                 num: '3',
-                title: 'طباعة رمز QR أو كود التطبيق',
-                text: 'وضع رابط التطبيق في المصليات أو المكتبات لتسهيل الوصول للأذكار والقرآن.'
+                title: t('sj_idea3_title', 'طباعة رمز QR أو كود التطبيق'),
+                text: t('sj_idea3_text', 'وضع رابط التطبيق في المصليات أو المكتبات لتسهيل الوصول للأذكار والقرآن.')
               },
               {
                 num: '4',
-                title: 'احتساب النية في كل مشاركة',
-                text: 'استحضر نية الصدقة الجارية والنور الدائم عند إرسال أي رابط قرآني أو محاضرة علمية.'
+                title: t('sj_idea4_title', 'احتساب النية في كل مشاركة'),
+                text: t('sj_idea4_text', 'استحضر نية الصدقة الجارية والنور الدائم عند إرسال أي رابط قرآني أو محاضرة علمية.')
               }
             ].map((idea, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/40 dark:border-slate-800/80">
@@ -433,11 +433,11 @@ export const SadaqahJariyah: React.FC = () => {
             </div>
 
             <h3 className="text-lg font-black text-white">
-              عهد وإخلاص لوجه الله
+              {t('sj_pledge_title', 'عهد وإخلاص لوجه الله')}
             </h3>
 
             <p className="text-xs text-emerald-100/90 leading-relaxed max-w-md mx-auto font-medium">
-              هذا التطبيق مجاني بالكامل، خالٍ تماماً من الإعلانات التجارية المزعجة، مصمم ليكون خادماً لكتاب الله وسنة نبيه ﷺ، يبتغى به وجه الله والدار الآخرة.
+              {t('sj_pledge_text', 'هذا التطبيق مجاني بالكامل، خالٍ تماماً من الإعلانات التجارية المزعجة، مصمم ليكون خادماً لكتاب الله وسنة نبيه ﷺ، يبتغى به وجه الله والدار الآخرة.')}
             </p>
 
             <div className="pt-3">
@@ -445,7 +445,7 @@ export const SadaqahJariyah: React.FC = () => {
                 onClick={() => navigate('/')}
                 className="px-6 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs transition-colors shadow-lg"
               >
-                العودة للشاشة الرئيسية
+                {t('sj_back_home', 'العودة للشاشة الرئيسية')}
               </button>
             </div>
           </div>
@@ -476,16 +476,16 @@ export const SadaqahJariyah: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                    أهلاً بك في مشروع الصدقة الجارية
+                    {t('sj_welcome_title', 'أهلاً بك في مشروع الصدقة الجارية')}
                   </h3>
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-                    عملٌ خالص لوجه الله تعالى
+                    {t('sj_welcome_sub', 'عملٌ خالص لوجه الله تعالى')}
                   </p>
                 </div>
               </div>
 
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                تطبيق أذكار المؤمن مصمم ليكون صدقة جارية ونوراً في الميزان لكل من قرأ، وذكر، أو ساهم في نشره.
+                {t('sj_welcome_text', 'تطبيق أذكار المؤمن مصمم ليكون صدقة جارية ونوراً في الميزان لكل من قرأ، وذكر، أو ساهم في نشره.')}
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2">
@@ -497,14 +497,14 @@ export const SadaqahJariyah: React.FC = () => {
                   className="flex-1 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Share2 size={16} />
-                  <span>مشاركة الخير الآن</span>
+                  <span>{t('sj_welcome_share', 'مشاركة الخير الآن')}</span>
                 </button>
 
                 <button
                   onClick={() => setIsWelcomeModalOpen(false)}
                   className="py-3 px-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200"
                 >
-                  استكشاف المشروع
+                  {t('sj_welcome_explore', 'استكشاف المشروع')}
                 </button>
               </div>
             </motion.div>

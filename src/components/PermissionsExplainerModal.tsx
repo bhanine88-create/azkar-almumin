@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Bell, AlarmClock, Volume2, HardDrive, ShieldCheck, X, CheckCircle } from 'lucide-react';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 interface PermissionsExplainerModalProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface PermissionsExplainerModalProps {
 
 export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps> = ({ isOpen, onClose }) => {
   const { settings } = useAppContext();
-  const isRTL = settings.appLanguage !== 'en' && settings.appLanguage !== 'fr';
+  const { t } = useTranslation(settings.appLanguage);
 
   if (!isOpen) return null;
 
@@ -18,64 +19,44 @@ export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps>
     {
       id: 'location',
       icon: <MapPin size={22} className="text-emerald-400" />,
-      title: isRTL ? 'إذن الموقع الجغرافي (Location)' : 'Location Permission',
-      badge: isRTL ? 'مواقيت الصلاة والقبلة' : 'Prayer Times & Qibla',
-      purpose: isRTL 
-        ? 'يُستخدم حصرياً لحساب مواقيت الصلاة بدقة فلكية حسب إحداثيات مدينتك وتحديد زاوية اتجاه القبلة عبر البوصلة.'
-        : 'Used exclusively to calculate accurate astronomical prayer times for your city and determine the Qibla compass angle.',
-      privacyNote: isRTL
-        ? 'لا نقوم بتتبع موقعك، ولا يتم تخزينه أو إرساله إلى أي خادم خارجي.'
-        : 'We never track, record, or transmit your location to any external servers.'
+      title: t('md_perm_loc_title', 'إذن الموقع الجغرافي (Location)'),
+      badge: t('md_perm_loc_badge', 'مواقيت الصلاة والقبلة'),
+      purpose: t('md_perm_loc_purpose', 'يُستخدم حصرياً لحساب مواقيت الصلاة بدقة فلكية حسب إحداثيات مدينتك وتحديد زاوية اتجاه القبلة عبر البوصلة.'),
+      privacyNote: t('md_perm_loc_privacy', 'لا نقوم بتتبع موقعك، ولا يتم تخزينه أو إرساله إلى أي خادم خارجي.')
     },
     {
       id: 'notifications',
       icon: <Bell size={22} className="text-amber-400" />,
-      title: isRTL ? 'إذن الإشعارات والتنبيهات (Notifications)' : 'Notification Permission',
-      badge: isRTL ? 'الأذان والأذكار' : 'Adhan & Reminders',
-      purpose: isRTL 
-        ? 'لإرسال تنبيهات الأذان عند دخول أوقات الصلاة، والتذكير بأذكار الصباح والمساء والورد اليومي.'
-        : 'To send gentle adhan notifications when prayer times arrive, along with morning/evening adhkar reminders.',
-      privacyNote: isRTL
-        ? 'التنبيهات تعمل برمجياً على جهازك وخالية تماماً من الإعلانات الترويجية أو التتبع.'
-        : 'All notifications are generated locally on your device without any ads or marketing tracking.'
+      title: t('md_perm_notif_title', 'إذن الإشعارات والتنبيهات (Notifications)'),
+      badge: t('md_perm_notif_badge', 'الأذان والأذكار'),
+      purpose: t('md_perm_notif_purpose', 'لإرسال تنبيهات الأذان عند دخول أوقات الصلاة، والتذكير بأذكار الصباح والمساء والورد اليومي.'),
+      privacyNote: t('md_perm_notif_privacy', 'التنبيهات تعمل برمجياً على جهازك وخالية تماماً من الإعلانات الترويجية أو التتبع.')
     },
     {
       // Requested right after notifications when the explainer closes. On newer
       // Android this opens a system screen, so the user is told before it does.
       id: 'exact-alarms',
       icon: <AlarmClock size={22} className="text-rose-400" />,
-      title: isRTL ? 'المنبّهات الدقيقة (Alarms & reminders)' : 'Alarms & Reminders',
-      badge: isRTL ? 'في الوقت بالدقيقة' : 'On the exact minute',
-      purpose: isRTL
-        ? 'ليصل الأذان وأذكار الصباح والمساء والذكر في وقتها بالدقيقة حتى والتطبيق مغلق. إن لم يكن مفعّلاً سيفتح أندرويد شاشة «المنبّهات والتذكيرات»: فعّل الخيار ثم ارجع إلى التطبيق.'
-        : 'So the adhan, morning/evening adhkar and dhikr reminders arrive on the exact minute, even with the app closed. If it is off, Android opens the "Alarms & reminders" screen: switch it on, then return to the app.',
-      privacyNote: isRTL
-        ? 'يُستخدم لضبط مواعيد التنبيهات على جهازك فقط.'
-        : 'Used only to time notifications on your device.'
+      title: t('md_perm_alarm_title', 'المنبّهات الدقيقة (Alarms & reminders)'),
+      badge: t('md_perm_alarm_badge', 'في الوقت بالدقيقة'),
+      purpose: t('md_perm_alarm_purpose', 'ليصل الأذان وأذكار الصباح والمساء والذكر في وقتها بالدقيقة حتى والتطبيق مغلق. إن لم يكن مفعّلاً سيفتح أندرويد شاشة «المنبّهات والتذكيرات»: فعّل الخيار ثم ارجع إلى التطبيق.'),
+      privacyNote: t('md_perm_alarm_privacy', 'يُستخدم لضبط مواعيد التنبيهات على جهازك فقط.')
     },
     {
       id: 'audio',
       icon: <Volume2 size={22} className="text-teal-400" />,
-      title: isRTL ? 'الصوت والتغذية اللمسية (Audio & Haptics)' : 'Audio & Haptics',
-      badge: isRTL ? 'التلاوة والتسبيح' : 'Recitation & Tasbih',
-      purpose: isRTL
-        ? 'لتشغيل تلاوة القرآن الكريم والأدعية وصوت نقرات المسبحة والاهتزاز اللمسي لتسبيح سهل دون النظر للشاشة.'
-        : 'To play Quran recitations, supplications, and provide gentle haptic feedback during tasbih counting.',
-      privacyNote: isRTL
-        ? 'تعمل التغذية اللمسية مباشرة عبر حساسات جهازك.'
-        : 'Operates directly through your device sensors with zero data retention.'
+      title: t('md_perm_audio_title', 'الصوت والتغذية اللمسية (Audio & Haptics)'),
+      badge: t('md_perm_audio_badge', 'التلاوة والتسبيح'),
+      purpose: t('md_perm_audio_purpose', 'لتشغيل تلاوة القرآن الكريم والأدعية وصوت نقرات المسبحة والاهتزاز اللمسي لتسبيح سهل دون النظر للشاشة.'),
+      privacyNote: t('md_perm_audio_privacy', 'تعمل التغذية اللمسية مباشرة عبر حساسات جهازك.')
     },
     {
       id: 'storage',
       icon: <HardDrive size={22} className="text-blue-400" />,
-      title: isRTL ? 'التخزين المحلي الآمن (Local Storage)' : 'Local Storage',
-      badge: isRTL ? 'العمل دون إنترنت' : 'Offline Support',
-      purpose: isRTL
-        ? 'لحفظ إحصائيات التسبيح، وآخر آية وقفت عندها في المصحف، وصفحات التفسير لتعمل بكفاءة دون اتصال بالإنترنت.'
-        : 'To store your tasbih statistics, last read Quran ayah, and cached interpretations for full offline access.',
-      privacyNote: isRTL
-        ? 'تظل بياناتك ملكك وحدك ومحفوظة بأمان في ذاكرة جهازك.'
-        : 'All saved progress remains on your device under your complete control.'
+      title: t('md_perm_store_title', 'التخزين المحلي الآمن (Local Storage)'),
+      badge: t('md_perm_store_badge', 'العمل دون إنترنت'),
+      purpose: t('md_perm_store_purpose', 'لحفظ إحصائيات التسبيح، وآخر آية وقفت عندها في المصحف، وصفحات التفسير لتعمل بكفاءة دون اتصال بالإنترنت.'),
+      privacyNote: t('md_perm_store_privacy', 'تظل بياناتك ملكك وحدك ومحفوظة بأمان في ذاكرة جهازك.')
     }
   ];
 
@@ -83,7 +64,6 @@ export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps>
     <AnimatePresence>
       <div 
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-        dir={isRTL ? 'rtl' : 'ltr'}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 15 }}
@@ -103,10 +83,10 @@ export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps>
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-black text-white">
-                  {isRTL ? 'الشفافية وسياسة الأذونات' : 'Permissions & Privacy Disclosure'}
+                  {t('md_perm_heading', 'الشفافية وسياسة الأذونات')}
                 </h3>
                 <p className="text-[11px] font-bold text-teal-300/80">
-                  {isRTL ? 'معايير الخصوصية والأمان لمتجر التطبيقات' : 'App Store Privacy & Security Standards'}
+                  {t('md_perm_subheading', 'معايير الخصوصية والأمان لمتجر التطبيقات')}
                 </p>
               </div>
             </div>
@@ -121,9 +101,7 @@ export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps>
           {/* Scrollable body */}
           <div className="overflow-y-auto py-4 space-y-3.5 flex-1 pr-1 pl-1">
             <p className="text-xs text-slate-300 leading-relaxed font-bold">
-              {isRTL
-                ? 'تطبيق "أذكار المؤمن" صُمم ليكون تطبيقاً آمناً ومجانياً بالكامل لوجه الله تعالى، ولا نطلب إلا الأذونات التقنية الضرورية لخدمتك بدقة:'
-                : 'Believer Athkar is built to be a safe, privacy-first companion. We only request system permissions strictly necessary to deliver accurate services:'}
+              {t('md_perm_intro', 'تطبيق "أذكار المؤمن" صُمم ليكون تطبيقاً آمناً ومجانياً بالكامل لوجه الله تعالى، ولا نطلب إلا الأذونات التقنية الضرورية لخدمتك بدقة:')}
             </p>
 
             <div className="space-y-3">
@@ -161,7 +139,7 @@ export const PermissionsExplainerModal: React.FC<PermissionsExplainerModalProps>
               onClick={onClose}
               className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-teal-950/50 transition-all cursor-pointer"
             >
-              {isRTL ? 'فهمت ذلك، واستمر' : 'Got it, Continue'}
+              {t('md_perm_continue', 'فهمت ذلك، واستمر')}
             </button>
           </div>
         </motion.div>

@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ExternalLink, Copy, Check, Headphones, Download, X, Globe, Radio } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 export interface ExternalAudioLinkModalProps {
   isOpen: boolean;
@@ -20,6 +22,8 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
   url,
   type,
 }) => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -53,15 +57,15 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
   if (!isOpen) return null;
 
   // Domain display helper
-  let domain = 'موقع إسلامي موثوق';
+  let domain = t('md_ext_trusted_site', 'موقع إسلامي موثوق');
   try {
     const parsed = new URL(url);
     if (parsed.hostname.includes('binbaz.org.sa')) {
-      domain = 'الموقع الرسمي لسماحة الشيخ ابن باز (binbaz.org.sa)';
+      domain = t('md_ext_binbaz', 'الموقع الرسمي لسماحة الشيخ ابن باز (binbaz.org.sa)');
     } else if (parsed.hostname.includes('islamway.net')) {
-      domain = 'شبكة طريق الإسلام (islamway.net)';
+      domain = t('md_ext_islamway', 'شبكة طريق الإسلام (islamway.net)');
     } else if (parsed.hostname.includes('ibnothaimeen.net')) {
-      domain = 'الموقع الرسمي للشيخ ابن عثيمين (ibnothaimeen.net)';
+      domain = t('md_ext_ibnothaimeen', 'الموقع الرسمي للشيخ ابن عثيمين (ibnothaimeen.net)');
     } else {
       domain = parsed.hostname;
     }
@@ -83,8 +87,7 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-[#063b28] via-[#04281b] to-[#021810] border-2 border-[#feb10b]/60 p-6 sm:p-7 shadow-2xl text-white overflow-hidden text-right"
-          dir="rtl"
+          className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-[#063b28] via-[#04281b] to-[#021810] border-2 border-[#feb10b]/60 p-6 sm:p-7 shadow-2xl text-white overflow-hidden text-start"
         >
           {/* Subtle Arabesque Pattern Glow */}
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#feb10b]/10 rounded-full blur-3xl pointer-events-none" />
@@ -102,10 +105,10 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-black text-[#feb10b]">
-                  {type === 'listen' ? 'رابط الاستماع للشرح الصوتي' : 'رابط تحميل الشرح الصوتي'}
+                  {type === 'listen' ? t('md_ext_title_listen', 'رابط الاستماع للشرح الصوتي') : t('md_ext_title_download', 'رابط تحميل الشرح الصوتي')}
                 </h3>
                 <p className="text-xs text-emerald-200/80 font-medium mt-0.5">
-                  فتح المصدر الصوتي المعتمد مباشرة
+                  {t('md_ext_subtitle', 'فتح المصدر الصوتي المعتمد مباشرة')}
                 </p>
               </div>
             </div>
@@ -114,7 +117,7 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
               id="close-external-audio-modal-btn"
               onClick={onClose}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
-              aria-label="إغلاق"
+              aria-label={t('md_ext_close', 'إغلاق')}
             >
               <X className="w-5 h-5" />
             </button>
@@ -136,7 +139,7 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
 
           {/* Guidance note */}
           <p className="text-xs text-slate-300 leading-relaxed mb-6 relative z-10 bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/20">
-            💡 إذا لم يفتح الرابط تلقائياً بسبب حماية المتصفح أو قيود النوافذ المنبثقة، يمكنك الضغط مباشرة على زر <strong>"فتح الموقع الآن"</strong> أو <strong>"نسخ الرابط"</strong> ولصقه في المتصفح.
+            {t('md_ext_hint', '💡 إذا لم يفتح الرابط تلقائياً بسبب حماية المتصفح أو قيود النوافذ المنبثقة، يمكنك الضغط مباشرة على زر «فتح الموقع الآن» أو «نسخ الرابط» ولصقه في المتصفح.')}
           </p>
 
           {/* Actions */}
@@ -153,7 +156,7 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
               className="w-full py-3.5 px-4 rounded-2xl bg-[#feb10b] hover:bg-[#fec84b] active:scale-[0.98] text-[#042418] font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#feb10b]/20 transition-all cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />
-              <span>فتح الموقع الآن في المتصفح</span>
+              <span>{t('md_ext_open_now', 'فتح الموقع الآن في المتصفح')}</span>
             </a>
 
             <div className="grid grid-cols-2 gap-2.5">
@@ -166,12 +169,12 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
                 {copied ? (
                   <>
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-300">تم النسخ بنجاح!</span>
+                    <span className="text-emerald-300">{t('md_ext_copied', 'تم النسخ بنجاح!')}</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4 text-[#feb10b]" />
-                    <span>نسخ رابط المصدر</span>
+                    <span>{t('md_ext_copy', 'نسخ رابط المصدر')}</span>
                   </>
                 )}
               </button>
@@ -183,7 +186,7 @@ export const ExternalAudioLinkModal: React.FC<ExternalAudioLinkModalProps> = ({
                 className="py-3 px-3 rounded-2xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-[0.98] border border-emerald-500/40 text-[#feb10b] font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
               >
                 <Radio className="w-4 h-4 text-[#feb10b]" />
-                <span>مكتبة الصوتيات بالتطبيق</span>
+                <span>{t('md_ext_library', 'مكتبة الصوتيات بالتطبيق')}</span>
               </button>
             </div>
           </div>

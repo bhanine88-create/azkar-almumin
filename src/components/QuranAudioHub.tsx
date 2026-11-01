@@ -54,10 +54,10 @@ export const QuranAudioHub: React.FC = () => {
           <BackButton forceFallback={true} fallbackPath="/audio-library" />
           <div>
             <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-              المصحف المرتل
+              {t('qa_title', 'المصحف المرتل')}
               <Headphones className="text-[#218510]" size={24} />
             </h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">القراءات الصوتية</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t('qa_subtitle', 'القراءات الصوتية')}</p>
           </div>
         </div>
 
@@ -96,8 +96,8 @@ export const QuranAudioHub: React.FC = () => {
               
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">إعدادات الصوت</h2>
-                  <p className="text-sm font-medium text-slate-500">تحكم في تجربة الاستماع الخاصة بك</p>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">{t('qa_audio_settings', 'إعدادات الصوت')}</h2>
+                  <p className="text-sm font-medium text-slate-500">{t('qa_audio_settings_desc', 'تحكم في تجربة الاستماع الخاصة بك')}</p>
                 </div>
                 <button 
                   onClick={() => setShowSettings(false)}
@@ -112,7 +112,7 @@ export const QuranAudioHub: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Zap size={18} />
-                    <span className="text-xs font-black uppercase tracking-widest">سرعة التشغيل</span>
+                    <span className="text-xs font-black uppercase tracking-widest">{t('al_playback_speed', 'سرعة التشغيل')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {speeds.map(s => (
@@ -140,8 +140,8 @@ export const QuranAudioHub: React.FC = () => {
                         <FastForward size={20} />
                       </div>
                       <div>
-                        <h4 className="font-black text-slate-900 dark:text-white">تشغيل تلقائي للسور</h4>
-                        <p className="text-[10px] font-bold text-slate-500">الانتقال التلقائي للسورة التالية</p>
+                        <h4 className="font-black text-slate-900 dark:text-white">{t('qa_auto_surah', 'تشغيل تلقائي للسور')}</h4>
+                        <p className="text-[10px] font-bold text-slate-500">{t('qa_auto_surah_desc', 'الانتقال التلقائي للسورة التالية')}</p>
                       </div>
                     </div>
                     <button 
@@ -164,8 +164,8 @@ export const QuranAudioHub: React.FC = () => {
                         <PlayCircle size={20} />
                       </div>
                       <div>
-                        <h4 className="font-black text-slate-900 dark:text-white">تشغيل فوري</h4>
-                        <p className="text-[10px] font-bold text-slate-500">بدأ الصوت تلقائياً عند الدخول</p>
+                        <h4 className="font-black text-slate-900 dark:text-white">{t('qa_instant_play', 'تشغيل فوري')}</h4>
+                        <p className="text-[10px] font-bold text-slate-500">{t('qa_instant_play_desc', 'بدأ الصوت تلقائياً عند الدخول')}</p>
                       </div>
                     </div>
                     <button 
@@ -188,7 +188,7 @@ export const QuranAudioHub: React.FC = () => {
                     onClick={() => setShowSettings(false)}
                     className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-950 py-4 rounded-2xl font-black shadow-xl duration-75 active:scale-[0.85] active:opacity-70 transition-transform"
                   >
-                    حفظ التجربة
+                    {t('qa_save_experience', 'حفظ التجربة')}
                   </button>
                 </div>
               </div>
@@ -212,15 +212,15 @@ export const QuranAudioHub: React.FC = () => {
             <div className="w-12 h-12 rounded-[1.2rem] bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-6 transition-transform">
               <Heart size={18} className="fill-current" />
             </div>
-            <div className="text-right">
-              <h2 className="text-lg font-black text-slate-800 dark:text-white">القراء المفضلون</h2>
-              <p className="text-xs font-bold text-slate-500">ادخل لعرض قائمة المقرئين المختارين</p>
+            <div className="text-start">
+              <h2 className="text-lg font-black text-slate-800 dark:text-white">{t('qa_fav_reciters', 'القراء المفضلون')}</h2>
+              <p className="text-xs font-bold text-slate-500">{t('qa_fav_reciters_desc', 'ادخل لعرض قائمة المقرئين المختارين')}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 relative z-10">
             {(progress.favoriteReciters || []).length > 0 && (
               <div className="bg-amber-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm animate-pulse">
-                {(progress.favoriteReciters || []).length} قراء
+                {t('qa_reciters_count', '{{count}} قراء', { count: (progress.favoriteReciters || []).length })}
               </div>
             )}
             <div className="w-10 h-10 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-amber-600 group-hover:-translate-x-1 transition-transform">
@@ -240,13 +240,13 @@ export const QuranAudioHub: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-[#218510]/20 text-emerald-400 flex items-center justify-center border border-[#218510]/30 group-hover:scale-110 transition-transform">
               <HardDrive size={24} />
             </div>
-            <div className="text-right">
-              <h3 className="font-black text-sm">التنزيلات المحفوظة</h3>
-              <p className="text-[10px] font-bold text-slate-400">الاستماع بدون إنترنت</p>
+            <div className="text-start">
+              <h3 className="font-black text-sm">{t('qa_saved_downloads', 'التنزيلات المحفوظة')}</h3>
+              <p className="text-[10px] font-bold text-slate-400">{t('qa_listen_offline', 'الاستماع بدون إنترنت')}</p>
             </div>
           </div>
           <div className="bg-[#218510]/20 text-emerald-400 border border-[#218510]/30 px-3 py-1 rounded-xl text-[10px] font-black">
-            {downloadCount} سورة
+            {t('qa_surah_count', '{{count}} سورة', { count: downloadCount })}
           </div>
         </motion.button>
       </div>
@@ -259,7 +259,7 @@ export const QuranAudioHub: React.FC = () => {
           </div>
           <input
             type="text"
-            placeholder="ابحث عن قارئ أو رواية..."
+            placeholder={t('qa_search_placeholder', 'ابحث عن قارئ أو رواية...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pr-12 pl-10 rounded-2xl text-sm font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-[#218510]/20 transition-all shadow-sm"
@@ -276,10 +276,10 @@ export const QuranAudioHub: React.FC = () => {
 
         <div className="flex items-center justify-between mb-3 px-2">
           <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            {searchQuery ? `نتائج البحث (${filteredReciters.length})` : `قائمة القراء المتاحين (${RECITERS.length})`}
+            {searchQuery ? t('qa_search_results', 'نتائج البحث ({{count}})', { count: filteredReciters.length }) : t('qa_available_reciters', 'قائمة القراء المتاحين ({{count}})', { count: RECITERS.length })}
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800 ml-2" />
           </h2>
-          <span className="text-[10px] text-amber-500 font-bold bg-amber-500/10 px-2 py-1 rounded-lg">إختر القارئ بالضغط على النجمة</span>
+          <span className="text-[10px] text-amber-500 font-bold bg-amber-500/10 px-2 py-1 rounded-lg">{t('qa_pick_hint', 'إختر القارئ بالضغط على النجمة')}</span>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -323,7 +323,7 @@ export const QuranAudioHub: React.FC = () => {
                       />
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-start">
                     <h3 className={cn(
                       "font-black text-base",
                       reciter === r.id ? "text-amber-700 dark:text-amber-300" : "text-slate-900 dark:text-slate-100"
@@ -339,7 +339,7 @@ export const QuranAudioHub: React.FC = () => {
                       </span>
                       {isFavorite && (
                         <div className="bg-amber-400/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase">
-                          مفضل
+                          {t('qa_favorite_badge', 'مفضل')}
                         </div>
                       )}
                     </div>

@@ -7,6 +7,7 @@ export interface DeleteAccountResult {
   success: boolean;
   requiresReauth?: boolean;
   error?: string;
+  errorCode?: 'cloud' | 'reauth' | 'generic';
 }
 
 export const deleteAccountAndAllData = async (): Promise<DeleteAccountResult> => {
@@ -32,7 +33,7 @@ export const deleteAccountAndAllData = async (): Promise<DeleteAccountResult> =>
         console.warn('Could not delete the cloud data; the account is kept:', e);
         return {
           success: false,
-          error: 'تعذّر حذف بياناتك من السحابة. تحقّق من الاتصال بالإنترنت ثم حاول مرة أخرى، ولم يُحذف الحساب.'
+          errorCode: 'cloud'
         };
       }
 
@@ -50,7 +51,7 @@ export const deleteAccountAndAllData = async (): Promise<DeleteAccountResult> =>
             return {
               success: false,
               requiresReauth: true,
-              error: 'يتطلب حذف الحساب تسجيل الدخول مجدداً لتأكيد هويتك لأسباب أمنية.'
+              errorCode: 'reauth'
             };
           }
         } else {
@@ -67,7 +68,8 @@ export const deleteAccountAndAllData = async (): Promise<DeleteAccountResult> =>
     console.error('Failed to completely delete account & data:', err);
     return {
       success: false,
-      error: err.message || 'حدث خطأ أثناء محاولة حذف الحساب والبيانات.'
+      error: err.message,
+      errorCode: 'generic'
     };
   }
 };

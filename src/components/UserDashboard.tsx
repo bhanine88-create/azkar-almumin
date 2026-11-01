@@ -42,7 +42,7 @@ import { useTranslation } from '../i18n';
 import { useChallengeTracker } from '../hooks/useChallengeTracker';
 import { CHALLENGES, ChallengeType } from '../challengesData';
 import { BackButton } from './ui/BackButton';
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode } from '../lib/utils';
 import { useAppStability } from '../services/stabilityManager';
 import { useSmartNavigation } from "../lib/navigation";
 
@@ -50,7 +50,7 @@ const CustomTooltip = React.memo(({ active, payload, label, isRTL, t, activeChar
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-xl text-white space-y-1.5 text-right" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-xl text-white space-y-1.5 text-start">
         <div className="text-[11px] font-black text-emerald-450 dark:text-emerald-400 uppercase tracking-widest">{label}</div>
         
         {activeChartTab === 'adhkar' && (
@@ -160,9 +160,7 @@ export const UserDashboard: React.FC = () => {
       const dateStr = d.toISOString().split('T')[0];
       const stats = dailyStats[dateStr] || { adhkar: [], quran: 0, tasbih: 0 };
       
-      const weekdaysAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-      const weekdaysEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const dayName = isRTL ? weekdaysAR[d.getDay()] : weekdaysEN[d.getDay()];
+      const dayName = new Intl.DateTimeFormat(getLocaleCode(settings.appLanguage), { weekday: 'short' }).format(d);
       
       const hasMorning = stats.adhkar.includes('morning') || stats.adhkar.includes('adhkar/morning') || stats.adhkar.some((x: string) => x.toLowerCase().includes('morning') || x.includes('الصباح'));
       const hasEvening = stats.adhkar.includes('evening') || stats.adhkar.includes('adhkar/evening') || stats.adhkar.some((x: string) => x.toLowerCase().includes('evening') || x.includes('المساء'));
@@ -194,7 +192,7 @@ export const UserDashboard: React.FC = () => {
     ];
 
     return { activityData: actData, distributionData: distData };
-  }, [progress.dailyStats, isRTL]);
+  }, [progress.dailyStats, settings.appLanguage, t]);
 
   // Retrieve the selected day details from chart data
   const selectedDay = React.useMemo(() => {
@@ -208,24 +206,24 @@ export const UserDashboard: React.FC = () => {
   const completedDailyCount = dailyChallenges.filter(c => challengeProgress[c.id]?.completed).length;
 
   const badges = [
-    { id: '1', name: isRTL ? 'المبتدئ' : 'Beginner', icon: <Star size={16} />, earned: totalPoints > 50, color: 'bg-blue-500' },
-    { id: '2', name: isRTL ? 'المواظب' : 'Consistent', icon: <Flame size={16} />, earned: currentStreak >= 3, color: 'bg-orange-500' },
-    { id: '3', name: isRTL ? 'الذاكر' : 'The Dhakir', icon: <Zap size={16} />, earned: totalAdhkar >= 5, color: 'bg-yellow-500' },
-    { id: '4', name: isRTL ? 'المسبّح' : 'Tasbih Pro', icon: <Trophy size={16} />, earned: tasbihCount >= 100, color: 'bg-emerald-500' },
+    { id: '1', name: t('st_dash_beginner', 'المبتدئ'), icon: <Star size={16} />, earned: totalPoints > 50, color: 'bg-blue-500' },
+    { id: '2', name: t('st_dash_consistent', 'المواظب'), icon: <Flame size={16} />, earned: currentStreak >= 3, color: 'bg-orange-500' },
+    { id: '3', name: t('st_dash_the_dhakir', 'الذاكر'), icon: <Zap size={16} />, earned: totalAdhkar >= 5, color: 'bg-yellow-500' },
+    { id: '4', name: t('st_dash_tasbih_pro', 'المسبّح'), icon: <Trophy size={16} />, earned: tasbihCount >= 100, color: 'bg-emerald-500' },
   ];
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 py-4 px-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <BackButton />
           <div>
             <h1 className="text-xl font-black text-slate-900 dark:text-white">
-              {isRTL ? 'لوحة الإنجازات' : 'Achievement Dashboard'}
+              {t('st_dash_achievement_dashboard', 'لوحة الإنجازات')}
             </h1>
             <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase">
-              {isRTL ? 'تتبع تقدمك الروحاني' : 'Track your spiritual journey'}
+              {t('st_dash_track_your_spiritual_journey', 'تتبع تقدمك الروحاني')}
             </p>
           </div>
         </div>
@@ -251,9 +249,9 @@ export const UserDashboard: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 px-2 py-1 bg-white/10 rounded-lg w-fit border border-white/10">
                   <Star size={12} className="text-amber-400" fill="currentColor" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">{isRTL ? 'المستوى' : 'Level'} {level}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t('level', 'المستوى')} {level}</span>
                 </div>
-                <h2 className="text-3xl font-black">{isRTL ? 'بطاقة المؤمن الكادح' : 'Devoted Believer'}</h2>
+                <h2 className="text-3xl font-black">{t('st_dash_devoted_believer', 'بطاقة المؤمن الكادح')}</h2>
               </div>
               <div className="w-14 h-14 bg-gradient-to-tr from-amber-400 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg border border-white/20">
                 <Star size={28} className="text-white" fill="currentColor" />
@@ -263,11 +261,11 @@ export const UserDashboard: React.FC = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-end">
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{isRTL ? 'النقاط الكلية' : 'Total Points'}</span>
+                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('st_dash_total_points', 'النقاط الكلية')}</span>
                   <div className="text-2xl font-black text-amber-400">{totalPoints.toLocaleString()}</div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 block">{isRTL ? 'للترقية' : 'Next Level'}</span>
+                <div className="text-end">
+                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 block">{t('st_dash_next_level', 'للترقية')}</span>
                   <span className="font-black text-sm">{pointsInCurrentLevel} / 100</span>
                 </div>
               </div>
@@ -289,7 +287,7 @@ export const UserDashboard: React.FC = () => {
               >
                 <div className="flex items-center gap-2.5">
                   <BarChart3 size={16} className="text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-bold text-white">{isRTL ? 'لوحة التحليل البياني للأذكار والقرآن (Recharts)' : 'Visual Devotion & Quran Analytics'}</span>
+                  <span className="text-xs font-bold text-white">{t('st_dash_visual_devotion_quran_analytics', 'لوحة التحليل البياني للأذكار والقرآن (Recharts)')}</span>
                 </div>
                 <ChevronLeft size={16} className={cn("text-emerald-400 transition-transform group-hover:-translate-x-1", !isRTL && "rotate-180 group-hover:translate-x-1")} />
               </button>
@@ -315,12 +313,12 @@ export const UserDashboard: React.FC = () => {
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{currentStreak}</div>
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  {isRTL ? 'يوم متواصل' : 'Day Streak'}
+                  {t('st_dash_day_streak', 'يوم متواصل')}
                 </div>
               </div>
               <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center gap-2">
                 <TrendingUp size={12} className="text-emerald-500" />
-                <span className="text-[9px] font-black text-slate-500 uppercase">{isRTL ? 'أفضل رقم:' : 'Best:'} {bestStreak}</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase">{t('st_dash_best', 'أفضل رقم:')} {bestStreak}</span>
               </div>
             </div>
           </motion.div>
@@ -341,12 +339,12 @@ export const UserDashboard: React.FC = () => {
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{totalAdhkar}</div>
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  {isRTL ? 'ذكر مكتمل' : 'Total Adhkar'}
+                  {t('st_dash_total_adhkar', 'ذكر مكتمل')}
                 </div>
               </div>
               <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center gap-2">
                 <Award size={12} className="text-amber-500" />
-                <span className="text-[9px] font-black text-slate-500 uppercase">{isRTL ? 'مستوى الفضل' : 'Merit Level'}</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase">{t('st_dash_merit_level', 'مستوى الفضل')}</span>
               </div>
             </div>
           </motion.div>
@@ -370,12 +368,12 @@ export const UserDashboard: React.FC = () => {
                   {quranHours > 0 ? `${quranHours}h ${quranMins}m` : `${quranMins}m`}
                 </div>
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  {isRTL ? 'تلاوة القرآن' : 'Quran Recitation'}
+                  {t('st_dash_quran_recitation', 'تلاوة القرآن')}
                 </div>
               </div>
               <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center gap-2">
                 <Info size={12} className="text-indigo-500" />
-                <span className="text-[9px] font-black text-slate-500 uppercase">{isRTL ? 'الوقت المقدر' : 'Estimated Time'}</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase">{t('st_dash_estimated_time', 'الوقت المقدر')}</span>
               </div>
             </div>
           </motion.div>
@@ -397,12 +395,12 @@ export const UserDashboard: React.FC = () => {
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{tasbihCount.toLocaleString()}</div>
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  {isRTL ? 'إجمالي التسبيح' : 'Total Tasbih'}
+                  {t('st_dash_total_tasbih', 'إجمالي التسبيح')}
                 </div>
               </div>
               <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center gap-2">
                 <Sparkles size={12} className="text-sky-500" />
-                <span className="text-[9px] font-black text-slate-500 uppercase">{isRTL ? 'ميزان الحسنات' : 'Good Deeds'}</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase">{t('st_dash_good_deeds', 'ميزان الحسنات')}</span>
               </div>
             </div>
           </motion.div>
@@ -433,18 +431,18 @@ export const UserDashboard: React.FC = () => {
                 
                 <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl max-w-sm">
                   <button onClick={() => setActiveChartTab('adhkar')} className={cn("flex-1 text-[10px] font-black py-1.5 rounded-lg transition-colors", activeChartTab === 'adhkar' ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:text-slate-400")}>
-                    {isRTL ? 'الأذكار' : 'Adhkar'}
+                    {t('adhkar', 'الأذكار')}
                   </button>
                   <button onClick={() => setActiveChartTab('tasbih')} className={cn("flex-1 text-[10px] font-black py-1.5 rounded-lg transition-colors", activeChartTab === 'tasbih' ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:text-slate-400")}>
-                    {isRTL ? 'التسبيح' : 'Tasbih'}
+                    {t('tasbih_label', 'التسبيح')}
                   </button>
                   <button onClick={() => setActiveChartTab('quran')} className={cn("flex-1 text-[10px] font-black py-1.5 rounded-lg transition-colors", activeChartTab === 'quran' ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:text-slate-400")}>
-                    {isRTL ? 'القرآن' : 'Quran'}
+                    {t('quran', 'القرآن')}
                   </button>
                 </div>
               </div>
               <div className="text-[10px] font-black text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-xl shrink-0 uppercase tracking-widest">
-                {isRTL ? 'تفاعلي' : 'Interactive'}
+                {t('st_dash_interactive', 'تفاعلي')}
               </div>
             </div>
 
@@ -668,7 +666,7 @@ export const UserDashboard: React.FC = () => {
                 <div className="min-w-0">
                   <div className="text-xs font-black truncate">{t('morning')}</div>
                   <div className="text-[9px] font-black opacity-80">
-                    {selectedDay?.hasMorning ? (isRTL ? "مكتمل" : "Completed") : (isRTL ? "غير مكتمل" : "Not Done")}
+                    {selectedDay?.hasMorning ? (t('st_dash_completed', 'مكتمل')) : (t('st_dash_not_done', 'غير مكتمل'))}
                   </div>
                 </div>
               </div>
@@ -689,7 +687,7 @@ export const UserDashboard: React.FC = () => {
                 <div className="min-w-0">
                   <div className="text-xs font-black truncate">{t('evening')}</div>
                   <div className="text-[9px] font-black opacity-80">
-                    {selectedDay?.hasEvening ? (isRTL ? "مكتمل" : "Completed") : (isRTL ? "غير مكتمل" : "Not Done")}
+                    {selectedDay?.hasEvening ? (t('st_dash_completed', 'مكتمل')) : (t('st_dash_not_done', 'غير مكتمل'))}
                   </div>
                 </div>
               </div>
@@ -710,7 +708,7 @@ export const UserDashboard: React.FC = () => {
                 <div className="min-w-0">
                   <div className="text-xs font-black truncate">{t('sleep')}</div>
                   <div className="text-[9px] font-black opacity-80">
-                    {selectedDay?.hasSleep ? (isRTL ? "مكتمل" : "Completed") : (isRTL ? "غير مكتمل" : "Not Done")}
+                    {selectedDay?.hasSleep ? (t('st_dash_completed', 'مكتمل')) : (t('st_dash_not_done', 'غير مكتمل'))}
                   </div>
                 </div>
               </div>
@@ -731,7 +729,7 @@ export const UserDashboard: React.FC = () => {
                 <div className="min-w-0">
                   <div className="text-xs font-black truncate">{t('waking')}</div>
                   <div className="text-[9px] font-black opacity-80">
-                    {selectedDay?.hasWaking ? (isRTL ? "مكتمل" : "Completed") : (isRTL ? "غير مكتمل" : "Not Done")}
+                    {selectedDay?.hasWaking ? (t('st_dash_completed', 'مكتمل')) : (t('st_dash_not_done', 'غير مكتمل'))}
                   </div>
                 </div>
               </div>
@@ -746,7 +744,7 @@ export const UserDashboard: React.FC = () => {
                 <div>
                   <div className="text-[9px] font-black text-slate-400 uppercase leading-none">{t('quran_read')}</div>
                   <div className="font-extrabold text-slate-800 dark:text-white mt-0.5">
-                    {selectedDay?.quran || 0} {isRTL ? t('pages') : t('pages')}
+                    {selectedDay?.quran || 0} {t('pages')}
                   </div>
                 </div>
               </div>
@@ -758,7 +756,7 @@ export const UserDashboard: React.FC = () => {
                 <div>
                   <div className="text-[9px] font-black text-slate-400 uppercase leading-none">{t('tasbih_completed')}</div>
                   <div className="font-extrabold text-slate-800 dark:text-white mt-0.5">
-                    {selectedDay?.tasbih || 0} {isRTL ? t('tasbiha') : t('tasbiha')}
+                    {selectedDay?.tasbih || 0} {t('tasbiha')}
                   </div>
                 </div>
               </div>
@@ -818,7 +816,7 @@ export const UserDashboard: React.FC = () => {
               {/* Center text of the donut */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                  {isRTL ? 'إجمالي الأوراد' : 'TOTAL DHIKR'}
+                  {t('st_dash_total_dhikr', 'إجمالي الأوراد')}
                 </span>
                 <span className="text-2xl font-black text-slate-900 dark:text-white mt-1 leading-none">
                   {totalAdhkar}
@@ -844,7 +842,7 @@ export const UserDashboard: React.FC = () => {
         <div className="space-y-4">
           <h3 className="font-black text-slate-900 dark:text-white px-2 flex items-center gap-2">
             <Award size={18} className="text-amber-500" />
-            {isRTL ? 'الأوسمة والجوائز' : 'Badges & Awards'}
+            {t('st_dash_badges_awards', 'الأوسمة والجوائز')}
           </h3>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none px-2">
             {badges.map((badge) => (
@@ -875,10 +873,10 @@ export const UserDashboard: React.FC = () => {
           <div className="flex justify-between items-center px-2">
             <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2">
               <Target size={18} className="text-indigo-600" />
-              {isRTL ? 'تحديات اليوم' : 'Daily Challenges'}
+              {t('st_dash_daily_challenges', 'تحديات اليوم')}
             </h3>
             <span className="text-[10px] font-black text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-lg">
-              {completedDailyCount} / {dailyChallenges.length} {isRTL ? 'مكتمل' : 'Done'}
+              {completedDailyCount} / {dailyChallenges.length} {t('st_dash_completed', 'مكتمل')}
             </span>
           </div>
 
@@ -931,7 +929,7 @@ export const UserDashboard: React.FC = () => {
               onClick={() => navigate('/challenges')}
               className="w-full py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-teal-600 transition-colors"
             >
-              {isRTL ? 'عرض جميع التحديات' : 'View All Challenges'}
+              {t('st_dash_view_all_challenges', 'عرض جميع التحديات')}
             </button>
           </div>
         </div>
@@ -942,23 +940,23 @@ export const UserDashboard: React.FC = () => {
             <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:scale-110 transition-transform"><Target size={48} /></div>
             <div className="flex justify-between relative z-10">
               <Target size={20} />
-              <span className="text-[10px] font-black opacity-60 uppercase">{isRTL ? 'الأهداف' : 'Goals'}</span>
+              <span className="text-[10px] font-black opacity-60 uppercase">{t('st_dash_goals', 'الأهداف')}</span>
             </div>
             <div className="relative z-10">
               <div className="text-xl font-black">{progress.spiritualGoals ? progress.spiritualGoals.filter((g: any) => g.progress >= g.target).length : 0}</div>
-              <div className="text-[9px] font-black opacity-80 uppercase">{isRTL ? 'هدف مكتمل' : 'Goals Completed'}</div>
+              <div className="text-[9px] font-black opacity-80 uppercase">{t('st_dash_goals_completed', 'هدف مكتمل')}</div>
             </div>
             <div className="absolute bottom-2 left-2 bg-white/20 p-1.5 rounded-full"><ChevronLeft size={14} className="text-white rtl:rotate-180" /></div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-3xl text-white shadow-lg space-y-2 text-right relative overflow-hidden group cursor-pointer" onClick={() => navigate('/tasbih')}>
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-3xl text-white shadow-lg space-y-2 text-start relative overflow-hidden group cursor-pointer" onClick={() => navigate('/tasbih')}>
             <div className="flex items-center justify-between mb-4">
               <Zap size={20} />
               <span className="text-[10px] font-black opacity-60">TASBIH</span>
             </div>
             <div>
               <div className="text-xl font-black">{tasbihCount.toLocaleString()}</div>
-              <div className="text-[9px] font-black opacity-80 uppercase">{isRTL ? 'تسبيحة' : 'Tasbih count'}</div>
+              <div className="text-[9px] font-black opacity-80 uppercase">{t('st_dash_tasbih_count', 'تسبيحة')}</div>
             </div>
           </div>
         </div>

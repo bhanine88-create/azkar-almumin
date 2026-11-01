@@ -137,7 +137,7 @@ export const Inspirations: React.FC = () => {
   };
 
   const handleDeleteCustom = (id: string) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا القبس؟')) return;
+    if (!window.confirm(t('u2_insp_confirm_delete', 'هل أنت متأكد من حذف هذا القبس؟'))) return;
     const updated = customInspirations.filter(i => i.id !== id);
     setCustomInspirations(updated);
     safeLocalStorageSetItem('believer_custom_inspirations_v2', JSON.stringify(updated));
@@ -150,9 +150,9 @@ export const Inspirations: React.FC = () => {
     const item = filteredInspirations[currentIndex];
     if (!item) return;
 
-    const shareText = `✨ *قبس إيماني* ✨\n\n"${item.text}"\n\n— ${item.source}\n\n— تطبيق أذكار المؤمن`;
+    const shareText = t('u2_insp_share_text', '✨ *قبس إيماني* ✨\n\n"{{text}}"\n\n— {{source}}\n\n— تطبيق أذكار المؤمن', { text: item.text, source: item.source });
     
-    await shareContent('قبس إيماني', shareText);
+    await shareContent(t('u2_insp_share_title', 'قبس إيماني'), shareText);
   };
 
   const currentItem = filteredInspirations[currentIndex];
@@ -170,16 +170,16 @@ export const Inspirations: React.FC = () => {
 
         <div className="relative z-10 flex flex-row-reverse items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex flex-col text-right">
-              <h1 className="text-2xl font-black text-white drop-shadow-md">قبسات إيمانية</h1>
-              <p className="text-rose-300 text-xs font-bold mt-1 uppercase tracking-widest opacity-80">إضاءات لروحك وعقلك</p>
+            <div className="flex flex-col text-start">
+              <h1 className="text-2xl font-black text-white drop-shadow-md">{t('u2_insp_title', 'قبسات إيمانية')}</h1>
+              <p className="text-rose-300 text-xs font-bold mt-1 uppercase tracking-widest opacity-80">{t('u2_insp_subtitle', 'إضاءات لروحك وعقلك')}</p>
             </div>
             
             <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setIsAddOpen(true)}
                   className="group w-10 h-10 rounded-full bg-rose-500/20 hover:bg-rose-500/40 transform transition-all duration-75 active:scale-[0.85] active:opacity-70 flex items-center justify-center text-rose-300 border border-rose-500/30 backdrop-blur-md shadow-lg"
-                  title="إضافة قبس جديد"
+                  title={t('u2_insp_add_new', 'إضافة قبس جديد')}
                 >
                   <Plus size={20} className="transition-transform duration-200 group-hover:rotate-90" />
                 </button>
@@ -221,7 +221,7 @@ export const Inspirations: React.FC = () => {
                 <div className="relative z-10">
                   {filter.icon}
                 </div>
-                <span className="relative z-10 text-[10px] sm:text-xs font-bold">{filter.name}</span>
+                <span className="relative z-10 text-[10px] sm:text-xs font-bold">{t('u2_insp_filter_' + filter.id, filter.name)}</span>
               </button>
             );
           })}
@@ -291,19 +291,19 @@ export const Inspirations: React.FC = () => {
                       {currentItem.type === 'verse' && (
                         <>
                           <Book size={14} className="text-amber-300" />
-                          <span className="text-[10px] sm:text-xs font-black text-amber-300">قرآن كريم • </span>
+                          <span className="text-[10px] sm:text-xs font-black text-amber-300">{t('u2_insp_filter_verse', 'قرآن كريم')} • </span>
                         </>
                       )}
                       {currentItem.type === 'hadith' && (
                         <>
                           <BookOpen size={14} className="text-blue-300" />
-                          <span className="text-[10px] sm:text-xs font-black text-blue-300">حديث شريف • </span>
+                          <span className="text-[10px] sm:text-xs font-black text-blue-300">{t('u2_insp_filter_hadith', 'حديث شريف')} • </span>
                         </>
                       )}
                       {currentItem.type === 'wisdom' && (
                         <>
                           <Quote size={14} className="text-emerald-300" />
-                          <span className="text-[10px] sm:text-xs font-black text-emerald-300">حكمة وموعظة • </span>
+                          <span className="text-[10px] sm:text-xs font-black text-emerald-300">{t('u2_insp_filter_wisdom', 'حكمة وموعظة')} • </span>
                         </>
                       )}
                       <span className="text-xs font-black tracking-wide text-white">
@@ -319,7 +319,7 @@ export const Inspirations: React.FC = () => {
             <button
               onClick={handleNext}
               disabled={currentIndex >= filteredInspirations.length - 1}
-              aria-label="التالي"
+              aria-label={t('next', 'التالي')}
               className="absolute -left-4 sm:-left-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-md flex items-center justify-center text-slate-800 dark:text-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white dark:border-slate-700 disabled:opacity-30 disabled:scale-95 disabled:hover:scale-95 hover:scale-110 transform transition-all duration-75 active:scale-[0.85] active:opacity-70 z-30 cursor-pointer"
             >
               <ChevronLeft size={28} />
@@ -327,7 +327,7 @@ export const Inspirations: React.FC = () => {
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              aria-label="السابق"
+              aria-label={t('previous', 'السابق')}
               className="absolute -right-4 sm:-right-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-md flex items-center justify-center text-slate-800 dark:text-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white dark:border-slate-700 disabled:opacity-30 disabled:scale-95 disabled:hover:scale-95 hover:scale-110 transform transition-all duration-75 active:scale-[0.85] active:opacity-70 z-30 cursor-pointer"
             >
               <ChevronRight size={28} />
@@ -337,12 +337,12 @@ export const Inspirations: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center justify-center p-12 text-slate-400">
               <Sparkles size={48} className="mb-4 opacity-50" />
-              <p className="font-bold text-center">لا توجد قبسات إيمانية في هذا القسم. أضف قبسك الخاص الآن!</p>
+              <p className="font-bold text-center">{t('u2_insp_empty', 'لا توجد قبسات إيمانية في هذا القسم. أضف قبسك الخاص الآن!')}</p>
               <button 
                 onClick={() => setIsAddOpen(true)}
                 className="mt-4 px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-500 transition-colors text-white font-bold flex items-center gap-2 shadow-lg shadow-rose-600/30"
               >
-                <Plus size={18} /> إضافة قبس
+                <Plus size={18} /> {t('u2_insp_add_btn', 'إضافة قبس')}
               </button>
           </div>
         )}
@@ -383,9 +383,9 @@ export const Inspirations: React.FC = () => {
                         <button onClick={() => setIsAddOpen(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500">
                             <X size={20} />
                         </button>
-                        <div className="text-right">
-                            <h3 className="font-black text-2xl dark:text-white">إضافة قبس جديد</h3>
-                            <p className="text-xs text-slate-400 font-bold mt-1">شاركنا ما يلامس قلبك</p>
+                        <div className="text-start">
+                            <h3 className="font-black text-2xl dark:text-white">{t('u2_insp_add_new', 'إضافة قبس جديد')}</h3>
+                            <p className="text-xs text-slate-400 font-bold mt-1">{t('u2_insp_add_sub', 'شاركنا ما يلامس قلبك')}</p>
                         </div>
                     </div>
 
@@ -403,28 +403,28 @@ export const Inspirations: React.FC = () => {
                                     )}
                                 >
                                     {category.icon}
-                                    <span className="text-xs font-bold">{category.name}</span>
+                                    <span className="text-xs font-bold">{t('u2_insp_filter_' + category.id, category.name)}</span>
                                 </button>
                             ))}
                         </div>
 
                         <div className="space-y-2">
-                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">نص القبس</label>
+                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">{t('u2_insp_text_label', 'نص القبس')}</label>
                              <textarea 
                                 value={newEntry.text}
                                 onChange={(e) => setNewEntry(prev => ({ ...prev, text: e.target.value }))}
-                                placeholder="اكتب القبس هنا..."
+                                placeholder={t('u2_insp_text_ph', 'اكتب القبس هنا...')}
                                 className="w-full h-32 px-5 py-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 focus:border-emerald-500 outline-none transition-all text-slate-800 dark:text-white font-bold resize-none"
                              />
                         </div>
 
                         <div className="space-y-2">
-                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">المصدر أو الكاتب</label>
+                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">{t('u2_insp_source_label', 'المصدر أو الكاتب')}</label>
                              <input 
                                 type="text"
                                 value={newEntry.source}
                                 onChange={(e) => setNewEntry(prev => ({ ...prev, source: e.target.value }))}
-                                placeholder="مثال: سورة البقرة، حديث شريف، ابن القيم..."
+                                placeholder={t('u2_insp_source_ph', 'مثال: سورة البقرة، حديث شريف، ابن القيم...')}
                                 className="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 focus:border-emerald-500 outline-none transition-all text-slate-800 dark:text-white font-bold"
                              />
                         </div>
@@ -435,7 +435,7 @@ export const Inspirations: React.FC = () => {
                             className="w-full py-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:grayscale transition-all text-white font-black text-lg shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 mt-4"
                         >
                             <Save size={20} />
-                            حفظ القبس
+                            {t('u2_insp_save', 'حفظ القبس')}
                         </button>
                     </div>
                 </motion.div>
@@ -463,22 +463,22 @@ export const Inspirations: React.FC = () => {
             >
               <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6 shrink-0" />
               
-              <div className="flex items-center justify-between mb-6 border-b border-slate-100 dark:border-slate-800/60 pb-4 shrink-0" dir="rtl">
+              <div className="flex items-center justify-between mb-6 border-b border-slate-100 dark:border-slate-800/60 pb-4 shrink-0">
                 <button 
                   onClick={() => setIsSettingsOpen(false)} 
                   className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer outline-none border border-slate-200/60 dark:border-slate-800/80 shadow-sm"
-                  aria-label="إغلاق"
+                  aria-label={t('close', 'إغلاق')}
                 >
                   <X size={20} />
                 </button>
-                <h3 className="font-black text-xl text-slate-800 dark:text-white">تخصيص المظهر</h3>
+                <h3 className="font-black text-xl text-slate-800 dark:text-white">{t('u2_insp_customize', 'تخصيص المظهر')}</h3>
               </div>
               
               <div className="space-y-6 rtl">
                 {/* Themes */}
                 <div>
                   <h4 className="flex items-center gap-2 font-bold mb-3 text-slate-700 dark:text-slate-300">
-                    <Palette size={16} /> سمة الألوان
+                    <Palette size={16} /> {t('u2_insp_color_theme', 'سمة الألوان')}
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                     {THEMES.map(theme => (
@@ -493,7 +493,7 @@ export const Inspirations: React.FC = () => {
                         )}
                       >
                         <div className={cn("w-6 sm:w-8 h-6 sm:h-8 rounded-full shadow-inner", theme.accent)} />
-                        <span className="text-xs sm:text-sm font-bold truncate max-w-full">{theme.name}</span>
+                        <span className="text-xs sm:text-sm font-bold truncate max-w-full">{t('u2_insp_theme_' + theme.id, theme.name)}</span>
                       </button>
                     ))}
                   </div>
@@ -502,7 +502,7 @@ export const Inspirations: React.FC = () => {
                 {/* Fonts */}
                 <div>
                   <h4 className="flex items-center gap-2 font-bold mb-3 text-slate-700 dark:text-slate-300">
-                    <Type size={16} /> نوع الخط
+                    <Type size={16} /> {t('u2_insp_font_type', 'نوع الخط')}
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                     {FONTS.map(font => (

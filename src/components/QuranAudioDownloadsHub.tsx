@@ -7,10 +7,14 @@ import {  Play, Pause, Trash2, Download, HardDrive, Volume2,  FileDown, Loader2,
 import { audioCacheService, CachedAudioInfo } from '../services/audioCacheService';
 import { cn } from '../lib/utils';
 import { RECITERS } from '../reciters';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 import { useSmartNavigation } from "../lib/navigation";
 
 export const QuranAudioDownloadsHub: React.FC = () => {
   const { navigate, goBack } = useSmartNavigation();
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const [downloads, setDownloads] = useState<CachedAudioInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
@@ -268,11 +272,11 @@ export const QuranAudioDownloadsHub: React.FC = () => {
           <BackButton fallbackPath="/quran-audio" />
           <div>
             <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-              التنزيلات المحفوظة
+              {t('qa_saved_downloads', 'التنزيلات المحفوظة')}
               <HardDrive className="text-emerald-500" size={20} />
             </h1>
             <p className="text-[10px] font-bold text-[#218510]/80 mt-0.5 flex items-center gap-1">
-              <WifiOff size={10} /> الاستماع بدون إنترنت نشط
+              <WifiOff size={10} /> {t('qa_dl_offline_active', 'الاستماع بدون إنترنت نشط')}
             </p>
           </div>
         </div>
@@ -315,8 +319,8 @@ export const QuranAudioDownloadsHub: React.FC = () => {
                 <HardDrive size={20} />
               </div>
               <div>
-                <h2 className="font-black text-sm text-slate-800 dark:text-slate-100">إدارة مساحة التخزين هاتفياً</h2>
-                <p className="text-[10px] font-semibold text-slate-500">حجم الملفات الإجمالي المخزن محلياً</p>
+                <h2 className="font-black text-sm text-slate-800 dark:text-slate-100">{t('qa_dl_storage_mgmt', 'إدارة مساحة التخزين هاتفياً')}</h2>
+                <p className="text-[10px] font-semibold text-slate-500">{t('qa_dl_total_size', 'حجم الملفات الإجمالي المخزن محلياً')}</p>
               </div>
             </div>
 
@@ -326,7 +330,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
               className="px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-950/40 text-rose-500 dark:text-rose-400 bg-rose-500/5 hover:bg-rose-500 hover:text-white transition-all text-[11px] font-black active:scale-95 duration-100 flex items-center gap-1 shrink-0"
             >
               <Trash2 size={12} />
-              حذف كافة التنزيلات
+              {t('qa_dl_delete_all', 'حذف كافة التنزيلات')}
             </button>
           </div>
 
@@ -334,9 +338,9 @@ export const QuranAudioDownloadsHub: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
               <div className="flex items-center gap-1 text-slate-800 dark:text-white font-black">
                 <span className="text-sm text-emerald-600 dark:text-emerald-400">{formatSize(storageStats.usedBytes)}</span>
-                <span className="text-[10px] text-slate-400 font-normal">({downloads.length} سورة محفوظة)</span>
+                <span className="text-[10px] text-slate-400 font-normal">({t('qa_dl_saved_surahs', '{{count}} سورة محفوظة', { count: downloads.length })})</span>
               </div>
-              <span className="text-[10px]">مستهدف التخزين المؤقت</span>
+              <span className="text-[10px]">{t('qa_dl_cache_target', 'مستهدف التخزين المؤقت')}</span>
             </div>
 
             {/* Custom storage consumption visual progress rail */}
@@ -356,7 +360,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
           <div className="text-[10px] bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800 font-bold text-slate-500 dark:text-slate-400 flex gap-2 items-start leading-relaxed">
             <Info size={14} className="text-emerald-600 shrink-0 mt-0.5" />
             <span>
-              نظام التخزين محمي ذاتياً. عند اقتراب امتلاء ذاكرة الهاتف الإجمالية، سيقوم المتصفح بإفساح مساحة مؤقتاً. يمكنك تنزيل ملفات الصوت بصيغة MP3 وحفظها بشكل دائم على مدير الملفات بهاتفك في أي وقت.
+              {t('qa_dl_storage_note', 'نظام التخزين محمي ذاتياً. عند اقتراب امتلاء ذاكرة الهاتف الإجمالية، سيقوم المتصفح بإفساح مساحة مؤقتاً. يمكنك تنزيل ملفات الصوت بصيغة MP3 وحفظها بشكل دائم على مدير الملفات بهاتفك في أي وقت.')}
             </span>
           </div>
         </motion.div>
@@ -371,8 +375,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
             <input
               id="download-search-input"
               type="text"
-              dir="rtl"
-              placeholder="ابحث باسم السورة أو الشيخ..."
+              placeholder={t('qa_dl_search_placeholder', 'ابحث باسم السورة أو الشيخ...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent text-sm w-full outline-none font-bold text-slate-800 dark:text-white placeholder-slate-400"
@@ -392,14 +395,14 @@ export const QuranAudioDownloadsHub: React.FC = () => {
           <div className="grid grid-cols-2 gap-2.5">
             {/* RECITER FILTER */}
             <div className="flex flex-col gap-1">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">تصفية حسب الشيخ</label>
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">{t('qa_dl_filter_reciter', 'تصفية حسب الشيخ')}</label>
               <select
                 id="reciter-filter-select"
                 value={selectedReciterId}
                 onChange={(e) => setSelectedReciterId(e.target.value)}
                 className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-bold p-2.5 rounded-xl outline-none text-slate-700 dark:text-slate-200 shadow-sm"
               >
-                <option value="all">الكل ({uniqueReciters.length})</option>
+                <option value="all">{t('all', 'الكل')} ({uniqueReciters.length})</option>
                 {uniqueReciters.map(reciter => (
                   <option key={reciter.id} value={String(reciter.id)}>{reciter.name}</option>
                 ))}
@@ -408,17 +411,17 @@ export const QuranAudioDownloadsHub: React.FC = () => {
 
             {/* SORT BY DROPDOWN */}
             <div className="flex flex-col gap-1">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">فرز وترتيب الملفات</label>
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">{t('qa_dl_sort_label', 'فرز وترتيب الملفات')}</label>
               <select
                 id="sort-by-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-xs font-bold p-2.5 rounded-xl outline-none text-slate-700 dark:text-slate-200 shadow-sm"
               >
-                <option value="recent">الأحدث تنزيلاً</option>
-                <option value="size-desc">الحجم الأكبر</option>
-                <option value="size-asc">الحجم الأصغر</option>
-                <option value="surah-asc">ترتيب المصحف</option>
+                <option value="recent">{t('qa_dl_sort_recent', 'الأحدث تنزيلاً')}</option>
+                <option value="size-desc">{t('qa_dl_sort_size_desc', 'الحجم الأكبر')}</option>
+                <option value="size-asc">{t('qa_dl_sort_size_asc', 'الحجم الأصغر')}</option>
+                <option value="surah-asc">{t('qa_dl_sort_mushaf', 'ترتيب المصحف')}</option>
               </select>
             </div>
           </div>
@@ -431,27 +434,27 @@ export const QuranAudioDownloadsHub: React.FC = () => {
         </div>
       ) : downloads.length === 0 ? (
         <EmptyStatePlaceholder
-          title="لا توجد تنزيلات"
-          description="قم بتنزيل السور من قائمة القراء وسوف تظهر هنا للاستماع إليها بدون اتصال بالإنترنت في أي وقت."
+          title={t('qa_dl_empty_title', 'لا توجد تنزيلات')}
+          description={t('qa_dl_empty_desc', 'قم بتنزيل السور من قائمة القراء وسوف تظهر هنا للاستماع إليها بدون اتصال بالإنترنت في أي وقت.')}
           variant="empty"
         />
       ) : filteredDownloads.length === 0 ? (
         <EmptyStatePlaceholder
-          title="لا توجد نتائج"
-          description="لا توجد نتائج مطابقة لبحثك في التنزيلات."
+          title={t('qa_dl_no_results', 'لا توجد نتائج')}
+          description={t('qa_dl_no_results_desc', 'لا توجد نتائج مطابقة لبحثك في التنزيلات.')}
           variant="search"
         />
       ) : (
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-2 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-            <span>القائمة المصفّاة ({filteredDownloads.length})</span>
+            <span>{t('qa_dl_filtered_list', 'القائمة المصفّاة ({{count}})', { count: filteredDownloads.length })}</span>
             {searchQuery || selectedReciterId !== 'all' ? (
               <button 
                 id="reset-filters-btn"
                 onClick={() => { setSearchQuery(''); setSelectedReciterId('all'); }}
                 className="text-emerald-600 dark:text-emerald-400 hover:underline"
               >
-                إعادة ضبط للتصفية
+                {t('qa_dl_reset_filters', 'إعادة ضبط للتصفية')}
               </button>
             ) : null}
           </div>
@@ -487,9 +490,9 @@ export const QuranAudioDownloadsHub: React.FC = () => {
                   )}
                 </button>
                 
-                <div className="flex flex-col gap-1 text-right">
+                <div className="flex flex-col gap-1 text-start">
                   <h3 className={cn("font-black text-base flex items-center gap-2", playingUrl === item.url ? "text-emerald-800 dark:text-emerald-400" : "text-slate-800 dark:text-slate-100")}>
-                    {item.surahName}
+                    {item.surahNumber ? t(`ui_surah_${item.surahNumber}`, item.surahName) : item.surahName}
                     {playingUrl === item.url && (
                       <Volume2 size={14} className="animate-pulse text-emerald-600" />
                     )}
@@ -515,7 +518,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
                         ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-emerald-600"
                         : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white hover:border-emerald-600"
                   )}
-                  title="حفظ كملف MP3 على الهاتف"
+                  title={t('qa_save_mp3_title', 'حفظ كملف MP3 على الهاتف')}
                 >
                   {savingUrls[item.url] === 'loading' ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -530,7 +533,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
                   id={`delete-download-${item.surahNumber}-${item.reciterId}`}
                   onClick={(e) => handleRemove(item.url, e)}
                   className="w-10 h-10 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 transform transition-all duration-75 active:scale-[0.85] active:opacity-70 opacity-80 hover:opacity-100 shadow-sm shrink-0"
-                  title="حذف المقطع"
+                  title={t('qa_dl_delete_clip', 'حذف المقطع')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -560,9 +563,9 @@ export const QuranAudioDownloadsHub: React.FC = () => {
               <div className="w-14 h-14 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShieldAlert size={28} />
               </div>
-              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">حذف جميع التنزيلات؟</h3>
+              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{t('qa_dl_confirm_title', 'حذف جميع التنزيلات؟')}</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium leading-relaxed">
-                هل أنت متأكد من رغبتك في حذف جميع السور المحملة؟ سيتعين عليك تحميلها مجدداً في حال رغبت في الاستماع إليها بدون اتصال بالإنترنت.
+                {t('qa_dl_confirm_desc', 'هل أنت متأكد من رغبتك في حذف جميع السور المحملة؟ سيتعين عليك تحميلها مجدداً في حال رغبت في الاستماع إليها بدون اتصال بالإنترنت.')}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -570,14 +573,14 @@ export const QuranAudioDownloadsHub: React.FC = () => {
                   onClick={() => setShowConfirmClearAll(false)}
                   className="py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-855 text-slate-600 dark:text-slate-300 font-bold text-sm transform transition-all hover:bg-slate-200 dark:hover:bg-slate-800 active:scale-95 duration-100"
                 >
-                  تراجع
+                  {t('qa_dl_back_off', 'تراجع')}
                 </button>
                 <button
                   id="confirm-clear-all-btn"
                   onClick={handleClearAll}
                   className="py-3 px-4 rounded-xl bg-rose-600 text-white font-black text-sm transform transition-all hover:bg-rose-700 active:scale-95 duration-100 shadow-lg shadow-rose-600/20"
                 >
-                  تأكيد الحذف
+                  {t('confirm_delete', 'تأكيد الحذف')}
                 </button>
               </div>
             </motion.div>
@@ -611,7 +614,7 @@ export const QuranAudioDownloadsHub: React.FC = () => {
             </button>
 
             <div className="flex flex-col pr-1 max-w-[0px] group-hover:max-w-[120px] overflow-hidden transition-all duration-200 ease-in-out whitespace-nowrap opacity-0 group-hover:opacity-100">
-              <p className="text-[10px] font-bold text-slate-800 dark:text-white leading-none">سورة {downloads.find(d => d.url === playingUrl)?.surahName || ''}</p>
+              <p className="text-[10px] font-bold text-slate-800 dark:text-white leading-none">{t('qa_surah_title', 'سورة {{name}}', { name: downloads.find(d => d.url === playingUrl)?.surahName || '' })}</p>
               <p className="text-[8px] text-emerald-600 dark:text-emerald-450 mt-0.5 font-bold tracking-tighter">{formatTime(audioRef.current?.currentTime || 0)} / {formatTime(duration)}</p>
             </div>
 

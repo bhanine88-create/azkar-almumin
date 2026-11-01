@@ -6,23 +6,37 @@ import { useAppContext } from '../AppContext';
 import { INSPIRATIONS } from '../data/inspirations';
 import { cn } from '../lib/utils';
 
-const SURAH_NUMBERS: Record<string, number> = {
-  'البقرة': 2, 'المائدة': 5, 'الأنعام': 6, 'الأعراف': 7, 'التوبة': 9, 'هود': 11, 'الرعد': 13, 'الحجر': 15,
-  'النحل': 16, 'الفرقان': 25, 'السجدة': 32, 'غافر': 40, 'الشورى': 42, 'الطور': 52, 'الحديد': 57, 'الطلاق': 65,
-  'الضحى': 93, 'الشرح': 94,
-};
+/** The 114 surah names in reading order, normalised (no diacritics, plain alif, ه for ة). */
+const SURAH_NAMES_NORMALISED = 'الفاتحه|البقره|ال عمران|النساء|المائده|الانعام|الاعراف|الانفال|التوبه|يونس|هود|يوسف|الرعد|ابراهيم|الحجر|النحل|الاسراء|الكهف|مريم|طه|الانبياء|الحج|المؤمنون|النور|الفرقان|الشعراء|النمل|القصص|العنكبوت|الروم|لقمان|السجده|الاحزاب|سبا|فاطر|يس|الصافات|ص|الزمر|غافر|فصلت|الشوري|الزخرف|الدخان|الجاثيه|الاحقاف|محمد|الفتح|الحجرات|ق|الذاريات|الطور|النجم|القمر|الرحمن|الواقعه|الحديد|المجادله|الحشر|الممتحنه|الصف|الجمعه|المنافقون|التغابن|الطلاق|التحريم|الملك|القلم|الحاقه|المعارج|نوح|الجن|المزمل|المدثر|القيامه|الانسان|المرسلات|النبا|النازعات|عبس|التكوير|الانفطار|المطففين|الانشقاق|البروج|الطارق|الاعلي|الغاشيه|الفجر|البلد|الشمس|الليل|الضحي|الشرح|التين|العلق|القدر|البينه|الزلزله|العاديات|القارعه|التكاثر|العصر|الهمزه|الفيل|قريش|الماعون|الكوثر|الكافرون|النصر|المسد|الاخلاص|الفلق|الناس'.split('|');
 
-/** Localizes a verse reference like "سورة الحديد - 4" for non-Arabic UI languages. */
+const normaliseSurahName = (name: string) =>
+  name
+    .replace(/[ً-ٰٕ۟-ۭـ]/g, '')
+    .replace(/ٱ/g, 'ا')
+    .replace(/^سورة\s+/, '')
+    .trim()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي');
+
+/** Other names some sources use for a surah. */
+const SURAH_ALIASES: Record<string, number> = { 'الانشراح': 94, 'الشرح': 94, 'الاسراء': 17, 'بني اسرائيل': 17, 'غافر': 40, 'المؤمن': 40, 'فصلت': 41 };
+
+/**
+ * Localizes a verse reference like "سورة الحديد - 4" or "سورة الشرح: 5-6" for
+ * non-Arabic UI languages; any other text is returned unchanged.
+ */
 export const localizeSurahRef = (
   source: string,
   t: (key: string, fallback?: string, params?: Record<string, any>) => string
 ): string => {
-  const m = source.match(/^سورة\s+(.+?)\s*[-:]\s*(\d+)$/);
+  const m = source.match(/^سورة\s+(.+?)\s*[-:]\s*(\d+(?:\s*[-–]\s*\d+)?)$/);
   if (!m) return source;
-  const num = SURAH_NUMBERS[m[1].trim()];
+  const key = normaliseSurahName(m[1]);
+  const num = SURAH_ALIASES[key] || SURAH_NAMES_NORMALISED.indexOf(key) + 1;
   if (!num) return source;
   const name = t(`ui_surah_${num}`, m[1].trim());
-  return t('ui_surah_ref', 'سورة {{name}} - {{ayah}}', { name, ayah: m[2] });
+  return t('ui_surah_ref', 'سورة {{name}} - {{ayah}}', { name, ayah: m[2].replace(/\s+/g, '') });
 };
 
 const DailyAyahDhikrWidgetContent: React.FC = () => {

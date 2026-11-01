@@ -6,7 +6,8 @@ import {  Mic2, PlayCircle, Clock, CheckCircle2, ChevronRight, PauseCircle,
   Loader2, CloudDownload,  Heart, BookOpen, Star, Settings, SlidersHorizontal, 
   X, FastForward, Timer, SkipForward, Info, Play, RotateCcw, Search, Sparkles, ChevronLeft,
   FileDown,  ArrowUpDown , Trash2, Check } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode } from '../lib/utils';
+import { useTranslation } from '../i18n';
 import { useAppContext } from '../AppContext';
 import { SCHOLARS, Scholar, LectureSeries, Lecture } from '../data/lectures';
 import { BackButton } from './ui/BackButton';
@@ -70,6 +71,7 @@ function LecturesAudioHubComponent() {
   const { navigate, goBack } = useSmartNavigation();
   const location = useLocation();
   const { settings, progress, toggleScholarFavorite, toggleLectureFavorite, updateSettings, toggleFavoriteUnified } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const isDarkTheme = settings.theme === 'dark';
   
   const totalLecturesCount = SCHOLARS.reduce((acc, s) => acc + s.series.reduce((sum, sr) => sum + sr.lectures.length, 0), 0);
@@ -364,7 +366,7 @@ function LecturesAudioHubComponent() {
   };
 
   const clearAllCache = async () => {
-    const confirmed = window.confirm('هل أنت متأكد من حذف جميع الملفات الصوتية المحملة؟');
+    const confirmed = window.confirm(t('la_confirm_clear_cache', 'هل أنت متأكد من حذف جميع الملفات الصوتية المحملة؟'));
     if (confirmed) {
       await lectureCacheService.clearAllCache();
       setCachedLectures(new Set());
@@ -407,8 +409,8 @@ function LecturesAudioHubComponent() {
                     <Settings size={24} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white">إعدادات المكتبة</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">تخصيص تجربة الاستماع</p>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">{t('la_library_settings', 'إعدادات المكتبة')}</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">{t('la_library_settings_desc', 'تخصيص تجربة الاستماع')}</p>
                   </div>
                 </div>
                 <button 
@@ -424,7 +426,7 @@ function LecturesAudioHubComponent() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <FastForward size={18} className="text-[#3b82f6]" />
-                    <span>سرعة التشغيل</span>
+                    <span>{t('al_playback_speed', 'سرعة التشغيل')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
@@ -451,8 +453,8 @@ function LecturesAudioHubComponent() {
                       <SkipForward size={20} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white">التشغيل التلقائي</h4>
-                      <p className="text-[10px] text-slate-500 font-bold">تشغيل الحلقة التالية تلقائياً</p>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white">{t('la_autoplay', 'التشغيل التلقائي')}</h4>
+                      <p className="text-[10px] text-slate-500 font-bold">{t('la_autoplay_desc', 'تشغيل الحلقة التالية تلقائياً')}</p>
                     </div>
                   </div>
                   <button
@@ -473,10 +475,10 @@ function LecturesAudioHubComponent() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <Timer size={18} className="text-orange-500" />
-                    <span>مؤقت النوم</span>
+                    <span>{t('al_sleep_timer', 'مؤقت النوم')}</span>
                     {sleepTimerRemaining !== null && sleepTimerRemaining > 0 && (
                       <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-lg animate-pulse mr-auto">
-                        متبقي: {Math.floor(sleepTimerRemaining / 60)}:{(sleepTimerRemaining % 60).toString().padStart(2, '0')}
+                        {t('la_remaining', 'متبقي: {{time}}', { time: `${Math.floor(sleepTimerRemaining / 60)}:${(sleepTimerRemaining % 60).toString().padStart(2, '0')}` })}
                       </span>
                     )}
                   </div>
@@ -498,7 +500,7 @@ function LecturesAudioHubComponent() {
                             : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                         )}
                       >
-                        {mins === 0 ? "إيقاف" : `${mins} د`}
+                        {mins === 0 ? t('audio_stop', 'إيقاف') : t('al_minutes_short', '{{count}} د', { count: mins })}
                       </button>
                     ))}
                   </div>
@@ -508,12 +510,12 @@ function LecturesAudioHubComponent() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <CloudDownload size={18} className="text-[#3b82f6]" />
-                    <span>إدارة مساحة التخزين</span>
+                    <span>{t('la_storage_mgmt', 'إدارة مساحة التخزين')}</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="text-right">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">المساحة المستخدمة</p>
+                      <div className="text-start">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t('la_used_space', 'المساحة المستخدمة')}</p>
                         <p className="text-lg font-black text-slate-900 dark:text-white">{formatSize(cacheSize)}</p>
                       </div>
                       <button
@@ -527,7 +529,7 @@ function LecturesAudioHubComponent() {
                         )}
                       >
                         <Trash2 size={14} />
-                        مسح الذاكرة
+                        {t('la_clear_cache', 'مسح الذاكرة')}
                       </button>
                     </div>
                     {/* Visual bar */}
@@ -545,7 +547,7 @@ function LecturesAudioHubComponent() {
                    <div className="flex items-start gap-3">
                      <Info size={18} className="text-[#3b82f6] shrink-0 mt-0.5" />
                      <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                       يمكنك الاستماع للدروس المحملة حتى في حال عدم توفر اتصال بالإنترنت. يتم حفظ الملفات في ذاكرة المتصفح بشكل آمن.
+                       {t('la_offline_note', 'يمكنك الاستماع للدروس المحملة حتى في حال عدم توفر اتصال بالإنترنت. يتم حفظ الملفات في ذاكرة المتصفح بشكل آمن.')}
                      </p>
                    </div>
                 </div>
@@ -574,12 +576,12 @@ function LecturesAudioHubComponent() {
               "text-xl font-black bg-clip-text text-transparent mr-2",
               isDarkTheme ? "bg-gradient-to-l from-[#3b82f6] to-[#0b4ec2]" : "bg-gradient-to-l from-[#0b4ec2] to-[#0a2540]"
             )}>
-              {selectedScholar ? "الدروس والمحاضرات" : "العلماء والدعاة"}
+              {selectedScholar ? t('la_lessons_lectures', 'الدروس والمحاضرات') : t('la_scholars_callers', 'العلماء والدعاة')}
             </h1>
             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mr-2">
               {selectedScholar 
-                ? `المكتبة الصوتية • ${selectedScholar.series.reduce((sum, sr) => sum + sr.lectures.length, 0)} درس`
-                : `المكتبة الصوتية • ${SCHOLARS.length} شيوخ • ${totalLecturesCount} محاضرة`
+                ? t('la_library_lessons_count', 'المكتبة الصوتية • {{count}} درس', { count: selectedScholar.series.reduce((sum, sr) => sum + sr.lectures.length, 0) })
+                : t('la_library_scholars_count', 'المكتبة الصوتية • {{scholars}} شيوخ • {{lectures}} محاضرة', { scholars: SCHOLARS.length, lectures: totalLecturesCount })
               }
             </p>
           </div>
@@ -620,15 +622,15 @@ function LecturesAudioHubComponent() {
                   <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-6 transition-transform">
                     <Sparkles size={28} className="fill-current" />
                   </div>
-                  <div className="text-right">
-                    <h2 className="text-lg font-black text-slate-800 dark:text-white">المفضلة</h2>
-                    <p className="text-xs font-bold text-slate-500">ادخل لعرض قائمة مفضلاتك</p>
+                  <div className="text-start">
+                    <h2 className="text-lg font-black text-slate-800 dark:text-white">{t('favorites', 'المفضلة')}</h2>
+                    <p className="text-xs font-bold text-slate-500">{t('la_fav_entry_desc', 'ادخل لعرض قائمة مفضلاتك')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 relative z-10">
                   {(progress.favorites || []).length > 0 && (
                     <div className="bg-amber-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm animate-pulse">
-                      {(progress.favorites || []).length} عنصر
+                      {t('la_items_count', '{{count}} عنصر', { count: (progress.favorites || []).length })}
                     </div>
                   )}
                   <div className="w-10 h-10 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-amber-600 group-hover:-translate-x-1 transition-transform">
@@ -641,7 +643,7 @@ function LecturesAudioHubComponent() {
                 <AudioSearchAutocomplete
                   searchQuery={searchQuery}
                   onSearchChange={(q) => setSearchQuery(q)}
-                  placeholder="ابحث باسم الشيخ، السلسلة، أو عنوان الدرس..."
+                  placeholder={t('la_search_placeholder', 'ابحث باسم الشيخ، السلسلة، أو عنوان الدرس...')}
                   isDarkTheme={isDarkTheme}
                   onSelectScholar={(scholarId) => {
                     const found = SCHOLARS.find(s => s.id === scholarId);
@@ -666,7 +668,7 @@ function LecturesAudioHubComponent() {
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                 <span className="text-xs font-black text-slate-500 dark:text-slate-400 flex items-center gap-1.5 px-1 shrink-0">
                   <SlidersHorizontal size={14} className="text-[#0b4ec2] dark:text-blue-400" />
-                  <span>ترتيب حسب:</span>
+                  <span>{t('la_sort_by', 'ترتيب حسب:')}</span>
                 </span>
 
                 <button
@@ -679,7 +681,7 @@ function LecturesAudioHubComponent() {
                   )}
                 >
                   <Sparkles size={12} />
-                  <span>الافتراضي</span>
+                  <span>{t('la_sort_default', 'الافتراضي')}</span>
                 </button>
 
                 <button
@@ -699,10 +701,10 @@ function LecturesAudioHubComponent() {
                   )}
                 >
                   <ArrowUpDown size={12} />
-                  <span>أبجدياً (أ - ي)</span>
+                  <span>{t('la_sort_alpha', 'أبجدياً (أ - ي)')}</span>
                   {sortBy === 'alphabetical' && (
                     <span className="text-[10px] font-black bg-white/20 px-1 rounded dir-ltr">
-                      {sortOrder === 'asc' ? 'أ←ي' : 'ي←أ'}
+                      {sortOrder === 'asc' ? t('la_sort_alpha_asc', 'أ←ي') : t('la_sort_alpha_desc', 'ي←أ')}
                     </span>
                   )}
                 </button>
@@ -724,7 +726,7 @@ function LecturesAudioHubComponent() {
                   )}
                 >
                   <BookOpen size={12} />
-                  <span>الأكثر محاضرات</span>
+                  <span>{t('la_sort_most_lectures', 'الأكثر محاضرات')}</span>
                   {sortBy === 'lectures' && (
                     <span className="text-[10px] font-black bg-white/20 px-1 rounded">
                       {sortOrder === 'desc' ? '▼' : '▲'}
@@ -749,7 +751,7 @@ function LecturesAudioHubComponent() {
                   )}
                 >
                   <Mic2 size={12} />
-                  <span>الأكثر سلاسل</span>
+                  <span>{t('la_sort_most_series', 'الأكثر سلاسل')}</span>
                   {sortBy === 'series' && (
                     <span className="text-[10px] font-black bg-white/20 px-1 rounded">
                       {sortOrder === 'desc' ? '▼' : '▲'}
@@ -768,21 +770,21 @@ function LecturesAudioHubComponent() {
                 )}
               >
                 <Heart size={13} className={showFavoritesOnly ? "fill-current" : ""} />
-                <span>المفضلة فقط</span>
+                <span>{t('la_favorites_only', 'المفضلة فقط')}</span>
               </button>
             </div>
 
             {/* List Header */}
             <div className="flex items-center justify-between px-1 mt-1 mb-2">
               <h2 className="text-sm font-black text-slate-800 dark:text-slate-200">
-                {searchQuery ? `نتائج البحث (${sortedScholars.length})` : `جميع الشيوخ والدعاة (${sortedScholars.length})`}
+                {searchQuery ? t('qa_search_results', 'نتائج البحث ({{count}})', { count: sortedScholars.length }) : t('la_all_scholars', 'جميع الشيوخ والدعاة ({{count}})', { count: sortedScholars.length })}
               </h2>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
                   className="text-xs font-bold text-[#0b4ec2] dark:text-blue-400 hover:underline"
                 >
-                  إلغاء البحث
+                  {t('la_cancel_search', 'إلغاء البحث')}
                 </button>
               )}
             </div>
@@ -790,12 +792,12 @@ function LecturesAudioHubComponent() {
             {sortedScholars.length === 0 && searchQuery && (
               <div className="flex flex-col items-center justify-center py-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 my-4">
                 <Search size={32} className="text-slate-400 mb-2 opacity-50" />
-                <p className="text-slate-600 dark:text-slate-400 text-sm font-bold">لم نجد نتائج مطابقة لـ "{searchQuery}"</p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-bold">{t('la_no_match', 'لم نجد نتائج مطابقة لـ "{{query}}"', { query: searchQuery })}</p>
                 <button
                   onClick={() => setSearchQuery('')}
                   className="mt-3 px-4 py-2 text-xs font-black text-[#0b4ec2] bg-blue-50 dark:bg-blue-950/40 rounded-xl hover:bg-blue-100 transition-colors"
                 >
-                  عرض جميع الشيوخ
+                  {t('la_show_all_scholars', 'عرض جميع الشيوخ')}
                 </button>
               </div>
             )}
@@ -845,7 +847,7 @@ function LecturesAudioHubComponent() {
                         id: scholar.id,
                         type: 'scholar',
                         title: scholar.name,
-                        subtitle: 'شيخ وداعية',
+                        subtitle: t('la_scholar_caller', 'شيخ وداعية'),
                         route: '/lectures-audio'
                       });
                     }}
@@ -866,8 +868,8 @@ function LecturesAudioHubComponent() {
             )})}
             {SCHOLARS.filter(scholar => !showFavoritesOnly || (progress.favoriteScholars || []).includes(scholar.id)).length === 0 && (
               <EmptyStatePlaceholder
-                title="لا يوجد شيوخ في المفضلة"
-                description="لم تقم بإضافة أي شيوخ للمفضلة بعد."
+                title={t('la_no_fav_scholars', 'لا يوجد شيوخ في المفضلة')}
+                description={t('la_no_fav_scholars_desc', 'لم تقم بإضافة أي شيوخ للمفضلة بعد.')}
                 variant="empty"
               />
             )}
@@ -901,15 +903,15 @@ function LecturesAudioHubComponent() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-600 dark:text-slate-300 transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
                     <Mic2 size={14} className="text-slate-400" />
-                    <span>{selectedScholar.series.length} سلسلة علمية</span>
+                    <span>{t('la_series_count', '{{count}} سلسلة علمية', { count: selectedScholar.series.length })}</span>
                   </div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0b4ec2]/5 dark:bg-[#0b4ec2]/15 text-xs font-bold text-[#0b4ec2] dark:text-[#3b82f6] border border-[#0b4ec2]/20 dark:border-[#0b4ec2]/30 transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
                     <BookOpen size={14} className="text-[#3b82f6]" />
-                    <span>{selectedScholar.series.reduce((acc, curr) => acc + curr.lectures.length, 0)} درس ومحاضرة</span>
+                    <span>{t('la_lessons_count', '{{count}} درس ومحاضرة', { count: selectedScholar.series.reduce((acc, curr) => acc + curr.lectures.length, 0) })}</span>
                   </div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-xs font-bold text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/30 transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
                     <Heart size={14} className="fill-current text-rose-500" />
-                    <span>{selectedScholar.likes.toLocaleString('ar-EG')} إعجاب</span>
+                    <span>{t('la_likes_count', '{{count}} إعجاب', { count: selectedScholar.likes.toLocaleString(getLocaleCode(settings.appLanguage)) })}</span>
                   </div>
                 </div>
                 {/* Favorites Toggle for Lectures */}
@@ -923,7 +925,7 @@ function LecturesAudioHubComponent() {
                   )}
                 >
                   <Sparkles size={14} className={showFavoritesOnly ? "fill-current" : ""} />
-                  <span>دروس مفضلة</span>
+                  <span>{t('la_fav_lessons', 'دروس مفضلة')}</span>
                 </button>
               </div>
             </motion.div>
@@ -933,8 +935,8 @@ function LecturesAudioHubComponent() {
                 <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                   <Mic2 size={32} className="text-slate-400" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">قريباً</h3>
-                <p className="text-sm text-slate-500 mt-2">سيتم إضافة سلاسل علمية للشيخ قريباً بإذن الله.</p>
+                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">{t('la_coming_soon', 'قريباً')}</h3>
+                <p className="text-sm text-slate-500 mt-2">{t('la_coming_soon_desc', 'سيتم إضافة سلاسل علمية للشيخ قريباً بإذن الله.')}</p>
               </div>
             ) : (
               (() => {
@@ -948,8 +950,8 @@ function LecturesAudioHubComponent() {
                 if (mappedSeries.length === 0) {
                   return (
                     <EmptyStatePlaceholder
-                      title="لا يوجد دروس مفضلة"
-                      description="لم تقم بإضافة أي درس للمفضلة لهذا الشيخ."
+                      title={t('la_no_fav_lessons', 'لا يوجد دروس مفضلة')}
+                      description={t('la_no_fav_lessons_desc', 'لم تقم بإضافة أي درس للمفضلة لهذا الشيخ.')}
                       variant="empty"
                     />
                   );
@@ -988,7 +990,7 @@ function LecturesAudioHubComponent() {
                         {series.description}
                       </p>
                       <p className="text-[10px] font-bold text-[#0b4ec2] dark:text-[#3b82f6] mt-2">
-                        {series.visibleLectures.length} حلقات
+                        {t('la_episodes_count', '{{count}} حلقات', { count: series.visibleLectures.length })}
                       </p>
                     </div>
                   </div>
@@ -1055,7 +1057,7 @@ function LecturesAudioHubComponent() {
                                           <PlayCircle size={20} className="ml-0.5" />
                                         )}
                                       </button>
-                                      <div className="text-right">
+                                      <div className="text-start">
                                         <h5 className={cn(
                                           "text-sm font-black text-slate-800 dark:text-white leading-snug",
                                           isThisPlaying && "text-[#0b4ec2] dark:text-[#3b82f6]"
@@ -1110,7 +1112,7 @@ function LecturesAudioHubComponent() {
                                                ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-[#0b4ec2]"
                                                : "bg-[#0b4ec2]/5 dark:bg-[#0b4ec2]/15 border-[#0b4ec2]/20 dark:border-[#0b4ec2]/35 text-[#3b82f6] hover:bg-[#0b4ec2] dark:hover:bg-[#0b4ec2] hover:text-white dark:hover:text-white hover:border-[#0b4ec2]"
                                          )}
-                                         title="حفظ كملف MP3 على الهاتف"
+                                         title={t('qa_save_mp3_title', 'حفظ كملف MP3 على الهاتف')}
                                        >
                                          {savingDeviceLecture[lecture.id] === 'loading' ? (
                                            <Loader2 size={16} className="animate-spin" strokeWidth={2.5} />
@@ -1162,12 +1164,12 @@ function LecturesAudioHubComponent() {
                                           {completed ? (
                                             <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/40">
                                               <CheckCircle2 size={12} className="text-emerald-500" />
-                                              مستمعة بالكامل
+                                              {t('la_fully_listened', 'مستمعة بالكامل')}
                                             </span>
                                           ) : (
                                             <span className="inline-flex items-center gap-1 text-[#0b4ec2] dark:text-[#3b82f6] font-black bg-[#0b4ec2]/5 dark:bg-[#0b4ec2]/20 px-2 py-0.5 rounded-md border border-[#0b4ec2]/15 dark:border-[#0b4ec2]/30">
                                               <RotateCcw size={11} className="text-[#0b4ec2] dark:text-[#3b82f6]" />
-                                              موقوفة عند {formatSecondsToTime(time)}
+                                              {t('la_paused_at', 'موقوفة عند {{time}}', { time: formatSecondsToTime(time) })}
                                             </span>
                                           )}
                                         </div>
@@ -1186,7 +1188,7 @@ function LecturesAudioHubComponent() {
                                                 }
                                               }}
                                               className="p-1 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
-                                              title="إعادة من البداية"
+                                              title={t('la_restart', 'إعادة من البداية')}
                                             >
                                               <RotateCcw size={11} />
                                             </button>

@@ -4,6 +4,7 @@ import { Trash2, AlertTriangle, X, ShieldAlert, CheckCircle2, RefreshCw, UserX }
 import { auth } from '../firebase';
 import { deleteAccountAndAllData, clearAllLocalBelieverData } from '../services/accountDeletionService';
 import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 interface AccountDeletionModalProps {
   isOpen: boolean;
@@ -12,7 +13,7 @@ interface AccountDeletionModalProps {
 
 export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOpen, onClose }) => {
   const { settings } = useAppContext();
-  const isRTL = settings.appLanguage !== 'en' && settings.appLanguage !== 'fr';
+  const { t } = useTranslation(settings.appLanguage);
   const currentUser = auth.currentUser;
 
   const [confirmText, setConfirmText] = useState('');
@@ -20,7 +21,16 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isDeletedSuccess, setIsDeletedSuccess] = useState(false);
 
-  const isConfirmed = confirmText.trim().toLowerCase() === (isRTL ? 'حذف' : 'delete');
+  const confirmWord = t('md_del_word', 'حذف');
+  const typedWord = confirmText.trim().toLowerCase();
+  const isConfirmed = typedWord === confirmWord.trim().toLowerCase() || typedWord === 'delete' || typedWord === 'حذف';
+
+  const deletionErrorText = (code?: string, raw?: string) => {
+    if (code === 'cloud') return t('md_del_err_cloud', 'تعذّر حذف بياناتك من السحابة. تحقّق من الاتصال بالإنترنت ثم حاول مرة أخرى، ولم يُحذف الحساب.');
+    if (code === 'reauth') return t('md_del_err_reauth', 'يتطلب حذف الحساب تسجيل الدخول مجدداً لتأكيد هويتك لأسباب أمنية.');
+    if (code === 'generic') return raw || t('md_del_err_generic', 'حدث خطأ أثناء محاولة حذف الحساب والبيانات.');
+    return raw || t('md_del_err_failed', 'فشلت عملية حذف الحساب، يرجى المحاولة مرة أخرى.');
+  };
 
   const handleDelete = async () => {
     if (!isConfirmed) return;
@@ -31,7 +41,7 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
       if (currentUser) {
         const result = await deleteAccountAndAllData();
         if (!result.success) {
-          setErrorMsg(result.error || 'فشلت عملية حذف الحساب، يرجى المحاولة مرة أخرى.');
+          setErrorMsg(deletionErrorText(result.errorCode, result.error));
           setIsDeleting(false);
           return;
         }
@@ -44,7 +54,7 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
         window.location.href = '/';
       }, 2000);
     } catch (err: any) {
-      setErrorMsg(err.message || 'حدث خطأ غير متوقع أثناء الحذف.');
+      setErrorMsg(err.message || t('md_del_err_unexpected', 'حدث خطأ غير متوقع أثناء الحذف.'));
       setIsDeleting(false);
     }
   };
@@ -55,7 +65,6 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
     <AnimatePresence>
       <div 
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-        dir={isRTL ? 'rtl' : 'ltr'}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 15 }}
@@ -82,10 +91,10 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
                 <CheckCircle2 size={32} />
               </div>
               <h3 className="text-xl font-black text-emerald-400">
-                {isRTL ? 'تم حذف الحساب ومسح البيانات بنجاح' : 'Account and data successfully deleted'}
+                {t('md_del_success_title', 'تم حذف الحساب ومسح البيانات بنجاح')}
               </h3>
               <p className="text-sm text-slate-300">
-                {isRTL ? 'جارٍ إعادة ضبط التطبيق للبدء من جديد...' : 'Resetting application...'}
+                {t('md_del_resetting', 'جارٍ إعادة ضبط التطبيق للبدء من جديد...')}
               </p>
             </div>
           ) : (
@@ -96,12 +105,12 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-rose-400">
-                    {isRTL ? 'حذف الحساب ومسح البيانات نهائياً' : 'Delete Account & All Data'}
+                    {t('md_del_title', 'حذف الحساب ومسح البيانات نهائياً')}
                   </h3>
                   <span className="text-[11px] font-bold text-slate-400">
                     {currentUser 
-                      ? (currentUser.email || currentUser.displayName || 'الحساب المسجل')
-                      : (isRTL ? 'البيانات المحلية المحفوظة' : 'Local App Data')}
+                      ? (currentUser.email || currentUser.displayName || t('md_del_account_fallback', 'الحساب المسجل'))
+                      : (t('md_del_local_data', 'البيانات المحلية المحفوظة'))}
                   </span>
                 </div>
               </div>
@@ -109,20 +118,20 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
               <div className="p-4 rounded-2xl bg-rose-950/30 border border-rose-500/20 space-y-2">
                 <div className="flex items-center gap-2 text-rose-300 text-xs font-bold">
                   <AlertTriangle size={16} className="shrink-0" />
-                  <span>{isRTL ? 'تحذير هام - هذا الإجراء لا رجعة فيه:' : 'Important warning - Cannot be undone:'}</span>
+                  <span>{t('md_del_warning', 'تحذير هام - هذا الإجراء لا رجعة فيه:')}</span>
                 </div>
                 <ul className="text-xs text-slate-300 space-y-1.5 list-disc list-inside leading-relaxed pr-1">
                   {currentUser ? (
                     <>
-                      <li>{isRTL ? 'حذف حسابك السحابي وملفك الشخصي نهائياً.' : 'Permanently delete your cloud account.'}</li>
-                      <li>{isRTL ? 'مسح جميع النسخ الاحتياطية السحابية وأهداف التسبيح.' : 'Delete all cloud backups and tasbih goals.'}</li>
-                      <li>{isRTL ? 'حذف تاريخ تقدم قراءة القرآن الكريم المحفوظ.' : 'Remove all saved Quran reading progress.'}</li>
-                      <li>{isRTL ? 'تصفير كافة الإعدادات والذاكرة المحلية على جهازك.' : 'Clear all local cache & stored settings.'}</li>
+                      <li>{t('md_del_li_cloud_acct', 'حذف حسابك السحابي وملفك الشخصي نهائياً.')}</li>
+                      <li>{t('md_del_li_backups', 'مسح جميع النسخ الاحتياطية السحابية وأهداف التسبيح.')}</li>
+                      <li>{t('md_del_li_quran', 'حذف تاريخ تقدم قراءة القرآن الكريم المحفوظ.')}</li>
+                      <li>{t('md_del_li_local_cache', 'تصفير كافة الإعدادات والذاكرة المحلية على جهازك.')}</li>
                     </>
                   ) : (
                     <>
-                      <li>{isRTL ? 'مسح كافة الأذكار والتسبيحات والإحصائيات المحفوظة على هذا الجهاز.' : 'Wipe all saved adhkar, tasbih counts, and stats.'}</li>
-                      <li>{isRTL ? 'إعادة ضبط كافة الإعدادات إلى الحالة الافتراضية.' : 'Reset all settings to default.'}</li>
+                      <li>{t('md_del_li_wipe_local', 'مسح كافة الأذكار والتسبيحات والإحصائيات المحفوظة على هذا الجهاز.')}</li>
+                      <li>{t('md_del_li_reset_settings', 'إعادة ضبط كافة الإعدادات إلى الحالة الافتراضية.')}</li>
                     </>
                   )}
                 </ul>
@@ -136,15 +145,13 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-300 block">
-                  {isRTL 
-                    ? 'لتأكيد الحذف النهائي، اكتب كلمة "حذف" في المربع أدناه:' 
-                    : 'To confirm permanent deletion, type "delete" below:'}
+                  {t('md_del_confirm_label', 'لتأكيد الحذف النهائي، اكتب كلمة "{{word}}" في المربع أدناه:', { word: confirmWord })}
                 </label>
                 <input
                   type="text"
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder={isRTL ? 'حذف' : 'delete'}
+                  placeholder={confirmWord}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 focus:border-rose-500 rounded-xl text-sm text-center font-bold text-white placeholder-slate-500 outline-none transition-all"
                   disabled={isDeleting}
                 />
@@ -157,7 +164,7 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
                   disabled={isDeleting}
                   className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-xl text-xs sm:text-sm font-bold text-slate-300 transition-colors cursor-pointer"
                 >
-                  {isRTL ? 'إلغاء والتراجع' : 'Cancel'}
+                  {t('md_del_cancel', 'إلغاء والتراجع')}
                 </button>
                 <button
                   type="button"
@@ -172,12 +179,12 @@ export const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({ isOp
                   {isDeleting ? (
                     <>
                       <RefreshCw size={16} className="animate-spin" />
-                      <span>{isRTL ? 'جارٍ الحذف...' : 'Deleting...'}</span>
+                      <span>{t('md_del_deleting', 'جارٍ الحذف...')}</span>
                     </>
                   ) : (
                     <>
                       <Trash2 size={16} />
-                      <span>{isRTL ? 'تأكيد الحذف نهائياً' : 'Delete Permanently'}</span>
+                      <span>{t('md_del_confirm_btn', 'تأكيد الحذف نهائياً')}</span>
                     </>
                   )}
                 </button>

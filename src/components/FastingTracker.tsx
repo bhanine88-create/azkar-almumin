@@ -5,7 +5,7 @@ import { useTranslation } from '../i18n';
 import { BackButton } from './ui/BackButton';
 import { useFastingTracker, FastingType } from '../hooks/useFastingTracker';
 import { useAppContext } from '../AppContext';
-import { cn, triggerHaptic, getHijriDate, getDayName, getShortDayName } from '../lib/utils';
+import { cn, triggerHaptic, getHijriDate, getDayName, getShortDayName, getHijriSuffix } from '../lib/utils';
 import { FastingStatsVisuals } from './FastingStatsVisuals';
 import { 
   Calendar, 
@@ -404,8 +404,8 @@ export const FastingTracker: React.FC = () => {
 
                 <p className={cn("text-xs leading-relaxed max-w-md", isTodayFasted ? "text-teal-50" : "text-slate-500 dark:text-slate-400")}>
                   {isTodayFasted 
-                    ? "تقبّل الله طاعتك وأثابك الفردوس الأعلى، قال ﷺ: «للصائم فرحتان: فرحة حين يفطر، وفرحة حين يلقى ربه»."
-                    : "«مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللَّهِ، بَاعَدَ اللَّهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا». هل نويت الصيام اليوم؟"
+                    ? (t('u2_fs_accepted', 'تقبّل الله طاعتك وأثابك الفردوس الأعلى، قال ﷺ:') + " «للصائم فرحتان: فرحة حين يفطر، وفرحة حين يلقى ربه».")
+                    : "«مَنْ صَامَ يَوْمًا فِي سَبِيلِ اللَّهِ، بَاعَدَ اللَّهُ وَجْهَهُ عَنِ النَّارِ سَبْعِينَ خَرِيفًا». " + t('u2_fs_intend_today', 'هل نويت الصيام اليوم؟')
                   }
                 </p>
               </div>
@@ -527,7 +527,7 @@ export const FastingTracker: React.FC = () => {
                     </span>
                   ) : (
                     <span className="text-[8px] sm:text-[10px] font-semibold text-slate-400 dark:text-slate-500 py-0.5 mb-0.5">
-                      {item.hijriDay ? `${item.hijriDay}هـ` : '—'}
+                      {item.hijriDay ? `${item.hijriDay} ${getHijriSuffix(settings.appLanguage || 'ar')}`.replace(' هـ', 'هـ') : '—'}
                     </span>
                   )}
 
@@ -638,7 +638,7 @@ export const FastingTracker: React.FC = () => {
                     {t('fasting_this_month') || 'صيام هذا الشهر'}
                   </p>
                   <p className="text-xl font-black text-slate-900 dark:text-white">
-                    {totalThisMonth} <span className="text-xs font-normal text-slate-400">أيام</span>
+                    {totalThisMonth} <span className="text-xs font-normal text-slate-400">{t('days', 'أيام')}</span>
                   </p>
                 </div>
               </div>
@@ -652,7 +652,7 @@ export const FastingTracker: React.FC = () => {
                     {t('total_fasting_days') || 'إجمالي الأيام'}
                   </p>
                   <p className="text-xl font-black text-slate-900 dark:text-white">
-                    {totalAllTime} <span className="text-xs font-normal text-slate-400">يوماً</span>
+                    {totalAllTime} <span className="text-xs font-normal text-slate-400">{t('days', 'أيام')}</span>
                   </p>
                 </div>
               </div>
@@ -666,7 +666,7 @@ export const FastingTracker: React.FC = () => {
                     {t('monthly_fasting_target') || 'الهدف الشهري'}
                   </p>
                   <p className="text-xl font-black text-slate-900 dark:text-white">
-                    {totalThisMonth} / {monthlyGoal} <span className="text-xs font-normal text-slate-400">أيام</span>
+                    {totalThisMonth} / {monthlyGoal} <span className="text-xs font-normal text-slate-400">{t('days', 'أيام')}</span>
                   </p>
                 </div>
               </div>
@@ -682,7 +682,7 @@ export const FastingTracker: React.FC = () => {
                     onClick={resetToTodayMonth}
                     className="text-[11px] px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-bold"
                   >
-                    اليوم
+                    {t('today', 'اليوم')}
                   </button>
                 </div>
 
@@ -820,8 +820,8 @@ export const FastingTracker: React.FC = () => {
                   <Calendar size={18} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">مواعيد السُنن القادمة</h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">فرص الصيام المستحبة خلال الثلاثين يوماً القادمة</p>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">{t('u2_fs_upcoming_title', 'مواعيد السُنن القادمة')}</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">{t('u2_fs_upcoming_desc', 'فرص الصيام المستحبة خلال الثلاثين يوماً القادمة')}</p>
                 </div>
               </div>
 
@@ -862,13 +862,13 @@ export const FastingTracker: React.FC = () => {
                             </h4>
                             {isWhite && (
                               <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[9px] font-extrabold flex items-center gap-0.5">
-                                <Star size={10} className="fill-amber-400" /> البيض
+                                <Star size={10} className="fill-amber-400" /> {t('white_days_badge', 'بيض')}
                               </span>
                             )}
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
                             {item.hijriFormatted && `${item.hijriFormatted} • `}
-                            {item.daysLeft === 1 ? 'غداً إن شاء الله' : `متبقي ${item.daysLeft} أيام`}
+                            {item.daysLeft === 1 ? t('u2_fs_tomorrow', 'غداً إن شاء الله') : t('u2_fs_days_left', 'متبقي {{count}} أيام', { count: item.daysLeft })}
                           </p>
                         </div>
                       </div>
@@ -888,12 +888,12 @@ export const FastingTracker: React.FC = () => {
                         {isFasted ? (
                           <>
                             <Check size={14} className="stroke-[2.5]" />
-                            <span>مسجّل</span>
+                            <span>{t('u2_fs_logged', 'مسجّل')}</span>
                           </>
                         ) : (
                           <>
                             <Plus size={14} />
-                            <span>سجّل</span>
+                            <span>{t('u2_fs_log', 'سجّل')}</span>
                           </>
                         )}
                       </button>
@@ -922,8 +922,8 @@ export const FastingTracker: React.FC = () => {
                     <Target size={20} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white">متابعة قضاء رمضان والأهداف</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">حدد عدد الأيام الواجب قضاؤها وتابع إنجازك الشهري</p>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">{t('u2_fs_qadaa_title', 'متابعة قضاء رمضان والأهداف')}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('u2_fs_qadaa_desc', 'حدد عدد الأيام الواجب قضاؤها وتابع إنجازك الشهري')}</p>
                   </div>
                 </div>
               </div>
@@ -933,7 +933,7 @@ export const FastingTracker: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 sm:p-5 border border-slate-200/60 dark:border-slate-700/60 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">أيام القضاء المطلوبة:</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('u2_fs_qadaa_required', 'أيام القضاء المطلوبة:')}</span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
@@ -959,15 +959,15 @@ export const FastingTracker: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-                      سجل الأيام التي فاتتك في رمضان لتوثيق قضائها تباعاً
+                      {t('u2_fs_qadaa_hint', 'سجل الأيام التي فاتتك في رمضان لتوثيق قضائها تباعاً')}
                     </p>
                   </div>
 
                   {qadaaGoal > 0 && (
                     <div className="pt-3 border-t border-slate-200/70 dark:border-slate-700/70">
                       <div className="flex justify-between text-xs font-bold mb-2">
-                        <span className="text-emerald-600 dark:text-emerald-400">تم قضاء: {qadaaCompletedCount} أيام</span>
-                        <span className="text-rose-600 dark:text-rose-400">المتبقي: {qadaaRemaining} أيام</span>
+                        <span className="text-emerald-600 dark:text-emerald-400">{t('u2_fs_qadaa_done', 'تم قضاء: {{count}} أيام', { count: qadaaCompletedCount })}</span>
+                        <span className="text-rose-600 dark:text-rose-400">{t('u2_fs_qadaa_remaining', 'المتبقي: {{count}} أيام', { count: qadaaRemaining })}</span>
                       </div>
                       <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
                         <div 
@@ -984,8 +984,8 @@ export const FastingTracker: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 block">الهدف الشهري لصيام النوافل:</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">مثال: صيام ٤ أو ٦ أيام شهرياً</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 block">{t('u2_fs_monthly_goal_label', 'الهدف الشهري لصيام النوافل:')}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{t('u2_fs_monthly_goal_example', 'مثال: صيام ٤ أو ٦ أيام شهرياً')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -1015,8 +1015,8 @@ export const FastingTracker: React.FC = () => {
 
                   <div className="pt-3 border-t border-slate-200/70 dark:border-slate-700/70">
                     <div className="flex justify-between text-xs font-bold mb-2">
-                      <span className="text-teal-600 dark:text-teal-400">المنجز هذا الشهر: {totalThisMonth} أيام</span>
-                      <span className="text-slate-500 dark:text-slate-400">المستهدف: {monthlyGoal} أيام</span>
+                      <span className="text-teal-600 dark:text-teal-400">{t('u2_fs_month_done', 'المنجز هذا الشهر: {{count}} أيام', { count: totalThisMonth })}</span>
+                      <span className="text-slate-500 dark:text-slate-400">{t('u2_fs_month_target', 'المستهدف: {{count}} أيام', { count: monthlyGoal })}</span>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
                       <div 
@@ -1052,9 +1052,9 @@ export const FastingTracker: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mx-auto mb-3">
                   <TrendingUp size={28} />
                 </div>
-                <h4 className="font-bold text-base text-slate-800 dark:text-white mb-1">لا توجد سجلات صيام بعد</h4>
+                <h4 className="font-bold text-base text-slate-800 dark:text-white mb-1">{t('u2_fs_no_records', 'لا توجد سجلات صيام بعد')}</h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                  قم بتسجيل صيامك في التقويم لتظهر لك الرسوم البيانية، ونسبة صيام السنن، والأوسمة الإيمانية.
+                  {t('u2_fs_no_records_desc', 'قم بتسجيل صيامك في التقويم لتظهر لك الرسوم البيانية، ونسبة صيام السنن، والأوسمة الإيمانية.')}
                 </p>
               </div>
             )}
@@ -1075,7 +1075,7 @@ export const FastingTracker: React.FC = () => {
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2 text-teal-200">
                   <Sparkles size={20} />
-                  <h3 className="font-bold text-base">دعاء الإفطار المأثور</h3>
+                  <h3 className="font-bold text-base">{t('u2_fs_iftar_dua_title', 'دعاء الإفطار المأثور')}</h3>
                 </div>
                 <p className="font-arabic text-xl sm:text-2xl font-black leading-loose text-white text-center py-3 bg-white/10 rounded-2xl border border-white/20">
                   «ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ»
@@ -1103,7 +1103,7 @@ export const FastingTracker: React.FC = () => {
                     </p>
                   </div>
                   <span className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold block pt-2 border-t border-slate-100 dark:border-slate-800">
-                    المصدر: {item.source}
+                    {t('source_label', 'المصدر')}: {item.source}
                   </span>
                 </div>
               ))}
@@ -1127,7 +1127,7 @@ export const FastingTracker: React.FC = () => {
                 initial={{ scale: 0.92, opacity: 0, y: 15 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.92, opacity: 0, y: 15 }}
-                className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[28px] sm:rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh] my-auto overflow-hidden text-right relative z-10"
+                className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[28px] sm:rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh] my-auto overflow-hidden text-start relative z-10"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
                   <div className="flex items-center gap-2.5">
@@ -1136,9 +1136,9 @@ export const FastingTracker: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white">
-                        تسجيل صيام {selectedDateStr}
+                        {t('u2_fs_record_day', 'تسجيل صيام {{date}}', { date: selectedDateStr })}
                       </h3>
-                      <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">اختر نية الصيام المناسبة لهذا اليوم</p>
+                      <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">{t('u2_fs_choose_intention', 'اختر نية الصيام المناسبة لهذا اليوم')}</p>
                     </div>
                   </div>
 
@@ -1157,7 +1157,7 @@ export const FastingTracker: React.FC = () => {
                   {/* Fasting Type Selector */}
                   <div>
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 block">
-                      نوع الصيام / النية:
+                      {t('u2_fs_type_label', 'نوع الصيام / النية:')}
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {(Object.keys(FASTING_TYPES_INFO) as FastingType[]).map((typeKey) => {
@@ -1171,7 +1171,7 @@ export const FastingTracker: React.FC = () => {
                               setSelectedType(typeKey);
                             }}
                             className={cn(
-                              "p-2.5 sm:p-3 rounded-2xl text-xs font-bold border transition-all text-right flex items-center gap-2 cursor-pointer",
+                              "p-2.5 sm:p-3 rounded-2xl text-xs font-bold border transition-all text-start flex items-center gap-2 cursor-pointer",
                               isSelected 
                                 ? "bg-teal-50 dark:bg-teal-950/60 border-teal-500 text-teal-700 dark:text-teal-300 shadow-xs ring-1 ring-teal-500/50"
                                 : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -1188,11 +1188,11 @@ export const FastingTracker: React.FC = () => {
                   {/* Optional Notes */}
                   <div>
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">
-                      ملاحظة إيمانية (اختياري):
+                      {t('u2_fs_note_label', 'ملاحظة إيمانية (اختياري):')}
                     </label>
                     <input 
                       type="text"
-                      placeholder="مثال: صيام بنية الشفاء، دعاء لإخواننا..."
+                      placeholder={t('u2_fs_note_ph', 'مثال: صيام بنية الشفاء، دعاء لإخواننا...')}
                       value={selectedNotes}
                       onChange={(e) => setSelectedNotes(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-teal-500"
@@ -1207,7 +1207,7 @@ export const FastingTracker: React.FC = () => {
                     className="flex-1 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm"
                   >
                     <Check size={16} />
-                    <span>حفظ الصيام</span>
+                    <span>{t('u2_fs_save', 'حفظ الصيام')}</span>
                   </button>
 
                   {fastingRecords[selectedDateStr] && (
@@ -1215,7 +1215,7 @@ export const FastingTracker: React.FC = () => {
                       onClick={handleRemoveDayRecord}
                       className="py-3 px-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-bold text-xs sm:text-sm active:scale-95 transition-all border border-rose-200 dark:border-rose-800"
                     >
-                      إلغاء التسجيل
+                      {t('u2_fs_remove_record', 'إلغاء التسجيل')}
                     </button>
                   )}
                 </div>
@@ -1247,15 +1247,15 @@ export const FastingTracker: React.FC = () => {
               >
                 {/* Header */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                  <div className="flex items-center gap-2.5 text-right">
+                  <div className="flex items-center gap-2.5 text-start">
                     <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                       <Sparkles size={22} />
                     </div>
                     <div>
                       <h3 className="font-black text-base sm:text-lg text-slate-900 dark:text-white">
-                        أدعية الإفطار المأثورة
+                        {t('u2_fs_iftar_duas_title', 'أدعية الإفطار المأثورة')}
                       </h3>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">سُنّة النبي ﷺ وأدعية الصائم المستجابة</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{t('u2_fs_iftar_duas_sub', 'سُنّة النبي ﷺ وأدعية الصائم المستجابة')}</p>
                     </div>
                   </div>
 
@@ -1271,27 +1271,27 @@ export const FastingTracker: React.FC = () => {
                 </div>
 
                 {/* Scrollable Body */}
-                <div className="overflow-y-auto py-3 space-y-3.5 text-right pr-1 max-h-[calc(85vh-160px)]">
+                <div className="overflow-y-auto py-3 space-y-3.5 text-start pe-1 max-h-[calc(85vh-160px)]">
                   {/* Dua 1 */}
                   <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 relative group">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                         <BookmarkCheck size={14} />
-                        الدعاء الأول (الصحيح الثابت):
+                        {t('u2_fs_dua1', 'الدعاء الأول (الصحيح الثابت):')}
                       </span>
                       <button
                         onClick={() => handleCopyDua('ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ', 1)}
                         className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-700 flex items-center gap-1 hover:bg-emerald-50 active:scale-95 transition-all"
                       >
                         {copiedDuaIndex === 1 ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                        <span>{copiedDuaIndex === 1 ? 'تم النسخ' : 'نسخ'}</span>
+                        <span>{copiedDuaIndex === 1 ? t('u2_fs_copied', 'تم النسخ') : t('u2_fs_copy', 'نسخ')}</span>
                       </button>
                     </div>
                     <p className="font-arabic font-black text-lg sm:text-xl text-slate-900 dark:text-white leading-loose text-center py-2 bg-white/70 dark:bg-slate-900/60 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
                       «ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ»
                     </p>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-2">
-                      المصدر: رواه أبو داود والنسائي وحسنه الألباني
+                      {t('source_label', 'المصدر')}: رواه أبو داود والنسائي وحسنه الألباني
                     </span>
                   </div>
 
@@ -1300,21 +1300,21 @@ export const FastingTracker: React.FC = () => {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-extrabold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                         <BookmarkCheck size={14} />
-                        الدعاء الثاني (المشهور):
+                        {t('u2_fs_dua2', 'الدعاء الثاني (المشهور):')}
                       </span>
                       <button
                         onClick={() => handleCopyDua('اللَّهُمَّ إِنِّي لَكَ صُمْتُ، وَعَلَى رِزْقِكَ أَفْطَرْتُ', 2)}
                         className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-700 flex items-center gap-1 hover:bg-amber-50 active:scale-95 transition-all"
                       >
                         {copiedDuaIndex === 2 ? <Check size={12} className="text-amber-600" /> : <Copy size={12} />}
-                        <span>{copiedDuaIndex === 2 ? 'تم النسخ' : 'نسخ'}</span>
+                        <span>{copiedDuaIndex === 2 ? t('u2_fs_copied', 'تم النسخ') : t('u2_fs_copy', 'نسخ')}</span>
                       </button>
                     </div>
                     <p className="font-arabic font-black text-lg sm:text-xl text-slate-900 dark:text-white leading-loose text-center py-2 bg-white/70 dark:bg-slate-900/60 rounded-xl border border-amber-100 dark:border-amber-900/50">
                       «اللَّهُمَّ إِنِّي لَكَ صُمْتُ، وَعَلَى رِزْقِكَ أَفْطَرْتُ»
                     </p>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-2">
-                      المصدر: رواه أبو داود مرسلاً
+                      {t('source_label', 'المصدر')}: رواه أبو داود مرسلاً
                     </span>
                   </div>
 
@@ -1323,21 +1323,21 @@ export const FastingTracker: React.FC = () => {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-extrabold text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
                         <BookmarkCheck size={14} />
-                        دعاء إذا أفطر عند قوم:
+                        {t('u2_fs_dua3', 'دعاء إذا أفطر عند قوم:')}
                       </span>
                       <button
                         onClick={() => handleCopyDua('أَفْطَرَ عِنْدَكُمُ الصَّائِمُونَ، وَأَكَلَ طَعَامَكُمُ الأَبْرَارُ، وَصَلَّتْ عَلَيْكُمُ الْمَلائِكَةُ', 3)}
                         className="text-[11px] font-bold text-teal-600 dark:text-teal-400 bg-white dark:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 flex items-center gap-1 active:scale-95 transition-all"
                       >
                         {copiedDuaIndex === 3 ? <Check size={12} className="text-teal-600" /> : <Copy size={12} />}
-                        <span>{copiedDuaIndex === 3 ? 'تم النسخ' : 'نسخ'}</span>
+                        <span>{copiedDuaIndex === 3 ? t('u2_fs_copied', 'تم النسخ') : t('u2_fs_copy', 'نسخ')}</span>
                       </button>
                     </div>
                     <p className="font-arabic font-black text-base sm:text-lg text-slate-900 dark:text-white leading-loose text-center py-2 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-700">
                       «أَفْطَرَ عِنْدَكُمُ الصَّائِمُونَ، وَأَكَلَ طَعَامَكُمُ الأَبْرَارُ، وَصَلَّتْ عَلَيْكُمُ الْمَلائِكَةُ»
                     </p>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-2">
-                      المصدر: رواه أبو داود وأحمد وصححه الألباني
+                      {t('source_label', 'المصدر')}: رواه أبو داود وأحمد وصححه الألباني
                     </span>
                   </div>
 
@@ -1358,7 +1358,7 @@ export const FastingTracker: React.FC = () => {
                     }}
                     className="w-full py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm transition-all active:scale-95 shadow-sm"
                   >
-                    تقبل الله طاعتكم وكتب أجركم
+                    {t('u2_fs_close_blessing', 'تقبل الله طاعتكم وكتب أجركم')}
                   </button>
                 </div>
               </motion.div>

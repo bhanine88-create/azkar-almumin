@@ -6,7 +6,7 @@ import {  Mic2, PlayCircle, Clock, CheckCircle2, ChevronRight, PauseCircle,
   Loader2, CloudDownload,  Heart, BookOpen, Star, Settings, SlidersHorizontal, 
   X, FastForward, Timer, SkipForward, Info, Play, RotateCcw, Search, Sparkles,
   FileDown,  ArrowUpDown , Trash2, Check } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode } from '../lib/utils';
 import { useAppContext } from '../AppContext';
 import { TAFSIR_SCHOLARS, TafsirScholar, SurahTafsir, TafsirTrack } from '../data/tafsir';
 import { BackButton } from './ui/BackButton';
@@ -18,6 +18,7 @@ import { smartScholarMatch } from '../lib/arabicSearch';
 
 import { useLocation } from 'react-router-dom';
 import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
+import { useTranslation } from '../i18n';
 
 export function TafsirAudioHub() {
   const { navigate, goBack } = useSmartNavigation();
@@ -27,6 +28,7 @@ export function TafsirAudioHub() {
     preloadAudioLibraryRoutes();
   }, []);
   const { settings, progress, toggleScholarFavorite, toggleLectureFavorite, updateSettings, toggleFavoriteUnified } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const isDarkTheme = settings.theme === 'dark';
   
   const [selectedTafsirScholar, setSelectedTafsirScholar] = useState<TafsirScholar | null>(null);
@@ -258,7 +260,7 @@ export function TafsirAudioHub() {
       await playTrack({
         id: lecture.id,
         title: lecture.title,
-        subtitle: selectedTafsirScholar?.name || 'تفسير',
+        subtitle: selectedTafsirScholar?.name || t('ta_tafsir', 'تفسير'),
         audioUrl: srcUrl,
         originalUrl: lecture.audioUrl,
         type: 'tafsir',
@@ -274,7 +276,7 @@ export function TafsirAudioHub() {
   // Playback errors and tracking are handled by useGlobalAudio!
 
   const clearAllCache = async () => {
-    const confirmed = window.confirm('هل أنت متأكد من حذف جميع الملفات الصوتية المحملة؟');
+    const confirmed = window.confirm(t('ta_confirm_clear', 'هل أنت متأكد من حذف جميع الملفات الصوتية المحملة؟'));
     if (confirmed) {
       await lectureCacheService.clearAllCache();
       setCachedTafsirTracks(new Set());
@@ -319,8 +321,8 @@ export function TafsirAudioHub() {
                     <Settings size={24} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white">إعدادات المكتبة</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">تخصيص تجربة الاستماع</p>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">{t('ta_settings_title', 'إعدادات المكتبة')}</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">{t('ta_settings_sub', 'تخصيص تجربة الاستماع')}</p>
                   </div>
                 </div>
                 <button 
@@ -336,7 +338,7 @@ export function TafsirAudioHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <FastForward size={18} className="text-rose-800 dark:text-rose-400" />
-                    <span>سرعة التشغيل</span>
+                    <span>{t('ta_playback_speed', 'سرعة التشغيل')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
@@ -363,8 +365,8 @@ export function TafsirAudioHub() {
                       <SkipForward size={20} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white">التشغيل التلقائي</h4>
-                      <p className="text-[10px] text-slate-500 font-bold">تشغيل الحلقة التالية تلقائياً</p>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white">{t('ta_autoplay', 'التشغيل التلقائي')}</h4>
+                      <p className="text-[10px] text-slate-500 font-bold">{t('ta_autoplay_desc', 'تشغيل الحلقة التالية تلقائياً')}</p>
                     </div>
                   </div>
                   <button
@@ -385,10 +387,10 @@ export function TafsirAudioHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <Timer size={18} className="text-orange-500" />
-                    <span>مؤقت النوم</span>
+                    <span>{t('ta_sleep_timer', 'مؤقت النوم')}</span>
                     {sleepTimer !== null && (
                       <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-lg animate-pulse mr-auto">
-                        متبقي: {sleepTimer} دقيقة
+                        {t('ta_sleep_remaining', 'متبقي: {{count}} دقيقة', { count: sleepTimer })}
                       </span>
                     )}
                   </div>
@@ -410,7 +412,7 @@ export function TafsirAudioHub() {
                             : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                         )}
                       >
-                        {mins === 0 ? "إيقاف" : `${mins} د`}
+                        {mins === 0 ? t('ta_sleep_off', 'إيقاف') : t('ta_minutes_short', '{{count}} د', { count: mins })}
                       </button>
                     ))}
                   </div>
@@ -420,12 +422,12 @@ export function TafsirAudioHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <CloudDownload size={18} className="text-teal-500" />
-                    <span>إدارة مساحة التخزين</span>
+                    <span>{t('ta_storage_title', 'إدارة مساحة التخزين')}</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="text-right">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">المساحة المستخدمة</p>
+                      <div className="text-start">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t('ta_used_space', 'المساحة المستخدمة')}</p>
                         <p className="text-lg font-black text-slate-900 dark:text-white">{formatSize(cacheSize)}</p>
                       </div>
                       <button
@@ -439,7 +441,7 @@ export function TafsirAudioHub() {
                         )}
                       >
                         <Trash2 size={14} />
-                        مسح الذاكرة
+                        {t('ta_clear_cache', 'مسح الذاكرة')}
                       </button>
                     </div>
                     {/* Visual bar */}
@@ -457,7 +459,7 @@ export function TafsirAudioHub() {
                    <div className="flex items-start gap-3">
                      <Info size={18} className="text-rose-800 dark:text-rose-400 shrink-0 mt-0.5" />
                      <p className="text-xs text-rose-900 dark:text-rose-300 font-medium leading-relaxed">
-                       يمكنك الاستماع للدروس المحملة حتى في حال عدم توفر اتصال بالإنترنت. يتم حفظ الملفات في ذاكرة المتصفح بشكل آمن.
+                       {t('ta_offline_note', 'يمكنك الاستماع للدروس المحملة حتى في حال عدم توفر اتصال بالإنترنت. يتم حفظ الملفات في ذاكرة المتصفح بشكل آمن.')}
                      </p>
                    </div>
                 </div>
@@ -486,12 +488,12 @@ export function TafsirAudioHub() {
               "text-xl font-black bg-clip-text text-transparent mr-2",
               isDarkTheme ? "bg-gradient-to-l from-red-400 via-rose-400 to-amber-300" : "bg-gradient-to-l from-red-800 via-rose-700 to-red-650"
             )}>
-              {selectedTafsirScholar ? "السور والتفاسير" : "علماء التفسير"}
+              {selectedTafsirScholar ? t('ta_header_surahs', 'السور والتفاسير') : t('ta_header_scholars', 'علماء التفسير')}
             </h1>
             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mr-2">
               {selectedTafsirScholar 
-                ? `المكتبة الصوتية • ${selectedTafsirScholar.surahs.reduce((sum, sr) => sum + sr.tracks.length, 0)} تفاسير`
-                : `المكتبة الصوتية • ${TAFSIR_SCHOLARS.length} مفسرين • ${totalTafsirTracksCount} تفسيراً`
+                ? t('ta_library_scholar_count', 'المكتبة الصوتية • {{count}} تفاسير', { count: selectedTafsirScholar.surahs.reduce((sum, sr) => sum + sr.tracks.length, 0) })
+                : t('ta_library_all_count', 'المكتبة الصوتية • {{scholars}} مفسرين • {{tracks}} تفسيراً', { scholars: TAFSIR_SCHOLARS.length, tracks: totalTafsirTracksCount })
               }
             </p>
           </div>
@@ -526,7 +528,7 @@ export function TafsirAudioHub() {
                 </div>
                 <input
                   type="text"
-                  placeholder="ابحث عن شيخ أو عالم..."
+                  placeholder={t('ta_search_ph', 'ابحث عن شيخ أو عالم...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={cn(
@@ -543,7 +545,7 @@ export function TafsirAudioHub() {
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                   <span className="text-xs font-black text-slate-500 dark:text-slate-400 flex items-center gap-1.5 px-1 shrink-0">
                     <SlidersHorizontal size={14} className="text-rose-600 dark:text-rose-400" />
-                    <span>ترتيب حسب:</span>
+                    <span>{t('ta_sort_by', 'ترتيب حسب:')}</span>
                   </span>
 
                   <button
@@ -556,7 +558,7 @@ export function TafsirAudioHub() {
                     )}
                   >
                     <Sparkles size={12} />
-                    <span>الافتراضي</span>
+                    <span>{t('ta_sort_default', 'الافتراضي')}</span>
                   </button>
 
                   <button
@@ -576,10 +578,10 @@ export function TafsirAudioHub() {
                     )}
                   >
                     <ArrowUpDown size={12} />
-                    <span>أبجدياً (أ - ي)</span>
+                    <span>{t('ta_sort_alpha', 'أبجدياً (أ - ي)')}</span>
                     {sortBy === 'alphabetical' && (
                       <span className="text-[10px] font-black bg-white/20 px-1 rounded dir-ltr">
-                        {sortOrder === 'asc' ? 'أ←ي' : 'ي←أ'}
+                        {sortOrder === 'asc' ? t('ta_alpha_asc', 'أ←ي') : t('ta_alpha_desc', 'ي←أ')}
                       </span>
                     )}
                   </button>
@@ -601,7 +603,7 @@ export function TafsirAudioHub() {
                     )}
                   >
                     <BookOpen size={12} />
-                    <span>الأكثر تسجيلات</span>
+                    <span>{t('ta_sort_most', 'الأكثر تسجيلات')}</span>
                     {sortBy === 'surahs' && (
                       <span className="text-[10px] font-black bg-white/20 px-1 rounded">
                         {sortOrder === 'desc' ? '▼' : '▲'}
@@ -620,7 +622,7 @@ export function TafsirAudioHub() {
                   )}
                 >
                   <Heart size={13} className={showFavoritesOnly ? "fill-current" : ""} />
-                  <span>المفضلة فقط</span>
+                  <span>{t('ta_favorites_only', 'المفضلة فقط')}</span>
                 </button>
               </div>
             </div>
@@ -670,7 +672,7 @@ export function TafsirAudioHub() {
                         id: scholar.id,
                         type: 'scholar',
                         title: scholar.name,
-                        subtitle: 'مفسر وداعية',
+                        subtitle: t('ta_scholar_role', 'مفسر وداعية'),
                         route: '/tafsir-audio'
                       });
                     }}
@@ -691,8 +693,8 @@ export function TafsirAudioHub() {
             )})}
             {TAFSIR_SCHOLARS.filter(scholar => !showFavoritesOnly || (progress.favoriteScholars || []).includes(scholar.id)).length === 0 && (
               <EmptyStatePlaceholder
-                title="لا يوجد شيوخ في المفضلة"
-                description="لم تقم بإضافة أي شيوخ للمفضلة بعد."
+                title={t('ta_no_fav_scholars', 'لا يوجد شيوخ في المفضلة')}
+                description={t('ta_no_fav_scholars_desc', 'لم تقم بإضافة أي شيوخ للمفضلة بعد.')}
                 variant="empty"
               />
             )}
@@ -726,15 +728,15 @@ export function TafsirAudioHub() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-600 dark:text-slate-300 transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
                     <Mic2 size={14} className="text-slate-400" />
-                    <span>{selectedTafsirScholar.surahs.length} سورة</span>
+                    <span>{t('ta_count_surahs', '{{count}} سورة', { count: selectedTafsirScholar.surahs.length })}</span>
                   </div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-xs font-bold text-rose-800 dark:text-rose-450 border border-rose-100 dark:border-rose-900/30 transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
                     <BookOpen size={14} className="text-rose-700 dark:text-rose-400" />
-                    <span>{selectedTafsirScholar.surahs.reduce((acc, curr) => acc + curr.tracks.length, 0)} مقطع تفسير</span>
+                    <span>{t('ta_count_clips', '{{count}} مقطع تفسير', { count: selectedTafsirScholar.surahs.reduce((acc, curr) => acc + curr.tracks.length, 0) })}</span>
                   </div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-xs font-bold text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/30 transform transition-all duration-75 active:scale-[0.95] active:opacity-80">
                     <Heart size={14} className="fill-current text-rose-500" />
-                    <span>{selectedTafsirScholar.likes.toLocaleString('ar-EG')} إعجاب</span>
+                    <span>{t('ta_count_likes', '{{count}} إعجاب', { count: selectedTafsirScholar.likes.toLocaleString(getLocaleCode(settings.appLanguage)) })}</span>
                   </div>
                 </div>
                 {/* Favorites Toggle for TafsirTracks */}
@@ -748,7 +750,7 @@ export function TafsirAudioHub() {
                   )}
                 >
                   <Heart size={14} className={showFavoritesOnly ? "fill-current" : ""} />
-                  <span>دروس مفضلة</span>
+                  <span>{t('ta_fav_lessons', 'دروس مفضلة')}</span>
                 </button>
               </div>
             </motion.div>
@@ -758,8 +760,8 @@ export function TafsirAudioHub() {
                 <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                   <Mic2 size={32} className="text-slate-400" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">قريباً</h3>
-                <p className="text-sm text-slate-500 mt-2">سيتم إضافة سلاسل علمية للشيخ قريباً بإذن الله.</p>
+                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">{t('ta_coming_soon', 'قريباً')}</h3>
+                <p className="text-sm text-slate-500 mt-2">{t('ta_coming_soon_desc', 'سيتم إضافة سلاسل علمية للشيخ قريباً بإذن الله.')}</p>
               </div>
             ) : (
               (() => {
@@ -773,8 +775,8 @@ export function TafsirAudioHub() {
                 if (mappedSeries.length === 0) {
                   return (
                     <EmptyStatePlaceholder
-                      title="لا يوجد دروس مفضلة"
-                      description="لم تقم بإضافة أي درس للمفضلة لهذا الشيخ."
+                      title={t('ta_no_fav_lessons', 'لا يوجد دروس مفضلة')}
+                      description={t('ta_no_fav_lessons_desc', 'لم تقم بإضافة أي درس للمفضلة لهذا الشيخ.')}
                       variant="empty"
                     />
                   );
@@ -805,7 +807,7 @@ export function TafsirAudioHub() {
                     )}>
                       <PlayCircle size={28} className={selectedSeries === surahs.id ? "fill-current" : ""} />
                     </div>
-                    <div className="flex-1 text-right">
+                    <div className="flex-1 text-start">
                       <h3 className="font-black text-lg text-slate-900 dark:text-white leading-tight">
                         {surahs.surahName}
                       </h3>
@@ -813,7 +815,7 @@ export function TafsirAudioHub() {
                         {surahs.description}
                       </p>
                       <p className="text-[10px] font-bold text-rose-800 dark:text-rose-400 mt-2">
-                        {surahs.visibleTafsirTracks.length} حلقات
+                        {t('ta_count_episodes', '{{count}} حلقات', { count: surahs.visibleTafsirTracks.length })}
                       </p>
                     </div>
                   </div>
@@ -860,7 +862,7 @@ export function TafsirAudioHub() {
                                         <PlayCircle size={20} className="ml-1" />
                                       )}
                                     </button>
-                                    <div className="text-right">
+                                    <div className="text-start">
                                       <h5 className={cn(
                                         "text-sm font-black text-slate-800 dark:text-white",
                                         isThisPlaying && "text-rose-700 dark:text-rose-300"
@@ -891,7 +893,7 @@ export function TafsirAudioHub() {
                                           id: lecture.id,
                                           type: 'lecture',
                                           title: lecture.title,
-                                          subtitle: selectedTafsirScholar?.name || 'تفسير',
+                                          subtitle: selectedTafsirScholar?.name || t('ta_tafsir', 'تفسير'),
                                           route: '/tafsir-audio'
                                         });
                                       }}
@@ -905,7 +907,7 @@ export function TafsirAudioHub() {
                                       <Heart size={18} className={(progress.favoriteLectures || []).includes(lecture.id) ? "fill-current" : ""} />
                                     </button>
                                     <button
-                                      onClick={(e) => handleSaveTafsirToDevice(lecture, selectedTafsirScholar?.name || 'الشيخ', e)}
+                                      onClick={(e) => handleSaveTafsirToDevice(lecture, selectedTafsirScholar?.name || t('ta_sheikh', 'الشيخ'), e)}
                                       disabled={savingDeviceTafsir[lecture.id] === 'loading'}
                                       className={cn(
 "w-10 h-10 rounded-xl relative flex items-center justify-center transform transition-all duration-75 active:scale-[0.85] active:opacity-70 border shadow-sm shrink-0",
@@ -915,7 +917,7 @@ export function TafsirAudioHub() {
                                             ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-teal-600"
                                             : "bg-teal-50 dark:bg-teal-950/40 border-teal-100 dark:border-teal-900/30 text-teal-600 dark:text-teal-400 hover:bg-teal-500 dark:hover:bg-teal-500 hover:text-white dark:hover:text-white hover:border-teal-500"
                                       )}
-                                      title="حفظ كملف MP3 على الهاتف"
+                                      title={t('ta_save_mp3', 'حفظ كملف MP3 على الهاتف')}
                                     >
                                       {savingDeviceTafsir[lecture.id] === 'loading' ? (
                                         <Loader2 size={16} className="animate-spin" strokeWidth={2.5} />

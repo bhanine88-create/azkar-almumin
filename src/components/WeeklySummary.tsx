@@ -32,7 +32,8 @@ import {  Calendar,
   
   ChevronDown , CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-import { cn } from '../lib/utils';
+import { cn, getLocaleCode } from '../lib/utils';
+import { useTranslation, getLanguageDirection } from '../i18n';
 
 interface WeeklySummaryProps {
   className?: string;
@@ -57,11 +58,11 @@ interface DaySummary {
   isGoalAchieved: boolean;
 }
 
-const CustomWeeklyTooltip = ({ active, payload, label, isRTL }: any) => {
+const CustomWeeklyTooltip = ({ active, payload, label, t }: any) => {
   if (active && payload && payload.length) {
     const data: DaySummary = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl p-4 rounded-2xl border border-white/15 shadow-2xl text-white space-y-2 text-right min-w-[210px]" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl p-4 rounded-2xl border border-white/15 shadow-2xl text-white space-y-2 text-start min-w-[210px]">
         <div className="flex items-center justify-between border-b border-white/10 pb-2">
           <span className="text-xs font-black text-emerald-400">{data.name}</span>
           <span className="text-[10px] text-slate-400 font-bold">{data.displayDate}</span>
@@ -72,13 +73,13 @@ const CustomWeeklyTooltip = ({ active, payload, label, isRTL }: any) => {
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="text-emerald-300 flex items-center gap-1.5">
               <Sparkles size={13} className="text-emerald-400" />
-              معدل الأذكار:
+              {t('st_wk_adhkar_rate_colon', 'معدل الأذكار:')}
             </span>
             <span className="font-extrabold text-white">{data.adhkarRate}%</span>
           </div>
           <div className="text-[10px] text-slate-300 flex items-center justify-between font-medium">
-            <span>أوراد مكتملة:</span>
-            <span className="font-bold text-emerald-300">{data.adhkarCount} من 4</span>
+            <span>{t('st_wk_sessions_completed', 'أوراد مكتملة:')}</span>
+            <span className="font-bold text-emerald-300">{t('st_wk_n_of_4', '{{n}} من 4', { n: data.adhkarCount })}</span>
           </div>
         </div>
 
@@ -87,13 +88,13 @@ const CustomWeeklyTooltip = ({ active, payload, label, isRTL }: any) => {
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="text-indigo-300 flex items-center gap-1.5">
               <BookOpen size={13} className="text-indigo-400" />
-              الورد القرآني:
+              {t('st_wk_quran_portion', 'الورد القرآني:')}
             </span>
-            <span className="font-extrabold text-indigo-300">{data.quranPages} صفحة</span>
+            <span className="font-extrabold text-indigo-300">{t('st_wk_n_pages', '{{n}} صفحة', { n: data.quranPages })}</span>
           </div>
           <div className="text-[10px] text-slate-300 flex items-center justify-between font-medium">
-            <span>الهدف اليومي:</span>
-            <span className="font-bold text-indigo-200">{data.quranGoal} صفحة ({data.quranRate}%)</span>
+            <span>{t('st_wk_daily_goal_colon', 'الهدف اليومي:')}</span>
+            <span className="font-bold text-indigo-200">{t('st_wk_goal_pages_rate', '{{goal}} صفحة ({{rate}}%)', { goal: data.quranGoal, rate: data.quranRate })}</span>
           </div>
         </div>
 
@@ -101,14 +102,14 @@ const CustomWeeklyTooltip = ({ active, payload, label, isRTL }: any) => {
         <div className="pt-2 border-t border-white/10 flex items-center justify-center">
           {data.isGoalAchieved ? (
             <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-              <CheckCircle2 size={11} /> إنجاز ممتاز متكامل
+              <CheckCircle2 size={11} /> {t('st_wk_excellent', 'إنجاز ممتاز متكامل')}
             </span>
           ) : (data.adhkarRate > 0 || data.quranPages > 0) ? (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-              <Flame size={11} /> نشاط طيب ومستمر
+              <Flame size={11} /> {t('st_wk_good_steady', 'نشاط طيب ومستمر')}
             </span>
           ) : (
-            <span className="text-[10px] text-slate-400 font-medium">لم يتم تسجيل أوراد</span>
+            <span className="text-[10px] text-slate-400 font-medium">{t('st_wk_nothing_logged', 'لم يتم تسجيل أوراد')}</span>
           )}
         </div>
       </div>
@@ -126,7 +127,9 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(6); // Default to today (last element)
   const [expandedDetails, setExpandedDetails] = useState<boolean>(false);
 
-  const isRTL = settings.appLanguage !== 'en';
+  const { t } = useTranslation(settings.appLanguage);
+  const isRTL = getLanguageDirection(settings.appLanguage) === 'rtl';
+  const locale = getLocaleCode(settings.appLanguage);
   const quranGoal = progress.quranProgress?.dailyGoal || 5;
 
   // Process 7 Days Data
@@ -148,18 +151,9 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
       const dateStr = date.toISOString().split('T')[0];
       const dayData = dailyStats[dateStr] || { adhkar: [], quran: 0, tasbih: 0 };
 
-      const weekdaysAR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-      const weekdaysShortAR = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
-      const weekdaysEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const weekdaysShortEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-      const dayIdx = date.getDay();
-      const name = isRTL ? weekdaysAR[dayIdx] : weekdaysEN[dayIdx];
-      const shortName = isRTL ? weekdaysShortAR[dayIdx] : weekdaysShortEN[dayIdx];
-
-      // Formatted date string (e.g. 28 يوليو)
-      const monthsAR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-      const displayDate = `${date.getDate()} ${isRTL ? monthsAR[date.getMonth()] : date.toLocaleString('en', { month: 'short' })}`;
+      const name = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date);
+      const shortName = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+      const displayDate = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(date);
 
       const adhkarList = dayData.adhkar || [];
       const hasMorning = adhkarList.some((x: string) => x.includes('morning') || x.includes('الصباح'));
@@ -222,7 +216,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
         bestDay: days[bestDayIndex] || days[6]
       }
     };
-  }, [progress.dailyStats, quranGoal, isRTL]);
+  }, [progress.dailyStats, quranGoal, locale]);
 
   const selectedDay = weeklyData[selectedDayIndex] || weeklyData[6];
 
@@ -234,7 +228,6 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
         "bg-white dark:bg-slate-900 rounded-[2.5rem] p-5 sm:p-6 border border-black/5 dark:border-white/10 shadow-sm space-y-5 overflow-hidden relative",
         className
       )}
-      dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Subtle Background Glow */}
       <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[90px] -mr-20 -mt-20 pointer-events-none" />
@@ -248,14 +241,14 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
               <Activity size={18} />
             </div>
             <h2 className="text-lg font-black text-slate-900 dark:text-white">
-              ملخص الأسبوع
+              {t('st_wk_weekly_summary', 'ملخص الأسبوع')}
             </h2>
             <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-              آخر 7 أيام
+              {t('st_wk_last_7_days', 'آخر 7 أيام')}
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            معدل إنجاز الأذكار اليومية والورد القرآني على مدار الأسبوع
+            {t('st_wk_subtitle', 'معدل إنجاز الأذكار اليومية والورد القرآني على مدار الأسبوع')}
           </p>
         </div>
 
@@ -271,7 +264,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}
           >
             <Sparkles size={13} className="text-emerald-500" />
-            مدمج
+            {t('st_wk_combined', 'مدمج')}
           </button>
           <button 
             onClick={() => setChartMode('adhkar')} 
@@ -283,7 +276,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}
           >
             <Activity size={13} className="text-emerald-500" />
-            الأذكار
+            {t('adhkar', 'الأذكار')}
           </button>
           <button 
             onClick={() => setChartMode('quran')} 
@@ -295,7 +288,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}
           >
             <BookOpen size={13} className="text-indigo-500" />
-            القرآن
+            {t('quran', 'القرآن')}
           </button>
         </div>
       </div>
@@ -305,12 +298,12 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
         {/* Adhkar Average */}
         <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[10px] font-black uppercase tracking-wider">معدل الأذكار</span>
+            <span className="text-[10px] font-black uppercase tracking-wider">{t('st_wk_adhkar_rate', 'معدل الأذكار')}</span>
             <Sparkles size={14} className="text-emerald-500" />
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-black text-slate-900 dark:text-white">{stats.avgAdhkarRate}%</span>
-            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">أسبوعياً</span>
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{t('st_wk_weekly', 'أسبوعياً')}</span>
           </div>
           <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats.avgAdhkarRate}%` }} />
@@ -320,44 +313,44 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
         {/* Total Quran Pages */}
         <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[10px] font-black uppercase tracking-wider">إجمالي القرآن</span>
+            <span className="text-[10px] font-black uppercase tracking-wider">{t('st_wk_total_quran', 'إجمالي القرآن')}</span>
             <BookOpen size={14} className="text-indigo-500" />
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-black text-slate-900 dark:text-white">{stats.totalQuranPages}</span>
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">صفحة</span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{t('st_wk_pages_unit', 'صفحة')}</span>
           </div>
           <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate">
-            معدل {stats.avgQuranPages} ص/يومياً
+            {t('st_wk_avg_pages_per_day', 'معدل {{n}} ص/يومياً', { n: stats.avgQuranPages })}
           </div>
         </div>
 
         {/* Goal Met Days */}
         <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[10px] font-black uppercase tracking-wider">التزام تام</span>
+            <span className="text-[10px] font-black uppercase tracking-wider">{t('st_wk_full_commitment', 'التزام تام')}</span>
             <Award size={14} className="text-amber-500" />
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-black text-slate-900 dark:text-white">{stats.perfectDays}</span>
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">من 7 أيام</span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{t('st_wk_of_7_days', 'من 7 أيام')}</span>
           </div>
           <div className="text-[10px] font-bold text-amber-600 dark:text-amber-400 truncate">
-            أيام الإنجاز المتكامل
+            {t('st_wk_complete_days', 'أيام الإنجاز المتكامل')}
           </div>
         </div>
 
         {/* Best Day */}
         <div className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[10px] font-black uppercase tracking-wider">أفضل يوم</span>
+            <span className="text-[10px] font-black uppercase tracking-wider">{t('st_wk_best_day', 'أفضل يوم')}</span>
             <TrendingUp size={14} className="text-teal-500" />
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-sm font-black text-slate-900 dark:text-white truncate">{stats.bestDay?.name}</span>
           </div>
           <div className="text-[10px] font-bold text-teal-600 dark:text-teal-400 truncate">
-            {stats.bestDay?.adhkarRate}% أذكار • {stats.bestDay?.quranPages} ص
+            {t('st_wk_best_day_detail', '{{rate}}% أذكار • {{pages}} ص', { rate: stats.bestDay?.adhkarRate, pages: stats.bestDay?.quranPages })}
           </div>
         </div>
       </div>
@@ -413,12 +406,12 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                 />
                 <Tooltip 
                   cursor={{ fill: 'rgba(16, 185, 129, 0.06)', radius: 12 }}
-                  content={<CustomWeeklyTooltip isRTL={isRTL} />}
+                  content={<CustomWeeklyTooltip t={t} />}
                 />
                 <Bar 
                   yAxisId="left"
                   dataKey="adhkarRate" 
-                  name="معدل الأذكار (%)"
+                  name={t('st_wk_adhkar_rate_pct', 'معدل الأذكار (%)')}
                   radius={[8, 8, 8, 8]} 
                   barSize={22}
                 >
@@ -433,7 +426,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                   yAxisId="right"
                   type="monotone" 
                   dataKey="quranPages" 
-                  name="صفحات القرآن"
+                  name={t('st_wk_quran_pages', 'صفحات القرآن')}
                   stroke="#6366f1" 
                   strokeWidth={3.5}
                   dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
@@ -474,7 +467,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                 />
                 <Tooltip 
                   cursor={{ fill: 'rgba(16, 185, 129, 0.08)', radius: 12 }}
-                  content={<CustomWeeklyTooltip isRTL={isRTL} />}
+                  content={<CustomWeeklyTooltip t={t} />}
                 />
                 <Bar 
                   dataKey="adhkarRate" 
@@ -522,13 +515,13 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                 />
                 <ReferenceLine 
                   y={quranGoal} 
-                  label={{ value: `الهدف (${quranGoal} ص)`, fill: '#818cf8', fontSize: 10, position: 'insideTopRight' }} 
+                  label={{ value: t('st_wk_goal_pages', 'الهدف ({{n}} ص)', { n: quranGoal }), fill: '#818cf8', fontSize: 10, position: 'insideTopRight' }} 
                   stroke="#818cf8" 
                   strokeDasharray="4 4" 
                 />
                 <Tooltip 
                   cursor={{ stroke: 'rgba(99, 102, 241, 0.3)', strokeWidth: 2 }}
-                  content={<CustomWeeklyTooltip isRTL={isRTL} />}
+                  content={<CustomWeeklyTooltip t={t} />}
                 />
                 <Area 
                   type="monotone" 
@@ -547,11 +540,11 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
         <div className="flex items-center justify-center gap-6 text-[11px] font-black text-slate-500 dark:text-slate-400 pt-1">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-md bg-emerald-500 inline-block shadow-sm" />
-            <span>الأذكار اليومية (نسبة مئوية)</span>
+            <span>{t('st_wk_daily_adhkar_pct', 'الأذكار اليومية (نسبة مئوية)')}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3 h-1.5 rounded-full bg-indigo-500 inline-block shadow-sm" />
-            <span>الورد القرآني (صفحات)</span>
+            <span>{t('st_wk_quran_wird_pages', 'الورد القرآني (صفحات)')}</span>
           </div>
         </div>
       </div>
@@ -568,12 +561,12 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <h3 className="text-xs font-black text-slate-900 dark:text-white">
-                تفاصيل يوم {selectedDay.name} ({selectedDay.displayDate})
+                {t('st_wk_day_details', 'تفاصيل يوم {{day}} ({{date}})', { day: selectedDay.name, date: selectedDay.displayDate })}
               </h3>
             </div>
             {selectedDay.isGoalAchieved && (
               <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                <CheckCircle2 size={11} /> تم تحقيق الهدف اليومي كامل
+                <CheckCircle2 size={11} /> {t('st_wk_goal_achieved', 'تم تحقيق الهدف اليومي كامل')}
               </span>
             )}
           </div>
@@ -588,10 +581,10 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}>
               <span className="font-bold flex items-center gap-1.5">
                 <Sunrise size={14} className={selectedDay.hasMorning ? "text-amber-500" : ""} />
-                الصباح
+                {t('morning_label', 'الصباح')}
               </span>
               <span className="text-[10px] font-black">
-                {selectedDay.hasMorning ? "مكتمل" : "غير مكتمل"}
+                {selectedDay.hasMorning ? t('st_dash_completed', 'مكتمل') : t('st_dash_not_done', 'غير مكتمل')}
               </span>
             </div>
 
@@ -604,10 +597,10 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}>
               <span className="font-bold flex items-center gap-1.5">
                 <Sunset size={14} className={selectedDay.hasEvening ? "text-indigo-500" : ""} />
-                المساء
+                {t('evening_label', 'المساء')}
               </span>
               <span className="text-[10px] font-black">
-                {selectedDay.hasEvening ? "مكتمل" : "غير مكتمل"}
+                {selectedDay.hasEvening ? t('st_dash_completed', 'مكتمل') : t('st_dash_not_done', 'غير مكتمل')}
               </span>
             </div>
 
@@ -620,10 +613,10 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}>
               <span className="font-bold flex items-center gap-1.5">
                 <Moon size={14} className={selectedDay.hasSleep ? "text-purple-500" : ""} />
-                النوم
+                {t('st_vis_sleep', 'النوم')}
               </span>
               <span className="text-[10px] font-black">
-                {selectedDay.hasSleep ? "مكتمل" : "غير مكتمل"}
+                {selectedDay.hasSleep ? t('st_dash_completed', 'مكتمل') : t('st_dash_not_done', 'غير مكتمل')}
               </span>
             </div>
 
@@ -638,10 +631,10 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             )}>
               <span className="font-bold flex items-center gap-1.5">
                 <BookOpen size={14} className="text-emerald-500" />
-                القرآن
+                {t('quran', 'القرآن')}
               </span>
               <span className="text-[10px] font-black">
-                {selectedDay.quranPages} / {selectedDay.quranGoal} ص
+                {t('st_wk_pages_of_goal', '{{pages}} / {{goal}} ص', { pages: selectedDay.quranPages, goal: selectedDay.quranGoal })}
               </span>
             </div>
           </div>
@@ -657,7 +650,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
           >
             <span className="flex items-center gap-2">
               <Calendar size={15} className="text-emerald-500" />
-              سجل الإنجاز التفصيلي للأيام الـ 7 الماضية
+              {t('st_wk_detailed_log', 'سجل الإنجاز التفصيلي للأيام الـ 7 الماضية')}
             </span>
             <ChevronDown size={16} className={cn("transition-transform duration-200", expandedDetails ? "rotate-180" : "")} />
           </button>
@@ -696,9 +689,9 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                           <span className="text-[10px] text-slate-400 font-bold">({day.displayDate})</span>
                         </div>
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
-                          <span>{day.adhkarCount} من 4 أوراد</span>
+                          <span>{t('st_wk_n_of_4_sessions', '{{n}} من 4 أوراد', { n: day.adhkarCount })}</span>
                           <span>•</span>
-                          <span>{day.quranPages} صفحة قرآن</span>
+                          <span>{t('st_wk_n_pages_quran', '{{n}} صفحة قرآن', { n: day.quranPages })}</span>
                         </div>
                       </div>
                     </div>
@@ -714,12 +707,12 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                         </div>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-end">
                         <div className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                           {day.adhkarRate}%
                         </div>
                         <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
-                          {day.quranPages} ص
+                          {t('st_wk_n_p', '{{n}} ص', { n: day.quranPages })}
                         </div>
                       </div>
                     </div>

@@ -231,7 +231,7 @@ export const QuranAudioReciter: React.FC = () => {
   }, [completedQuranSurahsKey, reciter?.id]);
 
   if (!reciter) {
-    return <div className="p-8 text-center">القارئ غير موجود</div>;
+    return <div className="p-8 text-center">{t('qa_reciter_not_found', 'القارئ غير موجود')}</div>;
   }
 
   const getAudioUrl = (surahNumber: number) => {
@@ -262,7 +262,7 @@ export const QuranAudioReciter: React.FC = () => {
     try {
       await playTrack({
         id: `quran-${reciter.id}-${surahNumber}`,
-        title: `سورة ${surahName}`,
+        title: t('qa_surah_title', 'سورة {{name}}', { name: surahName }),
         subtitle: reciter.name,
         audioUrl: finalUrl,
         originalUrl: url,
@@ -272,7 +272,7 @@ export const QuranAudioReciter: React.FC = () => {
       });
     } catch (e: any) {
       console.warn("Audio playback failed", e);
-      setAudioError("عذراً، فشل تشغيل ملف الصوت.");
+      setAudioError(t('qa_audio_play_failed', 'عذراً، فشل تشغيل ملف الصوت.'));
     }
   };
 
@@ -352,7 +352,7 @@ export const QuranAudioReciter: React.FC = () => {
                <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-tight">
                  {reciter.name}
                </h1>
-               <p className="text-[10px] font-bold text-[#218510] dark:text-[#218510]/90 mt-0.5 uppercase tracking-wider">رواية {reciter.style}</p>
+               <p className="text-[10px] font-bold text-[#218510] dark:text-[#218510]/90 mt-0.5 uppercase tracking-wider">{t('qa_riwaya', 'رواية {{style}}', { style: reciter.style })}</p>
              </div>
           </div>
         </div>
@@ -361,7 +361,7 @@ export const QuranAudioReciter: React.FC = () => {
           <button 
             onClick={() => setShowSettings(true)}
             className="w-10 h-10 rounded-xl bg-[#218510]/10 dark:bg-[#218510]/20 border border-[#218510]/20 flex items-center justify-center text-[#218510] dark:text-emerald-400 hover:bg-[#218510]/20 transform transition-all duration-75 active:scale-[0.85] active:opacity-70 shadow-sm"
-            title="الإعدادات والمؤقت"
+            title={t('qa_settings_timer', 'الإعدادات والمؤقت')}
           >
             <SlidersHorizontal size={20} />
           </button>
@@ -383,7 +383,7 @@ export const QuranAudioReciter: React.FC = () => {
                   className="absolute inset-0 bg-rose-100 dark:bg-rose-800/50 opacity-50"
                   style={{ width: `${(downloadAllProgress?.current || 0) / (downloadAllProgress?.total || 1) * 100}%` }}
                 />
-                <span className="relative z-10">إيقاف</span>
+                <span className="relative z-10">{t('audio_stop', 'إيقاف')}</span>
                 <span className="relative z-10 flex items-center gap-1 font-mono">
                   <span>{downloadAllProgress?.current}</span>
                   <span className="opacity-50">/</span>
@@ -392,12 +392,12 @@ export const QuranAudioReciter: React.FC = () => {
               </>
             ) : cachedSurahs.size === surahs.length ? (
               <>
-                <span>تم التحميل</span>
+                <span>{t('downloaded', 'تم التحميل')}</span>
                 <CheckCircle size={14} />
               </>
             ) : (
               <>
-                <span>تحميل الكل</span>
+                <span>{t('qa_download_all', 'تحميل الكل')}</span>
                 <CloudDownload size={14} />
               </>
             )}
@@ -427,8 +427,8 @@ export const QuranAudioReciter: React.FC = () => {
               
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">إعدادات الصوت</h2>
-                  <p className="text-sm font-medium text-slate-500">للقارئ: {reciter.name}</p>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">{t('qa_audio_settings', 'إعدادات الصوت')}</h2>
+                  <p className="text-sm font-medium text-slate-500">{t('qa_for_reciter', 'للقارئ: {{name}}', { name: reciter.name })}</p>
                 </div>
                 <button 
                   onClick={() => setShowSettings(false)}
@@ -442,7 +442,7 @@ export const QuranAudioReciter: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Zap size={18} />
-                    <span className="text-xs font-black uppercase tracking-widest">سرعة التشغيل</span>
+                    <span className="text-xs font-black uppercase tracking-widest">{t('al_playback_speed', 'سرعة التشغيل')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {speeds.map(s => (
@@ -469,8 +469,8 @@ export const QuranAudioReciter: React.FC = () => {
                         <FastForward size={20} />
                       </div>
                       <div>
-                        <h4 className="font-black text-slate-900 dark:text-white">تشغيل تلقائي للسور</h4>
-                        <p className="text-[10px] font-bold text-slate-500">الانتقال التلقائي للسورة التالية</p>
+                        <h4 className="font-black text-slate-900 dark:text-white">{t('qa_auto_surah', 'تشغيل تلقائي للسور')}</h4>
+                        <p className="text-[10px] font-bold text-slate-500">{t('qa_auto_surah_desc', 'الانتقال التلقائي للسورة التالية')}</p>
                       </div>
                     </div>
                     <button 
@@ -493,8 +493,8 @@ export const QuranAudioReciter: React.FC = () => {
                         <PlayCircle size={20} />
                       </div>
                       <div>
-                        <h4 className="font-black text-slate-900 dark:text-white">تشغيل فوري</h4>
-                        <p className="text-[10px] font-bold text-slate-500">بدأ الصوت تلقائياً</p>
+                        <h4 className="font-black text-slate-900 dark:text-white">{t('qa_instant_play', 'تشغيل فوري')}</h4>
+                        <p className="text-[10px] font-bold text-slate-500">{t('qa_instant_play_desc_short', 'بدأ الصوت تلقائياً')}</p>
                       </div>
                     </div>
                     <button 
@@ -517,7 +517,7 @@ export const QuranAudioReciter: React.FC = () => {
                     onClick={() => setShowSettings(false)}
                     className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-950 py-4 rounded-2xl font-black shadow-xl duration-75 active:scale-[0.85] active:opacity-70 transition-transform"
                   >
-                    حفظ التجربة
+                    {t('qa_save_experience', 'حفظ التجربة')}
                   </button>
                 </div>
               </div>
@@ -543,7 +543,7 @@ export const QuranAudioReciter: React.FC = () => {
             <div className="w-16 h-16 rounded-full border-4 border-[#218510]/20 border-t-[#218510] animate-spin" />
             <Mic2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#218510]" size={24} />
           </div>
-          <p className="text-sm font-black text-slate-400 animate-pulse">جاري تحميل قائمة السور...</p>
+          <p className="text-sm font-black text-slate-400 animate-pulse">{t('qa_loading_surahs', 'جاري تحميل قائمة السور...')}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -574,13 +574,13 @@ export const QuranAudioReciter: React.FC = () => {
                   )}
                 </button>
                 
-                <div className="text-right">
+                <div className="text-start">
                   <div className="flex items-center gap-2">
                     <span className={cn("text-[10px] font-black opacity-40", playingSurah === surah.number ? "text-white" : "text-slate-500")}>
                       {String(surah.number).padStart(3, '0')}
                     </span>
                     <h3 className={cn("font-black text-lg", playingSurah === surah.number ? "text-white" : "text-slate-800 dark:text-slate-100")}>
-                      {surah.name}
+                      {t(`ui_surah_${surah.number}`, surah.name)}
                     </h3>
                   </div>
                   {playingSurah === surah.number && (
@@ -601,7 +601,7 @@ export const QuranAudioReciter: React.FC = () => {
                       <div className="flex items-center justify-between text-[11px] font-bold mb-1">
                         <span className={cn("flex items-center gap-1", playingSurah === surah.number ? "text-emerald-100" : "text-[#218510] dark:text-emerald-400")}>
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
-                          جاري التحميل في الخلفية
+                          {t('qa_downloading_bg', 'جاري التحميل في الخلفية')}
                         </span>
                         <span className={cn("font-mono font-black", playingSurah === surah.number ? "text-white" : "text-emerald-700 dark:text-emerald-300")}>
                           {downloadProgress[surah.number] || 0}%
@@ -633,8 +633,8 @@ export const QuranAudioReciter: React.FC = () => {
                     toggleFavoriteUnified({
                       id: favId,
                       type: 'surah',
-                      title: `سورة ${surah.name}`,
-                      subtitle: reciter?.name || 'القارئ',
+                      title: t('qa_surah_title', 'سورة {{name}}', { name: t(`ui_surah_${surah.number}`, surah.name) }),
+                      subtitle: reciter?.name || t('qa_reciter_word', 'القارئ'),
                       route: `/quran-audio/${reciter?.id || 1}`
                     });
                   }}
@@ -646,7 +646,7 @@ export const QuranAudioReciter: React.FC = () => {
                         ? "bg-white/20 border-white/30 text-white hover:bg-white hover:text-rose-500 hover:border-white"
                         : "bg-gradient-to-br from-[#218510]/10 to-[#1c6f0d]/5 dark:from-[#218510]/20 dark:to-[#1c6f0d]/10 border border-[#218510]/20 text-slate-400 dark:text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-200 hover:scale-105"
                   )}
-                  title="إضافة/إزالة من المفضلة للوصول السريع"
+                  title={t('qa_fav_toggle_title', 'إضافة/إزالة من المفضلة للوصول السريع')}
                 >
                   <Heart 
                     size={18} 
@@ -667,7 +667,7 @@ export const QuranAudioReciter: React.FC = () => {
                           ? "bg-white/20 border-white/30 text-white hover:bg-white hover:text-[#218510] hover:border-white"
                           : "bg-gradient-to-br from-[#218510]/10 to-[#1c6f0d]/5 dark:from-[#218510]/20 dark:to-[#1c6f0d]/10 border border-[#218510]/20 text-[#218510] dark:text-emerald-400 hover:from-[#218510] hover:to-[#186a0d] hover:border-transparent hover:text-white hover:scale-105"
                   )}
-                  title="حفظ كملف MP3 على الهاتف"
+                  title={t('qa_save_mp3_title', 'حفظ كملف MP3 على الهاتف')}
                 >
                   {savingDeviceSurah[surah.number] === 'loading' ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -693,7 +693,7 @@ export const QuranAudioReciter: React.FC = () => {
                           ? "bg-white/10 border-white/25 text-white/80 hover:bg-white hover:text-[#218510] hover:border-white"
                           : "bg-transparent border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-gradient-to-br hover:from-[#218510]/10 hover:to-[#1c6f0d]/5 dark:hover:from-[#218510]/20 dark:hover:to-[#1c6f0d]/10 hover:text-[#218510] dark:hover:text-[#3b82f6] hover:border-[#218510]/30"
                   )}
-                  title={cachedSurahs.has(surah.number) ? "مسح من الحفظ المؤقت" : "حفظ للاستماع دون إنترنت"}
+                  title={cachedSurahs.has(surah.number) ? t('qa_clear_cached', 'مسح من الحفظ المؤقت') : t('qa_save_offline', 'حفظ للاستماع دون إنترنت')}
                 >
                   {downloading[surah.number] ? (
                     <div className="relative flex flex-col items-center justify-center w-full h-full group/btn font-sans">

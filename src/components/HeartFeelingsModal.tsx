@@ -11,6 +11,8 @@ import {
   getCustomHeartDuas, saveCustomHeartDua, deleteCustomHeartDua 
 } from '../data/heartFeelingsData';
 import { triggerHaptic, checkInputSafety, shareContent } from '../lib/utils';
+import { useAppContext } from '../AppContext';
+import { useTranslation } from '../i18n';
 
 interface HeartFeelingsModalProps {
   isOpen: boolean;
@@ -25,6 +27,9 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
   initialFeelingId = 'anxious',
   initialOpenAddMode = false,
 }) => {
+  const { settings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
+  const feelLabel = (f: FeelingItem) => t('md_hf_feel_' + f.id, f.label);
   const [selectedFeelingId, setSelectedFeelingId] = useState<string>(initialFeelingId);
   const [activeTab, setActiveTab] = useState<'duas' | 'quran' | 'tasbeeh' | 'custom'>('duas');
   const [isAddMode, setIsAddMode] = useState<boolean>(initialOpenAddMode);
@@ -86,7 +91,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
   const handleShare = async (title: string, text: string, source: string) => {
     triggerHaptic('light');
-    const shareText = `﴿ ${title} ﴾\n\n"${text}"\n\nالمصدر: ${source}\n\nتطبيق أذكار المؤمن`;
+    const shareText = `﴿ ${title} ﴾\n\n"${text}"\n\n${t('md_hf_source', 'المصدر')}: ${source}\n\n${t('app_name', 'أذكار المؤمن')}`;
     await shareContent(title, shareText);
   };
 
@@ -95,19 +100,19 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
     setFormError('');
 
     if (!customText.trim()) {
-      setFormError('يرجى كتابة نص الدعاء أولاً.');
+      setFormError(t('md_hf_err_empty', 'يرجى كتابة نص الدعاء أولاً.'));
       return;
     }
 
     const safetyCheck = checkInputSafety(customText);
     if (!safetyCheck.isSafe) {
-      setFormError(safetyCheck.reasonAr || 'النص المدخل غير مسموح به.');
+      setFormError(safetyCheck.reasonAr || t('md_hf_err_unsafe', 'النص المدخل غير مسموح به.'));
       return;
     }
 
     saveCustomHeartDua(
       targetFeelingForAdd,
-      customTitle.trim() || 'دعاء مخصص',
+      customTitle.trim() || t('md_hf_default_title', 'دعاء مخصص'),
       customText.trim(),
       customSource.trim()
     );
@@ -157,9 +162,8 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 60, scale: 0.98 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="relative w-full max-w-2xl h-[88vh] max-h-[88vh] sm:h-auto sm:max-h-[85vh] bg-slate-900 border border-slate-800 text-white rounded-t-[28px] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-right pb-safe"
+          className="relative w-full max-w-2xl h-[88vh] max-h-[88vh] sm:h-auto sm:max-h-[85vh] bg-slate-900 border border-slate-800 text-white rounded-t-[28px] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-start pb-safe"
           onClick={(e) => e.stopPropagation()}
-          dir="rtl"
         >
           {/* Header with Radiant Warm Gradient */}
           <div className="relative p-5 sm:p-6 bg-gradient-to-r from-orange-600 via-amber-600 to-rose-600 overflow-hidden shrink-0">
@@ -177,11 +181,11 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/20 border border-white/30 text-amber-100">
-                      طِبّ القلوب ومشاعر المؤمن
+                      {t('md_hf_badge', 'طِبّ القلوب ومشاعر المؤمن')}
                     </span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-white mt-1 drop-shadow-sm">
-                    {isAddMode ? 'إضافة دعاء لحالة قلبك' : `عندما تشعر أنك: ${currentFeeling.label}`}
+                    {isAddMode ? t('md_hf_add_title', 'إضافة دعاء لحالة قلبك') : t('md_hf_when_feel', 'عندما تشعر أنك: {{feeling}}', { feeling: feelLabel(currentFeeling) })}
                   </h2>
                 </div>
               </div>
@@ -193,7 +197,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                   className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{isAddMode ? 'الرجوع للأدعية' : 'إضافة دعاء'}</span>
+                  <span>{isAddMode ? t('md_hf_back', 'الرجوع للأدعية') : t('md_hf_add', 'إضافة دعاء')}</span>
                 </button>
                 <button
                   type="button"
@@ -226,7 +230,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                     }`}
                   >
                     {renderIcon(f.iconName, 'w-3.5 h-3.5')}
-                    <span>{f.label}</span>
+                    <span>{feelLabel(f)}</span>
                   </button>
                 );
               })}
@@ -245,10 +249,10 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
               >
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-sm mb-1">
                   <Sparkles className="w-4 h-4" />
-                  <span>احتفظ بدعائك المفضل عند هذا الشعور</span>
+                  <span>{t('md_hf_form_title', 'احتفظ بدعائك المفضل عند هذا الشعور')}</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  أضف أي دعاء أو آية تحب الرجوع إليها عندما يمر قلبك بحالة معينة، وسيتم حفظها على جهازك لتجدها دائماً.
+                  {t('md_hf_form_desc', 'أضف أي دعاء أو آية تحب الرجوع إليها عندما يمر قلبك بحالة معينة، وسيتم حفظها على جهازك لتجدها دائماً.')}
                 </p>
 
                 {formError && (
@@ -259,7 +263,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    اختر الحالة المناسبة للدعاء:
+                    {t('md_hf_pick_feeling', 'اختر الحالة المناسبة للدعاء:')}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {HEART_FEELINGS_LIST.map((f) => (
@@ -277,7 +281,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                         }`}
                       >
                         {renderIcon(f.iconName, 'w-3.5 h-3.5')}
-                        <span>{f.label}</span>
+                        <span>{feelLabel(f)}</span>
                       </button>
                     ))}
                   </div>
@@ -285,26 +289,26 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">
-                    عنوان الدعاء (مثلاً: دعاء تفريج الهم):
+                    {t('md_hf_title_label', 'عنوان الدعاء (مثلاً: دعاء تفريج الهم):')}
                   </label>
                   <input
                     type="text"
                     value={customTitle}
                     onChange={(e) => setCustomTitle(e.target.value)}
-                    placeholder="اكتب عنواناً مختصراً..."
+                    placeholder={t('md_hf_title_ph', 'اكتب عنواناً مختصراً...')}
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 transition-colors"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">
-                    نص الدعاء أو الآية الكريمة: <span className="text-rose-400">*</span>
+                    {t('md_hf_text_label', 'نص الدعاء أو الآية الكريمة:')} <span className="text-rose-400">*</span>
                   </label>
                   <textarea
                     rows={4}
                     value={customText}
                     onChange={(e) => setCustomText(e.target.value)}
-                    placeholder="اكتب الدعاء هنا بخشوع..."
+                    placeholder={t('md_hf_text_ph', 'اكتب الدعاء هنا بخشوع...')}
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 transition-colors leading-relaxed"
                     required
                   />
@@ -312,13 +316,13 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">
-                    المصدر أو المرجع (اختياري):
+                    {t('md_hf_source_label', 'المصدر أو المرجع (اختياري):')}
                   </label>
                   <input
                     type="text"
                     value={customSource}
                     onChange={(e) => setCustomSource(e.target.value)}
-                    placeholder="مثال: مأثور، سورة يس، دعاء الوالدين..."
+                    placeholder={t('md_hf_source_ph', 'مثال: مأثور، سورة يس، دعاء الوالدين...')}
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 transition-colors"
                   />
                 </div>
@@ -329,13 +333,13 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                     onClick={() => setIsAddMode(false)}
                     className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-all"
                   >
-                    إلغاء
+                    {t('md_hf_cancel', 'إلغاء')}
                   </button>
                   <button
                     type="submit"
                     className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 text-xs font-black transition-all shadow-md active:scale-95"
                   >
-                    حفظ الدعاء للحالة
+                    {t('md_hf_save', 'حفظ الدعاء للحالة')}
                   </button>
                 </div>
               </motion.form>
@@ -343,7 +347,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
               /* Regular View with Tabs */
               <>
                 {/* Spiritual Insight Card */}
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-850 border border-slate-700/80 shadow-sm relative overflow-hidden">
+                <div dir="rtl" className="p-4 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-850 border border-slate-700/80 shadow-sm relative overflow-hidden">
                   <div className="flex items-start gap-3">
                     <div className="w-2 rounded-full bg-amber-500 self-stretch shrink-0" />
                     <div>
@@ -354,7 +358,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                         {currentFeeling.description}
                       </p>
                       <div className="mt-2 text-[11px] text-amber-200/90 font-medium bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20">
-                        💡 <span className="font-bold">همسة للقلب:</span> {currentFeeling.spiritualAdvice}
+                        💡 <span className="font-bold">{t('md_hf_heart_whisper', 'همسة للقلب:')}</span> {currentFeeling.spiritualAdvice}
                       </div>
                     </div>
                   </div>
@@ -375,7 +379,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      أدعية السنة ({currentFeeling.duas.length})
+                      {t('md_hf_tab_duas', 'أدعية السنة ({{count}})', { count: currentFeeling.duas.length })}
                     </button>
                     <button
                       type="button"
@@ -389,7 +393,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      آيات السكينة ({currentFeeling.quranAyahs.length})
+                      {t('md_hf_tab_quran', 'آيات السكينة ({{count}})', { count: currentFeeling.quranAyahs.length })}
                     </button>
                     <button
                       type="button"
@@ -403,7 +407,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      سبحة الورد 📿
+                      {t('md_hf_tab_tasbeeh', 'سبحة الورد 📿')}
                     </button>
                     {feelingCustomDuas.length > 0 && (
                       <button
@@ -418,7 +422,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                             : 'text-slate-400 hover:text-slate-200'
                         }`}
                       >
-                        أدعيتي ({feelingCustomDuas.length})
+                        {t('md_hf_tab_mine', 'أدعيتي ({{count}})', { count: feelingCustomDuas.length })}
                       </button>
                     )}
                   </div>
@@ -433,7 +437,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                     className="text-amber-400 hover:text-amber-300 text-xs font-bold flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">أضف دعاء</span>
+                    <span className="hidden sm:inline">{t('md_hf_add_short', 'أضف دعاء')}</span>
                   </button>
                 </div>
 
@@ -443,6 +447,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                     {currentFeeling.duas.map((dua) => (
                       <div
                         key={dua.id}
+                        dir="rtl"
                         className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 hover:border-slate-600 transition-all shadow-sm space-y-3"
                       >
                         <div className="flex items-center justify-between">
@@ -470,17 +475,17 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                             type="button"
                             onClick={() => handleCopy(dua.text, dua.id)}
                             className="p-2 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
-                            title="نسخ الدعاء"
+                            title={t('md_hf_copy_dua', 'نسخ الدعاء')}
                           >
                             {copiedId === dua.id ? (
                               <>
                                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="text-emerald-400 font-bold">تم النسخ</span>
+                                <span className="text-emerald-400 font-bold">{t('md_hf_copied', 'تم النسخ')}</span>
                               </>
                             ) : (
                               <>
                                 <Copy className="w-3.5 h-3.5" />
-                                <span>نسخ</span>
+                                <span>{t('md_hf_copy', 'نسخ')}</span>
                               </>
                             )}
                           </button>
@@ -489,10 +494,10 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                             type="button"
                             onClick={() => handleShare(dua.title, dua.text, dua.source)}
                             className="p-2 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
-                            title="مشاركة"
+                            title={t('md_hf_share', 'مشاركة')}
                           >
                             <Share2 className="w-3.5 h-3.5" />
-                            <span>مشاركة</span>
+                            <span>{t('md_hf_share', 'مشاركة')}</span>
                           </button>
                         </div>
                       </div>
@@ -506,6 +511,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                     {currentFeeling.quranAyahs.map((ayah, index) => (
                       <div
                         key={index}
+                        dir="rtl"
                         className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 hover:border-slate-600 transition-all shadow-sm space-y-3"
                       >
                         <div className="flex items-center justify-between">
@@ -527,7 +533,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
                         {ayah.reflection && (
                           <div className="text-xs text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 leading-relaxed">
-                            <span className="text-amber-400 font-bold">تأمل: </span>
+                            <span className="text-amber-400 font-bold">{t('md_hf_reflect', 'تأمل:')} </span>
                             {ayah.reflection}
                           </div>
                         )}
@@ -540,11 +546,11 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           >
                             {copiedId === `ayah-${index}` ? (
                               <span className="text-emerald-400 font-bold flex items-center gap-1">
-                                <Check className="w-3.5 h-3.5" /> تم النسخ
+                                <Check className="w-3.5 h-3.5" /> {t('md_hf_copied', 'تم النسخ')}
                               </span>
                             ) : (
                               <span className="flex items-center gap-1">
-                                <Copy className="w-3.5 h-3.5" /> نسخ الآية
+                                <Copy className="w-3.5 h-3.5" /> {t('md_hf_copy_ayah', 'نسخ الآية')}
                               </span>
                             )}
                           </button>
@@ -556,7 +562,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
                 {/* TAB 3: Interactive Tasbeeh */}
                 {activeTab === 'tasbeeh' && (
-                  <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-850 to-slate-900 border border-slate-700/80 text-center space-y-4">
+                  <div dir="rtl" className="p-5 rounded-2xl bg-gradient-to-b from-slate-850 to-slate-900 border border-slate-700/80 text-center space-y-4">
                     <div className="space-y-1">
                       <span className="text-xs font-bold text-amber-400">
                         {currentFeeling.tasbeeh.title}
@@ -584,10 +590,10 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           {currentTasbeehCount}
                         </span>
                         <span className="text-[11px] font-bold opacity-90 mt-1">
-                          من {currentFeeling.tasbeeh.targetCount}
+                          {t('md_hf_of_target', 'من {{count}}', { count: currentFeeling.tasbeeh.targetCount })}
                         </span>
                         <span className="text-[10px] opacity-75 mt-0.5">
-                          اضغط للتسبيح
+                          {t('md_hf_tap', 'اضغط للتسبيح')}
                         </span>
                       </motion.button>
 
@@ -597,7 +603,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           animate={{ opacity: 1, scale: 1 }}
                           className="mt-3 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20"
                         >
-                          🎉 بارك الله فيك، أتممت الورد المقترح لهذا الشعور!
+                          {t('md_hf_done', '🎉 بارك الله فيك، أتممت الورد المقترح لهذا الشعور!')}
                         </motion.div>
                       )}
 
@@ -608,7 +614,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-colors"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
-                          <span>إعادة تعيين</span>
+                          <span>{t('md_hf_reset', 'إعادة تعيين')}</span>
                         </button>
                       </div>
                     </div>
@@ -621,7 +627,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                     {feelingCustomDuas.length === 0 ? (
                       <div className="text-center py-8 text-slate-400 space-y-2">
                         <Heart className="w-10 h-10 text-slate-600 mx-auto" />
-                        <p className="text-xs">لم تقم بإضافة أي دعاء مخصص لشعور "{currentFeeling.label}" حتى الآن.</p>
+                        <p className="text-xs">{t('md_hf_no_custom', 'لم تقم بإضافة أي دعاء مخصص لشعور "{{feeling}}" حتى الآن.', { feeling: feelLabel(currentFeeling) })}</p>
                         <button
                           type="button"
                           onClick={() => {
@@ -630,7 +636,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                           }}
                           className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold hover:bg-amber-500/30 transition-colors"
                         >
-                          + إضافة دعاء الآن
+                          {t('md_hf_add_now', '+ إضافة دعاء الآن')}
                         </button>
                       </div>
                     ) : (
@@ -648,7 +654,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                               type="button"
                               onClick={() => handleDeleteCustomDua(item.id)}
                               className="text-slate-500 hover:text-rose-400 transition-colors p-1"
-                              title="حذف الدعاء"
+                              title={t('md_hf_delete_dua', 'حذف الدعاء')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -660,7 +666,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
 
                           {item.source && (
                             <div className="text-[11px] text-slate-400">
-                              المصدر: {item.source}
+                              {t('md_hf_source', 'المصدر')}: {item.source}
                             </div>
                           )}
 
@@ -673,12 +679,12 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                               {copiedId === item.id ? (
                                 <>
                                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                  <span className="text-emerald-400 font-bold">تم النسخ</span>
+                                  <span className="text-emerald-400 font-bold">{t('md_hf_copied', 'تم النسخ')}</span>
                                 </>
                               ) : (
                                 <>
                                   <Copy className="w-3.5 h-3.5" />
-                                  <span>نسخ</span>
+                                  <span>{t('md_hf_copy', 'نسخ')}</span>
                                 </>
                               )}
                             </button>
@@ -689,7 +695,7 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
                               className="p-2 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
                             >
                               <Share2 className="w-3.5 h-3.5" />
-                              <span>مشاركة</span>
+                              <span>{t('md_hf_share', 'مشاركة')}</span>
                             </button>
                           </div>
                         </div>
@@ -705,14 +711,14 @@ export const HeartFeelingsModal: React.FC<HeartFeelingsModalProps> = ({
           <div className="p-3 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 px-5">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              أدعية مأثورة وآيات بينات لطمأنينة القلب
+              {t('md_hf_footer', 'أدعية مأثورة وآيات بينات لطمأنينة القلب')}
             </span>
             <button
               type="button"
               onClick={onClose}
               className="font-bold text-amber-400 hover:text-amber-300"
             >
-              إغلاق
+              {t('md_hf_close', 'إغلاق')}
             </button>
           </div>
         </motion.div>

@@ -220,10 +220,10 @@ export const ScholarSayings: React.FC = () => {
     const isFav = favorites.includes(id);
     if (isFav) {
       updated = favorites.filter(f => f !== id);
-      showToast(isRtl ? "تمت الإزالة من المفضلة" : "Removed from favorites", "info");
+      showToast(t('u2_ss_fav_removed', 'تمت الإزالة من المفضلة'), "info");
     } else {
       updated = [...favorites, id];
-      showToast(isRtl ? "تمت الإضافة إلى المفضلة" : "Added to favorites", "success");
+      showToast(t('u2_ss_fav_added', 'تمت الإضافة إلى المفضلة'), "success");
     }
     setFavorites(updated);
     safeLocalStorageSetItem('scholar_sayings_favorites', JSON.stringify(updated));
@@ -274,7 +274,7 @@ export const ScholarSayings: React.FC = () => {
   const changeTheme = (newTheme: 'system' | 'cream' | 'emerald' | 'midnight' | 'lavender' | 'charcoal') => {
     setTheme(newTheme);
     safeLocalStorageSetItem('scholar_sayings_theme', newTheme);
-    showToast(isRtl ? `تم تفعيل ثيم: ${t(('theme_' + newTheme) as any)}` : `Activated theme: ${t(('theme_' + newTheme) as any)}`, 'success');
+    showToast(t('u2_ss_theme_activated', 'تم تفعيل ثيم: {{name}}', { name: t(('theme_' + newTheme) as any) }), 'success');
   };
 
   // Daily Quote determination based on day of month (stable per day)
@@ -292,13 +292,13 @@ export const ScholarSayings: React.FC = () => {
         showToast(t('sayings_copy_success'), 'success');
       })
       .catch(() => {
-        showToast(isRtl ? "فشل النسخ" : "Copy failed", 'info');
+        showToast(t('u2_ss_copy_failed', 'فشل النسخ'), 'info');
       });
   };
 
   // Action: Share Quote
   const handleShare = (saying: ScholarSaying) => {
-    const shareText = `"${saying.text}"\n\n✍️ *${saying.scholarName}*\n\n— تمت المشاركة عبر تطبيق أذكار المؤمن\n${window.location.origin}`;
+    const shareText = `"${saying.text}"\n\n✍️ *${saying.scholarName}*\n\n${t('u2_ss_shared_via', '— تمت المشاركة عبر تطبيق أذكار المؤمن')}\n${window.location.origin}`;
     
     shareContent(t('sayings_title'), shareText);
   };
@@ -311,7 +311,7 @@ export const ScholarSayings: React.FC = () => {
     setActiveTab(randomSaying.category);
     // Focus search on scholarName
     setSearchQuery(randomSaying.scholarName);
-    showToast(isRtl ? `عرض أقوال: ${randomSaying.scholarName}` : `Showing sayings by: ${randomSaying.scholarName}`, 'info');
+    showToast(t('u2_ss_showing_by', 'عرض أقوال: {{name}}', { name: randomSaying.scholarName }), 'info');
   };
 
   // Action: Export / Download card as image (Png)
@@ -339,10 +339,10 @@ export const ScholarSayings: React.FC = () => {
       link.download = `${filename}.png`;
       link.href = dataUrl;
       link.click();
-      showToast(isRtl ? "تم تحميل البطاقة بنجاح" : "Card downloaded successfully", "success");
+      showToast(t('u2_ss_card_downloaded', 'تم تحميل البطاقة بنجاح'), "success");
     } catch (err) {
       console.error('Failed to export image:', err);
-      showToast(isRtl ? "فشل تحميل البطاقة" : "Failed to download card", "info");
+      showToast(t('u2_ss_card_failed', 'فشل تحميل البطاقة'), "info");
     } finally {
       setDownloadingId(null);
     }
@@ -396,7 +396,7 @@ export const ScholarSayings: React.FC = () => {
       }
     }, 50);
 
-    showToast(isRtl ? "تم تحديث وعرض باقة جديدة من روائع الأقوال عشوائياً" : "Refreshed and displayed a new batch of sayings", "success");
+    showToast(t('u2_ss_refreshed', 'تم تحديث وعرض باقة جديدة من روائع الأقوال عشوائياً'), "success");
   };
 
   // Combined Filtering: Tab Selection + Search Query
@@ -492,14 +492,14 @@ export const ScholarSayings: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handleShuffleInspiration}
-              title={isRtl ? "اقتباس عشوائي" : "Shuffle Wisdom"}
+              title={t('u2_ss_shuffle', 'اقتباس عشوائي')}
               className="p-2.5 sm:p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-300 active:scale-90"
             >
               <Shuffle size={18} />
             </button>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              title={isRtl ? "إعدادات القراءة والمظهر" : "Reading Settings & Themes"}
+              title={t('u2_ss_settings_tip', 'إعدادات القراءة والمظهر')}
               className={cn(
                 "p-2.5 sm:p-3 rounded-2xl transition-all duration-500 flex items-center gap-2 font-black text-xs active:scale-90 shadow-sm",
                 showSettings 
@@ -508,7 +508,7 @@ export const ScholarSayings: React.FC = () => {
               )}
             >
               <SlidersHorizontal size={16} />
-              <span className="hidden sm:inline">{isRtl ? "تخصيص" : "Customize"}</span>
+              <span className="hidden sm:inline">{t('u2_ss_customize', 'تخصيص')}</span>
             </button>
           </div>
         </div>
@@ -581,14 +581,14 @@ export const ScholarSayings: React.FC = () => {
               <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/5">
                 <span className="text-sm font-black opacity-80 flex items-center gap-2">
                   <SlidersHorizontal size={16} />
-                  {isRtl ? "إعدادات المظهر والقراءة" : "Appearance & Reading Settings"}
+                  {t('u2_ss_settings_heading', 'إعدادات المظهر والقراءة')}
                 </span>
                 <button
                   onClick={() => setShowSettings(false)}
                   className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 shadow-sm"
-                  title={isRtl ? "إغلاق الإعدادات" : "Close settings"}
+                  title={t('u2_ss_close_settings', 'إغلاق الإعدادات')}
                 >
-                  <span className="text-xs font-bold">{isRtl ? "إغلاق" : "Close"}</span>
+                  <span className="text-xs font-bold">{t('close', 'إغلاق')}</span>
                   <X size={16} />
                 </button>
               </div>
@@ -641,10 +641,10 @@ export const ScholarSayings: React.FC = () => {
                   </span>
                   <div className="flex gap-2">
                     {[
-                      { id: 'sm', label: 'A-', title: 'صغير' },
-                      { id: 'md', label: 'A', title: 'متوسط' },
-                      { id: 'lg', label: 'A+', title: 'كبير' },
-                      { id: 'xl', label: 'A++', title: 'كبير جداً' }
+                      { id: 'sm', label: 'A-', title: t('u2_ss_size_sm', 'صغير') },
+                      { id: 'md', label: 'A', title: t('u2_ss_size_md', 'متوسط') },
+                      { id: 'lg', label: 'A+', title: t('u2_ss_size_lg', 'كبير') },
+                      { id: 'xl', label: 'A++', title: t('u2_ss_size_xl', 'كبير جداً') }
                     ].map((sz) => (
                       <button
                         key={sz.id}
@@ -815,7 +815,7 @@ export const ScholarSayings: React.FC = () => {
                 <div className="mt-8 pt-5 border-t border-black/5 dark:border-white/10 flex items-center justify-between text-[12px] opacity-100 font-sans text-amber-600 dark:text-amber-400 drop-shadow-md font-bold tracking-wide" dir="rtl">
                   <span className="font-bold flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    {isRtl ? "تطبيق المؤمن - روائع الأقوال" : "Believer App - Great Sayings"}
+                    {t('u2_ss_footer_app', 'تطبيق المؤمن - روائع الأقوال')}
                   </span>
                   <span>{new Date().toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
@@ -861,17 +861,17 @@ export const ScholarSayings: React.FC = () => {
                 {activeTab === 'favorites' ? t('sayings_favorites') : t('sayings_badge')}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 px-2 py-0.5 bg-slate-100 dark:bg-slate-900 rounded-md">
-                {filteredSayings.length} {isRtl ? 'حكمة' : 'quotes'}
+                {t('u2_ss_quotes_count', '{{count}} حكمة', { count: filteredSayings.length })}
               </span>
             </div>
 
             <button
               onClick={handleRefreshSayings}
-              title={isRtl ? "عرض باقة عشوائية جديدة" : "Display a new random batch"}
+              title={t('u2_ss_refresh_tip', 'عرض باقة عشوائية جديدة')}
               className="flex items-center gap-1.5 text-[11px] font-black text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-all duration-300 bg-amber-500/5 dark:bg-amber-500/10 px-2.5 py-1.5 rounded-xl border border-amber-500/10 hover:scale-105 active:scale-95 shadow-sm"
             >
               <Shuffle size={11} className="transition-transform duration-500 hover:rotate-180" />
-              <span>{isRtl ? 'تحديث المعروض' : 'Refresh List'}</span>
+              <span>{t('u2_ss_refresh_list', 'تحديث المعروض')}</span>
             </button>
           </div>
 
@@ -1025,19 +1025,17 @@ export const ScholarSayings: React.FC = () => {
                       <BookOpen size={32} />
                     </div>
                     <h3 className="font-black text-lg">
-                      {isRtl ? "لا توجد نتائج بحث مطابقة" : "No matching sayings found"}
+                      {t('u2_ss_no_results', 'لا توجد نتائج بحث مطابقة')}
                     </h3>
                     <p className="opacity-60 text-xs mt-2 max-w-sm mx-auto leading-relaxed">
-                      {isRtl 
-                        ? "جرب كتابة عبارات أخرى، أو تصفح الأقسام الأخرى للحصول على الإلهام." 
-                        : "Try using different keywords, or check other categories for inspiration."}
+                      {t('u2_ss_no_results_hint', 'جرب كتابة عبارات أخرى، أو تصفح الأقسام الأخرى للحصول على الإلهام.')}
                     </p>
                     {searchQuery !== '' && (
                       <button
                         onClick={() => setSearchQuery('')}
                         className="mt-4 px-4 py-2 bg-amber-500 text-white text-xs font-black rounded-xl hover:bg-amber-600 transition-colors"
                       >
-                        {isRtl ? "عرض كل الأقوال" : "View All Sayings"}
+                        {t('u2_ss_view_all', 'عرض كل الأقوال')}
                       </button>
                     )}
                   </>

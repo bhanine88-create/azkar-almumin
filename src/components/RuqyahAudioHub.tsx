@@ -13,6 +13,7 @@ import { useGlobalAudio } from '../context/GlobalAudioContext';
 import { useDownloadManager } from '../context/DownloadContext';
 import { smartArabicMatch } from '../lib/arabicSearch';
 import { preloadAudioLibraryRoutes } from '../lib/preloadLibrary';
+import { useTranslation } from '../i18n';
 
 interface RuqyahTrack {
   id: string;
@@ -105,6 +106,7 @@ export function RuqyahAudioHub() {
     preloadAudioLibraryRoutes();
   }, []);
   const { settings, progress, toggleLectureFavorite, updateSettings } = useAppContext();
+  const { t } = useTranslation(settings.appLanguage);
   const isDarkTheme = settings.theme === 'dark';
 
   const { currentTrack, isPlaying, playTrack, pauseTrack, resumeTrack } = useGlobalAudio();
@@ -285,7 +287,7 @@ export function RuqyahAudioHub() {
   };
 
   const clearAllCache = async () => {
-    const confirmed = window.confirm('هل أنت متأكد من حذف الملفات الصوتية للرقية الشرعية المحملة؟');
+    const confirmed = window.confirm(t('ra_confirm_clear', 'هل أنت متأكد من حذف الملفات الصوتية للرقية الشرعية المحملة؟'));
     if (confirmed) {
       await lectureCacheService.clearAllCache();
       setCachedTracks(new Set());
@@ -294,9 +296,9 @@ export function RuqyahAudioHub() {
   };
 
   const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 ميجابايت';
+    if (bytes === 0) return `0 ${t('ra_unit_mb', 'م.ب')}`;
     const mb = bytes / (1024 * 1024);
-    return mb.toFixed(1) + ' م.ب';
+    return mb.toFixed(1) + ' ' + t('ra_unit_mb', 'م.ب');
   };
 
   return (
@@ -327,8 +329,8 @@ export function RuqyahAudioHub() {
                     <Settings size={24} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white">إعدادات الصوت والتحميل</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">تخصيص تجربة الاستماع والذاكرة</p>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">{t('ra_settings_title', 'إعدادات الصوت والتحميل')}</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">{t('ra_settings_sub', 'تخصيص تجربة الاستماع والذاكرة')}</p>
                   </div>
                 </div>
                 <button 
@@ -344,7 +346,7 @@ export function RuqyahAudioHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <FastForward size={18} className="text-[#10b981]" />
-                    <span>سرعة التشغيل</span>
+                    <span>{t('ra_playback_speed', 'سرعة التشغيل')}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
@@ -371,8 +373,8 @@ export function RuqyahAudioHub() {
                       <SkipForward size={20} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white">التشغيل التلقائي</h4>
-                      <p className="text-[10px] text-slate-500 font-bold">تشغيل الرقية التالية تلقائياً</p>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white">{t('ra_autoplay', 'التشغيل التلقائي')}</h4>
+                      <p className="text-[10px] text-slate-500 font-bold">{t('ra_autoplay_desc', 'تشغيل الرقية التالية تلقائياً')}</p>
                     </div>
                   </div>
                   <button
@@ -393,12 +395,12 @@ export function RuqyahAudioHub() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
                     <CloudDownload size={18} className="text-[#10b981]" />
-                    <span>إرسال وإدارة التخزين للتشغيل بدون انترنت</span>
+                    <span>{t('ra_storage_title', 'إرسال وإدارة التخزين للتشغيل بدون انترنت')}</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between">
-                      <div className="text-right">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">المساحة المستهلكة</p>
+                      <div className="text-start">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t('ra_used_space', 'المساحة المستهلكة')}</p>
                         <p className="text-lg font-black text-slate-900 dark:text-white">{formatSize(cacheSize)}</p>
                       </div>
                       <button
@@ -412,7 +414,7 @@ export function RuqyahAudioHub() {
                         )}
                       >
                         <Trash2 size={14} />
-                        مسح الذاكرة مؤقتاً
+                        {t('ra_clear_cache', 'مسح الذاكرة مؤقتاً')}
                       </button>
                     </div>
                   </div>
@@ -431,10 +433,10 @@ export function RuqyahAudioHub() {
           <BackButton onClick={() => goBack('/audio-library')} />
           <div>
             <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-l from-[#10b981] to-[#047857] mr-1">
-              الرقية الشرعية
+              {t('ra_title', 'الرقية الشرعية')}
             </h1>
             <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mr-1">
-              تلاوة خاشعة للتحصين والعلاج والشفاء
+              {t('ra_subtitle', 'تلاوة خاشعة للتحصين والعلاج والشفاء')}
             </p>
           </div>
         </div>
@@ -455,14 +457,14 @@ export function RuqyahAudioHub() {
         <div className="absolute inset-0 opacity-15 mix-blend-overlay" style={{ backgroundImage: "url('/images/arabesque.png')" }} />
         <div className="absolute top-0 left-0 w-24 h-full bg-white/5 rotate-12 translate-x-3 pointer-events-none" />
         <div className="relative z-10 flex items-center justify-between">
-          <div className="text-right flex-1">
+          <div className="text-start flex-1">
             <span className="bg-white/20 text-white text-[9px] font-black px-2.5 py-1 rounded-full border border-white/10 uppercase tracking-wider mb-2 inline-flex items-center gap-1">
               <ShieldCheck size={11} className="text-amber-300" />
-              تحصين ونور للقلوب
+              {t('ra_badge', 'تحصين ونور للقلوب')}
             </span>
-            <h2 className="text-xl font-black mb-1.5 leading-tight">رقية التحصين والشفاء</h2>
+            <h2 className="text-xl font-black mb-1.5 leading-tight">{t('ra_hero_title', 'رقية التحصين والشفاء')}</h2>
             <p className="text-xs text-white/95 leading-relaxed font-bold">
-              استمع لآيات التحصين من السحر والحسد والمس بأرق وأعذب الأصوات وأقواها تأثيراً لتهدئة القلوب وطرد الشياطين ونشر البركة في بيتك.
+              {t('ra_hero_desc', 'استمع لآيات التحصين من السحر والحسد والمس بأرق وأعذب الأصوات وأقواها تأثيراً لتهدئة القلوب وطرد الشياطين ونشر البركة في بيتك.')}
             </p>
           </div>
         </div>
@@ -476,7 +478,7 @@ export function RuqyahAudioHub() {
           </div>
           <input
             type="text"
-            placeholder="ابحث عن قارئ أو كلمة في الوصف..."
+            placeholder={t('ra_search_ph', 'ابحث عن قارئ أو كلمة في الوصف...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
@@ -490,7 +492,7 @@ export function RuqyahAudioHub() {
 
         {/* Favorite filter badge */}
         <div className="flex items-center justify-between">
-          <span className="text-xs font-black text-slate-500">ماتم اختياره ({filteredTracks.length} رقى)</span>
+          <span className="text-xs font-black text-slate-500">{t('ra_selected_count', 'ماتم اختياره ({{count}} رقى)', { count: filteredTracks.length })}</span>
           <button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={cn(
@@ -501,7 +503,7 @@ export function RuqyahAudioHub() {
             )}
           >
             <Star size={13} className={showFavoritesOnly ? "fill-current" : ""} />
-            <span>عرض المفضلة فقط</span>
+            <span>{t('ra_favorites_only', 'عرض المفضلة فقط')}</span>
           </button>
         </div>
       </div>
@@ -552,7 +554,7 @@ export function RuqyahAudioHub() {
                     )}
                   </button>
 
-                  <div className="text-right">
+                  <div className="text-start">
                     <h3 className={cn(
                       "font-black text-base text-slate-900 dark:text-white leading-snug",
                       isThisPlaying && "text-[#10b981]"
@@ -567,7 +569,7 @@ export function RuqyahAudioHub() {
               </div>
 
               {/* Middle Row: Description */}
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-4 text-right pr-1 border-r-2 border-slate-200 dark:border-slate-800">
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-4 text-start pr-1 border-r-2 border-slate-200 dark:border-slate-800">
                 {track.description}
               </p>
 
@@ -580,7 +582,7 @@ export function RuqyahAudioHub() {
                   </div>
                   {isDownloaded && (
                     <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">
-                      محملة وجاهزة офлайн
+                      {t('ra_downloaded_offline', 'محملة وجاهزة دون اتصال')}
                     </span>
                   )}
                 </div>
@@ -637,7 +639,7 @@ export function RuqyahAudioHub() {
                     ) : (
                       <>
                         <CloudDownload size={13} />
-                        <span>تحميل للهاتف</span>
+                        <span>{t('ra_download_to_phone', 'تحميل للهاتف')}</span>
                       </>
                     )}
                   </button>
@@ -649,22 +651,22 @@ export function RuqyahAudioHub() {
 
         {filteredTracks.length === 0 && (
           <EmptyStatePlaceholder
-            title="لا توجد نتائج"
-            description="لا توجد رقى مطابقة للبحث حاليا"
+            title={t('ra_no_results', 'لا توجد نتائج')}
+            description={t('ra_no_results_desc', 'لا توجد رقى مطابقة للبحث حاليا')}
             variant="empty"
           />
         )}
       </div>
 
       {/* Security Tip block */}
-      <div className="bg-[#10b981]/5 dark:bg-[#10b981]/10 p-5 rounded-2xl border border-[#10b981]/15 mt-6 flex gap-3 text-right">
+      <div className="bg-[#10b981]/5 dark:bg-[#10b981]/10 p-5 rounded-2xl border border-[#10b981]/15 mt-6 flex gap-3 text-start">
         <div className="w-9 h-9 rounded-xl bg-[#10b981]/10 flex items-center justify-center shrink-0 text-[#10b981]">
           <Info size={16} />
         </div>
         <div>
-          <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">نصيحة لحفظ الرقية والتحصين</h4>
+          <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">{t('ra_tip_title', 'نصيحة لحفظ الرقية والتحصين')}</h4>
           <p className="text-xs text-slate-650 dark:text-slate-400 font-medium leading-relaxed">
-            الرقية الشرعية تؤثر بالاستماع الخاشع وتكرارها باستمرار وثبات النية والإخلاص لله عز وجل. يمكنك تحميل ملفات الرقية بالكامل لتشغيلها والاستماع في أي وقت دون اتصال بالإنترنت.
+            {t('ra_tip_body', 'الرقية الشرعية تؤثر بالاستماع الخاشع وتكرارها باستمرار وثبات النية والإخلاص لله عز وجل. يمكنك تحميل ملفات الرقية بالكامل لتشغيلها والاستماع في أي وقت دون اتصال بالإنترنت.')}
           </p>
         </div>
       </div>
