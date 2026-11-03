@@ -897,6 +897,14 @@ export const Adhkar: React.FC = () => {
   const [showReward, setShowReward] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+  // Set by "confirm exit": the page leaves once the card has been removed.
+  const [leavingAfterExit, setLeavingAfterExit] = useState(false);
+  React.useEffect(() => {
+    if (!leavingAfterExit || showExitModal) return;
+    const timer = setTimeout(() => goBack(), 150);
+    return () => clearTimeout(timer);
+  }, [leavingAfterExit, showExitModal, goBack]);
   const [toolsMenuPosition, setToolsMenuPosition] = useState({ top: 0, left: 0, width: 360 });
   const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -911,10 +919,16 @@ export const Adhkar: React.FC = () => {
 
   // Android Back closes this page's overlays before leaving the page (see Layout).
   React.useEffect(() => {
-    if (!isToolsMenuOpen && !isSettingsOpen) return;
+    if (!isToolsMenuOpen && !isSettingsOpen && !showExitModal && !showReward && !showResetConfirm) return;
     const closeTopOverlay = (event: Event) => {
       event.preventDefault();
-      if (isSettingsOpen) {
+      if (showExitModal) {
+        setShowExitModal(false);
+      } else if (showResetConfirm) {
+        setShowResetConfirm(false);
+      } else if (showReward) {
+        setShowReward(false);
+      } else if (isSettingsOpen) {
         setIsSettingsOpen(false);
         setIsFontDropdownOpen(false);
       } else {
@@ -934,8 +948,7 @@ export const Adhkar: React.FC = () => {
       window.removeEventListener('keydown', closeOnEscape);
       window.removeEventListener('resize', followButton);
     };
-  }, [isToolsMenuOpen, isSettingsOpen]);
-  const [showExitModal, setShowExitModal] = useState(false);
+  }, [isToolsMenuOpen, isSettingsOpen, showExitModal, showReward, showResetConfirm]);
   const [exitCardTiltX, setExitCardTiltX] = useState(8);
   const [exitCardTiltY, setExitCardTiltY] = useState(-4);
   const hasRewarded = React.useRef(false);
@@ -1351,7 +1364,7 @@ export const Adhkar: React.FC = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.12 } }}
               onClick={() => setShowExitModal(false)}
               className="fixed inset-0 bg-black/85"
             />
@@ -1360,7 +1373,7 @@ export const Adhkar: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.12 } }}
               transition={{ type: "spring", damping: 26, stiffness: 320 }}
               className={cn(
                 "relative w-full max-w-[360px] rounded-[28px] p-5 sm:p-6 text-center shadow-2xl border select-none z-10",
@@ -1421,8 +1434,11 @@ export const Adhkar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
+                    // Leave the page only after the card is gone from the
+                    // DOM: navigating in the same tick unmounted this page
+                    // mid-animation and left the card stuck on screen.
+                    setLeavingAfterExit(true);
                     setShowExitModal(false);
-                    goBack();
                   }}
                   className={cn(
                     "py-3 font-black rounded-xl text-center text-xs sm:text-sm transition-all duration-150 active:scale-95 outline-none cursor-pointer",

@@ -3646,9 +3646,9 @@ const ThreeDCard = React.memo<{ color: string; shadow: string; icon: React.React
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <motion.div
+    <div
       className={cn(
-        "relative rounded-2xl p-4 text-white overflow-hidden border-b-4 border-black/20 cursor-pointer transition-all",
+        "relative rounded-2xl p-4 text-white overflow-hidden border-b-4 border-black/20 cursor-pointer",
         color,
         shadow
       )}
@@ -3677,7 +3677,7 @@ const ThreeDCard = React.memo<{ color: string; shadow: string; icon: React.React
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
               className="overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
@@ -3688,9 +3688,8 @@ const ThreeDCard = React.memo<{ color: string; shadow: string; icon: React.React
           )}
         </AnimatePresence>
       </div>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-2xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-16 h-16 bg-black/5 rounded-full -ml-8 -mb-8 blur-xl pointer-events-none" />
-    </motion.div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 pointer-events-none" style={{ filter: 'blur(24px)', transform: 'translateZ(0)' }} />
+    </div>
   );
 });
 ThreeDCard.displayName = 'ThreeDCard';

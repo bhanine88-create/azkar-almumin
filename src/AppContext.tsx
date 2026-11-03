@@ -138,8 +138,8 @@ export const OFFICIAL_DEFAULT_SETTINGS: AppSettings = {
   primaryColor: '#0f766e',
   fontSize: 'medium',
   fontFamily: 'Tajawal',
-  adhkarFontSize: '25px',
-  adhkarFontFamily: 'Amiri',
+  adhkarFontSize: '18px',
+  adhkarFontFamily: 'Tajawal',
   hadithFontFamily: 'Amiri',
   adhkarTheme: 'emerald',
   adhkarWallpaperPattern: 'islamic',
@@ -268,6 +268,26 @@ function detectDeviceLanguage(): NonNullable<AppSettings['appLanguage']> {
     if (supported.has(base)) return base as NonNullable<AppSettings['appLanguage']>;
   }
   return 'ar';
+}
+
+/**
+ * Adds the shipped items that `items` lacks without disturbing the order the
+ * user chose: each missing item goes right after the shipped item that
+ * precedes it (wherever the user put that one), or at the front when it is
+ * the first shipped item.
+ */
+function insertMissingKeepingOrder<T extends { id: string }>(items: T[], shipped: T[]): T[] {
+  const out = items.filter(Boolean).slice();
+  shipped.forEach((shippedItem, index) => {
+    if (out.some(i => i.id === shippedItem.id)) return;
+    let at = 0;
+    for (let k = index - 1; k >= 0; k--) {
+      const pos = out.findIndex(i => i.id === shipped[k].id);
+      if (pos >= 0) { at = pos + 1; break; }
+    }
+    out.splice(at, 0, shippedItem);
+  });
+  return out;
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -436,6 +456,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (RETIRED_ADHKAR_FONTS[parsed.adhkarFontFamily]) {
           parsed.adhkarFontFamily = RETIRED_ADHKAR_FONTS[parsed.adhkarFontFamily];
         }
+        // The default adhkar font changed to Tajawal 18px. Users still on the
+        // old default move with it; a font or size the user chose stays.
+        if (!safeLocalStorageGetItem('believer_adhkar_font_default_v2')) {
+          if (parsed.adhkarFontFamily === 'Amiri' && parsed.adhkarFontSize === '25px') {
+            parsed.adhkarFontFamily = 'Tajawal';
+            parsed.adhkarFontSize = '18px';
+          }
+          safeLocalStorageSetItem('believer_adhkar_font_default_v2', 'true');
+        }
 
         // Haptic tasbih is now off by default (client request). It was on by
         // default before, so it is switched off once for everyone; whoever wants
@@ -557,13 +586,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (!item || typeof item !== 'object' || !item.id) return item;
             const initialItem = initialCat.items.find(i => i.id === item.id);
             
-            // If it's in the initial data for THIS category, strictly update it to match source
+            // A shipped item: take the shipped text and description (content
+            // corrections ship this way) unless the user edited it, and keep
+            // the user's count.
             if (initialItem) {
-              return { 
-                ...item, 
-                text: initialItem.text, 
-                description: initialItem.description, 
-                // Retain the user's customized count, fallback to initialItem.count
+              return {
+                ...item,
+                text: item.userEdited ? item.text : initialItem.text,
+                description: item.userEdited ? item.description : initialItem.description,
                 count: item.count !== undefined ? item.count : initialItem.count
               };
             }
@@ -583,13 +613,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             return item;
           }).filter(Boolean);
 
-          // Insert missing items from initial data
-          initialCat.items.forEach((initialItem, index) => {
-            if (!updatedItems.some((i: any) => i && i.id === initialItem.id)) {
-              // Insert at the correct index to maintain the intended order
-              updatedItems.splice(index, 0, initialItem);
-            }
-          });
+          // Insert missing items from initial data, keeping the user's order:
+          // each one goes after the shipped item before it, wherever that is.
+          updatedItems = insertMissingKeepingOrder(updatedItems, initialCat.items);
 
           // De-duplicate items by item.id to prevent key duplication
           const seenIds = new Set<string>();
@@ -730,10 +756,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return initialItem;
         });
 
-        let combinedItems = [
-          ...JSON.parse(JSON.stringify(standardItemsWithPreservedCounts)),
-          ...customItems
-        ];
+        // The user's order first: shipped items refreshed in place, the user's
+        // own items where they left them, new shipped items slotted in after
+        // their shipped predecessor.
+        const refreshed = new Map(standardItemsWithPreservedCounts.map(i => [i.id, i]));
+        const kept = cat.items
+          .filter(item => item && item.id && (refreshed.has(item.id) || customItems.includes(item)))
+          .map(item => refreshed.get(item.id) ? { ...refreshed.get(item.id)! } : item);
+        let combinedItems = insertMissingKeepingOrder(kept, standardItemsWithPreservedCounts);
 
         // De-duplicate standard and custom items to make sure no double keys exist
         const seenIds = new Set<string>();
@@ -1151,7 +1181,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (cat.category === category) {
         return {
           ...cat,
-          items: cat.items.map(item => item.id === updatedDhikr.id ? updatedDhikr : item)
+          // userEdited: an update of the app must not overwrite the user's text.
+          items: cat.items.map(item => item.id === updatedDhikr.id ? { ...updatedDhikr, userEdited: true } : item)
         };
       }
       return cat;

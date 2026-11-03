@@ -41,7 +41,7 @@ final class RandomDhikrPopup {
     static final String CHANNEL_ID = "random_dhikr_popup";
     /** Replaced by CHANNEL_ID: it had a sound, and a channel's sound cannot be changed. */
     static final String OLD_CHANNEL_ID = "random_dhikr_channel";
-    static final long VISIBLE_MS = 3000;
+    static final long VISIBLE_MS = 5000;
     private static final long FADE_MS = 250;
     private static final int NOTIFICATION_ID = 7301;
     private static final String DEFAULT_TITLE = "لا تنسى ذكر الله";

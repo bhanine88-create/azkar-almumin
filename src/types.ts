@@ -6,6 +6,8 @@ export interface Dhikr {
   text: string;
   count: number;
   description?: string;
+  /** The user rewrote this shipped dhikr: an app update keeps their text. */
+  userEdited?: boolean;
   reference?: string;
   reward?: string;
 }
