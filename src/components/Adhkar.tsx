@@ -1,6 +1,6 @@
 import { BackButton } from './ui/BackButton';
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAdhkarCounts } from '../context/AdhkarCountsContext';
@@ -898,14 +898,15 @@ export const Adhkar: React.FC = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
-  // Set by "confirm exit": the page leaves once the card has been removed.
-  const [leavingAfterExit, setLeavingAfterExit] = useState(false);
-  React.useEffect(() => {
-    if (!leavingAfterExit || showExitModal) return;
-    const timer = setTimeout(() => goBack(), 150);
-    return () => clearTimeout(timer);
-  }, [leavingAfterExit, showExitModal, goBack]);
-  const [toolsMenuPosition, setToolsMenuPosition] = useState({ top: 0, left: 0, width: 360 });
+  // "Confirm exit": the card is removed from the DOM in this same tick
+  // (flushSync, and the card has no exit animation), then the page leaves.
+  // Leaving while the card was still animating out left it stuck on screen;
+  // deferring the leave with a timer never fired once the page re-rendered.
+  const confirmExit = () => {
+    flushSync(() => setShowExitModal(false));
+    goBack();
+  };
+const [toolsMenuPosition, setToolsMenuPosition] = useState({ top: 0, left: 0, width: 360 });
   const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
 
   // Anchors the tools menu under its button, kept inside the screen.
@@ -1364,7 +1365,6 @@ export const Adhkar: React.FC = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.12 } }}
               onClick={() => setShowExitModal(false)}
               className="fixed inset-0 bg-black/85"
             />
@@ -1373,7 +1373,6 @@ export const Adhkar: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.12 } }}
               transition={{ type: "spring", damping: 26, stiffness: 320 }}
               className={cn(
                 "relative w-full max-w-[360px] rounded-[28px] p-5 sm:p-6 text-center shadow-2xl border select-none z-10",
@@ -1433,13 +1432,7 @@ export const Adhkar: React.FC = () => {
               <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    // Leave the page only after the card is gone from the
-                    // DOM: navigating in the same tick unmounted this page
-                    // mid-animation and left the card stuck on screen.
-                    setLeavingAfterExit(true);
-                    setShowExitModal(false);
-                  }}
+                  onClick={confirmExit}
                   className={cn(
                     "py-3 font-black rounded-xl text-center text-xs sm:text-sm transition-all duration-150 active:scale-95 outline-none cursor-pointer",
                     themeBtnSecondary
