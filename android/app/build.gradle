@@ -38,8 +38,8 @@ android {
 
         // Bump versionCode for EVERY upload to Play — Google rejects a reused
         // one, and it can never be lowered again.
-        versionCode 19
-        versionName "1.0.9"
+        versionCode 20
+        versionName "1.0.10"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
